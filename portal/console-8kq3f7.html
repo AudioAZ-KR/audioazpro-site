@@ -105,6 +105,8 @@ tr:last-child td{border-bottom:0}
 .gate .tid:hover{background:rgba(24,119,242,.12)}
 .gate .enrl{width:100%;margin-top:9px;background:none;border:0;color:var(--dim);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
 .gate .enrl:hover{color:var(--blue-soft)}
+.gate .enrl2{width:100%;height:44px;border:1px solid var(--line);border-radius:11px;background:#0E1A2E;color:var(--dim);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px}
+.gate .enrl2:hover{color:#E9EEF7;border-color:var(--blue)}
 .side .foot a{cursor:pointer}</style>
 </head>
 <body>
@@ -115,20 +117,19 @@ tr:last-child td{border-bottom:0}
   <div class="box">
     <div class="lg"><img src="/assets/logo-lockup-white.png" alt="AudioAZ" style="height:30px;width:auto"></div>
     <h2>관리자 로그인</h2>
-    <p class="s">AudioAZ 콘솔 · 관리자 전용</p>
-    <form onsubmit="return adminLogin(event)">
+    <p class="s">등록된 패스키로만 열 수 있습니다</p>
+    <button type="button" class="tid" id="ga-touch" onclick="touchLogin()" style="margin-top:8px">🔒 패스키로 로그인 (Touch ID)</button>
+    <div class="e" id="ga-err" style="margin-top:12px">인증에 실패했습니다.</div>
+    <div class="gdiv">새 기기 등록 · 복구</div>
+    <form onsubmit="return false" autocomplete="on">
       <label for="ga-email">이메일</label>
       <input id="ga-email" type="email" autocomplete="username" placeholder="이메일 주소" required>
       <label for="ga-pw">비밀번호</label>
       <input id="ga-pw" type="password" autocomplete="current-password" placeholder="비밀번호" required>
-      <div class="e" id="ga-err">이메일 또는 비밀번호가 올바르지 않습니다.</div>
-      <button type="submit">비밀번호로 로그인</button>
+      <button type="button" class="enrl2" id="ga-enroll" onclick="enrollDevice()">이 기기에 패스키 등록</button>
     </form>
-    <div class="gdiv">또는</div>
-    <button type="button" class="tid" id="ga-touch" onclick="touchLogin()">🔒 애플 패스키로 로그인 (Touch ID)</button>
-    <button type="button" class="enrl" id="ga-enroll" onclick="enrollDevice()">내 애플 패스키 등록 (최초 1회)</button>
     <div id="ga-credout" style="display:none;margin-top:10px;padding:10px 12px;background:#0A1526;border:1px solid #12B76A;border-radius:9px;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#7ee0a6;word-break:break-all;user-select:all"></div>
-    <p class="n">비인가 접근 금지 · 관리자 전용 페이지입니다.</p>
+    <p class="n">이메일·비밀번호는 <b>새 패스키 등록·복구</b>에만 사용됩니다. 콘솔 로그인은 <b>패스키로만</b> 됩니다.</p>
   </div>
 </div>
 
@@ -317,23 +318,54 @@ tr:last-child td{border-bottom:0}
         </div>
       </section>
 
-      <!-- 관리자 계정 생성기 -->
+      <!-- 관리자 계정 -->
       <section id="p-admins" class="page">
-        <div class="card"><h2>관리자 계정 생성기 🔒</h2><div class="sub">이 맥의 <b>Touch ID</b> 인증이 있어야만 새 관리자 로그인을 만들 수 있습니다. <b>생성 버튼을 누르는 순간 애플 패스키(Touch ID) 확인</b>을 거치며, 대표님 애플 기기가 아닌 곳에서는 생성이 차단됩니다.</div>
+
+        <div class="card"><h2>내 관리자 정보</h2><div class="sub">최고관리자 계정 정보와 비밀번호를 관리합니다.</div>
+          <table style="margin-bottom:4px"><tbody>
+            <tr><td style="width:160px;color:var(--dim);font-weight:700">이름</td><td>김형준</td></tr>
+            <tr><td style="color:var(--dim);font-weight:700">이메일(아이디)</td><td class="mono">hj@audioazpro.com</td></tr>
+            <tr><td style="color:var(--dim);font-weight:700">등급</td><td><span class="pill p-active">최고관리자</span></td></tr>
+            <tr><td style="color:var(--dim);font-weight:700">로그인 방식</td><td>애플 패스키(Touch ID) · 등록된 기기만</td></tr>
+          </tbody></table>
+          <h3 style="font-size:14px;font-weight:800;margin:18px 0 6px">비밀번호 변경</h3>
+          <div class="sub" style="margin-bottom:12px">비밀번호는 <b>새 패스키 등록·복구</b>에만 쓰입니다. 콘솔 로그인은 패스키로만 됩니다.</div>
+          <form onsubmit="return changePw(event)">
+            <div class="grid2">
+              <div class="field"><label>새 비밀번호 (8자 이상)</label><input type="password" name="np" minlength="8" autocomplete="new-password" required></div>
+              <div class="field"><label>새 비밀번호 확인</label><input type="password" name="np2" minlength="8" autocomplete="new-password" required></div>
+            </div>
+            <button class="btn btn-pri" type="submit">비밀번호 변경</button>
+            <span id="pwMsg" style="margin-left:12px;font-size:13px"></span>
+          </form>
+        </div>
+
+        <div class="card"><h2>관리자 계정 생성기 🔒</h2><div class="sub">대표님 <b>애플 패스키(Touch ID)</b> 인증이 있어야만 새 관리자 로그인을 만들 수 있습니다. <b>생성 버튼을 누르는 순간 지문 확인</b>을 거치며, 대표님 애플 기기가 아닌 곳에서는 생성이 차단됩니다.</div>
           <form onsubmit="return genAdmin(event)">
             <div class="grid2">
               <div class="field"><label>관리자 이메일</label><input type="email" name="email" placeholder="name@audioazpro.com" required></div>
               <div class="field"><label>이름</label><input name="name" placeholder="홍길동" required></div>
             </div>
+            <div class="field"><label>등급</label><select name="role"><option value="ops">운영관리자</option><option value="support">지원(뷰어)</option></select></div>
             <button class="btn btn-pri" type="submit">🔒 Touch ID로 관리자 생성</button>
           </form>
           <div class="result" id="genRes">—</div>
-          <p class="note">임시 비밀번호는 새 관리자에게 안전하게 전달하고, <b>SALT·HASH</b>는 (백엔드 연결 전) 소스/저장소에 등록해야 실제 로그인으로 동작합니다. 백엔드 연결 후에는 이 생성이 <b>Supabase(App Attest 검증)</b>로 실제 계정을 발급합니다. 비밀번호 원문은 서버·소스에 저장하지 않습니다.</p>
+          <p class="note">임시 비밀번호는 새 관리자에게 안전하게 전달하고, <b>SALT·HASH</b>는 (백엔드 연결 전) 저장소에 등록해야 실제 로그인으로 동작합니다. 백엔드 연결 후에는 이 생성이 <b>Supabase(App Attest 검증)</b>로 실제 계정을 발급합니다. 비밀번호 원문은 서버·소스에 저장하지 않습니다.</p>
         </div>
-        <div class="card"><h2>관리자 목록 <span class="demo">데모</span></h2>
-          <table><thead><tr><th>이름</th><th>이메일</th><th>생성일</th><th>상태</th></tr></thead>
-          <tbody id="adminRows"><tr><td colspan="4" style="color:var(--dim)">아직 생성된 관리자가 없습니다.</td></tr></tbody></table>
+
+        <div class="card"><h2>등급·권한 기준</h2><div class="sub">최고관리자인 대표님이 다른 관리자에게 지정할 수 있는 권한 범위입니다.</div>
+          <table><thead><tr><th>등급</th><th>권한 범위</th><th>지정</th></tr></thead><tbody>
+            <tr><td><span class="pill p-active">최고관리자</span></td><td>전체 + 관리자 생성·삭제·권한 지정</td><td style="color:var(--dim)">대표님 전용</td></tr>
+            <tr><td><span class="pill p-trial">운영관리자</span></td><td>라이선스·프로모션·주문·고객·제품·공지 (관리자 관리 제외)</td><td><span class="pill p-active">지정 가능</span></td></tr>
+            <tr><td><span class="pill p-trial">지원(뷰어)</span></td><td>조회 전용 · 발급·삭제 불가</td><td><span class="pill p-active">지정 가능</span></td></tr>
+          </tbody></table>
         </div>
+
+        <div class="card"><h2>관리자 목록 · 권한/삭제</h2><div class="sub">추가 관리자의 등급을 바꾸거나 삭제할 수 있습니다. 최고관리자(대표님)는 삭제되지 않습니다.</div>
+          <table><thead><tr><th>이름</th><th>이메일</th><th>등급</th><th>생성일</th><th></th></tr></thead>
+          <tbody id="adminRows"></tbody></table>
+        </div>
+
       </section>
 
       <!-- 설정 -->
@@ -361,20 +393,8 @@ var ADMIN_HASH='4c6843cf3638fca98cdba12d270c3fa911711306e61fbd0885394d13685bb26d
 var SKEY='az_admin_ok';
 async function sha256hex(s){var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');}
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex';}
-async function adminLogin(e){
-  e.preventDefault();
-  var email=document.getElementById('ga-email').value.trim().toLowerCase();
-  var pw=document.getElementById('ga-pw').value;
-  var err=document.getElementById('ga-err');
-  try{
-    var h=await sha256hex(pw);
-    if(email===ADMIN_EMAIL && h===ADMIN_HASH){
-      try{sessionStorage.setItem(SKEY,'1');}catch(_){}
-      err.classList.remove('on'); openConsole();
-    }else{ err.classList.add('on'); }
-  }catch(_){ err.classList.add('on'); }
-  return false;
-}
+// 비밀번호만으로는 콘솔에 못 들어옵니다 — 콘솔 로그인은 패스키(touchLogin)로만.
+// 이메일+비밀번호는 새 패스키 등록(enrollDevice) 권한 확인에만 사용됩니다.
 function adminLogout(){ try{sessionStorage.removeItem(SKEY);}catch(_){}; location.reload(); }
 
 // ===== Touch ID (WebAuthn) — 이 맥에 고정된 자격증명으로만 로그인/생성 =====
@@ -414,7 +434,7 @@ async function enrollDevice(){
     var email=document.getElementById('ga-email').value.trim().toLowerCase();
     var pw=document.getElementById('ga-pw').value;
     var h=await sha256hex(pw);
-    if(email===ADMIN_EMAIL && h===ADMIN_HASH){ pwVerified=true; err.classList.remove('on'); btn.textContent='한 번 더 눌러 Touch ID 등록 진행'; btn.style.color='#12B76A'; }
+    if(email===ADMIN_EMAIL && h===getAdminHash()){ pwVerified=true; err.classList.remove('on'); btn.textContent='한 번 더 눌러 Touch ID 등록 진행'; btn.style.color='#12B76A'; }
     else{ err.textContent='등록하려면 관리자 이메일+현재 비밀번호가 정확해야 합니다.'; err.classList.add('on'); }
     return;
   }
@@ -442,7 +462,7 @@ function genPw(n){var c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz2345678
 async function pbkdf2hex(pw,saltBuf,iter){var key=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveBits']);var bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:saltBuf,iterations:iter,hash:'SHA-256'},key,256);return bufToHex(bits);}
 async function genAdmin(e){
   e.preventDefault();
-  var email=e.target.email.value.trim().toLowerCase(), name=e.target.name.value.trim();
+  var email=e.target.email.value.trim().toLowerCase(), name=e.target.name.value.trim(), role=e.target.role.value;
   var res=document.getElementById('genRes');
   if(!hasWebAuthn()||!ADMIN_CRED_IDS.length){ res.innerHTML='<b style="color:#ff9ea3">대표님 애플 패스키가 등록되어 있어야 관리자를 생성할 수 있습니다.</b>'; res.classList.add('on'); return false; }
   var r=await touchAssert();  // 생성 순간 이 맥 지문 확인
@@ -454,17 +474,53 @@ async function genAdmin(e){
     '<div class="k">이메일: '+email+' &nbsp;·&nbsp; 이름: '+name+'</div>'+
     '<div class="k" style="margin-top:8px">임시 비밀번호(본인에게 전달): <b>'+pw+'</b></div>'+
     '<div class="k" style="margin-top:8px">SALT: '+saltHex+'</div>'+
-    '<div class="k">PBKDF2(200k) HASH: '+hash+'</div>';
+    '<div class="k">PBKDF2(200k) HASH: '+hash+'</div>'+
+    '<div class="k" style="margin-top:8px">등급: '+(ROLES[role]?ROLES[role].label:role)+'</div>';
   res.classList.add('on');
   // 데모 목록에 기록
-  try{var L=JSON.parse(localStorage.getItem('az_admins')||'[]');L.push({email:email,name:name,at:new Date().toISOString().slice(0,10)});localStorage.setItem('az_admins',JSON.stringify(L));renderAdmins();}catch(_){}
-  // TODO(백엔드): Supabase Edge Function(App Attest 검증) → profiles.is_admin=true 로 실제 발급
+  var L=loadAdmins(); L.push({email:email,name:name,at:new Date().toISOString().slice(0,10),role:role}); saveAdmins(L);
+  // TODO(백엔드): Supabase Edge Function(App Attest 검증) → profiles.is_admin=true·role 로 실제 발급
   return false;
 }
+
+// ===== 관리자 등급·권한 관리 =====
+var SUPERADMIN={email:'hj@audioazpro.com', name:'김형준'};
+var ROLES={
+  super:{label:'최고관리자', perms:'전체 · 관리자 생성·삭제·권한 지정'},
+  ops:{label:'운영관리자', perms:'라이선스·프로모션·주문·고객·제품·공지'},
+  support:{label:'지원(뷰어)', perms:'조회 전용'}
+};
+function getAdminHash(){ try{return localStorage.getItem('az_admin_hash')||ADMIN_HASH;}catch(_){return ADMIN_HASH;} }
+function loadAdmins(){ try{return JSON.parse(localStorage.getItem('az_admins')||'[]');}catch(_){return [];} }
+function saveAdmins(L){ try{localStorage.setItem('az_admins',JSON.stringify(L));}catch(_){}; renderAdmins(); }
+function roleOptions(sel){ return Object.keys(ROLES).filter(function(k){return k!=='super';}).map(function(k){return '<option value="'+k+'"'+(sel===k?' selected':'')+'>'+ROLES[k].label+'</option>';}).join(''); }
+function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 function renderAdmins(){
   var tb=document.getElementById('adminRows'); if(!tb) return;
-  var L=[]; try{L=JSON.parse(localStorage.getItem('az_admins')||'[]');}catch(_){}
-  tb.innerHTML = L.length ? L.map(function(a){return '<tr><td>'+a.name+'</td><td class="mono">'+a.email+'</td><td class="mono">'+a.at+'</td><td><span class="pill p-active">활성</span></td></tr>';}).join('') : '<tr><td colspan="4" style="color:var(--dim)">아직 생성된 관리자가 없습니다.</td></tr>';
+  var L=loadAdmins();
+  var head='<tr><td>'+esc(SUPERADMIN.name)+' <span class="pill p-active">나</span></td><td class="mono">'+esc(SUPERADMIN.email)+'</td><td><span class="pill p-active">최고관리자</span></td><td class="mono">—</td><td style="color:var(--dim)">삭제 불가</td></tr>';
+  var rows=L.map(function(a,i){
+    return '<tr>'+
+      '<td>'+esc(a.name)+'</td>'+
+      '<td class="mono">'+esc(a.email)+'</td>'+
+      '<td><select class="field" style="margin:0;width:auto;padding:6px 8px" onchange="setRole('+i+',this.value)">'+roleOptions(a.role||'ops')+'</select></td>'+
+      '<td class="mono">'+esc(a.at||'—')+'</td>'+
+      '<td><button class="tbtn danger" onclick="delAdmin('+i+')">삭제</button></td>'+
+    '</tr>';
+  }).join('');
+  tb.innerHTML = head + (L.length? rows : '<tr><td colspan="5" style="color:var(--dim)">생성된 추가 관리자가 없습니다.</td></tr>');
+}
+function setRole(i,role){ var L=loadAdmins(); if(!L[i])return; L[i].role=role; saveAdmins(L); }
+function delAdmin(i){ var L=loadAdmins(); if(!L[i])return; if(!confirm('관리자 삭제: '+L[i].email+'\n이 관리자의 접근 권한을 제거합니다. 계속할까요?'))return; L.splice(i,1); saveAdmins(L); }
+async function changePw(e){
+  e.preventDefault();
+  var f=e.target, p1=f.np.value, p2=f.np2.value, msg=document.getElementById('pwMsg');
+  if(p1.length<8){ msg.style.color='#ff9ea3'; msg.textContent='8자 이상이어야 합니다.'; return false; }
+  if(p1!==p2){ msg.style.color='#ff9ea3'; msg.textContent='새 비밀번호가 일치하지 않습니다.'; return false; }
+  var h=await sha256hex(p1);
+  try{ localStorage.setItem('az_admin_hash',h); }catch(_){}
+  f.reset(); msg.style.color='#12B76A'; msg.textContent='✅ 변경됨 (이 기기 기준 · 백엔드 연결 후 전 기기 반영)';
+  return false;
 }
 
 (function(){ try{ if(sessionStorage.getItem(SKEY)==='1'){ openConsole(); } }catch(_){}; try{renderAdmins();}catch(_){} })();
