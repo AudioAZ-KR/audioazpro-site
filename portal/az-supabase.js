@@ -36,7 +36,10 @@ async function login(email, password) {
 }
 async function signup(email, password, name) {
   const { data, error } = await sb.auth.signUp({
-    email, password, options: { data: { name } }   // name → profiles 트리거로 복사
+    email, password, options: {
+      data: { name },                                          // name → profiles 트리거로 복사
+      emailRedirectTo: location.origin + '/portal/index.html'  // 확인 링크 클릭 후 돌아올 곳
+    }
   });
   if (error) throw error;
   return data.user;                                 // 이메일 인증 필요 설정이면 확인메일 발송
