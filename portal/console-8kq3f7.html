@@ -83,10 +83,45 @@ tr:last-child td{border-bottom:0}
 .rowflex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .search{flex:1;min-width:180px}
 .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
-:root{--page:#0B1220;--card:#121D33;--navbg:rgba(11,18,32,.9);--text:#E9EEF7;--dim:#96A6BF;--line:#243350;--bg:#0C1424;--sky:#17273F;--wordmark:#fff}body{background:var(--bg)}.logo{width:auto !important}.field input,.field select,.field textarea,.key{background:#0E1A2E;color:#E9EEF7;border-color:#243350}.field input::placeholder{color:#6B7C96}.notice{color:#9CC2F5}.demobar{position:fixed;top:0;left:0;right:0;z-index:300;background:#8a5a00;color:#ffe0ad;text-align:center;font-size:12px;font-weight:600;padding:7px 12px}body{padding-top:32px}.topbar{top:32px}nav{top:32px}.side{top:32px}</style>
+:root{--page:#0B1220;--card:#121D33;--navbg:rgba(11,18,32,.9);--text:#E9EEF7;--dim:#96A6BF;--line:#243350;--bg:#0C1424;--sky:#17273F;--wordmark:#fff}body{background:var(--bg)}.logo{width:auto !important}.field input,.field select,.field textarea,.key{background:#0E1A2E;color:#E9EEF7;border-color:#243350}.field input::placeholder{color:#6B7C96}.notice{color:#9CC2F5}.demobar{position:fixed;top:0;left:0;right:0;z-index:300;background:#8a5a00;color:#ffe0ad;text-align:center;font-size:12px;font-weight:600;padding:7px 12px}body{padding-top:32px}.topbar{top:32px}nav{top:32px}.side{top:32px}
+/* 관리자 로그인 게이트 */
+.layout{display:none}
+.gate{position:fixed;inset:0;z-index:400;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
+.gate .box{width:100%;max-width:360px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:32px 28px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.gate .lg{display:flex;justify-content:center;margin-bottom:18px}
+.gate h2{font-size:19px;font-weight:800;text-align:center;color:#fff;margin-bottom:2px}
+.gate .s{text-align:center;color:var(--dim);font-size:13px;margin-bottom:22px}
+.gate label{display:block;font-size:12px;font-weight:700;color:var(--dim);margin-bottom:5px}
+.gate input{width:100%;height:46px;border:1px solid #243350;border-radius:11px;padding:0 14px;font-family:inherit;font-size:15px;color:#E9EEF7;background:#0E1A2E;margin-bottom:13px}
+.gate input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,119,242,.18)}
+.gate button{width:100%;height:48px;border:0;border-radius:11px;background:var(--blue);color:#fff;font-family:inherit;font-size:15.5px;font-weight:800;cursor:pointer}
+.gate button:hover{background:var(--blue-deep)}
+.gate .e{color:#ff9ea3;font-size:12.5px;margin:-4px 0 12px;display:none;text-align:center}
+.gate .e.on{display:block}
+.gate .n{font-size:11.5px;color:var(--dim);text-align:center;margin-top:16px;line-height:1.6}
+.side .foot a{cursor:pointer}</style>
 </head>
 <body>
 <div class="demobar" role="note">데모 환경 · 실제 인증·결제·라이선스는 준비 중입니다</div>
+
+<!-- 관리자 로그인 게이트 -->
+<div class="gate" id="gate">
+  <div class="box">
+    <div class="lg"><img src="/assets/logo-lockup-white.png" alt="AudioAZ" style="height:30px;width:auto"></div>
+    <h2>관리자 로그인</h2>
+    <p class="s">AudioAZ 콘솔 · 관리자 전용</p>
+    <form onsubmit="return adminLogin(event)">
+      <label for="ga-email">이메일</label>
+      <input id="ga-email" type="email" autocomplete="username" placeholder="admin@audioazpro.com" required>
+      <label for="ga-pw">비밀번호</label>
+      <input id="ga-pw" type="password" autocomplete="current-password" placeholder="비밀번호" required>
+      <div class="e" id="ga-err">이메일 또는 비밀번호가 올바르지 않습니다.</div>
+      <button type="submit">로그인</button>
+    </form>
+    <p class="n">비인가 접근 금지 · 관리자 전용 페이지입니다.</p>
+  </div>
+</div>
+
 <div class="layout">
 
   <!-- 사이드바 -->
@@ -108,7 +143,7 @@ tr:last-child td{border-bottom:0}
       <div class="grp">설정</div>
       <a data-p="settings">설정</a>
     </nav>
-    <div class="foot">관리자 전용 · <a href="../index.html">고객 사이트</a></div>
+    <div class="foot">관리자 전용 · <a href="../index.html">고객 사이트</a> · <a onclick="adminLogout()">로그아웃</a></div>
   </aside>
 
   <!-- 본문 -->
@@ -288,6 +323,31 @@ tr:last-child td{border-bottom:0}
 </div>
 
 <script>
+// ===== 관리자 로그인 게이트 =====
+// 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
+// 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
+var ADMIN_EMAIL='admin@audioazpro.com';
+var ADMIN_HASH='4c6843cf3638fca98cdba12d270c3fa911711306e61fbd0885394d13685bb26d';
+var SKEY='az_admin_ok';
+async function sha256hex(s){var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');}
+function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex';}
+async function adminLogin(e){
+  e.preventDefault();
+  var email=document.getElementById('ga-email').value.trim().toLowerCase();
+  var pw=document.getElementById('ga-pw').value;
+  var err=document.getElementById('ga-err');
+  try{
+    var h=await sha256hex(pw);
+    if(email===ADMIN_EMAIL && h===ADMIN_HASH){
+      try{sessionStorage.setItem(SKEY,'1');}catch(_){}
+      err.classList.remove('on'); openConsole();
+    }else{ err.classList.add('on'); }
+  }catch(_){ err.classList.add('on'); }
+  return false;
+}
+function adminLogout(){ try{sessionStorage.removeItem(SKEY);}catch(_){}; location.reload(); }
+(function(){ try{ if(sessionStorage.getItem(SKEY)==='1'){ openConsole(); } }catch(_){} })();
+
 var titles={dash:'대시보드',lic:'라이선스',promo:'프로모션 코드',orders:'주문·결제',customers:'고객',products:'제품·버전',notice:'공지',settings:'설정'};
 document.querySelectorAll('.side a[data-p]').forEach(a=>{
   a.addEventListener('click',()=>{
