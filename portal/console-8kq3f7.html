@@ -346,6 +346,10 @@ tr:last-child td{border-bottom:0}
               <div class="field"><label>관리자 이메일</label><input type="email" name="email" placeholder="name@audioazpro.com" required></div>
               <div class="field"><label>이름</label><input name="name" placeholder="홍길동" required></div>
             </div>
+            <div class="grid2">
+              <div class="field"><label>비밀번호 (8자 이상)</label><input type="password" name="pw" minlength="8" autocomplete="new-password" placeholder="직접 지정" required></div>
+              <div class="field"><label>비밀번호 확인</label><input type="password" name="pw2" minlength="8" autocomplete="new-password" placeholder="다시 입력" required></div>
+            </div>
             <div class="field"><label>등급</label><select name="role"><option value="ops">운영관리자</option><option value="support">지원(뷰어)</option></select></div>
             <button class="btn btn-pri" type="submit">🔒 Touch ID로 관리자 생성</button>
           </form>
@@ -361,8 +365,8 @@ tr:last-child td{border-bottom:0}
           </tbody></table>
         </div>
 
-        <div class="card"><h2>관리자 목록 · 권한/삭제</h2><div class="sub">추가 관리자의 등급을 바꾸거나 삭제할 수 있습니다. 최고관리자(대표님)는 삭제되지 않습니다.</div>
-          <table><thead><tr><th>이름</th><th>이메일</th><th>등급</th><th>생성일</th><th></th></tr></thead>
+        <div class="card"><h2>관리자 목록 · 권한/정지/삭제</h2><div class="sub">추가 관리자의 등급 변경, <b>정지</b>(접근 차단·삭제 안 함), <b>삭제</b>가 가능합니다. 최고관리자(대표님)는 보호되어 정지·삭제되지 않습니다.</div>
+          <table><thead><tr><th>이름</th><th>이메일</th><th>등급</th><th>상태</th><th>생성일</th><th>관리</th></tr></thead>
           <tbody id="adminRows"></tbody></table>
         </div>
 
@@ -463,23 +467,25 @@ async function pbkdf2hex(pw,saltBuf,iter){var key=await crypto.subtle.importKey(
 async function genAdmin(e){
   e.preventDefault();
   var email=e.target.email.value.trim().toLowerCase(), name=e.target.name.value.trim(), role=e.target.role.value;
-  var res=document.getElementById('genRes');
-  if(!hasWebAuthn()||!ADMIN_CRED_IDS.length){ res.innerHTML='<b style="color:#ff9ea3">대표님 애플 패스키가 등록되어 있어야 관리자를 생성할 수 있습니다.</b>'; res.classList.add('on'); return false; }
-  var r=await touchAssert();  // 생성 순간 이 맥 지문 확인
-  if(!r.ok){ res.innerHTML='<b style="color:#ff9ea3">이 맥의 Touch ID 인증이 필요합니다. (이 맥에서만 생성 가능)</b>'; res.classList.add('on'); return false; }
-  var pw=genPw(16), salt=crypto.getRandomValues(new Uint8Array(16));
+  var pw=e.target.pw.value, pw2=e.target.pw2.value;
+  var res=document.getElementById('genRes'); res.classList.add('on');
+  if(pw.length<8){ res.innerHTML='<b style="color:#ff9ea3">비밀번호는 8자 이상이어야 합니다.</b>'; return false; }
+  if(pw!==pw2){ res.innerHTML='<b style="color:#ff9ea3">비밀번호가 일치하지 않습니다.</b>'; return false; }
+  if(loadAdmins().some(function(a){return a.email===email;})||email===ADMIN_EMAIL){ res.innerHTML='<b style="color:#ff9ea3">이미 등록된 이메일입니다.</b>'; return false; }
+  if(!hasWebAuthn()||!ADMIN_CRED_IDS.length){ res.innerHTML='<b style="color:#ff9ea3">대표님 애플 패스키가 등록되어 있어야 관리자를 생성할 수 있습니다.</b>'; return false; }
+  var r=await touchAssert();  // 생성 순간 대표님 패스키(지문) 확인
+  if(!r.ok){ res.innerHTML='<b style="color:#ff9ea3">대표님 Touch ID 인증이 필요합니다. (등록된 기기에서만 생성 가능)</b>'; return false; }
+  var salt=crypto.getRandomValues(new Uint8Array(16));
   var hash=await pbkdf2hex(pw, salt.buffer, 200000), saltHex=bufToHex(salt.buffer);
   res.innerHTML=
     '<div style="font-size:11px;color:#8fa5c2;letter-spacing:.05em;text-transform:uppercase">생성된 관리자 (Touch ID 확인됨)</div>'+
-    '<div class="k">이메일: '+email+' &nbsp;·&nbsp; 이름: '+name+'</div>'+
-    '<div class="k" style="margin-top:8px">임시 비밀번호(본인에게 전달): <b>'+pw+'</b></div>'+
+    '<div class="k">이메일: '+esc(email)+' &nbsp;·&nbsp; 이름: '+esc(name)+' &nbsp;·&nbsp; 등급: '+(ROLES[role]?ROLES[role].label:role)+'</div>'+
+    '<div class="k" style="margin-top:8px">비밀번호: 관리자가 직접 지정 (원문 저장 안 함 · 해시만)</div>'+
     '<div class="k" style="margin-top:8px">SALT: '+saltHex+'</div>'+
-    '<div class="k">PBKDF2(200k) HASH: '+hash+'</div>'+
-    '<div class="k" style="margin-top:8px">등급: '+(ROLES[role]?ROLES[role].label:role)+'</div>';
-  res.classList.add('on');
-  // 데모 목록에 기록
-  var L=loadAdmins(); L.push({email:email,name:name,at:new Date().toISOString().slice(0,10),role:role}); saveAdmins(L);
-  // TODO(백엔드): Supabase Edge Function(App Attest 검증) → profiles.is_admin=true·role 로 실제 발급
+    '<div class="k">PBKDF2(200k) HASH: '+hash+'</div>';
+  var L=loadAdmins(); L.push({email:email,name:name,at:new Date().toISOString().slice(0,10),role:role,status:'active'}); saveAdmins(L);
+  e.target.reset();
+  // TODO(백엔드): Supabase Edge Function(App Attest 검증) → profiles.is_admin=true·role·status 로 실제 발급
   return false;
 }
 
@@ -498,19 +504,22 @@ function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&am
 function renderAdmins(){
   var tb=document.getElementById('adminRows'); if(!tb) return;
   var L=loadAdmins();
-  var head='<tr><td>'+esc(SUPERADMIN.name)+' <span class="pill p-active">나</span></td><td class="mono">'+esc(SUPERADMIN.email)+'</td><td><span class="pill p-active">최고관리자</span></td><td class="mono">—</td><td style="color:var(--dim)">삭제 불가</td></tr>';
+  var head='<tr><td>'+esc(SUPERADMIN.name)+' <span class="pill p-active">나</span></td><td class="mono">'+esc(SUPERADMIN.email)+'</td><td><span class="pill p-active">최고관리자</span></td><td><span class="pill p-active">활성</span></td><td class="mono">—</td><td style="color:var(--dim)">보호됨</td></tr>';
   var rows=L.map(function(a,i){
-    return '<tr>'+
+    var sus=(a.status==='suspended');
+    return '<tr'+(sus?' style="opacity:.5"':'')+'>'+
       '<td>'+esc(a.name)+'</td>'+
       '<td class="mono">'+esc(a.email)+'</td>'+
       '<td><select class="field" style="margin:0;width:auto;padding:6px 8px" onchange="setRole('+i+',this.value)">'+roleOptions(a.role||'ops')+'</select></td>'+
+      '<td>'+(sus?'<span class="pill p-revoked">정지</span>':'<span class="pill p-active">활성</span>')+'</td>'+
       '<td class="mono">'+esc(a.at||'—')+'</td>'+
-      '<td><button class="tbtn danger" onclick="delAdmin('+i+')">삭제</button></td>'+
+      '<td style="white-space:nowrap"><button class="tbtn" onclick="toggleAdmin('+i+')">'+(sus?'해제':'정지')+'</button> <button class="tbtn danger" onclick="delAdmin('+i+')">삭제</button></td>'+
     '</tr>';
   }).join('');
-  tb.innerHTML = head + (L.length? rows : '<tr><td colspan="5" style="color:var(--dim)">생성된 추가 관리자가 없습니다.</td></tr>');
+  tb.innerHTML = head + (L.length? rows : '<tr><td colspan="6" style="color:var(--dim)">생성된 추가 관리자가 없습니다.</td></tr>');
 }
 function setRole(i,role){ var L=loadAdmins(); if(!L[i])return; L[i].role=role; saveAdmins(L); }
+function toggleAdmin(i){ var L=loadAdmins(); if(!L[i])return; L[i].status=(L[i].status==='suspended')?'active':'suspended'; saveAdmins(L); }
 function delAdmin(i){ var L=loadAdmins(); if(!L[i])return; if(!confirm('관리자 삭제: '+L[i].email+'\n이 관리자의 접근 권한을 제거합니다. 계속할까요?'))return; L.splice(i,1); saveAdmins(L); }
 async function changePw(e){
   e.preventDefault();
