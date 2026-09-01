@@ -151,13 +151,18 @@ function renderProds(){
     var lic=AZ.licenseFor(prod);
     var el=document.createElement('div'); el.className='prod';
     if(lic){
+      var b=AZ.bindingLabel(lic.binding);
+      var bindLine = b
+        ? '<div style="margin-top:10px;font-size:12.5px;color:var(--green)">● 활성화됨 · <b style="color:var(--navy)">'+b.name+'</b> <span style="font-family:ui-monospace,Menlo,monospace;color:var(--dim);font-size:11.5px">'+b.id+'</span></div>'
+        : '<div style="margin-top:10px;font-size:12.5px;color:#B26A00">○ 아직 활성화 안 됨 — 저장 위치(컴퓨터/USB)를 선택하세요.</div>';
       el.innerHTML=
         '<div class="top"><div class="ic">'+m.tag+'</div><div><h3>'+m.name+'</h3>'+
         '<div class="ver">'+m.ver+' · '+m.desc+'</div></div>'+
         '<span class="badge b-active" style="margin-left:auto">'+(AZ.TYPELABEL[lic.type]||'활성')+'</span></div>'+
-        '<div class="key">'+lic.key+'</div>'+
+        '<div class="key">'+lic.key+'</div>'+ bindLine +
         '<div class="keyrow"><button class="btn" onclick="copyKey(this)">키 복사</button>'+
-        '<button class="btn pri" onclick="AZ.download(\''+prod+'\')">다운로드</button></div>';
+        '<button class="btn pri" onclick="AZ.download(\''+prod+'\')">다운로드</button>'+
+        '<button class="btn" onclick="location.href=\'activate.html?p='+prod+'\'">'+(b?'활성화 변경':'활성화')+'</button></div>';
     } else {
       el.innerHTML=
         '<div class="top"><div class="ic">'+m.tag+'</div><div><h3>'+m.name+'</h3>'+

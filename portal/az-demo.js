@@ -58,11 +58,31 @@
     grant: function (prod, type) {
       var list = this.licenses();
       var key = this.makeKey(prod);
-      list.push({ product: prod, type: type || 'FULL', key: key, at: Date.now() });
+      list.push({ product: prod, type: type || 'FULL', key: key, at: Date.now(), binding: null });
       write(LKEY, list);
       return key;
     },
     reset: function () { try { localStorage.removeItem(LKEY); localStorage.removeItem(SKEY); } catch (e) {} },
+
+    /* --- 활성화 바인딩: 컴퓨터(기기 UUID) 또는 USB(볼륨 ID) --- */
+    // 데모용 식별자. 정식 전환 시 플러그인이 실제 하드웨어 UUID / USB 볼륨ID를 읽어 서버가 서명.
+    _machineId: function () { var v = read('az_machine', null); if (!v) { v = 'MAC-' + seg() + '-' + seg(); write('az_machine', v); } return v; },
+    bindingLabel: function (b) {
+      if (!b) return null;
+      return (b.type === 'usb')
+        ? { name: 'USB 드라이브', id: b.id, hint: 'USB를 꽂은 어느 컴퓨터에서든 사용' }
+        : { name: '이 컴퓨터', id: b.id, hint: '이 기기에서만 사용' };
+    },
+    setBinding: function (prod, type) {
+      var list = this.licenses(), id = (type === 'usb') ? ('USB-' + seg() + '-' + seg()) : this._machineId();
+      for (var i = 0; i < list.length; i++) if (list[i].product === prod) { list[i].binding = { type: type, id: id, at: Date.now() }; break; }
+      write(LKEY, list);
+    },
+    clearBinding: function (prod) {
+      var list = this.licenses();
+      for (var i = 0; i < list.length; i++) if (list[i].product === prod) { list[i].binding = null; break; }
+      write(LKEY, list);
+    },
 
     /* --- 데모 다운로드: 실제 바이너리 대신 안내 텍스트 파일 --- */
     download: function (prod) {
