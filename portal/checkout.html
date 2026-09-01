@@ -88,9 +88,10 @@ h1{font-size:24px;font-weight:800;margin-bottom:4px}.lead{color:var(--dim);font-
 
     <div class="card sum">
       <h2>결제 요약</h2>
-      <div class="line">상품 <b id="sBase">₩49,000</b></div>
-      <div class="line disc" id="sDiscLine" style="display:none">할인 <b id="sDisc">-₩0</b></div>
-      <div class="total"><span id="totLabel">합계</span><span class="amt" id="sTotal">₩49,000</span></div>
+      <div class="line">상품 <b id="sBase">—</b></div>
+      <div class="line disc" id="sSaleLine" style="display:none">세일 할인 <b id="sSale">-₩0</b></div>
+      <div class="line disc" id="sDiscLine" style="display:none">코드 할인 <b id="sDisc">-₩0</b></div>
+      <div class="total"><span id="totLabel">합계</span><span class="amt" id="sTotal">—</span></div>
       <div id="licBox" style="display:none;margin-top:12px;background:var(--sky);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--blue-deep)"></div>
       <div class="pay">
         <button class="pbtn kr" onclick="pay('포트원')">카드·카카오페이로 결제</button>
@@ -106,60 +107,79 @@ h1{font-size:24px;font-weight:800;margin-bottom:4px}.lead{color:var(--dim);font-
 // 로그인 필요 (라이선스를 계정에 붙이기 위해)
 // 데모 페이지 — 세션 가드는 계정 페이지(Supabase)에서 처리
 
-var BASE=49000;                 // 데모용 예시 가격
 var W=v=>'₩'+v.toLocaleString();
 var PROD={KV:'Klera Voice',KI:'Klera Instrument',TALLY:'Flare Tally',LMAZ:'Latency Meter AZ',ALL:'전 제품'};
 var KIND={D7:'데모 · 7일',D14:'데모 · 14일',D30:'데모 · 30일(한달)',FREE:'무료 라이선스(영구)'};
 var CURPROD='KV';              // 구매 대상 (?p= 로 지정)
+var APPLIED=null;              // 적용된 코드 (사용횟수 차감용)
 
-function reset(){document.getElementById('sDiscLine').style.display='none';document.getElementById('licBox').style.display='none';
-  document.getElementById('sTotal').textContent=W(BASE);document.getElementById('totLabel').textContent='합계';}
+// 세일(정가 할인)이 걸려 있으면 자동 반영된 실제 판매가
+function priceNow(){ return AZ.priceOf(CURPROD).now; }
+function renderPrice(){
+  var pr=AZ.priceOf(CURPROD);
+  document.getElementById('pPrice').innerHTML = pr.sale!==null
+    ? '<span class="strike">'+W(pr.base)+'</span> '+W(pr.sale)
+    : W(pr.base);
+  document.getElementById('sBase').textContent=W(pr.base);
+  var sl=document.getElementById('sSaleLine');
+  if(pr.sale!==null){ sl.style.display='flex'; document.getElementById('sSale').textContent='-'+W(pr.base-pr.sale); }
+  else sl.style.display='none';
+  document.getElementById('sTotal').textContent=W(pr.now);
+}
+function reset(){APPLIED=null;document.getElementById('sDiscLine').style.display='none';document.getElementById('licBox').style.display='none';
+  document.getElementById('totLabel').textContent='합계';renderPrice();}
 
-// 코드 분석 — 형식으로 종류 판별 (실제로는 서버가 DB 대조·기간·횟수 검증)
+// 코드 검증 — 관리자 콘솔이 발행한 코드 DB와 대조 (정식 전환 시 서버 Edge Function 검증)
 function applyCode(){
   var c=document.getElementById('code').value.trim().toUpperCase();
   var m=document.getElementById('codemsg'); reset();
   if(!c){m.className='codemsg err';m.textContent='코드를 입력하세요.';return;}
-  var parts=c.split('-');
-  // 할인 코드: AZ-DISC-{20P|W10000}-{랜덤}
-  if(parts[1]==='DISC'){
-    var seg=parts[2]||'';var disc=0,label='';
-    if(seg.endsWith('P')){var pct=parseInt(seg);disc=Math.round(BASE*pct/100);label=pct+'% 할인';}
-    else if(seg.startsWith('W')){disc=parseInt(seg.slice(1))||0;label=W(disc)+' 할인';}
-    if(!disc){m.className='codemsg err';m.textContent='유효하지 않은 할인 코드입니다.';return;}
-    var tot=Math.max(0,BASE-disc);
+  var p=AZ.findPromo(c);
+  if(!p){m.className='codemsg err';m.textContent='등록되지 않은 코드입니다.';return;}
+  if(!p.active){m.className='codemsg err';m.textContent='사용이 중지된 코드입니다.';return;}
+  if(p.uses && (p.used||0)>=p.uses){m.className='codemsg err';m.textContent='사용 한도가 소진된 코드입니다.';return;}
+  var today=AZ.today();
+  if(p.ctype==='discount'){
+    if(p.product!==CURPROD){m.className='codemsg err';m.textContent='이 코드는 '+(PROD[p.product]||p.product)+' 전용입니다.';return;}
+    if(p.dstart&&today<p.dstart){m.className='codemsg err';m.textContent='할인 적용 기간 전입니다. ('+p.dstart+'부터)';return;}
+    if(p.dend&&today>p.dend){m.className='codemsg err';m.textContent='할인 적용 기간이 지났습니다. (~'+p.dend+')';return;}
+    var now=priceNow(), tot=Math.min(now,Math.max(0,p.target)), disc=now-tot;
+    if(disc<=0){m.className='codemsg err';m.textContent='현재 판매가('+W(now)+')가 이미 코드 목표 금액 이하입니다.';return;}
+    APPLIED=p;
     document.getElementById('sDiscLine').style.display='flex';
     document.getElementById('sDisc').textContent='-'+W(disc);
     document.getElementById('sTotal').textContent=W(tot);
-    m.className='codemsg ok';m.textContent='할인 코드 적용: '+label+' (적용 기간 내 유효). 결제 금액에서 차감됩니다.';
+    m.className='codemsg ok';m.textContent='할인 코드 적용: '+W(disc)+' 할인 → 결제 금액 '+W(tot);
     return;
   }
-  // 라이선스 코드: AZ-{제품}-{종류}-{랜덤}
-  if(parts[0]==='AZ' && PROD[parts[1]] && KIND[parts[2]]){
-    var box=document.getElementById('licBox');
-    document.getElementById('sTotal').textContent=parts[2]==='FREE'?W(0):W(0);
-    document.getElementById('totLabel').textContent='결제 금액';
-    box.style.display='block';
-    box.innerHTML='<b>'+PROD[parts[1]]+' — '+KIND[parts[2]]+'</b> 라이선스가 발급됩니다.<br>결제 없이 바로 이용할 수 있습니다.';
-    m.className='codemsg lic';m.textContent='라이선스 코드 인식: '+PROD[parts[1]]+' · '+KIND[parts[2]]+'. 아래 "발급받기"로 진행하세요.';
-    // 결제 버튼을 발급 버튼으로 전환
-    document.querySelector('.pay').innerHTML='<button class="pbtn kr" onclick="grant(\''+parts[1]+'\',\''+parts[2]+'\')">라이선스 발급받기 (무료)</button>';
-    return;
-  }
-  m.className='codemsg err';m.textContent='알 수 없는 코드입니다. 형식을 확인하세요.';
+  // 라이선스 코드
+  if(p.product!=='ALL' && p.product!==CURPROD){m.className='codemsg err';m.textContent='이 코드는 '+(PROD[p.product]||p.product)+' 전용입니다.';return;}
+  if(p.expire&&today>p.expire){m.className='codemsg err';m.textContent='만료된 코드입니다. (~'+p.expire+')';return;}
+  APPLIED=p;
+  var box=document.getElementById('licBox');
+  document.getElementById('sTotal').textContent=W(0);
+  document.getElementById('totLabel').textContent='결제 금액';
+  box.style.display='block';
+  box.innerHTML='<b>'+(PROD[p.product==='ALL'?CURPROD:p.product])+' — '+KIND[p.kind]+'</b> 라이선스가 발급됩니다.<br>결제 없이 바로 이용할 수 있습니다.';
+  m.className='codemsg lic';m.textContent='라이선스 코드 인식: '+(PROD[p.product]||p.product)+' · '+KIND[p.kind]+'. 아래 "발급받기"로 진행하세요.';
+  document.querySelector('.pay').innerHTML='<button class="pbtn kr" onclick="grantCode()">라이선스 발급받기 (무료)</button>';
 }
 // 코드로 무료·데모 라이선스 발급 (데모: localStorage에 저장 → 내 계정에 표시)
-function grant(prod,kind){
-  var target = (prod==='ALL') ? CURPROD : prod;
-  var key = AZ.grant(target, kind);
-  alert('라이선스가 발급됐습니다.\n\n'+PROD[target]+' · '+KIND[kind]+'\n키: '+key+'\n\n내 계정에서 다운로드할 수 있습니다.\n(정식 전환 시: 서버가 코드 검증 → Ed25519 서명 → 이메일 전송)');
+function grantCode(){
+  if(!APPLIED) return;
+  var target = (APPLIED.product==='ALL') ? CURPROD : APPLIED.product;
+  var key = AZ.grant(target, APPLIED.kind);
+  AZ.usePromo(APPLIED.code);
+  alert('라이선스가 발급됐습니다.\n\n'+PROD[target]+' · '+KIND[APPLIED.kind]+'\n키: '+key+'\n\n내 계정에서 다운로드할 수 있습니다.\n(정식 전환 시: 서버가 코드 검증 → Ed25519 서명 → 이메일 전송)');
   location.href='account.html';
 }
 // 결제 (데모: 실제 결제 없이 정식 라이선스 발급 → 내 계정)
 function pay(ch){
-  if(!confirm(ch+' 결제 (테스트 모드)\n\n실제 결제 없이 '+PROD[CURPROD]+' 정식 라이선스를 발급합니다. 진행할까요?')) return;
+  var amt=document.getElementById('sTotal').textContent;
+  if(!confirm(ch+' 결제 (테스트 모드)\n\n결제 금액: '+amt+'\n실제 결제 없이 '+PROD[CURPROD]+' 정식 라이선스를 발급합니다. 진행할까요?')) return;
   var key = AZ.grant(CURPROD,'FULL');
-  alert('결제 완료 (테스트).\n\n'+PROD[CURPROD]+' 정식 라이선스 발급\n키: '+key+'\n\n내 계정으로 이동합니다.\n(정식 전환 시: '+ch+' 결제창 → 웹훅 → 자동 발급)');
+  if(APPLIED) AZ.usePromo(APPLIED.code);
+  alert('결제 완료 (테스트).\n\n'+PROD[CURPROD]+' 정식 라이선스 발급 ('+amt+')\n키: '+key+'\n\n내 계정으로 이동합니다.\n(정식 전환 시: '+ch+' 결제창 → 웹훅 → 자동 발급)');
   location.href='account.html';
 }
 // ?p=제품 로 구매 대상 설정, ?code= 로 코드 자동 적용
@@ -168,6 +188,7 @@ function pay(ch){
   var p=(qp.get('p')||'').toUpperCase();
   if(PROD[p]){ CURPROD=p; document.getElementById('pName').textContent=PROD[p];
     var tag=document.getElementById('pTag'); if(tag&&AZ.PRODMETA[p]) tag.textContent=AZ.PRODMETA[p].tag; }
+  renderPrice();
   var c=qp.get('code'); if(c){document.getElementById('code').value=c;applyCode();}
 })();
 </script>

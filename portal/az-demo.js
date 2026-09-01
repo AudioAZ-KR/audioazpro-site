@@ -22,6 +22,7 @@
   };
 
   function read(k, dflt) { try { return JSON.parse(localStorage.getItem(k)) || dflt; } catch (e) { return dflt; } }
+  function localToday() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function write(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
   function seg() { var s = '', A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; for (var i = 0; i < 4; i++) s += A[Math.floor(Math.random() * A.length)]; return s; }
 
@@ -75,9 +76,10 @@
       write('az_sales', s);
     },
     clearSale: function (prod) { var s = this.sales(); delete s[prod]; write('az_sales', s); },
+    today: localToday, // 로컬(한국) 기준 오늘 날짜 'YYYY-MM-DD'
     saleFor: function (prod) { // 오늘 기준 유효한 세일만 반환
       var s = this.sales()[prod]; if (!s) return null;
-      var today = new Date().toISOString().slice(0, 10);
+      var today = localToday();
       if (s.start && today < s.start) return null;
       if (s.end && today > s.end) return null;
       return s;

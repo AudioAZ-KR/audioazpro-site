@@ -836,7 +836,7 @@ function extendSession(){
   }catch(_){}
 })();
 
-var titles={dash:'대시보드',appr:'결재',lic:'라이선스',promo:'프로모션 코드',orders:'주문·결제',customers:'고객',products:'제품·버전',notice:'공지',settings:'설정',admins:'관리자 계정'};
+var titles={dash:'대시보드',appr:'결재',lic:'라이선스',promo:'프로모션 · 할인',orders:'주문·결제',customers:'고객',products:'제품·버전',notice:'공지',settings:'설정',admins:'관리자 계정'};
 function toggleMenu(){
   var s=document.querySelector('.side'), b=document.getElementById('burger');
   var open=s.classList.toggle('open');
@@ -895,7 +895,7 @@ function genPromo(e){
   function fail(m){ out.innerHTML='<b style="color:#ff9ea3">'+m+'</b>'; res.classList.add('on'); return false; }
   if(!/^[A-Z0-9\-]{4,32}$/.test(code)) return fail('코드는 영문·숫자·하이픈 4~32자로 입력하세요.');
   if(AZ.findPromo(code)) return fail('이미 발행된 코드입니다: '+code);
-  var p={ code:code, ctype:d.ctype, product:d.product, uses:parseInt(d.uses||'1'), used:0, active:true, memo:d.memo||'', at:new Date().toISOString().slice(0,10) };
+  var p={ code:code, ctype:d.ctype, product:d.product, uses:parseInt(d.uses||'1'), used:0, active:true, memo:d.memo||'', at:AZ.today() };
   if(d.ctype==='discount'){
     if(d.product==='ALL') return fail('할인 코드는 제품별로만 발행할 수 있습니다.');
     var now=AZ.priceOf(d.product).now, target=parseInt(d.target||'');
@@ -976,7 +976,7 @@ function renderSales(){
   var tb=document.getElementById('saleRows'); if(!tb) return;
   var s=AZ.sales(), keys=Object.keys(s);
   if(!keys.length){ tb.innerHTML='<tr><td colspan="6" style="color:var(--dim)">진행 중인 세일이 없습니다.</td></tr>'; return; }
-  var today=new Date().toISOString().slice(0,10);
+  var today=AZ.today();
   tb.innerHTML=keys.map(function(k){
     var v=s[k], base=AZ.basePrice(k), pct=base?Math.round((base-v.price)/base*100):0;
     var live=(!v.start||today>=v.start)&&(!v.end||today<=v.end);
