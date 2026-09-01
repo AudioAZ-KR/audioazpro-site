@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/png" href="/favicon.png"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <title>오디오에이지 AudioAZ — 오디오 소프트웨어 · 공연 음향 · 실황 녹음</title>
+<link rel="canonical" href="https://audioazpro.com/">
+<meta property="og:type" content="website"><meta property="og:site_name" content="AudioAZ">
+<meta property="og:title" content="오디오에이지 AudioAZ — 오디오 소프트웨어 · 공연 음향 · 실황 녹음"><meta property="og:description" content="오디오에이지(AudioAZ)는 라이브 현장의 문제를 소프트웨어로 푸는 오디오 소프트웨어 회사입니다. 공연 음향·렌탈·실황 녹음 사업부를 함께 운영합니다.">
+<meta property="og:url" content="https://audioazpro.com/"><meta property="og:image" content="https://audioazpro.com/assets/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="description" content="오디오에이지(AudioAZ)는 라이브 현장의 문제를 소프트웨어로 푸는 오디오 소프트웨어 회사입니다. 공연 음향·렌탈·실황 녹음 사업부를 함께 운영합니다.">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
@@ -124,13 +129,14 @@ footer .wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 footer .logo{width:26px;opacity:.85}
 footer .right{margin-left:auto}
 
-:root{--page:#0B1220;--card:#121D33;--navbg:rgba(11,18,32,.9);--text:#E9EEF7;--dim:#96A6BF;--line:#243350;--bg:#0C1424;--sky:#17273F;--wordmark:#ffffff}</style>
+:root{--page:#0B1220;--card:#121D33;--navbg:rgba(11,18,32,.9);--text:#E9EEF7;--dim:#96A6BF;--line:#243350;--bg:#0C1424;--sky:#17273F;--wordmark:#ffffff}.navtoggle{display:none;margin-left:auto;background:none;border:0;color:var(--text);cursor:pointer;padding:6px;line-height:0}@media(max-width:760px){.navtoggle{display:block}.nav-in .menu{position:absolute;top:64px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:var(--navbg);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:8px 24px 18px;margin-left:0;display:none}.nav-in .menu.open{display:flex}.nav-in .menu .hide-sm{display:block}.nav-in .menu a{padding:13px 2px;border-bottom:1px solid var(--line);font-size:15px}.nav-in .menu .login{border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center;margin-top:10px}}</style>
 </head>
 <body>
 
 <nav>
   <div class="wrap nav-in">
     <a href="/" class="brand" aria-label="AudioAZ 홈"><img class="brandlock" src="/assets/logo-lockup-white.png" alt="AudioAZ" style="height:42px;width:auto;display:block"></a>
+    <button class="navtoggle" aria-label="메뉴 열기" aria-expanded="false"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     <div class="menu">
       <a href="products.html">제품</a>
       <a href="downloads.html" class="hide-sm">다운로드</a>
@@ -175,5 +181,6 @@ footer .right{margin-left:auto}
   </div>
 </footer>
 
+<script>(function(){var t=document.querySelector(".navtoggle"),m=document.querySelector(".nav-in .menu");if(!t||!m)return;t.addEventListener("click",function(){var o=m.classList.toggle("open");t.setAttribute("aria-expanded",o?"true":"false")});m.addEventListener("click",function(e){if(e.target.closest("a")){m.classList.remove("open");t.setAttribute("aria-expanded","false")}});document.addEventListener("keydown",function(e){if(e.key==="Escape"){m.classList.remove("open");t.setAttribute("aria-expanded","false")}});})();</script>
 </body>
 </html>
