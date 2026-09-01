@@ -108,7 +108,42 @@ tr:last-child td{border-bottom:0}
 .gate .enrl:hover{color:var(--blue-soft)}
 .gate .enrl2{width:100%;height:44px;border:1px solid var(--line);border-radius:11px;background:#0E1A2E;color:var(--dim);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px}
 .gate .enrl2:hover{color:#E9EEF7;border-color:var(--blue)}
-.side .foot a{cursor:pointer}</style>
+.side .foot a{cursor:pointer}
+
+/* ===== 모바일 (아이폰) ===== */
+.card{overflow-x:auto}
+@media(max-width:820px){
+  .layout{flex-direction:column}
+  .side{position:sticky;top:32px;z-index:40;width:100%;height:auto;flex-direction:column;border-bottom:1px solid rgba(255,255,255,.08)}
+  .side .brand{padding:12px 16px 10px}
+  .side nav{display:flex;flex-direction:row;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 10px 10px;gap:6px;scrollbar-width:none}
+  .side nav::-webkit-scrollbar{display:none}
+  .side .grp{display:none}
+  .side a{flex:none;white-space:nowrap;padding:9px 14px;font-size:13.5px;border:1px solid rgba(255,255,255,.1);border-radius:999px}
+  .side a.on{border-color:var(--blue)}
+  .side .foot{display:none}
+  .top{height:auto;min-height:54px;padding:8px 16px;flex-wrap:wrap;gap:8px}
+  .top h1{font-size:16px}
+  .top .who{font-size:12px;gap:7px}
+  .top .who .av{width:26px;height:26px;font-size:12px}
+  .content{padding:16px;max-width:100%}
+  .kpis{gap:10px}
+  .kpi{padding:14px 16px}.kpi .v{font-size:21px}
+  .card{padding:16px;border-radius:12px}
+  .card h2{font-size:15px}
+  table{font-size:12.5px;min-width:560px}
+  .toolbar{gap:8px}
+  .btn{padding:12px 16px}
+  .tbtn{padding:8px 12px;font-size:12.5px}
+  .field input,.field select,.field textarea{font-size:16px} /* iOS 자동확대 방지 */
+  .gate{padding:16px}
+  .gate .box{padding:26px 20px}
+  #idleModal>div{max-width:92vw}
+}
+@media(max-width:480px){
+  .kpis{grid-template-columns:1fr 1fr}
+  .grid2{grid-template-columns:1fr}
+}</style>
 </head>
 <body>
 <div class="demobar" role="note">데모 환경 · 실제 인증·결제·라이선스는 준비 중입니다</div>
@@ -153,6 +188,14 @@ tr:last-child td{border-bottom:0}
       <p class="s" style="margin-bottom:14px"><b style="color:#ffd27a">패스키 등록 필수</b> — 등록해야 콘솔에 들어갈 수 있습니다</p>
       <button type="button" class="tid" onclick="enrollPasskey()">🔑 이 기기에 패스키 등록 (Touch ID)</button>
       <p class="n" style="margin-top:12px">다음부터는 비밀번호 없이 패스키(지문)로 바로 로그인됩니다.</p>
+    </div>
+
+    <!-- STEP 4: 패스키 2차 확인 (비번만으로는 절대 진입 불가) -->
+    <div id="stepVerify" style="display:none">
+      <p class="s" style="margin-bottom:14px"><b style="color:#ffd27a">패스키 확인 필수</b> — 비밀번호만으로는 들어갈 수 없습니다</p>
+      <button type="button" class="tid" onclick="verifyPasskey()">🔒 패스키로 본인 확인 (Touch ID / Face ID)</button>
+      <p class="n" style="margin-top:12px">등록된 패스키가 있는 기기에서만 진입할 수 있습니다. 애플 기기는 iCloud로 패스키가 동기화됩니다.</p>
+      <button type="button" class="enrl2" onclick="adminLogout()">로그아웃</button>
     </div>
 
     <div class="e" id="ga-err" style="margin-top:12px">인증에 실패했습니다.</div>
@@ -428,7 +471,7 @@ function openConsole(){document.getElementById('gate').style.display='none';docu
 // ===== Supabase 기반 관리자 인증 =====
 // 플로우: [P] 패스키 원터치 / [1] 이메일+비번(서버검증, is_admin 필수) → [2] 최초 비번변경 → [3] 패스키 등록 강제 → 콘솔.
 var sb = window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co','sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_');
-function showStep(id){ ['stepPk','stepPw','stepChg','stepEnroll'].forEach(function(s){var el=document.getElementById(s); if(el) el.style.display=(s===id)?'block':'none';}); hideErr(); }
+function showStep(id){ ['stepPk','stepPw','stepChg','stepEnroll','stepVerify'].forEach(function(s){var el=document.getElementById(s); if(el) el.style.display=(s===id)?'block':'none';}); hideErr(); }
 function showPwStep(){ showStep('stepPw'); }
 function err(m){ var e=document.getElementById('ga-err'); e.textContent=m; e.classList.add('on'); }
 function hideErr(){ var e=document.getElementById('ga-err'); if(e) e.classList.remove('on'); }
@@ -438,15 +481,35 @@ async function myAdminProfile(){
   var r=await sb.from('profiles').select('*').eq('id',u.id).single();
   return r.data;
 }
-// 로그인 이후 공통 게이트: is_admin → 비번변경 → 패스키 → 콘솔
-async function afterAuthGate(){
+// 로그인 이후 공통 게이트: is_admin → 비번변경 → 패스키 등록 → 패스키 확인(필수) → 콘솔
+// verified=true 는 "방금 패스키 지문/FaceID 인증을 통과함"일 때만. 비번만으로는 절대 enterConsole 되지 않음.
+async function afterAuthGate(verified){
   var p=await myAdminProfile();
   if(!p || !p.is_admin){ await sb.auth.signOut(); err('관리자 권한이 없는 계정입니다.'); showStep('stepPw'); return; }
   if(p.status==='suspended'){ await sb.auth.signOut(); err('정지된 계정입니다. 최고관리자에게 문의하세요.'); showStep('stepPw'); return; }
   window.__ADMIN_PROFILE=p;
   if(p.must_change_pw){ showStep('stepChg'); return; }
   if(!p.passkey_enrolled){ showStep('stepEnroll'); return; }
+  if(verified!==true){ showStep('stepVerify'); return; }   // ← 비번 로그인 후에도 패스키 확인 강제
   enterConsole(p);
+}
+// STEP 4: 패스키 2차 확인 (등록된 계정)
+async function verifyPasskey(){
+  hideErr();
+  var u=(await sb.auth.getUser()).data.user;
+  if(!u){ err('세션이 만료되었습니다. 다시 로그인하세요.'); showStep('stepPw'); return; }
+  var pks=await sb.from('admin_passkeys').select('credential_id').eq('user_id',u.id);
+  var ids=(pks.data||[]).map(function(r){return r.credential_id;});
+  if(!ids.length){ showStep('stepEnroll'); return; }
+  try{
+    var a=await navigator.credentials.get({publicKey:{
+      challenge:crypto.getRandomValues(new Uint8Array(32)),
+      allowCredentials:ids.map(function(id){return {id:b64urlToBuf(id),type:'public-key'};}),
+      userVerification:'required',timeout:60000
+    }});
+    if(a){ await afterAuthGate(true); return; }
+  }catch(ex){}
+  err('패스키 인증 실패 — 등록된 패스키가 있는 기기(iCloud 동기화 포함)에서 시도하세요.');
 }
 function enterConsole(p){
   try{sessionStorage.setItem(SKEY,'1');}catch(_){}
@@ -492,7 +555,7 @@ async function enrollPasskey(){
     var ins=await sb.from('admin_passkeys').insert({user_id:u.id, credential_id:id, label:navigator.platform||'기기'});
     if(ins.error){ err('패스키 저장 실패: '+ins.error.message); return; }
     await sb.from('profiles').update({passkey_enrolled:true}).eq('id',u.id);
-    await afterAuthGate();
+    await afterAuthGate(true);   // 방금 지문으로 생성했으므로 인증 통과
   }catch(ex){ err('패스키 등록 실패: '+((ex&&ex.message)||ex)); }
 }
 // 패스키 원터치 로그인: 세션 있으면 지문확인→진입, 없으면 비번 단계 안내
@@ -509,7 +572,7 @@ async function pkLogin(){
       allowCredentials:ids.map(function(id){return {id:b64urlToBuf(id),type:'public-key'};}),
       userVerification:'required',timeout:60000
     }});
-    if(a){ await afterAuthGate(); return; }
+    if(a){ await afterAuthGate(true); return; }
   }catch(ex){}
   err('패스키 인증 실패 — 등록된 기기에서 다시 시도하세요.');
 }
