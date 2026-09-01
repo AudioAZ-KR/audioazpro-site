@@ -122,6 +122,10 @@
       write(LKEY, list);
     },
     licenseAt: function (idx) { var l = this.licenses(); return l[idx] || null; },
+    setNote: function (idx, note) { // 라이선스별 사용자 메모 (정식 전환 시 licenses.user_note 컬럼)
+      var list = this.licenses();
+      if (list[idx]) { list[idx].note = String(note || '').slice(0, 60); write(LKEY, list); }
+    },
     clearBinding: function (prod) {
       var list = this.licenses();
       for (var i = 0; i < list.length; i++) if (list[i].product === prod) { list[i].binding = null; break; }

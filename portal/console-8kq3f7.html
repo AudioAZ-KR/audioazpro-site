@@ -248,6 +248,7 @@ td{color:var(--text)}
     <nav>
       <a class="on" data-p="dash">대시보드</a>
       <a data-p="appr">결재 <span id="apprBadge" style="display:none;background:#E7B252;color:#2E2410;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;margin-left:6px"></span></a>
+      <a data-p="inq">문의 <span id="inqBadge" style="display:none;background:#4D96F5;color:#081729;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;margin-left:6px"></span></a>
       <div class="grp">판매 관리</div>
       <a data-p="lic">라이선스</a>
       <a data-p="promo">프로모션 · 할인</a>
@@ -315,6 +316,14 @@ td{color:var(--text)}
           <div class="sub" id="apprHint">대기 중인 결재는 최고관리자가 승인/거절할 수 있습니다.</div>
           <table><thead><tr><th>일시</th><th>유형</th><th>제목·사유</th><th>요청자</th><th>상태</th><th>처리</th></tr></thead>
           <tbody id="apprRows"><tr><td colspan="6" class="n">불러오는 중…</td></tr></tbody></table>
+        </div>
+      </section>
+
+      <!-- 문의 (고객지원) -->
+      <section id="p-inq" class="page">
+        <div class="card"><h2>고객 문의 <button class="tbtn" style="margin-left:10px" onclick="azInqLoad()">새로고침</button></h2>
+          <div class="sub">첨부파일은 <b>다운로드 없이 아래에서 바로 미리보기</b>됩니다 (악성코드 예방). 답장을 보내면 고객 이메일로 발송되고 문서에 기록됩니다.</div>
+          <div id="inqList"><div class="n">불러오는 중…</div></div>
         </div>
       </section>
 
@@ -562,7 +571,7 @@ async function afterAuthGate(verified){
   if(!p.passkey_enrolled){ showStep('stepEnroll'); return; }
   if(verified!==true){ showStep('stepVerify'); return; }   // ← 비번 로그인 후에도 패스키 확인 강제
   enterConsole(p);
-  try{ azApprFields(); azApprLoad(); }catch(_){}
+  try{ azApprFields(); azApprLoad(); azInqLoad(); }catch(_){}
 }
 // STEP 4: 패스키 2차 확인 — 네이티브 패스키 재로그인으로 "패스키 세션"을 발급받아야 통과
 async function verifyPasskey(){
@@ -725,6 +734,73 @@ async function azApprCancel(id){
   if(r.error){ alert('실패: '+r.error.message); return; }
   azApprLoad();
 }
+
+// ===== 문의(고객지원) — 첨부는 다운로드 없이 인라인 미리보기 =====
+var INQ_FILES={};
+function inqPill(st){ var m={new:['새 문의','p-trial'],answered:['답변 완료','p-active'],closed:['종결','p-refund']}; var x=m[st]||[st,'p-trial']; return '<span class="pill '+x[1]+'">'+x[0]+'</span>'; }
+async function azInqLoad(){
+  var box=document.getElementById('inqList'); if(!box) return;
+  var q=await sb.from('inquiries').select('*').order('created_at',{ascending:false}).limit(50);
+  if(q.error){ box.innerHTML='<div class="n">불러오기 실패: '+esc(q.error.message)+'</div>'; return; }
+  var rows=q.data||[];
+  var nnew=rows.filter(function(r){return r.status==='new';}).length;
+  var bd=document.getElementById('inqBadge'); if(bd){ bd.textContent=nnew; bd.style.display=nnew?'inline-block':'none'; }
+  if(!rows.length){ box.innerHTML='<div class="n">접수된 문의가 없습니다</div>'; return; }
+  INQ_FILES={};
+  box.innerHTML=rows.map(function(r){
+    var dt=new Date(r.created_at);
+    var ts=(dt.getMonth()+1)+'/'+dt.getDate()+' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
+    var files=(r.files||[]);
+    INQ_FILES[r.id]=files;
+    var fhtml=files.map(function(f,i){
+      var isImg=/image\//.test(f.type)||/\.(png|jpe?g)$/i.test(f.name);
+      return '<div style="margin-top:8px"><button class="tbtn" onclick="azInqPreview(\''+r.id+'\','+i+')">'+(isImg?'이미지':'PDF')+' 미리보기 — '+esc(f.name)+' ('+Math.round((f.size||0)/1024)+'KB)</button><div id="pv_'+r.id+'_'+i+'"></div></div>';
+    }).join('');
+    var replyBlock;
+    if(r.status==='answered'){
+      replyBlock='<div style="margin-top:12px;padding:12px 14px;background:#0E2B1E;border-radius:10px;font-size:13px"><b style="color:#39D48C">보낸 답장</b> <span class="n">'+esc(r.replied_by||'')+' · '+(r.replied_at?new Date(r.replied_at).toLocaleString('ko-KR'):'')+'</span><div style="margin-top:6px;white-space:pre-wrap">'+esc(r.reply_text||'')+'</div></div>';
+    } else if(r.status==='closed'){
+      replyBlock='<div class="n" style="margin-top:10px">종결된 문의</div>';
+    } else {
+      replyBlock='<div style="margin-top:12px"><textarea id="rp_'+r.id+'" rows="3" style="width:100%;background:#0E1A2E;border:1px solid #243350;border-radius:10px;color:var(--text);padding:10px 12px;font-family:inherit;font-size:14px" placeholder="답장 내용 — 보내기를 누르면 '+esc(r.email)+' 로 발송됩니다"></textarea>'+
+        '<div style="margin-top:8px;display:flex;gap:8px"><button class="btn" onclick="azInqReply(\''+r.id+'\')">답장 보내기</button><button class="tbtn" onclick="azInqClose(\''+r.id+'\')">답장 없이 종결</button><span class="n" id="rm_'+r.id+'"></span></div></div>';
+    }
+    return '<div style="border:1px solid #243350;border-radius:12px;padding:16px 18px;margin-top:12px">'+
+      '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b>'+esc(r.subject)+'</b>'+inqPill(r.status)+'<span class="n mono">'+ts+'</span><span class="n">'+esc(r.email)+'</span></div>'+
+      '<div style="margin-top:8px;white-space:pre-wrap;font-size:13.5px">'+esc(r.message)+'</div>'+fhtml+replyBlock+'</div>';
+  }).join('');
+}
+async function azInqPreview(id, i){
+  var f=(INQ_FILES[id]||[])[i]; if(!f) return;
+  var pv=document.getElementById('pv_'+id+'_'+i); if(!pv) return;
+  if(pv.innerHTML){ pv.innerHTML=''; return; }   // 토글
+  pv.innerHTML='<div class="n">불러오는 중…</div>';
+  var su=await sb.storage.from('inquiry-files').createSignedUrl(f.path, 3600);
+  if(su.error){ pv.innerHTML='<div class="n">미리보기 실패: '+esc(su.error.message)+'</div>'; return; }
+  var url=su.data.signedUrl;
+  var isImg=/image\//.test(f.type)||/\.(png|jpe?g)$/i.test(f.name);
+  if(isImg){ pv.innerHTML='<img src="'+url+'" style="max-width:100%;max-height:480px;border-radius:10px;margin-top:8px;border:1px solid #243350">'; }
+  else { pv.innerHTML='<iframe src="'+url+'" style="width:100%;height:520px;border:1px solid #243350;border-radius:10px;margin-top:8px;background:#fff"></iframe>'; }
+}
+async function azInqReply(id){
+  var ta=document.getElementById('rp_'+id), m=document.getElementById('rm_'+id);
+  var reply=(ta&&ta.value||'').trim();
+  if(reply.length<2){ m.textContent='답장 내용을 입력하세요'; return; }
+  if(!confirm('이 내용으로 고객에게 이메일을 보낼까요?')) return;
+  m.textContent='발송 중…';
+  var r=await sb.functions.invoke('inquiry-reply',{body:{id:id, reply:reply}});
+  if(r.error){ var msg=r.error.message; try{ var ctx=await r.error.context.json(); if(ctx&&ctx.error) msg=ctx.error; }catch(_){}
+    m.textContent='실패: '+msg; return; }
+  if(r.data && r.data.error){ m.textContent='실패: '+r.data.error; return; }
+  m.textContent='✓ 발송 완료';
+  azInqLoad();
+}
+async function azInqClose(id){
+  if(!confirm('답장 없이 종결할까요?')) return;
+  var r=await sb.from('inquiries').update({status:'closed'}).eq('id',id);
+  if(r.error){ alert('실패: '+r.error.message); return; }
+  azInqLoad();
+}
 function adminLogout(){ try{sessionStorage.removeItem(SKEY);}catch(_){}; sb.auth.signOut().finally(function(){location.reload();}); }
 function b64urlToBuf(s){s=String(s).replace(/-/g,'+').replace(/_/g,'/');var pad=s.length%4;if(pad)s+='='.repeat(4-pad);var bin=atob(s);var b=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);return b.buffer;}
 function bufToB64url(buf){var b=new Uint8Array(buf),s='';for(var i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
@@ -836,7 +912,7 @@ function extendSession(){
   }catch(_){}
 })();
 
-var titles={dash:'대시보드',appr:'결재',lic:'라이선스',promo:'프로모션 · 할인',orders:'주문·결제',customers:'고객',products:'제품·버전',notice:'공지',settings:'설정',admins:'관리자 계정'};
+var titles={dash:'대시보드',appr:'결재',inq:'문의',lic:'라이선스',promo:'프로모션 · 할인',orders:'주문·결제',customers:'고객',products:'제품·버전',notice:'공지',settings:'설정',admins:'관리자 계정'};
 function toggleMenu(){
   var s=document.querySelector('.side'), b=document.getElementById('burger');
   var open=s.classList.toggle('open');
@@ -849,6 +925,7 @@ document.querySelectorAll('.side a[data-p]').forEach(a=>{
     document.querySelectorAll('.page').forEach(s=>s.classList.toggle('on',s.id==='p-'+p));
     document.getElementById('ptitle').textContent=titles[p];
     if(p==='appr'){ try{azApprLoad();}catch(_){} }
+    if(p==='inq'){ try{azInqLoad();}catch(_){} }
     document.querySelector('.side').classList.remove('open');   // 메뉴 선택 시 자동 닫힘
     var b=document.getElementById('burger'); if(b) b.setAttribute('aria-expanded','false');
     window.scrollTo(0,0);
