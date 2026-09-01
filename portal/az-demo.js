@@ -73,11 +73,14 @@
         ? { name: 'USB 드라이브', id: b.id, hint: 'USB를 꽂은 어느 컴퓨터에서든 사용' }
         : { name: '이 컴퓨터', id: b.id, hint: '이 기기에서만 사용' };
     },
-    setBinding: function (prod, type) {
+    setBinding: function (prod, type, idx) {
       var list = this.licenses(), id = (type === 'usb') ? ('USB-' + seg() + '-' + seg()) : this._machineId();
-      for (var i = 0; i < list.length; i++) if (list[i].product === prod) { list[i].binding = { type: type, id: id, at: Date.now() }; break; }
+      var t = (typeof idx === 'number' && list[idx] && list[idx].product === prod) ? idx : -1;
+      if (t < 0) { for (var i = 0; i < list.length; i++) if (list[i].product === prod) { t = i; break; } }
+      if (t >= 0) list[t].binding = { type: type, id: id, at: Date.now() };
       write(LKEY, list);
     },
+    licenseAt: function (idx) { var l = this.licenses(); return l[idx] || null; },
     clearBinding: function (prod) {
       var list = this.licenses();
       for (var i = 0; i < list.length; i++) if (list[i].product === prod) { list[i].binding = null; break; }

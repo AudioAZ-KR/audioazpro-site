@@ -92,16 +92,17 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:4px 0 2px}
 <script src="az-demo.js"></script>
 <script>
 if(!AZ.session()){ location.href='index.html'; }
-var CUR='KV', LOC='machine';
+var CUR='KV', LOC='machine', IDX=-1;
 (function(){
   var qp=new URLSearchParams(location.search);
   var p=(qp.get('p')||'KV').toUpperCase();
+  var iv=parseInt(qp.get('i')); if(!isNaN(iv)) IDX=iv;
   var m=AZ.PRODMETA[p];
   if(m){ CUR=p;
     document.getElementById('pName').innerHTML=m.name+'<span class="demo">데모</span>';
     document.getElementById('winTitle').textContent=m.name+' — 활성화';
   }
-  var lic=AZ.licenseFor(CUR);
+  var lic=(IDX>=0 && AZ.licenseAt(IDX) && AZ.licenseAt(IDX).product===CUR) ? AZ.licenseAt(IDX) : AZ.licenseFor(CUR);
   document.getElementById('key').value = lic ? lic.key : (AZ.hasLicense(CUR)?'':'라이선스가 없습니다 — 결제 페이지에서 발급');
 })();
 function pick(loc){
@@ -112,10 +113,10 @@ function pick(loc){
   document.getElementById('goBtn').textContent = (loc==='usb') ? 'USB에 활성화' : '이 컴퓨터에 활성화';
 }
 function activate(){
-  var lic=AZ.licenseFor(CUR);
+  var lic=(IDX>=0 && AZ.licenseAt(IDX) && AZ.licenseAt(IDX).product===CUR) ? AZ.licenseAt(IDX) : AZ.licenseFor(CUR);
   if(!lic){ alert('먼저 라이선스를 발급받아야 합니다.\n결제 페이지에서 구매하거나 프로모션 코드를 입력하세요.'); location.href='checkout.html?p='+CUR; return; }
-  AZ.setBinding(CUR, LOC);
-  var b=AZ.bindingLabel(AZ.licenseFor(CUR).binding);
+  AZ.setBinding(CUR, LOC, IDX);
+  var b=AZ.bindingLabel((IDX>=0&&AZ.licenseAt(IDX)?AZ.licenseAt(IDX):AZ.licenseFor(CUR)).binding);
   alert('활성화 완료 (테스트)\n\n'+AZ.PRODMETA[CUR].name+'\n저장 위치: '+b.name+' ('+b.id+')\n\n'+b.hint+'.\n(정식 전환 시: 플러그인이 실제 기기 UUID / USB 볼륨ID를 읽어 서버가 서명)');
   location.href='account.html';
 }
