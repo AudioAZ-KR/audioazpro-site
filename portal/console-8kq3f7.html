@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AudioAZ 관리자</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+@font-face{font-family:'NanumSquareRound';src:url('fonts/NanumSquareRoundEB.woff2') format('woff2');font-weight:800;font-display:swap}
+@font-face{font-family:'NanumSquareRound';src:url('fonts/NanumSquareRoundB.woff2') format('woff2');font-weight:700;font-display:swap}
+:root{
+  --blue:#1877F2;--blue-deep:#0E5FCC;--blue-soft:#4D96F5;--navy:#0C2244;--navy-deep:#081729;
+  --sky:#E8F1FE;--line:#E2E9F3;--bg:#F4F7FC;--text:#14213A;--dim:#5B6B85;
+  --green:#12B76A;--amber:#F5B93C;--red:#E5484D;--card:#fff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',system-ui,sans-serif;color:var(--text);background:var(--bg);line-height:1.5}
+a{color:inherit;text-decoration:none}svg{max-width:100%}
+h1,h2,h3{font-family:'NanumSquareRound','Pretendard',sans-serif}
+.layout{display:flex;min-height:100vh}
+
+/* 사이드바 */
+.side{width:236px;flex:none;background:var(--navy-deep);color:#cfdcec;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.side .brand{display:flex;align-items:center;gap:9px;padding:20px 20px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.side .brand .logo{width:26px}.side .brand b{color:#fff;font-size:16px}
+.side .brand .tag{font-size:10px;font-weight:800;background:var(--blue);color:#fff;border-radius:6px;padding:2px 7px;margin-left:2px}
+.side nav{padding:12px 12px;flex:1;overflow:auto}
+.side .grp{font-size:10.5px;letter-spacing:.08em;color:#5f7characters;color:#61789a;text-transform:uppercase;font-weight:800;padding:14px 12px 6px}
+.side a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;font-size:14px;font-weight:600;color:#b7c7dc;cursor:pointer;transition:.12s}
+.side a:hover{background:rgba(255,255,255,.06);color:#fff}
+.side a.on{background:var(--blue);color:#fff}
+.side a .i{width:18px;text-align:center}
+.side .foot{padding:14px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;color:#7f96b4}
+.side .foot a{display:inline;padding:0;color:#9db3cf}
+
+/* 본문 */
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{background:var(--card);border-bottom:1px solid var(--line);height:60px;display:flex;align-items:center;padding:0 26px;gap:14px;position:sticky;top:0;z-index:5}
+.top h1{font-size:18px;font-weight:800}
+.top .who{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--dim)}
+.top .who .av{width:30px;height:30px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.content{padding:26px;max-width:1100px}
+.page{display:none}.page.on{display:block}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:900px){.kpis{grid-template-columns:1fr 1fr}}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.kpi .l{font-size:12.5px;color:var(--dim);font-weight:600}
+.kpi .v{font-size:26px;font-weight:800;margin-top:6px;font-family:'NanumSquareRound','Pretendard',sans-serif}
+.kpi .d{font-size:11.5px;margin-top:4px;font-weight:700}
+.kpi .up{color:var(--green)}.kpi .flat{color:var(--dim)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;margin-top:18px}
+.card h2{font-size:16px;font-weight:800;margin-bottom:4px}
+.card .sub{font-size:12.5px;color:var(--dim);margin-bottom:14px}
+.demo{display:inline-block;font-size:10px;font-weight:800;color:#B26A00;background:#FFF3E0;border-radius:6px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+
+/* 테이블 */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--dim);font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:1px solid var(--line)}
+td{padding:11px 10px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--navy)}
+.pill{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:3px 9px}
+.p-active{background:#E7F7EF;color:var(--green)}.p-revoked{background:#FDE8E8;color:var(--red)}.p-trial{background:#EEF3FB;color:var(--blue-deep)}.p-paid{background:#E7F7EF;color:var(--green)}.p-refund{background:#FFF3E0;color:#B26A00}
+.tbtn{border:1px solid var(--line);background:#fff;border-radius:7px;padding:5px 10px;font-family:inherit;font-size:12px;font-weight:700;color:var(--navy);cursor:pointer}
+.tbtn:hover{background:var(--sky)}.tbtn.danger{color:var(--red);border-color:#f3c2c4}.tbtn.danger:hover{background:#FDE8E8}
+
+/* 폼 */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+.field{margin-bottom:12px}.field label{display:block;font-size:12px;font-weight:700;color:var(--dim);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;color:var(--text);background:#fff}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,119,242,.12)}
+.btn{border:0;border-radius:9px;padding:10px 18px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer}
+.btn-pri{background:var(--blue);color:#fff}.btn-pri:hover{background:var(--blue-deep)}
+.btn-out{background:#fff;border:1px solid var(--line);color:var(--navy)}
+.result{margin-top:14px;background:var(--navy-deep);border-radius:11px;padding:15px 17px;color:#dfe8f5;display:none}.result.on{display:block}
+.result .k{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:#fff;word-break:break-all;margin-top:6px}
+.note{font-size:12px;color:var(--dim);margin-top:12px;line-height:1.6}
+.rowflex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.search{flex:1;min-width:180px}
+.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- 사이드바 -->
+  <aside class="side">
+    <div class="brand">
+      <span class="logo"><svg viewBox="0 0 488 555" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" fill="#1877F2" d="M253.775,3.7c35.4,20.454,189.736,109.832,224.059,129.667,4.513,3.12,8.1,5.232,8.943,14.67V403.9c-0.124,9.828-2.857,15.714-11.177,21.1L257.279,551.157c-9.93,5.253-17.835,3.82-26.213-.173L10.569,423.826C4.8,420.583,1.232,416.2,1.4,405.93V145.424a10.362,10.362,0,0,1,5.465-9.569C35.827,119.092,199.631,23.884,235.89,3.207,240.774,0.837,246.235.7,253.775,3.7Z"/><path fill-rule="evenodd" fill="#fff" d="M263.66,284.057L450.08,172.72c2.179-1.135,6.723-.414,6.392,5.363,0,16.067.024,49.176,0.024,49.176l-120.92,188.2L448.93,347.909c2.1-1.3,6.31-2.767,6.559,3.1v40.522c0.1,5.507-.528,9.513-8.007,15.6C415.2,426.36,294.793,498.045,263.214,516.905c-7.665,3.5-8.614-.994-8.446-3.975,0-15.933.194-49.167,0.194-49.167L376.89,274.56,262.578,342.109c-5.706,2.288-6.608-2-6.608-4.261V298.237C255.97,292.418,255.277,288.533,263.66,284.057Z"/></svg></span>
+      <b>AudioAZ</b><span class="tag">ADMIN</span>
+    </div>
+    <nav>
+      <a class="on" data-p="dash">대시보드</a>
+      <div class="grp">판매 관리</div>
+      <a data-p="lic">라이선스</a>
+      <a data-p="promo">프로모션 코드</a>
+      <a data-p="orders">주문·결제</a>
+      <a data-p="customers">고객</a>
+      <div class="grp">콘텐츠</div>
+      <a data-p="products">제품·버전</a>
+      <a data-p="notice">공지</a>
+      <div class="grp">설정</div>
+      <a data-p="settings">설정</a>
+    </nav>
+    <div class="foot">관리자 전용 · <a href="../index.html">고객 사이트</a></div>
+  </aside>
+
+  <!-- 본문 -->
+  <div class="main">
+    <div class="top">
+      <h1 id="ptitle">대시보드</h1>
+      <div class="who"><span class="av">김</span><span>김형준 · 최고관리자</span></div>
+    </div>
+    <div class="content">
+
+      <!-- 대시보드 -->
+      <section id="p-dash" class="page on">
+        <div class="kpis">
+          <div class="kpi"><div class="l">총 매출 (누적)</div><div class="v">₩ —</div><div class="d flat">백엔드 연결 시</div></div>
+          <div class="kpi"><div class="l">활성 라이선스</div><div class="v">0</div><div class="d flat">데모</div></div>
+          <div class="kpi"><div class="l">이번 달 발급</div><div class="v">0</div><div class="d flat">데모</div></div>
+          <div class="kpi"><div class="l">회원</div><div class="v">0</div><div class="d flat">데모</div></div>
+        </div>
+        <div class="card"><h2>최근 활동 <span class="demo">데모</span></h2><div class="sub">최근 발급·주문·가입 로그</div>
+          <table><thead><tr><th>시각</th><th>유형</th><th>내용</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">—</td><td><span class="pill p-active">발급</span></td><td>백엔드 연결 후 실데이터 표시</td></tr>
+            <tr><td class="mono">—</td><td><span class="pill p-paid">주문</span></td><td>포트원/Paddle 웹훅 연동 시</td></tr>
+          </tbody></table>
+        </div>
+      </section>
+
+      <!-- 라이선스 (핵심) -->
+      <section id="p-lic" class="page">
+        <div class="card"><h2>라이선스 발급</h2><div class="sub">Ed25519 서명 키를 발급합니다. 개인키는 서버에만 두며, 발급 즉시 구매자 이메일로 전송됩니다.</div>
+          <form onsubmit="return issue(event)">
+            <div class="grid2">
+              <div class="field"><label>제품</label><select name="product" required><option value="">선택</option><option>Clear Audio AZ</option><option>Clear Instrument AZ</option><option>AudioAZ Tally Host</option><option>Latency Meter AZ</option></select></div>
+              <div class="field"><label>유형</label><select name="type"><option>영구 (2대)</option><option>영구 (1대)</option><option>체험 (14일)</option><option>NFR/리뷰용</option></select></div>
+              <div class="field"><label>구매자 이름</label><input name="name" placeholder="홍길동" required></div>
+              <div class="field"><label>이메일</label><input type="email" name="email" placeholder="buyer@example.com" required></div>
+            </div>
+            <div class="rowflex"><button class="btn btn-pri" type="submit">발급 + 이메일 전송</button><label style="font-size:12.5px;color:var(--dim)"><input type="checkbox" checked style="width:auto"> 발급 후 이메일 자동 전송</label></div>
+          </form>
+          <div class="result" id="issRes"><div style="font-size:11px;color:#8fa5c2;letter-spacing:.05em;text-transform:uppercase">발급된 키 (미리보기)</div><div class="k" id="issKey">—</div></div>
+          <p class="note">실제 서명은 서버(FastAPI)의 <b>private_key.pem</b>으로만 수행됩니다 — 브라우저·이 화면엔 개인키가 없습니다. 발급 이력은 issued_licenses DB에 기록됩니다.</p>
+        </div>
+        <div class="card"><h2>발급된 라이선스 <span class="demo">데모</span></h2>
+          <div class="toolbar"><input class="field search" style="margin:0" placeholder="키·이메일·이름 검색"><select class="field" style="margin:0;width:auto"><option>전체 제품</option><option>Clear Audio AZ</option><option>Tally Host</option></select><select class="field" style="margin:0;width:auto"><option>전체 상태</option><option>활성</option><option>폐기</option></select></div>
+          <table><thead><tr><th>키</th><th>제품</th><th>구매자</th><th>상태</th><th>발급일</th><th>기기</th><th></th></tr></thead>
+          <tbody>
+            <tr><td class="mono">AZCA-9F3K-…-QH2Z</td><td>Clear Audio AZ</td><td>홍길동<br><span style="color:var(--dim);font-size:11px">hong@ex.com</span></td><td><span class="pill p-active">활성</span></td><td class="mono">2026-08-31</td><td>1/2</td><td><button class="tbtn">재발급</button> <button class="tbtn danger">폐기</button></td></tr>
+            <tr><td class="mono">AZTL-2B7Q-…-7T1P</td><td>Tally Host</td><td>김철수<br><span style="color:var(--dim);font-size:11px">kim@ex.com</span></td><td><span class="pill p-trial">체험</span></td><td class="mono">2026-08-30</td><td>0/1</td><td><button class="tbtn">전환</button> <button class="tbtn danger">폐기</button></td></tr>
+            <tr><td class="mono">AZCA-X4M2-…-KE8N</td><td>Clear Audio AZ</td><td>이영희<br><span style="color:var(--dim);font-size:11px">lee@ex.com</span></td><td><span class="pill p-revoked">폐기</span></td><td class="mono">2026-08-28</td><td>—</td><td><button class="tbtn">재활성</button></td></tr>
+          </tbody></table>
+        </div>
+      </section>
+
+      <!-- 프로모션 코드 -->
+      <section id="p-promo" class="page">
+        <div class="card"><h2>프로모션 코드 발행</h2><div class="sub">라이선스 코드(데모·무료)와 할인 코드를 발행합니다. 고객이 <b>결제 시</b> 코드를 입력하면 서버가 코드를 분석해 라이선스를 발급하거나 가격을 할인합니다.</div>
+          <form onsubmit="return genPromo(event)">
+            <div class="field"><label>코드 유형</label>
+              <div class="rowflex" style="gap:18px">
+                <label style="font-weight:600;font-size:14px;color:var(--text)"><input type="radio" name="ctype" value="license" checked onchange="promoType()" style="width:auto"> 라이선스 코드 (데모·무료)</label>
+                <label style="font-weight:600;font-size:14px;color:var(--text)"><input type="radio" name="ctype" value="discount" onchange="promoType()" style="width:auto"> 할인 코드</label>
+              </div>
+            </div>
+            <div class="grid2">
+              <div class="field"><label>적용 제품</label><select name="product" required>
+                <option value="ALL">전 제품 (ALL)</option>
+                <option value="CAZ">Clear Audio AZ</option>
+                <option value="CIAZ">Clear Instrument AZ</option>
+                <option value="TALLY">AudioAZ Tally Host</option>
+                <option value="LMAZ">Latency Meter AZ</option>
+              </select></div>
+
+              <!-- 라이선스용 -->
+              <div class="field lic-f"><label>라이선스 종류</label><select name="kind">
+                <option value="D7">데모 · 7일</option>
+                <option value="D14">데모 · 14일</option>
+                <option value="D30">데모 · 30일(한달)</option>
+                <option value="FREE">무료 라이선스 (영구)</option>
+              </select></div>
+
+              <!-- 할인용 -->
+              <div class="field disc-f" style="display:none"><label>할인 방식</label><select name="dmethod" onchange="promoType()">
+                <option value="P">퍼센트 (%)</option>
+                <option value="W">정액 (₩)</option>
+              </select></div>
+              <div class="field disc-f" style="display:none"><label>할인 값</label><input type="number" name="dvalue" min="1" placeholder="예: 20 (%) 또는 10000 (원)"></div>
+              <div class="field disc-f" style="display:none"><label>할인 적용 시작</label><input type="date" name="dstart"></div>
+              <div class="field disc-f" style="display:none"><label>할인 적용 종료</label><input type="date" name="dend"></div>
+
+              <div class="field"><label>발행 수량</label><input type="number" name="qty" value="1" min="1" max="500" required></div>
+              <div class="field"><label>사용 제한</label><select name="uses">
+                <option value="1">1회용 (코드당 1명)</option>
+                <option value="5">5회</option>
+                <option value="50">50회</option>
+                <option value="0">무제한</option>
+              </select></div>
+              <div class="field"><label>코드 만료일 (선택)</label><input type="date" name="expire"></div>
+              <div class="field"><label>메모 (내부용)</label><input name="memo" placeholder="예: 9월 프로모션, 유튜브 리뷰어"></div>
+            </div>
+            <button class="btn btn-pri" type="submit">코드 생성</button>
+          </form>
+          <div class="result" id="promoRes"><div style="font-size:11px;color:#8fa5c2;letter-spacing:.05em;text-transform:uppercase">생성된 코드 (미리보기)</div><div class="k" id="promoCodes">—</div></div>
+          <p class="note">코드 형식 — 라이선스: <b>AZ-{제품}-{종류}-{랜덤}</b> (예 <span class="mono">AZ-CAZ-D14-7K2M9Q</span> = CAZ 14일 데모) · 할인: <b>AZ-DISC-{할인}-{랜덤}</b> (예 <span class="mono">AZ-DISC-20P-8QK3</span> = 20% 할인, <span class="mono">AZ-DISC-W10000-…</span> = 1만원 할인). <b>할인 코드는 적용 기간(시작~종료) 내에서만 유효.</b> 서버가 발행 DB와 대조해 유효성·사용횟수·기간을 검증합니다.</p>
+        </div>
+        <div class="card"><h2>발행된 코드 <span class="demo">데모</span></h2>
+          <div class="toolbar"><input class="field search" style="margin:0" placeholder="코드·메모 검색"><select class="field" style="margin:0;width:auto"><option>전체 종류</option><option>데모 7일</option><option>데모 14일</option><option>데모 30일</option><option>무료</option></select><select class="field" style="margin:0;width:auto"><option>전체 상태</option><option>사용가능</option><option>소진</option><option>만료</option></select></div>
+          <table><thead><tr><th>코드</th><th>제품</th><th>종류</th><th>사용/한도</th><th>만료</th><th>메모</th><th></th></tr></thead>
+          <tbody>
+            <tr><td class="mono">AZ-CAZ-D14-7K2M9Q</td><td>Clear Audio AZ</td><td><span class="pill p-trial">데모 14일</span></td><td>3/50</td><td class="mono">2026-09-30</td><td>9월 프로모션</td><td><button class="tbtn">복사</button> <button class="tbtn danger">비활성</button></td></tr>
+            <tr><td class="mono">AZ-ALL-D7-QX83MP</td><td>전 제품</td><td><span class="pill p-trial">데모 7일</span></td><td>12/∞</td><td class="mono">—</td><td>홈페이지 상시</td><td><button class="tbtn">복사</button> <button class="tbtn danger">비활성</button></td></tr>
+            <tr><td class="mono">AZ-TALLY-FREE-9ND2K7</td><td>Tally Host</td><td><span class="pill p-active">무료</span></td><td>1/1</td><td class="mono">2026-09-10</td><td>유튜브 리뷰어</td><td><button class="tbtn">복사</button> <button class="tbtn danger">비활성</button></td></tr>
+            <tr><td class="mono">AZ-DISC-20P-8QK3M2</td><td>전 제품</td><td><span class="pill p-refund">할인 20%</span></td><td>7/∞</td><td class="mono">2026-09-01~09-30</td><td>추석 할인</td><td><button class="tbtn">복사</button> <button class="tbtn danger">비활성</button></td></tr>
+            <tr><td class="mono">AZ-DISC-W10000-KD73</td><td>Clear Audio AZ</td><td><span class="pill p-refund">₩10,000 할인</span></td><td>2/100</td><td class="mono">~2026-09-15</td><td>얼리버드</td><td><button class="tbtn">복사</button> <button class="tbtn danger">비활성</button></td></tr>
+          </tbody></table>
+        </div>
+      </section>
+
+      <!-- 주문 -->
+      <section id="p-orders" class="page">
+        <div class="card"><h2>주문·결제 <span class="demo">데모</span></h2><div class="sub">포트원(국내)·Paddle(해외) 웹훅으로 자동 기록됩니다.</div>
+          <table><thead><tr><th>주문번호</th><th>제품</th><th>고객</th><th>채널</th><th>금액</th><th>상태</th><th>일시</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">#10231</td><td>Clear Audio AZ</td><td>hong@ex.com</td><td>포트원</td><td>₩ —</td><td><span class="pill p-paid">결제완료</span></td><td class="mono">2026-08-31</td></tr>
+            <tr><td class="mono">#10230</td><td>Clear Audio AZ</td><td>john@ex.com</td><td>Paddle</td><td>$ —</td><td><span class="pill p-paid">결제완료</span></td><td class="mono">2026-08-30</td></tr>
+            <tr><td class="mono">#10229</td><td>Tally Host</td><td>park@ex.com</td><td>포트원</td><td>₩ —</td><td><span class="pill p-refund">환불</span></td><td class="mono">2026-08-29</td></tr>
+          </tbody></table>
+        </div>
+      </section>
+
+      <!-- 고객 -->
+      <section id="p-customers" class="page">
+        <div class="card"><h2>고객 <span class="demo">데모</span></h2><div class="sub">소셜/이메일 가입 회원. 구매·라이선스와 자동 연결.</div>
+          <div class="toolbar"><input class="field search" style="margin:0" placeholder="이름·이메일 검색"></div>
+          <table><thead><tr><th>이름</th><th>이메일</th><th>가입</th><th>보유 제품</th><th>가입일</th><th></th></tr></thead>
+          <tbody>
+            <tr><td>홍길동</td><td>hong@ex.com</td><td>구글</td><td>Clear Audio AZ</td><td class="mono">2026-08-31</td><td><button class="tbtn">상세</button></td></tr>
+            <tr><td>김철수</td><td>kim@ex.com</td><td>카카오</td><td>Tally Host(체험)</td><td class="mono">2026-08-30</td><td><button class="tbtn">상세</button></td></tr>
+          </tbody></table>
+        </div>
+      </section>
+
+      <!-- 제품 -->
+      <section id="p-products" class="page">
+        <div class="card"><h2>제품 · 버전 <span class="demo">데모</span></h2><div class="sub">제품 정보, 가격, 최신 빌드/버전을 관리합니다.</div>
+          <table><thead><tr><th>제품</th><th>최신버전</th><th>가격</th><th>상태</th><th></th></tr></thead>
+          <tbody>
+            <tr><td>Clear Audio AZ</td><td class="mono">v0.4.3</td><td>미설정</td><td><span class="pill p-trial">출시 예정</span></td><td><button class="tbtn">편집</button> <button class="tbtn">새 버전 업로드</button></td></tr>
+            <tr><td>AudioAZ Tally Host</td><td class="mono">v1.14.0</td><td>미설정</td><td><span class="pill p-trial">출시 예정</span></td><td><button class="tbtn">편집</button> <button class="tbtn">새 버전 업로드</button></td></tr>
+            <tr><td>Latency Meter AZ</td><td class="mono">v1.0</td><td>무료</td><td><span class="pill p-active">배포중</span></td><td><button class="tbtn">편집</button></td></tr>
+          </tbody></table>
+        </div>
+      </section>
+
+      <!-- 공지 -->
+      <section id="p-notice" class="page">
+        <div class="card"><h2>공지 작성</h2><div class="sub">고객 사이트·포털에 표시할 공지를 등록합니다.</div>
+          <div class="field"><label>제목</label><input placeholder="예: Clear Audio AZ 정식 출시 안내"></div>
+          <div class="field"><label>내용</label><textarea rows="4" placeholder="공지 내용"></textarea></div>
+          <button class="btn btn-pri" onclick="alert('공지 등록 (준비 중) — 백엔드 연결 시 게시')">등록</button>
+        </div>
+      </section>
+
+      <!-- 설정 -->
+      <section id="p-settings" class="page">
+        <div class="card"><h2>설정 <span class="demo">데모</span></h2><div class="sub">관리자·결제·이메일 연동 설정.</div>
+          <table><tbody>
+            <tr><td style="width:180px;color:var(--dim);font-weight:700">결제 (국내)</td><td>포트원 <span class="pill p-revoked">미연결</span></td><td style="text-align:right"><button class="tbtn">연결</button></td></tr>
+            <tr><td style="color:var(--dim);font-weight:700">결제 (해외)</td><td>Paddle <span class="pill p-revoked">미연결</span></td><td style="text-align:right"><button class="tbtn">연결</button></td></tr>
+            <tr><td style="color:var(--dim);font-weight:700">발송 이메일</td><td>support@audioazpro.com <span class="pill p-active">연결</span></td><td style="text-align:right"><button class="tbtn">변경</button></td></tr>
+            <tr><td style="color:var(--dim);font-weight:700">라이선스 개인키</td><td><span class="pill p-active">서버 보관</span> (절대 노출 안 함)</td><td style="text-align:right"><button class="tbtn">회전</button></td></tr>
+          </tbody></table>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script>
+var titles={dash:'대시보드',lic:'라이선스',promo:'프로모션 코드',orders:'주문·결제',customers:'고객',products:'제품·버전',notice:'공지',settings:'설정'};
+document.querySelectorAll('.side a[data-p]').forEach(a=>{
+  a.addEventListener('click',()=>{
+    var p=a.dataset.p;
+    document.querySelectorAll('.side a[data-p]').forEach(x=>x.classList.toggle('on',x===a));
+    document.querySelectorAll('.page').forEach(s=>s.classList.toggle('on',s.id==='p-'+p));
+    document.getElementById('ptitle').textContent=titles[p];
+    window.scrollTo(0,0);
+  });
+});
+function promoType(){
+  var isDisc=document.querySelector('input[name=ctype]:checked').value==='discount';
+  document.querySelectorAll('.lic-f').forEach(f=>f.style.display=isDisc?'none':'');
+  document.querySelectorAll('.disc-f').forEach(f=>f.style.display=isDisc?'':'none');
+}
+function genPromo(e){
+  e.preventDefault();var d={};new FormData(e.target).forEach((v,k)=>d[k]=v);
+  var r=()=>Math.random().toString(36).slice(2,6).toUpperCase();
+  var codes=[], qty=Math.min(parseInt(d.qty||1),20); // 미리보기는 최대 20개
+  for(var i=0;i<qty;i++){
+    var code;
+    if(d.ctype==='discount'){
+      var seg = d.dmethod==='W' ? ('W'+(d.dvalue||'0')) : ((d.dvalue||'0')+'P');
+      code='AZ-DISC-'+seg+'-'+r()+r().slice(0,2);
+    }else{
+      code='AZ-'+d.product+'-'+d.kind+'-'+r()+r().slice(0,2);
+    }
+    codes.push(code);
+  }
+  var meta = d.ctype==='discount'
+    ? ('할인 '+(d.dmethod==='W'?('₩'+d.dvalue):(d.dvalue+'%'))+' · 기간 '+(d.dstart||'—')+'~'+(d.dend||'무기한'))
+    : ('제품 '+d.product+' · '+({D7:'데모7일',D14:'데모14일',D30:'데모30일',FREE:'무료'}[d.kind]));
+  document.getElementById('promoCodes').innerHTML = meta+'<br><br>'+codes.join('<br>');
+  document.getElementById('promoRes').classList.add('on');
+  // TODO(백엔드): POST /admin/api/promo → 코드·조건 DB 저장(사용횟수·기간·제품). 결제 시 검증.
+  return false;
+}
+var PRE={'Clear Audio AZ':'AZCA','Clear Instrument AZ':'AZCI','AudioAZ Tally Host':'AZTL','Latency Meter AZ':'AZLM'};
+function issue(e){
+  e.preventDefault();var d={};new FormData(e.target).forEach((v,k)=>d[k]=v);
+  var r=()=>Math.random().toString(36).slice(2,6).toUpperCase();
+  document.getElementById('issKey').textContent=(PRE[d.product]||'AZ')+'-'+[r(),r(),r(),r(),r()].join('-')+'-（서버 Ed25519 서명）';
+  document.getElementById('issRes').classList.add('on');
+  // TODO(백엔드): POST /admin/api/license/issue → 서버가 서명·DB기록·이메일발송
+  return false;
+}
+</script>
+</body>
+</html>

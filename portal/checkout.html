@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>결제 — AudioAZ</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+@font-face{font-family:'NanumSquareRound';src:url('fonts/NanumSquareRoundEB.woff2') format('woff2');font-weight:800;font-display:swap}
+@font-face{font-family:'NanumSquareRound';src:url('fonts/NanumSquareRoundB.woff2') format('woff2');font-weight:700;font-display:swap}
+:root{--blue:#1877F2;--blue-deep:#0E5FCC;--blue-soft:#4D96F5;--navy:#0C2244;--navy-deep:#081729;--sky:#E8F1FE;--line:#DCE6F5;--bg:#EDF2FA;--text:#14213A;--dim:#5B6B85;--green:#12B76A;--red:#E5484D;--amber:#F5B93C;--card:#fff}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',system-ui,sans-serif;color:var(--text);background:var(--bg);line-height:1.55}
+a{color:inherit;text-decoration:none}svg{max-width:100%}
+h1,h2,h3{font-family:'NanumSquareRound','Pretendard',sans-serif}
+.topbar{height:60px;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px;padding:0 22px}
+.topbar .logo{width:26px}.topbar b{font-size:16px;color:var(--navy)}
+.wrap{max-width:820px;margin:0 auto;padding:34px 20px 60px}
+h1{font-size:24px;font-weight:800;margin-bottom:4px}.lead{color:var(--dim);font-size:14px;margin-bottom:22px}
+.cols{display:grid;grid-template-columns:1fr 340px;gap:20px}@media(max-width:760px){.cols{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px}
+.card h2{font-size:16px;font-weight:800;margin-bottom:14px}
+.item{display:flex;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.item .ic{font-family:ui-monospace,Menlo,monospace;font-size:12px;font-weight:700;color:var(--blue);background:var(--sky);border-radius:9px;padding:9px 11px;letter-spacing:.03em;flex:none;align-self:flex-start}
+.item h3{font-size:15.5px;font-weight:800}.item .d{font-size:12.5px;color:var(--dim)}
+.item .p{margin-left:auto;font-weight:800}
+.field label{display:block;font-size:12.5px;font-weight:700;color:var(--dim);margin-bottom:5px}
+.coderow{display:flex;gap:8px}
+.coderow input{flex:1;border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-family:ui-monospace,Menlo,monospace;font-size:14px;text-transform:uppercase}
+.coderow input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,119,242,.12)}
+.btn{border:0;border-radius:10px;padding:11px 18px;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer}
+.btn-pri{background:var(--blue);color:#fff}.btn-pri:hover{background:var(--blue-deep)}
+.btn-out{background:#fff;border:1px solid var(--line);color:var(--navy)}
+.codemsg{font-size:13px;margin-top:10px;padding:10px 12px;border-radius:9px;display:none}
+.codemsg.ok{display:block;background:#E7F7EF;color:#0a7a48}
+.codemsg.err{display:block;background:#FDE8E8;color:var(--red)}
+.codemsg.lic{display:block;background:var(--sky);color:var(--blue-deep)}
+.sum{position:sticky;top:20px}
+.sum .line{display:flex;justify-content:space-between;font-size:14px;padding:7px 0;color:var(--dim)}
+.sum .line b{color:var(--text)}
+.sum .disc{color:var(--green);font-weight:700}
+.sum .total{display:flex;justify-content:space-between;font-size:18px;font-weight:800;padding:14px 0 4px;border-top:2px solid var(--line);margin-top:8px}
+.sum .total .amt{font-family:'NanumSquareRound','Pretendard',sans-serif}
+.pay{display:flex;flex-direction:column;gap:9px;margin-top:16px}
+.pbtn{height:46px;border-radius:11px;border:1px solid var(--line);background:#fff;font-family:inherit;font-size:14.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.pbtn.kr{background:var(--blue);color:#fff;border-color:var(--blue)}
+.note{font-size:11.5px;color:var(--dim);margin-top:12px;line-height:1.6}
+.demo{display:inline-block;font-size:10px;font-weight:800;color:#B26A00;background:#FFF3E0;border-radius:6px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+.strike{text-decoration:line-through;color:var(--dim);font-weight:600;font-size:13px}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <span class="logo"><svg viewBox="0 0 488 555" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" fill="#1877F2" d="M253.775,3.7c35.4,20.454,189.736,109.832,224.059,129.667,4.513,3.12,8.1,5.232,8.943,14.67V403.9c-0.124,9.828-2.857,15.714-11.177,21.1L257.279,551.157c-9.93,5.253-17.835,3.82-26.213-.173L10.569,423.826C4.8,420.583,1.232,416.2,1.4,405.93V145.424a10.362,10.362,0,0,1,5.465-9.569C35.827,119.092,199.631,23.884,235.89,3.207,240.774,0.837,246.235.7,253.775,3.7Z"/><path fill-rule="evenodd" fill="#fff" d="M263.66,284.057L450.08,172.72c2.179-1.135,6.723-.414,6.392,5.363,0,16.067.024,49.176,0.024,49.176l-120.92,188.2L448.93,347.909c2.1-1.3,6.31-2.767,6.559,3.1v40.522c0.1,5.507-.528,9.513-8.007,15.6C415.2,426.36,294.793,498.045,263.214,516.905c-7.665,3.5-8.614-.994-8.446-3.975,0-15.933.194-49.167,0.194-49.167L376.89,274.56,262.578,342.109c-5.706,2.288-6.608-2-6.608-4.261V298.237C255.97,292.418,255.277,288.533,263.66,284.057Z"/></svg></span>
+  <b>Audio<span style="color:var(--blue)">AZ</span></b> <span style="color:var(--dim);font-size:13px">결제</span>
+</div>
+
+<div class="wrap">
+  <h1>결제 <span class="demo">데모</span></h1>
+  <p class="lead">프로모션/할인 코드를 입력하면 자동으로 분석해 라이선스 또는 할인이 적용됩니다.</p>
+  <div class="cols">
+    <div>
+      <div class="card">
+        <h2>주문 상품</h2>
+        <div class="item">
+          <div class="ic" id="pTag">CAZ</div>
+          <div><h3 id="pName">Clear Audio AZ</h3><div class="d">영구 라이선스 · 2대 · 무료 업데이트</div></div>
+          <div class="p" id="pPrice">₩49,000</div>
+        </div>
+        <p class="note">※ 가격은 데모용 예시입니다. 실제 가격은 출시 시 확정됩니다.</p>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h2>프로모션 / 할인 코드</h2>
+        <div class="field"><label>코드 입력 (라이선스 코드 또는 할인 코드)</label>
+          <div class="coderow">
+            <input id="code" placeholder="AZ-CAZ-D14-XXXX 또는 AZ-DISC-20P-XXXX">
+            <button class="btn btn-pri" onclick="applyCode()">적용</button>
+          </div>
+        </div>
+        <div class="codemsg" id="codemsg"></div>
+        <p class="note">예시 — <span style="font-family:monospace">AZ-CAZ-D14-7K2M9Q</span>(14일 데모) · <span style="font-family:monospace">AZ-TALLY-FREE-9ND2K7</span>(무료) · <span style="font-family:monospace">AZ-DISC-20P-8QK3M2</span>(20% 할인) · <span style="font-family:monospace">AZ-DISC-W10000-KD73</span>(1만원 할인)</p>
+      </div>
+    </div>
+
+    <div class="card sum">
+      <h2>결제 요약</h2>
+      <div class="line">상품 <b id="sBase">₩49,000</b></div>
+      <div class="line disc" id="sDiscLine" style="display:none">할인 <b id="sDisc">-₩0</b></div>
+      <div class="total"><span id="totLabel">합계</span><span class="amt" id="sTotal">₩49,000</span></div>
+      <div id="licBox" style="display:none;margin-top:12px;background:var(--sky);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--blue-deep)"></div>
+      <div class="pay">
+        <button class="pbtn kr" onclick="pay('포트원')">카드·카카오페이로 결제</button>
+        <button class="pbtn" onclick="pay('Paddle')">해외 카드 / PayPal (Paddle)</button>
+      </div>
+      <p class="note">결제 완료 시 서버가 Ed25519 서명 라이선스를 발급해 이메일로 전송하고 <a href="account.html" style="color:var(--blue);font-weight:600">내 계정</a>에 등록합니다.</p>
+    </div>
+  </div>
+</div>
+
+<script src="az-demo.js"></script>
+<script>
+// 로그인 필요 (라이선스를 계정에 붙이기 위해)
+if(!AZ.session()){ location.href='index.html'; }
+
+var BASE=49000;                 // 데모용 예시 가격
+var W=v=>'₩'+v.toLocaleString();
+var PROD={CAZ:'Clear Audio AZ',CIAZ:'Clear Instrument AZ',TALLY:'AudioAZ Tally Host',LMAZ:'Latency Meter AZ',ALL:'전 제품'};
+var KIND={D7:'데모 · 7일',D14:'데모 · 14일',D30:'데모 · 30일(한달)',FREE:'무료 라이선스(영구)'};
+var CURPROD='CAZ';              // 구매 대상 (?p= 로 지정)
+
+function reset(){document.getElementById('sDiscLine').style.display='none';document.getElementById('licBox').style.display='none';
+  document.getElementById('sTotal').textContent=W(BASE);document.getElementById('totLabel').textContent='합계';}
+
+// 코드 분석 — 형식으로 종류 판별 (실제로는 서버가 DB 대조·기간·횟수 검증)
+function applyCode(){
+  var c=document.getElementById('code').value.trim().toUpperCase();
+  var m=document.getElementById('codemsg'); reset();
+  if(!c){m.className='codemsg err';m.textContent='코드를 입력하세요.';return;}
+  var parts=c.split('-');
+  // 할인 코드: AZ-DISC-{20P|W10000}-{랜덤}
+  if(parts[1]==='DISC'){
+    var seg=parts[2]||'';var disc=0,label='';
+    if(seg.endsWith('P')){var pct=parseInt(seg);disc=Math.round(BASE*pct/100);label=pct+'% 할인';}
+    else if(seg.startsWith('W')){disc=parseInt(seg.slice(1))||0;label=W(disc)+' 할인';}
+    if(!disc){m.className='codemsg err';m.textContent='유효하지 않은 할인 코드입니다.';return;}
+    var tot=Math.max(0,BASE-disc);
+    document.getElementById('sDiscLine').style.display='flex';
+    document.getElementById('sDisc').textContent='-'+W(disc);
+    document.getElementById('sTotal').textContent=W(tot);
+    m.className='codemsg ok';m.textContent='할인 코드 적용: '+label+' (적용 기간 내 유효). 결제 금액에서 차감됩니다.';
+    return;
+  }
+  // 라이선스 코드: AZ-{제품}-{종류}-{랜덤}
+  if(parts[0]==='AZ' && PROD[parts[1]] && KIND[parts[2]]){
+    var box=document.getElementById('licBox');
+    document.getElementById('sTotal').textContent=parts[2]==='FREE'?W(0):W(0);
+    document.getElementById('totLabel').textContent='결제 금액';
+    box.style.display='block';
+    box.innerHTML='<b>'+PROD[parts[1]]+' — '+KIND[parts[2]]+'</b> 라이선스가 발급됩니다.<br>결제 없이 바로 이용할 수 있습니다.';
+    m.className='codemsg lic';m.textContent='라이선스 코드 인식: '+PROD[parts[1]]+' · '+KIND[parts[2]]+'. 아래 "발급받기"로 진행하세요.';
+    // 결제 버튼을 발급 버튼으로 전환
+    document.querySelector('.pay').innerHTML='<button class="pbtn kr" onclick="grant(\''+parts[1]+'\',\''+parts[2]+'\')">라이선스 발급받기 (무료)</button>';
+    return;
+  }
+  m.className='codemsg err';m.textContent='알 수 없는 코드입니다. 형식을 확인하세요.';
+}
+// 코드로 무료·데모 라이선스 발급 (데모: localStorage에 저장 → 내 계정에 표시)
+function grant(prod,kind){
+  var target = (prod==='ALL') ? CURPROD : prod;
+  var key = AZ.grant(target, kind);
+  alert('라이선스가 발급됐습니다.\n\n'+PROD[target]+' · '+KIND[kind]+'\n키: '+key+'\n\n내 계정에서 다운로드할 수 있습니다.\n(정식 전환 시: 서버가 코드 검증 → Ed25519 서명 → 이메일 전송)');
+  location.href='account.html';
+}
+// 결제 (데모: 실제 결제 없이 정식 라이선스 발급 → 내 계정)
+function pay(ch){
+  if(!confirm(ch+' 결제 (테스트 모드)\n\n실제 결제 없이 '+PROD[CURPROD]+' 정식 라이선스를 발급합니다. 진행할까요?')) return;
+  var key = AZ.grant(CURPROD,'FULL');
+  alert('결제 완료 (테스트).\n\n'+PROD[CURPROD]+' 정식 라이선스 발급\n키: '+key+'\n\n내 계정으로 이동합니다.\n(정식 전환 시: '+ch+' 결제창 → 웹훅 → 자동 발급)');
+  location.href='account.html';
+}
+// ?p=제품 로 구매 대상 설정, ?code= 로 코드 자동 적용
+(function(){
+  var qp=new URLSearchParams(location.search);
+  var p=(qp.get('p')||'').toUpperCase();
+  if(PROD[p]){ CURPROD=p; document.getElementById('pName').textContent=PROD[p];
+    var tag=document.getElementById('pTag'); if(tag&&AZ.PRODMETA[p]) tag.textContent=AZ.PRODMETA[p].tag; }
+  var c=qp.get('code'); if(c){document.getElementById('code').value=c;applyCode();}
+})();
+</script>
+</body>
+</html>

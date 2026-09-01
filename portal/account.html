@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>내 계정 — AudioAZ 라이선스</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+@font-face{font-family:'NanumSquareRound';src:url('fonts/NanumSquareRoundEB.woff2') format('woff2');font-weight:800;font-display:swap}
+@font-face{font-family:'NanumSquareRound';src:url('fonts/NanumSquareRoundB.woff2') format('woff2');font-weight:700;font-display:swap}
+.nav-in b,h2{font-family:'NanumSquareRound','Pretendard',sans-serif}
+:root{
+  --blue:#1877F2; --blue-deep:#0E5FCC; --blue-soft:#4D96F5;
+  --navy:#0C2244; --navy-deep:#081729;
+  --sky:#E8F1FE; --line:#DCE6F5; --bg:#EDF2FA;
+  --text:#14213A; --dim:#5B6B85; --amber:#F5B93C; --green:#12B76A;
+  --page:#ffffff; --card:#ffffff;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',system-ui,sans-serif;color:var(--text);background:var(--bg);line-height:1.6}
+a{color:inherit;text-decoration:none}svg{max-width:100%}
+.wrap{max-width:920px;margin:0 auto;padding:0 20px}
+
+/* nav */
+nav{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.nav-in{display:flex;align-items:center;gap:9px;height:60px}
+.nav-in .logo{width:26px;flex:none}
+.nav-in b{font-size:16px;color:var(--navy)}
+.nav-in .who{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:13.5px;color:var(--dim)}
+.nav-in .who .av{width:30px;height:30px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.nav-in .who a{color:var(--dim);font-weight:600}
+
+h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
+.muted{color:var(--dim);font-size:14px}
+.sec{margin-top:30px}
+
+/* 내 제품 카드 */
+.prods{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+@media(max-width:640px){.prods{grid-template-columns:1fr}}
+.prod{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+.prod .top{display:flex;align-items:center;gap:10px}
+.prod .ic{font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:700;color:var(--blue);background:var(--sky);border-radius:8px;padding:7px 9px;letter-spacing:.03em;align-self:flex-start}
+.prod h3{font-size:16px;font-weight:800}
+.prod .ver{font-size:12px;color:var(--dim)}
+.prod .key{margin-top:14px;background:var(--bg);border:1px dashed var(--line);border-radius:9px;padding:10px 12px;font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--navy);word-break:break-all;position:relative}
+.prod .keyrow{display:flex;gap:8px;align-items:center;margin-top:10px}
+.badge{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:3px 10px}
+.b-active{background:#E7F7EF;color:var(--green)}
+.b-none{background:#FFF3E0;color:#B26A00}
+.btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 13px;font-family:inherit;font-size:13px;font-weight:700;color:var(--navy);cursor:pointer;transition:.15s}
+.btn:hover{background:var(--sky);border-color:var(--blue-soft)}
+.btn.pri{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn.pri:hover{background:var(--blue-deep)}
+
+/* 발급/조회 카드 */
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;margin-top:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:12.5px;font-weight:700;color:var(--dim);margin-bottom:5px}
+.field input,.field select{width:100%;height:44px;border:1px solid var(--line);border-radius:10px;padding:0 12px;font-family:inherit;font-size:14.5px;color:var(--text);background:#fff}
+.field input:focus,.field select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,119,242,.12)}
+.result{margin-top:14px;background:var(--navy-deep);border-radius:12px;padding:16px 18px;color:#dfe8f5;display:none}
+.result.on{display:block}
+.result .lbl{font-size:11.5px;color:#8FA5C2;letter-spacing:.05em;text-transform:uppercase}
+.result .k{font-family:ui-monospace,Menlo,monospace;font-size:13px;color:#fff;word-break:break-all;margin-top:6px;line-height:1.5}
+.result .row{display:flex;gap:14px;margin-top:12px;font-size:12.5px;color:#b9c8dc;flex-wrap:wrap}
+.tabs2{display:inline-flex;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:4px}
+.tabs2 button{border:0;background:transparent;padding:8px 16px;border-radius:7px;font-family:inherit;font-size:14px;font-weight:700;color:var(--dim);cursor:pointer}
+.tabs2 button.on{background:var(--card);color:var(--navy);box-shadow:0 1px 4px rgba(12,34,68,.1)}
+.pane{display:none}.pane.on{display:block}
+.note{font-size:12px;color:var(--dim);margin-top:10px;line-height:1.6}
+.stub{display:inline-block;font-size:10.5px;font-weight:800;color:#B26A00;background:#FFF3E0;border-radius:6px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap nav-in">
+  <span class="logo"><svg viewBox="0 0 488 555" xmlns="http://www.w3.org/2000/svg" aria-label="AudioAZ"><path fill-rule="evenodd" fill="#1877F2" d="M253.775,3.7c35.4,20.454,189.736,109.832,224.059,129.667,4.513,3.12,8.1,5.232,8.943,14.67V403.9c-0.124,9.828-2.857,15.714-11.177,21.1L257.279,551.157c-9.93,5.253-17.835,3.82-26.213-.173L10.569,423.826C4.8,420.583,1.232,416.2,1.4,405.93V145.424a10.362,10.362,0,0,1,5.465-9.569C35.827,119.092,199.631,23.884,235.89,3.207,240.774,0.837,246.235.7,253.775,3.7Z"/><path fill-rule="evenodd" fill="#fff" d="M54.059,142.81c24.45-14.452,141.735-83.561,177.814-104.887,5.123-3.774,14.08-3.694,20.049-.07L435.1,144.108c6.54,3.684,2.856,5.879-1.261,8.017l-36.825,21.331c-2.837,1.734-5.82,3.149-11.583.156-15.694-9.233-67.99-39.948-67.99-39.948l-98.752,58.371,66.784,39.289c4.067,2.4,3.782,6.6-2.033,9.193l-31.7,18.738c-7.764,5.249-13.6,2.585-17.774.042-34.068-19.884-155.417-90.713-179.9-105.061C49.507,151.835,50,145.18,54.059,142.81Zm90.06,5.95,97.744-58.371,35.268,22.141-97.744,57.364Z"/><path fill-rule="evenodd" fill="#fff" d="M43.04,181.952c37.979,21.655,151.82,86.7,179.436,102.448a15.415,15.415,0,0,1,7.6,13.439c-0.292,37.115-1.379,175.6-1.667,212.245-0.094,7.367-5.236,5.875-8.171,4.227l-36.075-20.993c-3.431-2.067-5.74-3.982-6.061-9.158,0.265-18.955,1.114-79.654,1.114-79.654L79.584,347.7S78.71,400,78.4,422.015c0.16,5.27-.239,10.208-5.536,7.77L34.615,407.974c-3-2.032-6.064-4.918-5.965-10.836,0.329-32.679,1.654-164.479,2.092-208.055C30.434,183.6,34.531,176.27,43.04,181.952Zm37.238,79.631,99.133,55.936-1.782,41.557L79.37,302.642Z"/><path fill-rule="evenodd" fill="#fff" d="M263.66,284.057L450.08,172.72c2.179-1.135,6.723-.414,6.392,5.363,0,16.067.024,49.176,0.024,49.176l-120.92,188.2L448.93,347.909c2.1-1.3,6.31-2.767,6.559,3.1v40.522c0.1,5.507-.528,9.513-8.007,15.6C415.2,426.36,294.793,498.045,263.214,516.905c-7.665,3.5-8.614-.994-8.446-3.975,0-15.933.194-49.167,0.194-49.167L376.89,274.56,262.578,342.109c-5.706,2.288-6.608-2-6.608-4.261V298.237C255.97,292.418,255.277,288.533,263.66,284.057Z"/></svg></span>
+  <b>Audio<span style="color:var(--blue)">AZ</span></b> <span style="color:var(--dim);font-size:13px;font-weight:600">라이선스</span>
+  <div class="who"><span class="av" id="avatar">·</span><span id="whoName">—</span><a href="#" onclick="doLogout();return false">로그아웃</a></div>
+</div></nav>
+
+<div class="wrap" style="padding-top:30px;padding-bottom:60px">
+
+  <h2>내 제품 <span class="stub">테스트 모드</span></h2>
+  <p class="muted">구매·발급된 라이선스입니다. (지금은 이 브라우저에만 저장되는 테스트 데이터)</p>
+  <div class="prods" id="prods"></div>
+
+  <div class="sec" id="issue">
+    <h2>라이선스 관리</h2>
+    <p class="muted">제품 라이선스를 발급하거나 기존 키를 조회합니다.</p>
+    <div class="panel">
+      <div class="tabs2">
+        <button id="t-issue" class="on" onclick="setP('issue')">코드 등록</button>
+        <button id="t-lookup" onclick="setP('lookup')">조회</button>
+      </div>
+
+      <!-- 코드 등록 -->
+      <div id="p-issue" class="pane on" style="margin-top:16px">
+        <p style="font-size:14px;color:var(--dim);margin-bottom:14px">데모(7·14·30일)·무료 라이선스는 <b>프로모션 코드</b>로, 유료 라이선스는 구매로 발급됩니다. 코드 입력과 결제는 모두 <b>결제 페이지</b>에서 진행됩니다.</p>
+        <div class="field" style="max-width:420px">
+          <label>프로모션 / 할인 코드</label>
+          <input type="text" id="quickcode" placeholder="AZ-CAZ-D14-XXXX 또는 AZ-DISC-20P-XXXX" style="font-family:ui-monospace,Menlo,monospace;text-transform:uppercase">
+        </div>
+        <button class="btn pri" onclick="goCheckout()" style="height:44px;padding:0 22px">결제 페이지에서 코드 적용 →</button>
+        <p class="note">코드는 결제 페이지에서 서버가 분석·검증(사용횟수·기간)해 라이선스를 발급하거나 가격을 할인합니다. 개인키 서명은 서버에서만 이뤄집니다.</p>
+      </div>
+
+      <!-- 조회 -->
+      <div id="p-lookup" class="pane" style="margin-top:16px">
+        <form onsubmit="return lookupLicense(event)">
+          <div class="field">
+            <label>라이선스 키 또는 이메일</label>
+            <input type="text" name="q" placeholder="AZCA-.... 또는 you@example.com" required>
+          </div>
+          <button class="btn pri" type="submit" style="height:44px;padding:0 22px">조회</button>
+        </form>
+        <div class="result" id="lookupResult">
+          <div class="lbl">조회 결과</div>
+          <div class="k" id="lookupKey">—</div>
+          <div class="row"><span id="lProd"></span><span id="lStatus"></span><span id="lDevices"></span></div>
+        </div>
+        <p class="note">키·이메일로 발급 이력, 활성 상태, 등록 기기를 조회합니다. (백엔드 연결 시 실제 데이터)</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="az-demo.js"></script>
+<script>
+// 로그인 안 돼 있으면 로그인 페이지로
+if(!AZ.requireLogin()){ }
+(function(){
+  var s=AZ.session()||{};
+  var name=(s.name||'게스트');
+  document.getElementById('whoName').textContent=name+'님';
+  document.getElementById('avatar').textContent=(name[0]||'·');
+})();
+function doLogout(){ AZ.logout(); location.href='index.html'; }
+
+// 내 제품 카드 렌더 — 카탈로그(CAZ·TALLY) + 보유 중인 모든 제품
+function renderProds(){
+  var owned=AZ.licenses();
+  var order=['CAZ','TALLY'];
+  owned.forEach(function(l){ if(l.product!=='ALL' && order.indexOf(l.product)<0) order.push(l.product); });
+  var box=document.getElementById('prods'); box.innerHTML='';
+  order.forEach(function(prod){
+    var m=AZ.PRODMETA[prod]; if(!m) return;
+    var lic=AZ.licenseFor(prod);
+    var el=document.createElement('div'); el.className='prod';
+    if(lic){
+      el.innerHTML=
+        '<div class="top"><div class="ic">'+m.tag+'</div><div><h3>'+m.name+'</h3>'+
+        '<div class="ver">'+m.ver+' · '+m.desc+'</div></div>'+
+        '<span class="badge b-active" style="margin-left:auto">'+(AZ.TYPELABEL[lic.type]||'활성')+'</span></div>'+
+        '<div class="key">'+lic.key+'</div>'+
+        '<div class="keyrow"><button class="btn" onclick="copyKey(this)">키 복사</button>'+
+        '<button class="btn pri" onclick="AZ.download(\''+prod+'\')">다운로드</button></div>';
+    } else {
+      el.innerHTML=
+        '<div class="top"><div class="ic">'+m.tag+'</div><div><h3>'+m.name+'</h3>'+
+        '<div class="ver">'+m.ver+' · '+m.desc+'</div></div>'+
+        '<span class="badge b-none" style="margin-left:auto">미보유</span></div>'+
+        '<div class="key" style="color:var(--dim)">아직 라이선스가 없습니다. 결제 페이지에서 구매하거나 프로모션 코드를 입력하면 자동 등록됩니다.</div>'+
+        '<div class="keyrow"><button class="btn pri" onclick="location.href=\'checkout.html?p='+prod+'\'">구매 / 코드 입력</button></div>';
+    }
+    box.appendChild(el);
+  });
+}
+renderProds();
+
+function setP(t){
+  var issue=t==='issue';
+  document.getElementById('t-issue').classList.toggle('on',issue);
+  document.getElementById('t-lookup').classList.toggle('on',!issue);
+  document.getElementById('p-issue').classList.toggle('on',issue);
+  document.getElementById('p-lookup').classList.toggle('on',!issue);
+}
+function copyKey(btn){
+  var k=btn.closest('.prod').querySelector('.key').textContent.trim();
+  navigator.clipboard&&navigator.clipboard.writeText(k); btn.textContent='복사됨 ✓'; setTimeout(function(){btn.textContent='키 복사';},1500);
+}
+function goCheckout(){
+  var c=(document.getElementById('quickcode').value||'').trim();
+  location.href='checkout.html'+(c?('?code='+encodeURIComponent(c)):'');
+}
+function lookupLicense(e){
+  e.preventDefault();
+  var d={}; new FormData(e.target).forEach((v,k)=>d[k]=v);
+  document.getElementById('lookupKey').textContent=d.q;
+  document.getElementById('lProd').textContent='(조회 결과 미리보기)';
+  document.getElementById('lStatus').textContent='● 활성';
+  document.getElementById('lDevices').textContent='등록 기기 1/1';
+  document.getElementById('lookupResult').classList.add('on');
+  // TODO(백엔드): fetch('/api/license/lookup?q='+encodeURIComponent(d.q))
+  return false;
+}
+</script>
+</body>
+</html>

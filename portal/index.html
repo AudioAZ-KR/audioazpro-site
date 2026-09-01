@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AudioAZ 계정 — 로그인 · 회원가입</title>
+<meta name="description" content="AudioAZ 계정으로 로그인하고 구매한 소프트웨어 라이선스를 관리하세요.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+@font-face{font-family:'NanumSquareRound';src:url('fonts/NanumSquareRoundEB.woff2') format('woff2');font-weight:800;font-display:swap}
+@font-face{font-family:'NanumSquareRound';src:url('fonts/NanumSquareRoundB.woff2') format('woff2');font-weight:700;font-display:swap}
+.topbar b,h1{font-family:'NanumSquareRound','Pretendard',sans-serif}
+:root{
+  --blue:#1877F2; --blue-deep:#0E5FCC; --blue-soft:#4D96F5;
+  --navy:#0C2244; --navy-deep:#081729;
+  --sky:#E8F1FE; --line:#DCE6F5; --bg:#EDF2FA;
+  --text:#14213A; --dim:#5B6B85;
+  --page:#ffffff; --card:#ffffff;
+  /* 소셜 브랜드 */
+  --kakao:#FEE500; --naver:#03C75A;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',system-ui,sans-serif;color:var(--text);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img,svg{max-width:100%}
+
+/* 상단 로고 */
+.topbar{position:absolute;top:0;left:0;right:0;height:64px;display:flex;align-items:center;gap:9px;padding:0 24px}
+.topbar .logo{width:28px;flex:none}
+.topbar b{font-size:17px;letter-spacing:-.01em;color:var(--navy)}
+
+/* 중앙 카드 */
+.wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:88px 20px 40px}
+.card{width:100%;max-width:400px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:34px 30px;box-shadow:0 18px 50px rgba(12,34,68,.08)}
+.card h1{font-size:22px;font-weight:800;letter-spacing:-.02em;text-align:center}
+.card .sub{text-align:center;color:var(--dim);font-size:14px;margin-top:6px}
+
+/* 탭 */
+.tabs{display:flex;background:var(--bg);border-radius:11px;padding:4px;margin:22px 0 20px}
+.tabs button{flex:1;border:0;background:transparent;padding:9px 0;border-radius:8px;font-family:inherit;font-size:14.5px;font-weight:700;color:var(--dim);cursor:pointer;transition:.15s}
+.tabs button.on{background:var(--card);color:var(--navy);box-shadow:0 1px 4px rgba(12,34,68,.1)}
+
+/* 소셜 버튼 */
+.social{display:flex;flex-direction:column;gap:9px}
+.sbtn{display:flex;align-items:center;justify-content:center;gap:10px;height:48px;border-radius:11px;border:1px solid transparent;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:.15s;position:relative}
+.sbtn:hover{filter:brightness(.97);transform:translateY(-1px)}
+.sbtn svg,.sbtn .ic{width:19px;height:19px;flex:none;position:absolute;left:16px}
+.sbtn.google{background:#fff;border-color:#DADCE0;color:#3C4043}
+.sbtn.kakao{background:var(--kakao);color:rgba(0,0,0,.85)}
+.sbtn.naver{background:var(--naver);color:#fff}
+.sbtn.apple{background:#000;color:#fff}
+
+/* 구분선 */
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--dim);font-size:12.5px}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
+
+/* 이메일 폼 */
+.field{margin-bottom:13px}
+.field label{display:block;font-size:12.5px;font-weight:700;color:var(--dim);margin-bottom:5px}
+.field input{width:100%;height:46px;border:1px solid var(--line);border-radius:11px;padding:0 14px;font-family:inherit;font-size:15px;color:var(--text);background:#fff;transition:.15s}
+.field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,119,242,.12)}
+.field .hint{font-size:11.5px;color:var(--dim);margin-top:4px}
+.primary{width:100%;height:48px;border:0;border-radius:11px;background:var(--blue);color:#fff;font-family:inherit;font-size:15.5px;font-weight:800;cursor:pointer;margin-top:6px;transition:.15s}
+.primary:hover{background:var(--blue-deep)}
+.foot{text-align:center;font-size:12.5px;color:var(--dim);margin-top:16px;line-height:1.7}
+.foot a{color:var(--blue);font-weight:600}
+.pane{display:none}.pane.on{display:block}
+.notice{background:var(--sky);border-radius:11px;padding:12px 14px;font-size:12.5px;color:var(--blue-deep);margin-top:16px;line-height:1.55}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="logo"><svg viewBox="0 0 488 555" xmlns="http://www.w3.org/2000/svg" aria-label="AudioAZ"><path fill-rule="evenodd" fill="#1877F2" d="M253.775,3.7c35.4,20.454,189.736,109.832,224.059,129.667,4.513,3.12,8.1,5.232,8.943,14.67V403.9c-0.124,9.828-2.857,15.714-11.177,21.1L257.279,551.157c-9.93,5.253-17.835,3.82-26.213-.173L10.569,423.826C4.8,420.583,1.232,416.2,1.4,405.93V145.424a10.362,10.362,0,0,1,5.465-9.569C35.827,119.092,199.631,23.884,235.89,3.207,240.774,0.837,246.235.7,253.775,3.7Z"/><path fill-rule="evenodd" fill="#fff" d="M54.059,142.81c24.45-14.452,141.735-83.561,177.814-104.887,5.123-3.774,14.08-3.694,20.049-.07L435.1,144.108c6.54,3.684,2.856,5.879-1.261,8.017l-36.825,21.331c-2.837,1.734-5.82,3.149-11.583.156-15.694-9.233-67.99-39.948-67.99-39.948l-98.752,58.371,66.784,39.289c4.067,2.4,3.782,6.6-2.033,9.193l-31.7,18.738c-7.764,5.249-13.6,2.585-17.774.042-34.068-19.884-155.417-90.713-179.9-105.061C49.507,151.835,50,145.18,54.059,142.81Zm90.06,5.95,97.744-58.371,35.268,22.141-97.744,57.364Z"/><path fill-rule="evenodd" fill="#fff" d="M43.04,181.952c37.979,21.655,151.82,86.7,179.436,102.448a15.415,15.415,0,0,1,7.6,13.439c-0.292,37.115-1.379,175.6-1.667,212.245-0.094,7.367-5.236,5.875-8.171,4.227l-36.075-20.993c-3.431-2.067-5.74-3.982-6.061-9.158,0.265-18.955,1.114-79.654,1.114-79.654L79.584,347.7S78.71,400,78.4,422.015c0.16,5.27-.239,10.208-5.536,7.77L34.615,407.974c-3-2.032-6.064-4.918-5.965-10.836,0.329-32.679,1.654-164.479,2.092-208.055C30.434,183.6,34.531,176.27,43.04,181.952Zm37.238,79.631,99.133,55.936-1.782,41.557L79.37,302.642Z"/><path fill-rule="evenodd" fill="#fff" d="M263.66,284.057L450.08,172.72c2.179-1.135,6.723-.414,6.392,5.363,0,16.067.024,49.176,0.024,49.176l-120.92,188.2L448.93,347.909c2.1-1.3,6.31-2.767,6.559,3.1v40.522c0.1,5.507-.528,9.513-8.007,15.6C415.2,426.36,294.793,498.045,263.214,516.905c-7.665,3.5-8.614-.994-8.446-3.975,0-15.933.194-49.167,0.194-49.167L376.89,274.56,262.578,342.109c-5.706,2.288-6.608-2-6.608-4.261V298.237C255.97,292.418,255.277,288.533,263.66,284.057Z"/></svg></span>
+  <b>Audio<span style="color:var(--blue)">AZ</span></b>
+</div>
+
+<div class="wrap">
+  <div class="card">
+    <h1 id="title">AudioAZ 계정</h1>
+    <p class="sub" id="subtitle">로그인하고 내 라이선스를 관리하세요</p>
+
+    <div class="tabs">
+      <button id="tabLogin" class="on" onclick="setTab('login')">로그인</button>
+      <button id="tabSignup" onclick="setTab('signup')">회원가입</button>
+    </div>
+
+    <!-- 소셜 로그인 (공통) -->
+    <div class="social">
+      <button class="sbtn google" onclick="oauth('google')">
+        <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Google로 계속하기
+      </button>
+      <button class="sbtn kakao" onclick="oauth('kakao')">
+        <svg viewBox="0 0 24 24"><path fill="#000" d="M12 3C6.48 3 2 6.58 2 11c0 2.86 1.86 5.36 4.68 6.79-.2.73-.75 2.73-.86 3.16-.13.53.19.52.4.38.17-.11 2.66-1.81 3.74-2.55.66.1 1.35.15 2.04.15 5.52 0 10-3.58 10-8S17.52 3 12 3z"/></svg>
+        카카오 로그인
+      </button>
+      <button class="sbtn naver" onclick="oauth('naver')">
+        <svg viewBox="0 0 24 24"><path fill="#fff" d="M15.13 12.42 8.6 3H4v18h4.87v-9.42L15.4 21H20V3h-4.87z"/></svg>
+        네이버 로그인
+      </button>
+      <button class="sbtn apple" onclick="oauth('apple')">
+        <svg viewBox="0 0 24 24"><path fill="#fff" d="M17.05 12.53c-.02-2.2 1.8-3.26 1.88-3.31-1.03-1.5-2.62-1.71-3.19-1.73-1.36-.14-2.65.8-3.34.8-.68 0-1.75-.78-2.87-.76-1.48.02-2.84.86-3.6 2.18-1.53 2.66-.39 6.6 1.1 8.76.73 1.06 1.6 2.24 2.74 2.2 1.1-.04 1.51-.71 2.84-.71 1.32 0 1.7.71 2.86.69 1.18-.02 1.93-1.08 2.65-2.14.84-1.23 1.18-2.42 1.2-2.48-.03-.01-2.3-.88-2.32-3.49zM14.87 5.7c.6-.73 1.01-1.75.9-2.76-.87.04-1.92.58-2.55 1.31-.56.64-1.05 1.68-.92 2.67.97.08 1.96-.49 2.57-1.22z"/></svg>
+        Apple로 계속하기
+      </button>
+    </div>
+
+    <div class="divider">또는 이메일로</div>
+
+    <!-- 로그인 폼 -->
+    <div id="paneLogin" class="pane on">
+      <form onsubmit="return submitForm(event,'login')">
+        <div class="field">
+          <label>이메일</label>
+          <input type="email" name="email" placeholder="you@example.com" required>
+        </div>
+        <div class="field">
+          <label>비밀번호</label>
+          <input type="password" name="password" placeholder="비밀번호" required>
+        </div>
+        <button class="primary" type="submit">로그인</button>
+      </form>
+    </div>
+
+    <!-- 회원가입 폼 -->
+    <div id="paneSignup" class="pane">
+      <form onsubmit="return submitForm(event,'signup')">
+        <div class="field">
+          <label>이름</label>
+          <input type="text" name="name" placeholder="홍길동" required>
+        </div>
+        <div class="field">
+          <label>이메일</label>
+          <input type="email" name="email" placeholder="you@example.com" required>
+          <div class="hint">구매·라이선스 발급에 사용됩니다. 정확히 입력하세요.</div>
+        </div>
+        <div class="field">
+          <label>비밀번호</label>
+          <input type="password" name="password" placeholder="8자 이상" minlength="8" required>
+        </div>
+        <div class="field">
+          <label>비밀번호 확인</label>
+          <input type="password" name="password2" placeholder="비밀번호 다시 입력" minlength="8" required>
+        </div>
+        <button class="primary" type="submit">회원가입</button>
+      </form>
+    </div>
+
+    <div class="notice" id="notice">
+      <b>테스트 모드</b> — 소셜 로그인은 정식 오픈 예정입니다. 지금은 아래 <b>이메일·비밀번호에 아무 값이나</b> 넣고 로그인하면 계정 화면으로 들어가 전체 흐름(구매·다운로드)을 체험할 수 있습니다.
+    </div>
+
+    <p class="foot" id="foot">
+      계정이 없으신가요? <a href="#" onclick="setTab('signup');return false">회원가입</a>
+    </p>
+  </div>
+</div>
+
+<script src="az-demo.js"></script>
+<script>
+function setTab(t){
+  var login=t==='login';
+  document.getElementById('tabLogin').classList.toggle('on',login);
+  document.getElementById('tabSignup').classList.toggle('on',!login);
+  document.getElementById('paneLogin').classList.toggle('on',login);
+  document.getElementById('paneSignup').classList.toggle('on',!login);
+  document.getElementById('title').textContent = login?'AudioAZ 계정':'AudioAZ 회원가입';
+  document.getElementById('subtitle').textContent = login?'로그인하고 내 라이선스를 관리하세요':'계정을 만들고 제품 라이선스를 받으세요';
+  document.getElementById('foot').innerHTML = login
+    ? '계정이 없으신가요? <a href="#" onclick="setTab(\'signup\');return false">회원가입</a>'
+    : '이미 계정이 있으신가요? <a href="#" onclick="setTab(\'login\');return false">로그인</a>';
+}
+// 이미 로그인돼 있으면 계정으로
+if(AZ.session()){ location.replace('account.html'); }
+
+// 소셜 로그인 — 정식 오픈 예정. 지금은 이메일 로그인으로 테스트.
+function oauth(provider){
+  var names={google:'Google',kakao:'카카오',naver:'네이버',apple:'Apple'};
+  alert(names[provider]+' 로그인은 정식 오픈 예정입니다.\n\n지금은 테스트 모드예요 — 아래 이메일·비밀번호에 아무 값이나 넣고 로그인하면 전체 흐름을 체험할 수 있습니다.');
+  // TODO(백엔드): location.href='/auth/'+provider;  // Supabase/FastAPI OAuth
+}
+// 데모: 이메일/비번 검증 없이 세션 생성 → 계정으로 이동
+function submitForm(e,mode){
+  e.preventDefault();
+  var f=e.target, d={};
+  new FormData(f).forEach((v,k)=>d[k]=v);
+  if(mode==='signup' && d.password!==d.password2){ alert('비밀번호가 일치하지 않습니다.'); return false; }
+  AZ.login(d.email, d.name);          // 데모 세션 저장
+  location.href='account.html';
+  // TODO(백엔드): fetch('/api/'+mode, ...) → 세션 쿠키 → account.html
+  return false;
+}
+</script>
+</body>
+</html>

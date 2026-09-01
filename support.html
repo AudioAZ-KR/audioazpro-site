@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>지원 — AudioAZ</title>
+<meta name="description" content="AudioAZ 제품 설치 가이드, 자주 묻는 질문, 시스템 요구사항, 문의.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+@font-face{font-family:'NanumSquareRound';src:url('fonts/NanumSquareRoundEB.woff2') format('woff2');font-weight:800;font-display:swap}
+@font-face{font-family:'NanumSquareRound';src:url('fonts/NanumSquareRoundB.woff2') format('woff2');font-weight:700;font-display:swap}
+.nav-in b,h1,h2{font-family:'NanumSquareRound','Pretendard',sans-serif}
+:root{--blue:#1877F2;--blue-deep:#0E5FCC;--blue-soft:#4D96F5;--navy:#0C2244;--navy-deep:#081729;--sky:#E8F1FE;--line:#DCE6F5;--bg:#EDF2FA;--text:#14213A;--dim:#5B6B85;--page:#fff;--card:#fff;--navbg:rgba(255,255,255,.92);--wordmark:#111}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',system-ui,sans-serif;color:var(--text);background:var(--bg);line-height:1.6;word-break:keep-all}
+a{color:inherit;text-decoration:none}svg{max-width:100%}
+.wrap{max-width:920px;margin:0 auto;padding:0 24px}
+.eyebrow{font-size:13px;font-weight:800;letter-spacing:.14em;color:var(--blue);text-transform:uppercase}
+h1{font-size:34px;font-weight:800;letter-spacing:-.02em;margin:8px 0 6px}h2{font-size:20px;font-weight:800;margin:36px 0 12px}
+nav{position:sticky;top:0;z-index:50;background:var(--navbg);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav-in{display:flex;align-items:center;gap:10px;height:64px}.nav-in .logo{width:30px;flex:none}
+.nav-in b{font-size:18px;color:var(--wordmark)}.nav-in b span{color:var(--blue)}
+.menu{margin-left:auto;display:flex;align-items:center;gap:24px;font-size:14.5px;font-weight:600;color:var(--dim)}
+.menu a:hover{color:var(--blue)}.menu .login{border:1px solid var(--line);border-radius:9px;padding:7px 15px;color:var(--navy)}.menu .login:hover{background:var(--sky)}
+@media(max-width:760px){.menu{gap:13px;font-size:12.5px}.menu .hide-sm{display:none}}
+.head{padding:44px 0 8px}.head p{color:var(--dim);max-width:600px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+@media(max-width:720px){.cards{grid-template-columns:1fr}}
+.qcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+.qcard .ic{font-family:ui-monospace,Menlo,monospace;font-size:12px;font-weight:700;color:var(--blue);letter-spacing:.05em;margin-bottom:8px}.qcard h3{font-size:15.5px;font-weight:800;margin:8px 0 4px}.qcard p{font-size:13px;color:var(--dim)}
+.faq{margin-top:16px;display:flex;flex-direction:column;gap:10px}
+details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0 18px}
+summary{cursor:pointer;font-weight:700;font-size:15px;padding:16px 0;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";float:right;color:var(--blue);font-weight:800}
+details[open] summary::after{content:"−"}
+details p{font-size:14px;color:var(--dim);padding:0 0 16px;line-height:1.6}
+.contact{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px;margin-top:16px}
+.contact dl{display:grid;grid-template-columns:80px 1fr;row-gap:10px;font-size:14.5px}
+.contact dt{color:var(--dim);font-weight:700}.contact dd a{color:var(--blue);font-weight:600}
+footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px;margin-top:50px}footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center}footer .right{margin-left:auto}footer a:hover{color:#fff}
+</style>
+</head>
+<body>
+<nav><div class="wrap nav-in">
+  <span class="logo"><svg viewBox="0 0 488 555" xmlns="http://www.w3.org/2000/svg" aria-label="AudioAZ"><path fill-rule="evenodd" fill="#1877F2" d="M253.775,3.7c35.4,20.454,189.736,109.832,224.059,129.667,4.513,3.12,8.1,5.232,8.943,14.67V403.9c-0.124,9.828-2.857,15.714-11.177,21.1L257.279,551.157c-9.93,5.253-17.835,3.82-26.213-.173L10.569,423.826C4.8,420.583,1.232,416.2,1.4,405.93V145.424a10.362,10.362,0,0,1,5.465-9.569C35.827,119.092,199.631,23.884,235.89,3.207,240.774,0.837,246.235.7,253.775,3.7Z"/><path fill-rule="evenodd" fill="#fff" d="M263.66,284.057L450.08,172.72c2.179-1.135,6.723-.414,6.392,5.363,0,16.067.024,49.176,0.024,49.176l-120.92,188.2L448.93,347.909c2.1-1.3,6.31-2.767,6.559,3.1v40.522c0.1,5.507-.528,9.513-8.007,15.6C415.2,426.36,294.793,498.045,263.214,516.905c-7.665,3.5-8.614-.994-8.446-3.975,0-15.933.194-49.167,0.194-49.167L376.89,274.56,262.578,342.109c-5.706,2.288-6.608-2-6.608-4.261V298.237C255.97,292.418,255.277,288.533,263.66,284.057Z"/></svg></span>
+  <b>Audio<span>AZ</span></b>
+  <div class="menu"><a href="index.html">제품</a><a href="downloads.html" class="hide-sm">다운로드</a><a href="support.html">지원</a><a href="portal/index.html" class="login">로그인</a></div>
+</div></nav>
+
+<div class="wrap head">
+  <div class="eyebrow">Support</div>
+  <h1>지원 센터</h1>
+  <p>설치 가이드와 자주 묻는 질문을 확인하세요. 해결이 안 되면 언제든 문의해 주세요.</p>
+</div>
+
+<div class="wrap">
+  <div class="cards">
+    <div class="qcard"><div class="ic">01</div><h3>설치 가이드</h3><p>플러그인·앱 설치와 라이선스 활성화 방법</p></div>
+    <div class="qcard"><div class="ic">02</div><h3>라이선스</h3><p>키 발급·재발급·기기 관리는 <a href="portal/account.html" style="color:var(--blue);font-weight:600">내 계정</a></p></div>
+    <div class="qcard"><div class="ic">03</div><h3>문의</h3><p>support@audioazpro.com 으로 언제든</p></div>
+  </div>
+
+  <h2>자주 묻는 질문</h2>
+  <div class="faq">
+    <details><summary>플러그인이 DAW에서 안 보여요.</summary><p>설치 후 DAW의 플러그인 폴더를 다시 스캔하세요. macOS는 <b>~/Library/Audio/Plug-Ins/VST3</b>(또는 Components/AU)에 설치됩니다. 재시작 후에도 안 보이면 support@audioazpro.com으로 사용 DAW·OS 버전과 함께 알려주세요.</p></details>
+    <details><summary>"확인되지 않은 개발자" 경고가 떠요.</summary><p>AudioAZ 앱·플러그인은 Apple <b>Developer ID 서명 + 공증(notarization)</b>이 되어 있어 경고 없이 열립니다. 그래도 경고가 뜨면 오래된 버전일 수 있으니 최신 버전을 <a href="downloads.html" style="color:var(--blue);font-weight:600">다운로드</a>에서 받아 주세요.</p></details>
+    <details><summary>라이선스 키는 어디서 확인하나요?</summary><p>구매·발급된 키는 로그인 후 <a href="portal/account.html" style="color:var(--blue);font-weight:600">내 계정 → 내 제품</a>에서 확인·복사·재발급할 수 있습니다.</p></details>
+    <details><summary>몇 대까지 설치할 수 있나요?</summary><p>영구 라이선스는 기본 2대까지 활성화됩니다. 기기를 바꾸면 내 계정에서 기존 기기를 해제하고 새 기기를 등록하세요.</p></details>
+    <details><summary>탈리 앱에 어떤 스위처를 지원하나요?</summary><p>Blackmagic ATEM 시리즈(Mini부터 Constellation까지)를 지원합니다. 키어(자막·PIP) 온에어까지 반영됩니다.</p></details>
+    <details><summary>환불 정책은 어떻게 되나요?</summary><p>무료 체험판으로 충분히 테스트하신 뒤 구매를 권장합니다. 환불 정책은 판매 채널(포트원·Paddle) 및 관련 법령에 따르며, 정식 판매 시 상세 안내합니다.</p></details>
+  </div>
+
+  <h2>문의</h2>
+  <div class="contact"><dl>
+    <dt>이메일</dt><dd><a href="mailto:support@audioazpro.com">support@audioazpro.com</a></dd>
+    <dt>회사</dt><dd>오디오에이지 (AudioAZ) · 대표 김형준</dd>
+    <dt>사업자</dt><dd>456-17-01966</dd>
+  </dl></div>
+</div>
+
+<footer><div class="wrap"><span>© AudioAZ (오디오에이지)</span><span class="right"><a href="index.html">제품</a> · <a href="downloads.html">다운로드</a> · <a href="portal/index.html">로그인</a></span></div></footer>
+</body>
+</html>
