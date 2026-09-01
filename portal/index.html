@@ -141,7 +141,8 @@ img,svg{max-width:100%}
         </div>
         <div class="field">
           <label for="su-pw">비밀번호</label>
-          <input id="su-pw" type="password" name="password" placeholder="8자 이상" minlength="8" autocomplete="new-password" required>
+          <input id="su-pw" type="password" name="password" placeholder="영문+숫자 포함 8자 이상" minlength="8" maxlength="72" autocomplete="new-password" required pattern="(?=.*[A-Za-z])(?=.*\d).{8,}" title="영문과 숫자를 모두 포함해 8자 이상 입력하세요">
+          <div class="hint" id="su-pw-hint">영문과 숫자를 모두 포함, 8자 이상 (특수문자 사용 가능)</div>
         </div>
         <div class="field">
           <label for="su-pw2">비밀번호 확인</label>
@@ -152,7 +153,7 @@ img,svg{max-width:100%}
     </div>
 
     <div class="notice" id="notice">
-      <b>이메일 회원가입 오픈</b> — 이메일로 가입하고 내 라이선스를 관리하세요. 소셜 로그인(구글·카카오·네이버·애플)은 정식 오픈 시 제공됩니다.
+      <b>이메일 회원가입 오픈</b> — 가입하면 입력한 이메일로 <b>승인(인증) 메일</b>이 발송되며, 링크를 눌러 인증해야 로그인할 수 있습니다. 소셜 로그인(구글·카카오·네이버·애플)은 정식 오픈 시 제공됩니다.
     </div>
 
     <p class="foot" id="foot">
@@ -191,11 +192,12 @@ async function submitForm(e,mode){
   btn.disabled=true; btn.textContent='처리 중…';
   try{
     if(mode==='signup'){
+      if(!/^(?=.*[A-Za-z])(?=.*\d).{8,72}$/.test(d.password)){ throw new Error('비밀번호는 영문과 숫자를 모두 포함해 8자 이상이어야 합니다.'); }
       if(d.password!==d.password2){ throw new Error('비밀번호가 일치하지 않습니다.'); }
       await AZ.signup(d.email, d.password, d.name);
       var s=await AZ.session();
       if(s){ location.href='account.html'; return false; }   // 이메일 인증 꺼져 있으면 바로 로그인
-      alert('회원가입 완료! 확인 메일이 발송된 경우 인증 후 로그인하세요.');
+      alert('회원가입 신청 완료!\n\n'+d.email+' 으로 승인(인증) 메일을 보냈습니다.\n메일의 링크를 눌러 이메일을 인증하면 가입이 완료되고 로그인할 수 있습니다.\n\n메일이 안 보이면 스팸함을 확인해 주세요.');
       setTab('login'); btn.disabled=false; btn.textContent=old;
     } else {
       await AZ.login(d.email, d.password);

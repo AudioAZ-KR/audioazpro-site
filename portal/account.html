@@ -189,6 +189,11 @@ var sbA=window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co',
   var name=(u.user_metadata&&u.user_metadata.name)||u.email.split('@')[0];
   document.getElementById('whoName').textContent=name+'님';
   document.getElementById('avatar').textContent=(name[0]||'·');
+  // 데모 라이선스는 계정별로 — 다른(새) 계정으로 로그인하면 이전 브라우저의 데모 라이선스를 비움
+  try{
+    var owner=localStorage.getItem('az_lic_owner');
+    if(owner!==u.id){ localStorage.removeItem('az_licenses'); localStorage.setItem('az_lic_owner',u.id); renderLicenses(); }
+  }catch(_){}
 })();
 function doLogout(){ try{AZ.logout();}catch(_){}; sbA.auth.signOut().finally(function(){ location.href='index.html'; }); }
 
