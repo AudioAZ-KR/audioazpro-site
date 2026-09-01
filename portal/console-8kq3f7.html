@@ -138,7 +138,7 @@ tr:last-child td{border-bottom:0}
         <div class="card"><h2>라이선스 발급</h2><div class="sub">Ed25519 서명 키를 발급합니다. 개인키는 서버에만 두며, 발급 즉시 구매자 이메일로 전송됩니다.</div>
           <form onsubmit="return issue(event)">
             <div class="grid2">
-              <div class="field"><label>제품</label><select name="product" required><option value="">선택</option><option>Klera Voice</option><option>Klera Instrument</option><option>AudioAZ Tally Host</option><option>Latency Meter AZ</option></select></div>
+              <div class="field"><label>제품</label><select name="product" required><option value="">선택</option><option>Klera Voice</option><option>Klera Instrument</option><option>Flare Tally</option><option>Latency Meter AZ</option></select></div>
               <div class="field"><label>유형</label><select name="type"><option>영구 (2대)</option><option>영구 (1대)</option><option>체험 (14일)</option><option>NFR/리뷰용</option></select></div>
               <div class="field"><label>구매자 이름</label><input name="name" placeholder="홍길동" required></div>
               <div class="field"><label>이메일</label><input type="email" name="email" placeholder="buyer@example.com" required></div>
@@ -149,11 +149,11 @@ tr:last-child td{border-bottom:0}
           <p class="note">실제 서명은 서버(FastAPI)의 <b>private_key.pem</b>으로만 수행됩니다 — 브라우저·이 화면엔 개인키가 없습니다. 발급 이력은 issued_licenses DB에 기록됩니다.</p>
         </div>
         <div class="card"><h2>발급된 라이선스 <span class="demo">데모</span></h2>
-          <div class="toolbar"><input class="field search" style="margin:0" placeholder="키·이메일·이름 검색"><select class="field" style="margin:0;width:auto"><option>전체 제품</option><option>Klera Voice</option><option>Tally Host</option></select><select class="field" style="margin:0;width:auto"><option>전체 상태</option><option>활성</option><option>폐기</option></select></div>
+          <div class="toolbar"><input class="field search" style="margin:0" placeholder="키·이메일·이름 검색"><select class="field" style="margin:0;width:auto"><option>전체 제품</option><option>Klera Voice</option><option>Flare Tally</option></select><select class="field" style="margin:0;width:auto"><option>전체 상태</option><option>활성</option><option>폐기</option></select></div>
           <table><thead><tr><th>키</th><th>제품</th><th>구매자</th><th>상태</th><th>발급일</th><th>기기</th><th></th></tr></thead>
           <tbody>
             <tr><td class="mono">AZCA-9F3K-…-QH2Z</td><td>Klera Voice</td><td>홍길동<br><span style="color:var(--dim);font-size:11px">hong@ex.com</span></td><td><span class="pill p-active">활성</span></td><td class="mono">2026-08-31</td><td>1/2</td><td><button class="tbtn">재발급</button> <button class="tbtn danger">폐기</button></td></tr>
-            <tr><td class="mono">AZTL-2B7Q-…-7T1P</td><td>Tally Host</td><td>김철수<br><span style="color:var(--dim);font-size:11px">kim@ex.com</span></td><td><span class="pill p-trial">체험</span></td><td class="mono">2026-08-30</td><td>0/1</td><td><button class="tbtn">전환</button> <button class="tbtn danger">폐기</button></td></tr>
+            <tr><td class="mono">AZTL-2B7Q-…-7T1P</td><td>Flare Tally</td><td>김철수<br><span style="color:var(--dim);font-size:11px">kim@ex.com</span></td><td><span class="pill p-trial">체험</span></td><td class="mono">2026-08-30</td><td>0/1</td><td><button class="tbtn">전환</button> <button class="tbtn danger">폐기</button></td></tr>
             <tr><td class="mono">AZCA-X4M2-…-KE8N</td><td>Klera Voice</td><td>이영희<br><span style="color:var(--dim);font-size:11px">lee@ex.com</span></td><td><span class="pill p-revoked">폐기</span></td><td class="mono">2026-08-28</td><td>—</td><td><button class="tbtn">재활성</button></td></tr>
           </tbody></table>
         </div>
@@ -174,7 +174,7 @@ tr:last-child td{border-bottom:0}
                 <option value="ALL">전 제품 (ALL)</option>
                 <option value="KV">Klera Voice</option>
                 <option value="KI">Klera Instrument</option>
-                <option value="TALLY">AudioAZ Tally Host</option>
+                <option value="TALLY">Flare Tally</option>
                 <option value="LMAZ">Latency Meter AZ</option>
               </select></div>
 
@@ -216,7 +216,7 @@ tr:last-child td{border-bottom:0}
           <tbody>
             <tr><td class="mono">AZ-KV-D14-7K2M9Q</td><td>Klera Voice</td><td><span class="pill p-trial">데모 14일</span></td><td>3/50</td><td class="mono">2026-09-30</td><td>9월 프로모션</td><td><button class="tbtn">복사</button> <button class="tbtn danger">비활성</button></td></tr>
             <tr><td class="mono">AZ-ALL-D7-QX83MP</td><td>전 제품</td><td><span class="pill p-trial">데모 7일</span></td><td>12/∞</td><td class="mono">—</td><td>홈페이지 상시</td><td><button class="tbtn">복사</button> <button class="tbtn danger">비활성</button></td></tr>
-            <tr><td class="mono">AZ-TALLY-FREE-9ND2K7</td><td>Tally Host</td><td><span class="pill p-active">무료</span></td><td>1/1</td><td class="mono">2026-09-10</td><td>유튜브 리뷰어</td><td><button class="tbtn">복사</button> <button class="tbtn danger">비활성</button></td></tr>
+            <tr><td class="mono">AZ-TALLY-FREE-9ND2K7</td><td>Flare Tally</td><td><span class="pill p-active">무료</span></td><td>1/1</td><td class="mono">2026-09-10</td><td>유튜브 리뷰어</td><td><button class="tbtn">복사</button> <button class="tbtn danger">비활성</button></td></tr>
             <tr><td class="mono">AZ-DISC-20P-8QK3M2</td><td>전 제품</td><td><span class="pill p-refund">할인 20%</span></td><td>7/∞</td><td class="mono">2026-09-01~09-30</td><td>추석 할인</td><td><button class="tbtn">복사</button> <button class="tbtn danger">비활성</button></td></tr>
             <tr><td class="mono">AZ-DISC-W10000-KD73</td><td>Klera Voice</td><td><span class="pill p-refund">₩10,000 할인</span></td><td>2/100</td><td class="mono">~2026-09-15</td><td>얼리버드</td><td><button class="tbtn">복사</button> <button class="tbtn danger">비활성</button></td></tr>
           </tbody></table>
@@ -230,7 +230,7 @@ tr:last-child td{border-bottom:0}
           <tbody>
             <tr><td class="mono">#10231</td><td>Klera Voice</td><td>hong@ex.com</td><td>포트원</td><td>₩ —</td><td><span class="pill p-paid">결제완료</span></td><td class="mono">2026-08-31</td></tr>
             <tr><td class="mono">#10230</td><td>Klera Voice</td><td>john@ex.com</td><td>Paddle</td><td>$ —</td><td><span class="pill p-paid">결제완료</span></td><td class="mono">2026-08-30</td></tr>
-            <tr><td class="mono">#10229</td><td>Tally Host</td><td>park@ex.com</td><td>포트원</td><td>₩ —</td><td><span class="pill p-refund">환불</span></td><td class="mono">2026-08-29</td></tr>
+            <tr><td class="mono">#10229</td><td>Flare Tally</td><td>park@ex.com</td><td>포트원</td><td>₩ —</td><td><span class="pill p-refund">환불</span></td><td class="mono">2026-08-29</td></tr>
           </tbody></table>
         </div>
       </section>
@@ -242,7 +242,7 @@ tr:last-child td{border-bottom:0}
           <table><thead><tr><th>이름</th><th>이메일</th><th>가입</th><th>보유 제품</th><th>가입일</th><th></th></tr></thead>
           <tbody>
             <tr><td>홍길동</td><td>hong@ex.com</td><td>구글</td><td>Klera Voice</td><td class="mono">2026-08-31</td><td><button class="tbtn">상세</button></td></tr>
-            <tr><td>김철수</td><td>kim@ex.com</td><td>카카오</td><td>Tally Host(체험)</td><td class="mono">2026-08-30</td><td><button class="tbtn">상세</button></td></tr>
+            <tr><td>김철수</td><td>kim@ex.com</td><td>카카오</td><td>Flare Tally(체험)</td><td class="mono">2026-08-30</td><td><button class="tbtn">상세</button></td></tr>
           </tbody></table>
         </div>
       </section>
@@ -253,7 +253,7 @@ tr:last-child td{border-bottom:0}
           <table><thead><tr><th>제품</th><th>최신버전</th><th>가격</th><th>상태</th><th></th></tr></thead>
           <tbody>
             <tr><td>Klera Voice</td><td class="mono">v0.4.3</td><td>미설정</td><td><span class="pill p-trial">출시 예정</span></td><td><button class="tbtn">편집</button> <button class="tbtn">새 버전 업로드</button></td></tr>
-            <tr><td>AudioAZ Tally Host</td><td class="mono">v1.14.0</td><td>미설정</td><td><span class="pill p-trial">출시 예정</span></td><td><button class="tbtn">편집</button> <button class="tbtn">새 버전 업로드</button></td></tr>
+            <tr><td>Flare Tally</td><td class="mono">v1.14.0</td><td>미설정</td><td><span class="pill p-trial">출시 예정</span></td><td><button class="tbtn">편집</button> <button class="tbtn">새 버전 업로드</button></td></tr>
             <tr><td>Latency Meter AZ</td><td class="mono">v1.0</td><td>무료</td><td><span class="pill p-active">배포중</span></td><td><button class="tbtn">편집</button></td></tr>
           </tbody></table>
         </div>
@@ -322,7 +322,7 @@ function genPromo(e){
   // TODO(백엔드): POST /admin/api/promo → 코드·조건 DB 저장(사용횟수·기간·제품). 결제 시 검증.
   return false;
 }
-var PRE={'Klera Voice':'AZCA','Klera Instrument':'AZCI','AudioAZ Tally Host':'AZTL','Latency Meter AZ':'AZLM'};
+var PRE={'Klera Voice':'AZCA','Klera Instrument':'AZCI','Flare Tally':'AZTL','Latency Meter AZ':'AZLM'};
 function issue(e){
   e.preventDefault();var d={};new FormData(e.target).forEach((v,k)=>d[k]=v);
   var r=()=>Math.random().toString(36).slice(2,6).toUpperCase();
