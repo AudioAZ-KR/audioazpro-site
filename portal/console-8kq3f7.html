@@ -377,8 +377,8 @@ async function adminLogin(e){
 function adminLogout(){ try{sessionStorage.removeItem(SKEY);}catch(_){}; location.reload(); }
 
 // ===== Touch ID (WebAuthn) — 이 맥에 고정된 자격증명으로만 로그인/생성 =====
-// ADMIN_CRED_ID: 대표님 맥에서 등록 후 여기에 박아넣음(base64url). 이게 있어야 이 맥에서만 통과.
-var ADMIN_CRED_ID='';
+// ADMIN_CRED_IDS: 등록된 애플 패스키 credential ID들(base64url). 개인 애플 ID·회사 애플 ID·1Password·백업 기기 등 여러 개 등록 가능 — 이 중 하나라도 인증되면 통과.
+var ADMIN_CRED_IDS=[];
 function b64urlToBuf(s){s=String(s).replace(/-/g,'+').replace(/_/g,'/');var pad=s.length%4;if(pad)s+='='.repeat(4-pad);var bin=atob(s);var b=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);return b.buffer;}
 function bufToB64url(buf){var b=new Uint8Array(buf),s='';for(var i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
 function bufToHex(buf){return Array.prototype.map.call(new Uint8Array(buf),function(x){return x.toString(16).padStart(2,'0')}).join('');}
@@ -386,11 +386,11 @@ function hasWebAuthn(){return !!(window.PublicKeyCredential && navigator.credent
 
 // 이 맥 Touch ID 자산 확인(assertion) — 로그인/생성 공통
 async function touchAssert(){
-  if(!ADMIN_CRED_ID) return {ok:false,reason:'noreg'};
+  if(!ADMIN_CRED_IDS.length) return {ok:false,reason:'noreg'};
   try{
     var a=await navigator.credentials.get({publicKey:{
       challenge:crypto.getRandomValues(new Uint8Array(32)),
-      allowCredentials:[{id:b64urlToBuf(ADMIN_CRED_ID),type:'public-key'}],
+      allowCredentials:ADMIN_CRED_IDS.map(function(id){return {id:b64urlToBuf(id),type:'public-key'};}),
       userVerification:'required',timeout:60000
     }});
     return {ok:!!a};
@@ -399,7 +399,7 @@ async function touchAssert(){
 async function touchLogin(){
   var err=document.getElementById('ga-err');
   if(!hasWebAuthn()){ err.textContent='이 브라우저는 Touch ID를 지원하지 않습니다.'; err.classList.add('on'); return; }
-  if(!ADMIN_CRED_ID){ err.textContent='아직 등록된 맥이 없습니다. 아래 “이 맥을 Touch ID로 등록”을 먼저 진행하세요.'; err.classList.add('on'); return; }
+  if(!ADMIN_CRED_IDS.length){ err.textContent='아직 등록된 애플 패스키가 없습니다. 아래 “내 애플 패스키 등록”을 먼저 진행하세요.'; err.classList.add('on'); return; }
   var r=await touchAssert();
   if(r.ok){ try{sessionStorage.setItem(SKEY,'1');}catch(_){}; err.classList.remove('on'); openConsole(); }
   else{ err.textContent='Touch ID 인증 실패 — 등록된 애플 기기에서만 열립니다.'; err.classList.add('on'); }
@@ -439,7 +439,7 @@ async function genAdmin(e){
   e.preventDefault();
   var email=e.target.email.value.trim().toLowerCase(), name=e.target.name.value.trim();
   var res=document.getElementById('genRes');
-  if(!hasWebAuthn()||!ADMIN_CRED_ID){ res.innerHTML='<b style="color:#ff9ea3">이 맥이 Touch ID로 등록되어 있어야 관리자를 생성할 수 있습니다.</b>'; res.classList.add('on'); return false; }
+  if(!hasWebAuthn()||!ADMIN_CRED_IDS.length){ res.innerHTML='<b style="color:#ff9ea3">대표님 애플 패스키가 등록되어 있어야 관리자를 생성할 수 있습니다.</b>'; res.classList.add('on'); return false; }
   var r=await touchAssert();  // 생성 순간 이 맥 지문 확인
   if(!r.ok){ res.innerHTML='<b style="color:#ff9ea3">이 맥의 Touch ID 인증이 필요합니다. (이 맥에서만 생성 가능)</b>'; res.classList.add('on'); return false; }
   var pw=genPw(16), salt=crypto.getRandomValues(new Uint8Array(16));
