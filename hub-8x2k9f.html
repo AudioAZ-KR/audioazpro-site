@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="/favicon.png"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<title>AudioAZ 런치패드</title>
+<meta name="description" content="AudioAZ 내부 링크 허브 — 사이트·포털·관리자·연동 서비스 (직원 전용).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#EEF2F9; --panel:#F7F9FD; --card:#FFFFFF; --line:#E1E7F2; --line-soft:#EAEFF7;
+  --text:#0C1424; --dim:#5A6A85; --faint:#8A98B0;
+  --blue:#1877F2; --blue-ink:#0E5FCC; --navy:#0C2244;
+  --klera:#6D4BF0; --flare:#E5333F; --green:#0FA968; --amber:#B4791A;
+  --green-bg:#E4F6ED; --amber-bg:#FBF0DA; --blue-bg:#E7F0FE; --klera-bg:#ECE7FE; --flare-bg:#FCE7E9;
+  --shadow:0 1px 2px rgba(12,34,68,.05), 0 10px 30px -18px rgba(12,34,68,.22);
+  --shadow-hover:0 2px 4px rgba(12,34,68,.06), 0 22px 44px -20px rgba(24,119,242,.4);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#080D18; --panel:#0C1424; --card:#111C31; --line:#233350; --line-soft:#1B283F;
+  --text:#E9EEF7; --dim:#94A5C0; --faint:#6C7C98;
+  --blue:#4D96F5; --blue-ink:#1877F2; --navy:#0C2244;
+  --klera:#9E86F7; --flare:#F0727C; --green:#39D48C; --amber:#E7B252;
+  --green-bg:#0E2B1E; --amber-bg:#2E2410; --blue-bg:#13233D; --klera-bg:#20193C; --flare-bg:#2E1519;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 34px -20px rgba(0,0,0,.7);
+  --shadow-hover:0 2px 4px rgba(0,0,0,.5), 0 24px 48px -20px rgba(24,119,242,.5);
+}}
+:root[data-theme="dark"]{
+  --bg:#080D18; --panel:#0C1424; --card:#111C31; --line:#233350; --line-soft:#1B283F;
+  --text:#E9EEF7; --dim:#94A5C0; --faint:#6C7C98;
+  --blue:#4D96F5; --blue-ink:#1877F2; --navy:#0C2244;
+  --klera:#9E86F7; --flare:#F0727C; --green:#39D48C; --amber:#E7B252;
+  --green-bg:#0E2B1E; --amber-bg:#2E2410; --blue-bg:#13233D; --klera-bg:#20193C; --flare-bg:#2E1519;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 34px -20px rgba(0,0,0,.7);
+  --shadow-hover:0 2px 4px rgba(0,0,0,.5), 0 24px 48px -20px rgba(24,119,242,.5);
+}
+*{box-sizing:border-box;margin:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:"IBM Plex Sans KR","Apple SD Gothic Neo",system-ui,sans-serif;
+  line-height:1.6; word-break:keep-all; -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+.wrap{max-width:1120px; margin:0 auto; padding:0 24px}
+a{color:inherit; text-decoration:none}
+
+header{position:relative; overflow:hidden; border-bottom:1px solid var(--line);
+  background:
+    radial-gradient(1200px 340px at 82% -40%, color-mix(in srgb, var(--blue) 22%, transparent), transparent 70%),
+    linear-gradient(180deg, var(--panel), var(--bg));
+}
+.head-in{padding:38px 0 30px; display:flex; flex-wrap:wrap; align-items:flex-end; gap:18px 28px}
+.brand{display:flex; align-items:center; gap:13px}
+.cube{width:42px;height:42px;flex:none}
+.brand .name{font-weight:700; font-size:22px; letter-spacing:-.02em}
+.brand .name b{color:var(--blue-ink)}
+h1{font-size:clamp(26px,4.4vw,40px); font-weight:700; letter-spacing:-.03em; line-height:1.12; text-wrap:balance; margin-top:14px; flex-basis:100%}
+.sub{color:var(--dim); font-size:15.5px; max-width:60ch}
+.meta{margin-left:auto; display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.stamp{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--dim); border:1px solid var(--line); background:var(--card); padding:6px 11px; border-radius:999px}
+.toggle{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--dim); border:1px solid var(--line); background:var(--card); padding:6px 12px; border-radius:999px; cursor:pointer}
+.toggle:hover{color:var(--text); border-color:var(--blue)}
+
+main{padding:40px 0 70px}
+section{margin-top:44px}
+section:first-child{margin-top:0}
+.eyebrow{display:flex; align-items:baseline; gap:12px; margin-bottom:16px}
+.eyebrow .lbl{font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--blue-ink)}
+.eyebrow h2{font-size:18px; font-weight:700; letter-spacing:-.01em}
+.eyebrow .count{margin-left:auto; font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--faint)}
+.eyebrow .note{font-size:13px; color:var(--dim)}
+
+.grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(268px,1fr)); gap:14px}
+
+.card{position:relative; display:flex; flex-direction:column; gap:9px;
+  background:var(--card); border:1px solid var(--line); border-radius:15px;
+  padding:17px 18px 16px; box-shadow:var(--shadow);
+  transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease}
+.card:hover{transform:translateY(-3px); border-color:color-mix(in srgb,var(--blue) 55%, var(--line)); box-shadow:var(--shadow-hover)}
+.card:focus-visible{outline:2px solid var(--blue); outline-offset:2px}
+.card .top{display:flex; align-items:center; justify-content:space-between; gap:10px}
+.card .ttl{font-weight:600; font-size:15.5px; letter-spacing:-.01em; display:flex; align-items:center; gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--blue)}
+.dot.klera{background:var(--klera)} .dot.flare{background:var(--flare)}
+.card .url{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--dim); word-break:break-all; line-height:1.45}
+.card .desc{font-size:13px; color:var(--dim)}
+.arrow{color:var(--faint); transition:transform .16s ease, color .16s ease; flex:none}
+.card:hover .arrow{color:var(--blue); transform:translate(2px,-2px)}
+
+.chip{font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:600; letter-spacing:.03em; padding:3px 8px; border-radius:999px; white-space:nowrap}
+.chip.live{color:var(--green); background:var(--green-bg)}
+.chip.lock{color:var(--amber); background:var(--amber-bg)}
+.chip.auth{color:var(--blue-ink); background:var(--blue-bg)}
+
+.svc .rows{display:flex; flex-direction:column; gap:5px; margin-top:2px}
+.svc .row{display:flex; gap:8px; font-size:12.5px}
+.svc .row .k{color:var(--faint); flex:none; width:52px}
+.svc .row .v{color:var(--dim)}
+.svc .row .v b{color:var(--text); font-weight:600}
+
+.admin{grid-column:1/-1; border-color:color-mix(in srgb,var(--amber) 40%, var(--line));
+  background:linear-gradient(180deg, var(--amber-bg), var(--card) 60%)}
+.admin .warn{font-size:12.5px; color:var(--amber); font-weight:600}
+
+.hint{margin-top:8px; font-size:12.5px; color:var(--faint)}
+footer{border-top:1px solid var(--line); color:var(--faint); font-size:12.5px; padding:22px 0 30px}
+footer .wrap{display:flex; gap:14px; flex-wrap:wrap; align-items:center}
+footer .mono{color:var(--dim)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap head-in">
+    <div class="brand">
+      <svg class="cube" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <path d="M32 4 58 18v28L32 60 6 46V18z" fill="var(--blue)"/>
+        <path d="M32 4 58 18 32 32 6 18z" fill="#fff" fill-opacity=".18"/>
+        <path d="M20 26h9l-5 12h5l-9 12v-9h-5z" fill="#fff" fill-opacity=".95"/>
+        <path d="M35 24h4l5 16h-4l-1-3h-4l-1 3h-4z" fill="#fff" fill-opacity=".95"/>
+      </svg>
+      <span class="name">Audio<b>AZ</b></span>
+    </div>
+    <div class="meta">
+      <span class="stamp">직원 전용 · 검색 비노출</span>
+      <button class="toggle" id="tg" type="button" aria-label="테마 전환">◐ 테마</button>
+    </div>
+    <h1>오늘 만든 것, 여기서 전부 엽니다.</h1>
+    <p class="sub">audioazpro.com 사이트·고객 포털·관리자 콘솔, 그리고 백엔드·이메일을 잇는 연동 서비스까지 — 한 곳에서 바로 이동하세요.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section>
+    <div class="eyebrow"><span class="lbl">Public</span><h2>공개 사이트</h2><span class="count">audioazpro.com</span></div>
+    <div class="grid" id="g-public"></div>
+  </section>
+
+  <section>
+    <div class="eyebrow"><span class="lbl">Portal</span><h2>고객 포털</h2><span class="count">계정 · 라이선스</span></div>
+    <div class="grid" id="g-portal"></div>
+  </section>
+
+  <section>
+    <div class="eyebrow"><span class="lbl">Admin</span><h2>관리자</h2><span class="note">외부 공유 금지</span></div>
+    <div class="grid" id="g-admin"></div>
+  </section>
+
+  <section>
+    <div class="eyebrow"><span class="lbl">Services</span><h2>연동 서비스</h2><span class="count">로그인 필요</span></div>
+    <div class="grid" id="g-svc"></div>
+  </section>
+
+  <section>
+    <div class="eyebrow"><span class="lbl">Other</span><h2>다른 사이트</h2></div>
+    <div class="grid" id="g-other"></div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© AudioAZ (오디오에이지)</span>
+    <span class="mono">직원 전용 링크 · 검색엔진 비노출(noindex)</span>
+  </div>
+</footer>
+
+<script>
+const short = u => u.replace(/^https?:\/\//,'').replace(/\/$/,'');
+function card(o){
+  const a=document.createElement('a');
+  a.className='card'+(o.cls?(' '+o.cls):''); a.href=o.href; a.target='_blank'; a.rel='noopener';
+  const chip = o.chip ? `<span class="chip ${o.chip.k}">${o.chip.t}</span>`
+                      : `<svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 17 17 7M17 7H8M17 7v9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const dot = o.dot ? `<span class="dot ${o.dot}"></span>` : '';
+  let body = `<div class="top"><span class="ttl">${dot}${o.t}</span>${chip}</div>`;
+  if(o.rows){
+    body += `<div class="rows">`+o.rows.map(r=>`<div class="row"><span class="k">${r[0]}</span><span class="v">${r[1]}</span></div>`).join('')+`</div>`;
+  } else if(o.d){ body += `<div class="desc">${o.d}</div>`; }
+  body += `<div class="url mono">${short(o.href)}</div>`;
+  if(o.warn) body += `<div class="warn">${o.warn}</div>`;
+  a.innerHTML=body; return a;
+}
+function fill(id, arr){ const el=document.getElementById(id); arr.forEach(o=>el.appendChild(card(o))); }
+
+fill('g-public', [
+  {t:'홈', href:'https://audioazpro.com/', chip:{k:'live',t:'LIVE'}},
+  {t:'제품', href:'https://audioazpro.com/products.html', chip:{k:'live',t:'LIVE'}},
+  {t:'Klera Voice', dot:'klera', href:'https://audioazpro.com/product-klera-voice.html', chip:{k:'live',t:'LIVE'}},
+  {t:'Flare Tally', dot:'flare', href:'https://audioazpro.com/product-flare-tally.html', chip:{k:'live',t:'LIVE'}},
+  {t:'다운로드', href:'https://audioazpro.com/downloads.html', chip:{k:'live',t:'LIVE'}},
+  {t:'지원', href:'https://audioazpro.com/support.html', chip:{k:'live',t:'LIVE'}},
+  {t:'지원 · Klera', href:'https://audioazpro.com/support-klera.html', chip:{k:'live',t:'LIVE'}},
+  {t:'지원 · Flare', href:'https://audioazpro.com/support-flare.html', chip:{k:'live',t:'LIVE'}},
+  {t:'문의', href:'https://audioazpro.com/contact.html', chip:{k:'live',t:'LIVE'}},
+  {t:'개인정보처리방침', href:'https://audioazpro.com/privacy.html', chip:{k:'live',t:'LIVE'}},
+  {t:'이용약관', href:'https://audioazpro.com/terms.html', chip:{k:'live',t:'LIVE'}},
+  {t:'환불·라이선스', href:'https://audioazpro.com/refund.html', chip:{k:'live',t:'LIVE'}},
+]);
+fill('g-portal', [
+  {t:'로그인·회원가입', href:'https://audioazpro.com/portal/index.html', chip:{k:'live',t:'LIVE'}},
+  {t:'내 계정', href:'https://audioazpro.com/portal/account.html', chip:{k:'live',t:'LIVE'}},
+  {t:'플러그인 활성화', href:'https://audioazpro.com/portal/activate.html', chip:{k:'live',t:'LIVE'}},
+  {t:'결제', href:'https://audioazpro.com/portal/checkout.html', chip:{k:'live',t:'LIVE'}},
+  {t:'비밀번호 찾기', href:'https://audioazpro.com/portal/forgot.html', chip:{k:'live',t:'LIVE'}},
+  {t:'비밀번호 재설정', href:'https://audioazpro.com/portal/reset-password.html', chip:{k:'live',t:'LIVE'}},
+]);
+fill('g-admin', [
+  {cls:'admin', t:'관리자 콘솔', href:'https://audioazpro.com/portal/console-8kq3f7.html',
+   chip:{k:'lock',t:'PASSKEY'}, d:'라이선스 발급·프로모션·관리자 관리(등급·정지·삭제)·10분 자동 로그아웃.',
+   warn:'⚠︎ 애플 패스키(Touch ID) 전용 · 비공개 URL · 외부 공유 금지'},
+]);
+fill('g-svc', [
+  {cls:'svc', t:'GitHub 저장소', href:'https://github.com/AudioAZ-KR/audioazpro-site', chip:{k:'auth',t:'LOGIN'},
+   rows:[['용도','소스 저장 · <b>Pages 호스팅</b>'],['로그인','GitHub 계정'],['연동','사이트 배포']]},
+  {cls:'svc', t:'Supabase', href:'https://supabase.com/dashboard/project/lkbbenyvchddsjsihofv', chip:{k:'auth',t:'LOGIN'},
+   rows:[['용도','인증 · DB · <b>백엔드</b>'],['로그인','GitHub 으로 로그인'],['연동','포털 회원가입/로그인']]},
+  {cls:'svc', t:'Resend', href:'https://resend.com/domains', chip:{k:'auth',t:'LOGIN'},
+   rows:[['용도','<b>이메일 발송</b> (SMTP)'],['로그인','Google · leogudwns@gmail.com'],['연동','Supabase 확인 메일']]},
+  {cls:'svc', t:'가비아 DNS', href:'https://dns.gabia.com/', chip:{k:'auth',t:'LOGIN'},
+   rows:[['용도','도메인 · <b>DNS</b>'],['로그인','가비아 계정'],['연동','Pages · Resend DKIM']]},
+  {cls:'svc', t:'Web3Forms', href:'https://app.web3forms.com/', chip:{k:'auth',t:'LOGIN'},
+   rows:[['용도','문의 폼 <b>메일 전송</b>'],['로그인','support@audioazpro.com'],['연동','contact.html']]},
+]);
+fill('g-other', [
+  {t:'audioaz.co.kr', href:'http://audioaz.co.kr', d:'렌탈 · 장비 대여 (기존 사이트, 유지)', chip:{k:'auth',t:'렌탈'}},
+]);
+
+(function(){
+  const root=document.documentElement, btn=document.getElementById('tg');
+  let cur=null; try{cur=localStorage.getItem('az_theme')}catch(e){}
+  if(cur) root.setAttribute('data-theme',cur);
+  btn.addEventListener('click',()=>{
+    const now=root.getAttribute('data-theme');
+    const sysDark=matchMedia('(prefers-color-scheme:dark)').matches;
+    const next = now ? (now==='dark'?'light':'dark') : (sysDark?'light':'dark');
+    root.setAttribute('data-theme',next);
+    try{localStorage.setItem('az_theme',next)}catch(e){}
+  });
+})();
+</script>
+</body>
+</html>

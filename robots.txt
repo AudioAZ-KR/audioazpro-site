@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /portal/
+Disallow: /hub-8x2k9f.html
 
 Sitemap: https://audioazpro.com/sitemap.xml
