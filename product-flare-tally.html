@@ -56,13 +56,13 @@ nav{position:sticky;top:0;z-index:50;background:var(--navbg);backdrop-filter:blu
 .fcta{text-align:center}.fcta p{color:var(--dim);max-width:520px;margin:0 auto 22px}.fcta .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px}footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center}footer .right{margin-left:auto}footer a:hover{color:#fff}
 .navlogo path:first-child{fill:#1877F2}
-:root{--page:#0B1220;--card:#121D33;--navbg:rgba(11,18,32,.9);--text:#E9EEF7;--dim:#96A6BF;--line:#243350;--bg:#0C1424;--sky:#17273F;--wordmark:#ffffff}.navtoggle{display:none;margin-left:auto;background:none;border:0;color:var(--text);cursor:pointer;padding:6px;line-height:0}@media(max-width:760px){.navtoggle{display:block}.nav-in .menu{position:absolute;top:64px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:var(--navbg);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:8px 24px 18px;margin-left:0;display:none}.nav-in .menu.open{display:flex}.nav-in .menu .hide-sm{display:block}.nav-in .menu a{padding:13px 2px;border-bottom:1px solid var(--line);font-size:15px}.nav-in .menu .login{border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center;margin-top:10px}}</style>
+:root{--page:#0B1220;--card:#121D33;--navbg:rgba(11,18,32,.9);--text:#E9EEF7;--dim:#96A6BF;--line:#243350;--bg:#0C1424;--sky:#17273F;--wordmark:#ffffff}.navtoggle{display:none;margin-left:auto;background:none;border:0;color:var(--text);cursor:pointer;padding:6px;line-height:0}@media(max-width:760px){.navtoggle{display:block}.nav-in .menu{position:absolute;top:64px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:#0B1220;z-index:60;box-shadow:0 18px 44px rgba(0,0,0,.6);border-bottom:1px solid var(--line);padding:8px 24px 18px;margin-left:0;display:none}.nav-in .menu.open{display:flex}.nav-in .menu .hide-sm{display:block}.nav-in .menu a{padding:13px 2px;border-bottom:1px solid var(--line);font-size:15px}.nav-in .menu .login{background:var(--blue);color:#fff;border:1px solid var(--blue);border-radius:10px;padding:12px;text-align:center;margin-top:10px}}</style>
 </head>
 <body>
 <nav><div class="wrap nav-in">
   <a href="/" class="brand" aria-label="AudioAZ 홈"><img class="brandlock" src="/assets/logo-lockup-white.png" alt="AudioAZ" style="height:42px;width:auto;display:block"></a>
-  <button class="navtoggle" aria-label="메뉴 열기" aria-expanded="false"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-    <div class="menu"><a href="products.html">제품</a><a href="downloads.html" class="hide-sm">다운로드</a><a href="support.html" class="hide-sm">지원</a><a href="portal/index.html" class="login">로그인</a></div>
+  <button class="navtoggle" aria-label="메뉴 열기" aria-expanded="false" aria-controls="navmenu"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <div class="menu" id="navmenu"><a href="products.html">제품</a><a href="downloads.html" class="hide-sm">다운로드</a><a href="support.html" class="hide-sm">지원</a><a href="portal/index.html" class="login">로그인</a></div>
 </div></nav>
 
 <div class="wrap crumb"><a href="products.html">제품</a> › Flare Tally</div>
@@ -88,7 +88,7 @@ footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px}f
   <div class="eyebrow">Features</div><h2>현장에서 만든 탈리</h2>
   <div class="feat">
     <div class="fcard"><div class="ic">01</div><h3>하드웨어 0</h3><p>탈리 라이트·수신기 없이 폰만으로. 카메라 수만큼 폰이면 끝.</p></div>
-    <div class="fcard"><div class="ic">02</div><h3>키어 온에어 반영</h3><p>자막·PIP를 키어로 얹으면 그 카메라도 빨강. 실기 ATEM 검증 완료.</p></div>
+    <div class="fcard"><div class="ic">02</div><h3>키어 온에어 반영</h3><p>자막·PIP를 키어로 얹으면 그 카메라도 빨강. 실기 ATEM 검증(베타 준비 중).</p></div>
     <div class="fcard"><div class="ic">03</div><h3>온라인 + 오프라인</h3><p>같은 Wi-Fi는 물론, LTE 원격 카메라도 온라인으로 연결.</p></div>
     <div class="fcard"><div class="ic">04</div><h3>공지·타이머</h3><p>모든 카메라 폰에 공지 메시지·카운트다운 타이머 전송.</p></div>
     <div class="fcard"><div class="ic">05</div><h3>Apple 공증</h3><p>Developer ID 서명·공증으로 경고 없이 설치.</p></div>
@@ -109,6 +109,7 @@ footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px}f
 <section class="sec fcta"><div class="wrap">
   <h2>폰을 탈리로 바꿔보세요</h2>
   <p>계정을 만들면 체험판과 라이선스를 한곳에서 관리할 수 있습니다.</p>
+  <div class="wrap" style="max-width:760px;margin:0 auto 26px"><div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;font-size:13.5px;color:var(--dim);line-height:1.7"><b style="color:var(--text)">지원 환경 (베타 준비 중)</b><br>· 스위처: Blackmagic ATEM 시리즈 (Mini · Mini Pro · Mini Extreme · Constellation 등)<br>· 온에어 반영: PGM/PVW + 키어(자막·PIP) 온에어<br>· 연결: 같은 Wi-Fi(오프라인) 또는 인터넷·LTE(원격) — macOS 호스트 앱과 카메라 폰이 방 코드로 연결<br>· 제한: macOS 호스트 앱 필요, 네트워크·방화벽 환경에 따라 원격 연결 설정 필요. 지원 모델·조건은 베타에서 확정 안내.</div></div>
   <div class="cta"><a class="btn btn-primary" href="mailto:contact@audioazpro.com?subject=%5B%EC%B6%9C%EC%8B%9C%EC%95%8C%EB%A6%BC%5D%20Flare%20Tally">출시 알림 받기</a><a class="btn btn-outline" href="support.html">지원 · 가이드</a></div>
 </div></section>
 

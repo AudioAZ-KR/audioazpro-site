@@ -1,0 +1,37 @@
+<!DOCTYPE html><html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/png" href="/favicon.png"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<title>Flare Tally 연결·문제해결 — AudioAZ</title><meta name="description" content="Flare Tally ATEM 연결·QR·네트워크 문제 해결 가이드">
+<link rel="canonical" href="https://audioazpro.com/support-flare.html">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+@font-face{font-family:'NanumSquareRound';src:url('fonts/NanumSquareRoundEB.woff2') format('woff2');font-weight:800;font-display:swap}
+h1,h2{font-family:'NanumSquareRound','Pretendard',sans-serif}
+:root{--blue:#1877F2;--blue-soft:#4D96F5;--page:#0B1220;--card:#121D33;--bg:#0C1424;--line:#243350;--text:#E9EEF7;--dim:#96A6BF;--navbg:rgba(11,18,32,.9)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',system-ui,sans-serif;color:var(--text);background:var(--bg);line-height:1.7;word-break:keep-all}
+a{color:inherit;text-decoration:none}img{max-width:100%}
+nav{position:sticky;top:0;z-index:50;background:var(--navbg);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav-in{display:flex;align-items:center;gap:10px;height:64px;max-width:1040px;margin:0 auto;padding:0 24px}
+.menu{margin-left:auto;display:flex;gap:22px;font-size:14.5px;font-weight:600;color:var(--dim)}.menu a:hover{color:var(--blue-soft)}
+.wrap{max-width:820px;margin:0 auto;padding:0 24px}
+.head{padding:44px 0 6px}.eyebrow{font-size:12.5px;font-weight:800;letter-spacing:.14em;color:var(--blue-soft);text-transform:uppercase}
+h1{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:8px 0 4px}.crumb{font-size:13px;color:var(--dim);margin-top:6px}.crumb a{color:var(--blue-soft)}
+.doc{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px;margin:22px 0 40px}
+.doc h2{font-size:16px;font-weight:800;margin:22px 0 8px;color:#fff}.doc h2:first-child{margin-top:0}
+.doc p,.doc li{font-size:14.5px;color:#cdd8e8;margin-bottom:7px}.doc ul,.doc ol{padding-left:20px;margin-bottom:10px}
+.doc code{background:#0A1526;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:13px}
+.note{background:#17263f;border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:13px;color:var(--dim);margin-bottom:18px}
+footer{border-top:1px solid var(--line);color:var(--dim);padding:26px 0;font-size:13px}footer .wrap{display:flex;gap:14px;flex-wrap:wrap}footer .right{margin-left:auto;display:flex;gap:14px;flex-wrap:wrap}footer a:hover{color:#fff}
+</style></head><body>
+<nav><div class="nav-in"><a href="/" class="logo" aria-label="AudioAZ 홈"><img src="/assets/logo-lockup-white.png" alt="AudioAZ" style="height:30px;width:auto;display:block"></a>
+<div class="menu"><a href="products.html">제품</a><a href="downloads.html">다운로드</a><a href="support.html">지원</a></div></div></nav>
+<div class="wrap head"><div class="eyebrow">Support Doc</div><h1>Flare Tally 연결·문제해결</h1><div class="crumb"><a href="support.html">지원</a> › Flare Tally 연결·문제해결</div></div>
+<div class="wrap"><div class="note">제품이 <b>출시 준비 중</b>이라 일부 화면·경로는 베타에서 확정될 수 있습니다. 문제가 지속되면 support@audioazpro.com 으로 문의해 주세요.</div>
+<div class="doc"><h2>1. 구성</h2><ul><li>macOS <b>호스트 앱</b> 1대 + 카메라마다 스마트폰(브라우저) 1대.</li><li>호스트가 ATEM 스위처와 연결되어 PGM/PVW·키어 상태를 각 폰에 전송합니다.</li></ul>
+<h2>2. ATEM 연결</h2><ul><li>호스트 앱에 ATEM의 IP 주소를 입력해 연결합니다(같은 네트워크 권장).</li><li>지원: Blackmagic ATEM 시리즈(Mini · Mini Pro · Mini Extreme · Constellation 등).</li><li>키어(자막·PIP) 온에어까지 탈리에 반영됩니다.</li></ul>
+<h2>3. 폰 연결 (QR / 방 코드)</h2><ol><li>호스트 화면의 <b>방 코드</b> 또는 QR을 카메라 폰으로 스캔·입력합니다.</li><li>같은 Wi-Fi면 오프라인 연결, 인터넷·LTE면 원격 연결이 됩니다.</li><li>연결되면 해당 카메라가 PGM이면 빨강, PVW면 초록으로 표시됩니다.</li></ol>
+<h2>4. 문제 해결</h2><ul><li><b>폰이 연결 안 됨</b>: 방 코드/URL을 정확히 입력했는지, 폰과 호스트가 같은 네트워크(또는 인터넷)에 있는지 확인.</li><li><b>탈리 색이 안 바뀜</b>: 호스트-ATEM 연결 상태와 IP를 확인. 키어 반영은 해당 키어가 온에어일 때 표시됩니다.</li><li><b>원격(LTE)에서 지연/끊김</b>: 네트워크·방화벽 환경에 따라 포트 개방 등 설정이 필요할 수 있습니다.</li></ul>
+<h2>5. 지원 환경 (베타 확정 예정)</h2><ul><li>호스트: macOS 앱 (Apple 공증 서명)</li><li>카메라 단말: 스마트폰 웹브라우저(별도 설치 불필요)</li><li>네트워크: 같은 Wi-Fi 또는 인터넷·LTE</li></ul></div></div>
+<footer><div class="wrap"><span>© AudioAZ (오디오에이지)</span><span class="right"><a href="support.html">지원</a> · <a href="privacy.html">개인정보처리방침</a> · <a href="terms.html">이용약관</a> · <a href="refund.html">환불·라이선스</a> · <a href="mailto:support@audioazpro.com">문의</a></span></div></footer>
+</body></html>

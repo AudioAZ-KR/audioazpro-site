@@ -43,19 +43,19 @@ nav{position:sticky;top:0;z-index:50;background:var(--navbg);backdrop-filter:blu
 .btn-outline{border:1px solid var(--line);color:var(--navy);background:#fff}.btn-outline:hover{background:var(--sky)}
 .note{font-size:12.5px;color:var(--dim);margin-top:10px}
 footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px;margin-top:50px}footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center}footer .right{margin-left:auto}footer a:hover{color:#fff}
-:root{--page:#0B1220;--card:#121D33;--navbg:rgba(11,18,32,.9);--text:#E9EEF7;--dim:#96A6BF;--line:#243350;--bg:#0C1424;--sky:#17273F;--wordmark:#ffffff}.navtoggle{display:none;margin-left:auto;background:none;border:0;color:var(--text);cursor:pointer;padding:6px;line-height:0}@media(max-width:760px){.navtoggle{display:block}.nav-in .menu{position:absolute;top:64px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:var(--navbg);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:8px 24px 18px;margin-left:0;display:none}.nav-in .menu.open{display:flex}.nav-in .menu .hide-sm{display:block}.nav-in .menu a{padding:13px 2px;border-bottom:1px solid var(--line);font-size:15px}.nav-in .menu .login{border:1px solid var(--line);border-radius:10px;padding:12px;text-align:center;margin-top:10px}}.btn-disabled{background:transparent;border:1px dashed var(--line);color:var(--dim);cursor:default}</style>
+:root{--page:#0B1220;--card:#121D33;--navbg:rgba(11,18,32,.9);--text:#E9EEF7;--dim:#96A6BF;--line:#243350;--bg:#0C1424;--sky:#17273F;--wordmark:#ffffff}.navtoggle{display:none;margin-left:auto;background:none;border:0;color:var(--text);cursor:pointer;padding:6px;line-height:0}@media(max-width:760px){.navtoggle{display:block}.nav-in .menu{position:absolute;top:64px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:#0B1220;z-index:60;box-shadow:0 18px 44px rgba(0,0,0,.6);border-bottom:1px solid var(--line);padding:8px 24px 18px;margin-left:0;display:none}.nav-in .menu.open{display:flex}.nav-in .menu .hide-sm{display:block}.nav-in .menu a{padding:13px 2px;border-bottom:1px solid var(--line);font-size:15px}.nav-in .menu .login{background:var(--blue);color:#fff;border:1px solid var(--blue);border-radius:10px;padding:12px;text-align:center;margin-top:10px}}.btn-disabled{background:transparent;border:1px dashed var(--line);color:var(--dim);cursor:default}</style>
 </head>
 <body>
 <nav><div class="wrap nav-in">
   <a href="/" class="brand" aria-label="AudioAZ 홈"><img class="brandlock" src="/assets/logo-lockup-white.png" alt="AudioAZ" style="height:42px;width:auto;display:block"></a>
-  <button class="navtoggle" aria-label="메뉴 열기" aria-expanded="false"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-    <div class="menu"><a href="products.html">제품</a><a href="downloads.html">다운로드</a><a href="support.html" class="hide-sm">지원</a><a href="portal/index.html" class="login">로그인</a></div>
+  <button class="navtoggle" aria-label="메뉴 열기" aria-expanded="false" aria-controls="navmenu"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <div class="menu" id="navmenu"><a href="products.html">제품</a><a href="downloads.html">다운로드</a><a href="support.html" class="hide-sm">지원</a><a href="portal/index.html" class="login">로그인</a></div>
 </div></nav>
 
 <div class="wrap head">
   <div class="eyebrow">Downloads</div>
   <h1>다운로드</h1>
-  <p>무료 도구는 바로 받고, 유료 제품은 체험판으로 먼저 써보세요. 구매한 제품의 정식 버전·라이선스는 <a href="portal/account.html" style="color:var(--blue);font-weight:600">내 계정</a>에서 관리합니다.</p>
+  <p>무료 도구와 제품 모두 <b>출시 준비 중</b>입니다. 출시되면 이곳에서 바로 내려받을 수 있습니다. 구매·라이선스는 로그인 후 <a href="portal/account.html" style="color:var(--blue);font-weight:600">내 계정</a>에서 관리됩니다.</p>
 </div>
 
 <div class="wrap">
@@ -66,12 +66,12 @@ footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px;m
     <div class="row"><div class="ic">03</div><div class="info"><h3>Latency Meter AZ <span class="badge b-free">무료</span></h3><p>Tx/Rx 연동 왕복 레이턴시 측정 · AU/VST3/앱</p></div><span class="ver">v1.0</span><span class="btn btn-disabled" aria-disabled="true">준비 중</span></div>
   </div>
 
-  <h2>제품 체험판</h2>
+  <h2>제품 (출시 예정)</h2>
   <div class="list">
     <div class="row"><div class="ic">01</div><div class="info"><h3>Klera Voice <span class="badge b-trial">7일 무료체험</span></h3><p>제로레이턴시 AI 보이스 클린 · VST3/AU</p></div><span class="ver">출시 예정</span><span class="btn btn-disabled" aria-disabled="true">출시 예정</span></div>
     <div class="row"><div class="ic">02</div><div class="info"><h3>Flare Tally <span class="badge b-trial">체험</span></h3><p>스마트폰 카메라 탈리 · macOS 호스트</p></div><span class="ver">출시 예정</span><span class="btn btn-disabled" aria-disabled="true">출시 예정</span></div>
   </div>
-  <p class="note">체험판·구매 다운로드는 계정 로그인 후 제공됩니다. macOS 앱은 Apple 공증(Developer ID) 서명되어 경고 없이 설치됩니다.</p>
+  <p class="note">다운로드는 출시 후 계정 로그인 시 제공됩니다. macOS 앱은 출시 시 Apple 공증(Developer ID) 서명으로 경고 없이 설치되도록 제공될 예정입니다.</p>
 </div>
 
 <footer><div class="wrap"><span>© AudioAZ (오디오에이지)</span><span class="right"><a href="products.html">제품</a> · <a href="support.html">지원</a> · <a href="portal/index.html">로그인</a> · <a href="privacy.html">개인정보처리방침</a> · <a href="terms.html">이용약관</a> · <a href="refund.html">환불·라이선스</a></span></div></footer>
