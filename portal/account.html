@@ -105,6 +105,14 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
 .notecell .txt .pen{opacity:.45;font-size:11px;margin-left:4px}
 .notecell input{width:100%;height:32px;border:1px solid var(--blue);border-radius:7px;padding:0 8px;font-family:inherit;font-size:12.5px;background:#0E1A2E;color:#E9EEF7}
 .notecell input:focus{outline:none;box-shadow:0 0 0 3px rgba(24,119,242,.15)}
+/* ⋯ 액션 메뉴 (Dante 스타일 팝업) */
+.dots{width:36px;height:30px;border:0;border-radius:8px;background:#17273F;color:#7FB2F8;font-size:17px;font-weight:800;cursor:pointer;line-height:1;letter-spacing:1px}
+.dots:hover{background:#1E3252}
+.licmenu{position:fixed;z-index:120;background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:0 16px 44px rgba(0,0,0,.55);padding:8px;min-width:176px}
+.licmenu .mh{font-size:11px;color:var(--dim);font-weight:800;padding:4px 10px 6px;letter-spacing:.05em}
+.licmenu button{display:flex;align-items:center;gap:9px;width:100%;border:0;background:none;text-align:left;padding:9px 10px;border-radius:8px;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--text);cursor:pointer;white-space:nowrap}
+.licmenu button:hover{background:var(--sky)}
+.licmenu button .mi{width:16px;text-align:center;color:var(--dim)}
 .stub{display:inline-block;font-size:10.5px;font-weight:800;color:#B26A00;background:#FFF3E0;border-radius:6px;padding:2px 7px;margin-left:6px;vertical-align:middle}
 :root{--page:#0B1220;--card:#121D33;--navbg:rgba(11,18,32,.9);--text:#E9EEF7;--dim:#96A6BF;--line:#243350;--bg:#0C1424;--sky:#17273F;--wordmark:#fff}body{background:var(--bg)}.logo{width:auto !important}.field input,.field select,.field textarea,.key{background:#0E1A2E;color:#E9EEF7;border-color:#243350}.field input::placeholder{color:#6B7C96}.notice{color:#9CC2F5}.demobar{position:fixed;top:0;left:0;right:0;z-index:300;background:#8a5a00;color:#ffe0ad;text-align:center;font-size:12px;font-weight:600;padding:7px 12px}body{padding-top:32px}.topbar{top:32px}nav{top:32px}.side{top:32px}.nav-in .who span,.nav-in .who a{white-space:nowrap}@media(max-width:560px){.nav-in>span{display:none}.nav-in .who{gap:8px;font-size:12.5px}}</style>
 </head>
@@ -184,29 +192,106 @@ var sbA=window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co',
 })();
 function doLogout(){ try{AZ.logout();}catch(_){}; sbA.auth.signOut().finally(function(){ location.href='index.html'; }); }
 
-// 내 라이선스 리스트 (제품·수량 제한 없이 여러 개)
-function licCard(l, idx){
-  var m=AZ.PRODMETA[l.product]||{name:l.product,tag:l.product,ver:'',desc:''};
+// 내 라이선스 — 제품별 그룹 테이블 (키·유형·상세·메모·상태)
+function escH(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function fmtDate(t){ if(!t) return '—'; var d=new Date(t); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function licRow(l, idx){
   var b=AZ.bindingLabel(l.binding);
-  var bindLine = b
-    ? '<div style="margin-top:10px;font-size:12.5px;color:var(--green)">● 활성화됨 · <b style="color:var(--text)">'+b.name+'</b> <span style="font-family:ui-monospace,Menlo,monospace;color:var(--dim);font-size:11.5px">'+b.id+'</span></div>'
-    : '<div style="margin-top:10px;font-size:12.5px;color:#E0A253">○ 아직 활성화 안 됨 — 저장 위치(컴퓨터/USB)를 선택하세요.</div>';
-  var el=document.createElement('div'); el.className='prod';
-  el.innerHTML=
-    '<div class="top"><div class="ic">'+m.tag+'</div><div><h3>'+m.name+'</h3>'+
-    '<div class="ver">'+m.ver+' · '+m.desc+'</div></div>'+
-    '<span class="badge b-active" style="margin-left:auto">'+(AZ.TYPELABEL[l.type]||'활성')+'</span></div>'+
-    '<div class="key">'+l.key+'</div>'+ bindLine +
-    '<div class="keyrow"><button class="btn" onclick="copyKey(this)">키 복사</button>'+
-    '<button class="btn pri" onclick="AZ.download(\''+l.product+'\')">다운로드</button>'+
-    '<button class="btn" onclick="location.href=\'activate.html?p='+l.product+'&i='+idx+'\'">'+(b?'활성화 변경':'활성화')+'</button></div>';
-  return el;
+  var details = b
+    ? '<div class="d1">'+escH(b.name)+' 활성화</div><div class="d2 mono">'+escH(b.id)+'</div><div class="d2">발급 '+fmtDate(l.at)+'</div>'
+    : '<div class="d1" style="color:var(--dim)">미활성화</div><div class="d2">발급 '+fmtDate(l.at)+'</div>';
+  var status = b
+    ? '<span class="pill inuse">사용 중</span>'
+    : '<span class="pill avail">사용 가능</span>';
+  var noteHtml = l.note
+    ? '<div class="txt" onclick="editNote(this,'+idx+')" title="눌러서 수정">'+escH(l.note)+'<span class="pen">✎</span></div>'
+    : '<div class="txt empty" onclick="editNote(this,'+idx+')">+ 메모 추가</div>';
+  return '<tr>'+
+    '<td class="mono">'+escH(l.key)+'</td>'+
+    '<td style="white-space:nowrap">'+escH(AZ.TYPELABEL[l.type]||l.type)+'</td>'+
+    '<td>'+details+'</td>'+
+    '<td class="notecell" data-i="'+idx+'">'+noteHtml+'</td>'+
+    '<td>'+status+'</td>'+
+    '<td style="text-align:right"><button class="dots" onclick="licMenu(event,'+idx+')" aria-label="라이선스 메뉴" aria-haspopup="menu">···</button></td>'+
+  '</tr>';
 }
 function renderLicenses(){
   var box=document.getElementById('licenses'); var ls=AZ.licenses();
-  if(!ls.length){ box.className=''; box.innerHTML='<p class="muted" style="background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:22px;text-align:center">아직 보유한 라이선스가 없습니다. 아래 <b>제품</b>에서 구매하거나 코드를 등록하세요.</p>'; return; }
-  box.className='prods'; box.innerHTML='';
-  ls.forEach(function(l,i){ box.appendChild(licCard(l,i)); });
+  var fb=document.getElementById('licFilterBox');
+  if(!ls.length){ if(fb)fb.style.display='none'; box.innerHTML='<p class="muted" style="background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:22px;text-align:center;margin-top:14px">아직 보유한 라이선스가 없습니다. 아래 <b>제품</b>에서 구매하거나 코드를 등록하세요.</p>'; return; }
+  if(fb)fb.style.display=(ls.length>1)?'flex':'none';
+  var q=((document.getElementById('licFilter')||{}).value||'').trim().toLowerCase();
+  // 제품별 그룹 (원본 인덱스 유지)
+  var groups={}, order=[];
+  ls.forEach(function(l,i){
+    var b=AZ.bindingLabel(l.binding);
+    var hay=(l.key+' '+(l.note||'')+' '+(b?b.name+' '+b.id:'')+' '+(AZ.TYPELABEL[l.type]||'')).toLowerCase();
+    if(q && hay.indexOf(q)<0) return;
+    if(!groups[l.product]){ groups[l.product]=[]; order.push(l.product); }
+    groups[l.product].push({l:l,i:i});
+  });
+  if(!order.length){ box.innerHTML='<p class="muted" style="background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:22px;text-align:center;margin-top:14px">검색 결과가 없습니다.</p>'; return; }
+  box.innerHTML=order.map(function(prod){
+    var m=AZ.PRODMETA[prod]||{name:prod,tag:prod,ver:''};
+    var rows=groups[prod].map(function(g){ return licRow(g.l,g.i); }).join('');
+    return '<div class="lic-group">'+
+      '<div class="lg-head"><span class="ic">'+escH(m.tag)+'</span><h3>'+escH(m.name)+'</h3><span class="ver">'+escH(m.ver)+' · 보유 '+groups[prod].length+'개</span>'+
+      '<button class="tbtn buy" onclick="location.href=\'checkout.html?p='+prod+'\'">추가 구매 →</button></div>'+
+      '<div class="tblwrap"><table class="lictbl"><thead><tr><th>라이선스 키</th><th>유형</th><th>상세</th><th>메모</th><th>상태</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+    '</div>';
+  }).join('');
+}
+// 메모 편집 — 셀을 입력창으로 전환, Enter/포커스아웃 시 저장
+function editNote(el, idx){
+  var cell=el.parentNode, cur=(AZ.licenseAt(idx)||{}).note||'';
+  cell.innerHTML='<input maxlength="60" placeholder="예: 사무실 맥, 공연용 USB" value="'+escH(cur)+'">';
+  var inp=cell.querySelector('input');
+  inp.focus(); inp.setSelectionRange(inp.value.length,inp.value.length);
+  var done=false;
+  function save(){ if(done)return; done=true; AZ.setNote(idx, inp.value.trim()); renderLicenses(); }
+  inp.addEventListener('keydown',function(ev){ if(ev.key==='Enter'){save();} if(ev.key==='Escape'){done=true;renderLicenses();} });
+  inp.addEventListener('blur',save);
+  // TODO(백엔드): PATCH /api/license/:id { user_note } — licenses.user_note 컬럼에 저장
+}
+// ⋯ 팝업 메뉴 — 한 번에 하나만, 바깥 클릭/스크롤 시 닫힘
+var licMenuEl=null;
+function closeLicMenu(){ if(licMenuEl){ licMenuEl.remove(); licMenuEl=null; } }
+function licMenu(ev, idx){
+  ev.stopPropagation();
+  var wasOpen = licMenuEl && licMenuEl.dataset.i==String(idx);
+  closeLicMenu(); if(wasOpen) return;
+  var l=AZ.licenseAt(idx); if(!l) return;
+  var b=AZ.bindingLabel(l.binding);
+  licMenuEl=document.createElement('div'); licMenuEl.className='licmenu'; licMenuEl.dataset.i=idx;
+  licMenuEl.innerHTML='<div class="mh">라이선스</div>'+
+    '<button onclick="licMenuAct('+idx+',\'copy\',this)"><span class="mi">⧉</span>키 복사</button>'+
+    '<button onclick="licMenuAct('+idx+',\'dl\')"><span class="mi">↓</span>다운로드</button>'+
+    '<button onclick="licMenuAct('+idx+',\'act\')"><span class="mi">◎</span>'+(b?'활성화 변경':'활성화')+'</button>'+
+    '<button onclick="licMenuAct('+idx+',\'note\')"><span class="mi">✎</span>메모 수정</button>';
+  licMenuEl.addEventListener('click',function(e){e.stopPropagation();});
+  document.body.appendChild(licMenuEl);
+  var r=ev.currentTarget.getBoundingClientRect(), mw=licMenuEl.offsetWidth, mh=licMenuEl.offsetHeight;
+  var top=r.bottom+6; if(top+mh>window.innerHeight-8) top=r.top-mh-6;
+  licMenuEl.style.top=top+'px';
+  licMenuEl.style.left=Math.max(8, Math.min(r.right-mw, window.innerWidth-mw-8))+'px';
+}
+document.addEventListener('click', closeLicMenu);
+window.addEventListener('scroll', closeLicMenu, {passive:true});
+function licMenuAct(idx, act, btn){
+  var l=AZ.licenseAt(idx); if(!l){ closeLicMenu(); return; }
+  if(act==='copy'){
+    navigator.clipboard&&navigator.clipboard.writeText(l.key);
+    if(btn){ btn.innerHTML='<span class="mi" style="color:var(--green)">✓</span>복사됨'; setTimeout(closeLicMenu,700); return; }
+  }
+  else if(act==='dl') AZ.download(l.product);
+  else if(act==='act'){ location.href='activate.html?p='+l.product+'&i='+idx; return; }
+  else if(act==='note'){
+    closeLicMenu();
+    var cell=document.querySelector('.notecell[data-i="'+idx+'"]');
+    if(cell) editNote(cell.querySelector('.txt'), idx);
+    return;
+  }
+  closeLicMenu();
 }
 // 제품 카탈로그 (구매/코드로 라이선스 받기)
 function renderCatalog(){
