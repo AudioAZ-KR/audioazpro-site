@@ -126,7 +126,8 @@ tr:last-child td{border-bottom:0}
     </form>
     <div class="gdiv">또는</div>
     <button type="button" class="tid" id="ga-touch" onclick="touchLogin()">🔒 애플 패스키로 로그인 (Touch ID)</button>
-    <button type="button" class="enrl" id="ga-enroll" onclick="enrollDevice()">내 애플 패스키 등록 (최초 1회 · Safari 권장)</button>
+    <button type="button" class="enrl" id="ga-enroll" onclick="enrollDevice()">내 애플 패스키 등록 (최초 1회)</button>
+    <div id="ga-credout" style="display:none;margin-top:10px;padding:10px 12px;background:#0A1526;border:1px solid #12B76A;border-radius:9px;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#7ee0a6;word-break:break-all;user-select:all"></div>
     <p class="n">비인가 접근 금지 · 관리자 전용 페이지입니다.</p>
   </div>
 </div>
@@ -428,8 +429,12 @@ async function enrollDevice(){
       timeout:60000, attestation:'none'
     }});
     var id=bufToB64url(cred.rawId);
-    window.prompt('✅ 애플 패스키 등록 완료!\n\n아래 credential ID 전체를 복사해서 클로드에게 붙여주세요. (iCloud로 대표님 애플 기기에 동기화됩니다 — 이 값을 소스에 넣으면 대표님 애플 기기에서만 열립니다)', id);
-  }catch(ex){ err.textContent='Touch ID 등록 실패: '+((ex&&ex.message)||ex); err.classList.add('on'); }
+    try{ localStorage.setItem('az_last_cred', id); }catch(_){}
+    var out=document.getElementById('ga-credout');
+    if(out){ out.textContent=id; out.style.display='block'; }
+    err.classList.remove('on');
+    var eb=document.getElementById('ga-enroll'); if(eb){ eb.textContent='✅ 등록 완료 — 아래 ID 확인'; eb.style.color='#12B76A'; }
+  }catch(ex){ err.textContent='패스키 등록 실패: '+((ex&&ex.message)||ex); err.classList.add('on'); }
 }
 
 // ===== 관리자 계정 생성기 (이 맥 Touch ID 필수) =====
