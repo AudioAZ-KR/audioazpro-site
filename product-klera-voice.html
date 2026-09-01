@@ -11,10 +11,11 @@
 @font-face{font-family:'NanumSquareRound';src:url('fonts/NanumSquareRoundB.woff2') format('woff2');font-weight:700;font-display:swap}
 .nav-in b,h1,h2{font-family:'NanumSquareRound','Pretendard',sans-serif}
 :root{
-  --blue:#1877F2; --blue-deep:#0E5FCC; --blue-soft:#4D96F5;
-  --navy:#0C2244; --navy-deep:#081729;
-  --sky:#E8F1FE; --line:#DCE6F5; --bg:#EDF2FA;
-  --text:#14213A; --dim:#5B6B85; --amber:#F5B93C;
+  /* Klera Voice 시그니처 컬러 — 인디고·바이올렛 (회사 블루와 구분) */
+  --blue:#6D4BF0; --blue-deep:#5333D6; --blue-soft:#9A82F7;
+  --navy:#191347; --navy-deep:#100C2E;
+  --sky:#EFEBFE; --line:#E2DCF5; --bg:#F0EEFA;
+  --text:#171335; --dim:#615B85; --amber:#F5B93C;
   --page:#ffffff; --card:#ffffff; --navbg:rgba(255,255,255,.92); --wordmark:#111;
 }
 *{margin:0;padding:0;box-sizing:border-box}
@@ -46,7 +47,7 @@ nav{position:sticky;top:0;z-index:50;background:var(--navbg);backdrop-filter:blu
 .crumb a:hover{color:var(--blue)}
 
 /* hero */
-.phero{background:linear-gradient(160deg,var(--navy-deep),var(--navy) 60%,#123464);color:#fff;padding:64px 0 72px}
+.phero{background:linear-gradient(160deg,var(--navy-deep),var(--navy) 58%,#3A2A85);color:#fff;padding:64px 0 72px}
 .phero .eyebrow{color:var(--blue-soft)}
 .phero h1{font-size:clamp(30px,4.6vw,46px);font-weight:800;line-height:1.2;letter-spacing:-.02em;margin:12px 0 16px}
 .phero .lead{color:#C7D6E8;font-size:18px;max-width:620px}
