@@ -8,6 +8,7 @@
 <title>AudioAZ 계정 — 로그인 · 회원가입</title>
 <meta name="description" content="AudioAZ 계정으로 로그인하고 구매한 소프트웨어 라이선스를 관리하세요.">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 @font-face{font-family:'NanumSquareRound';src:url('fonts/NanumSquareRoundEB.woff2') format('woff2');font-weight:800;font-display:swap}
 @font-face{font-family:'NanumSquareRound';src:url('fonts/NanumSquareRoundB.woff2') format('woff2');font-weight:700;font-display:swap}
@@ -160,7 +161,7 @@ img,svg{max-width:100%}
   </div>
 </div>
 
-<script src="az-demo.js"></script>
+<script src="az-supabase.js"></script>
 <script>
 function setTab(t){
   var login=t==='login';
@@ -175,23 +176,38 @@ function setTab(t){
     : '이미 계정이 있으신가요? <button type="button" class="linklike" onclick="setTab(\'login\')">로그인</button>';
 }
 // 이미 로그인돼 있으면 계정으로
-if(AZ.session()){ location.replace('account.html'); }
+AZ.session().then(function(s){ if(s) location.replace('account.html'); }).catch(function(){});
 
-// 소셜 로그인 — 정식 오픈 예정. 지금은 이메일 로그인으로 테스트.
+// 소셜 로그인 — 정식 오픈 예정 (버튼은 비활성). Supabase Auth Provider 연결 후 활성화.
 function oauth(provider){
   var names={google:'Google',kakao:'카카오',naver:'네이버',apple:'Apple'};
-  alert(names[provider]+' 로그인은 정식 오픈 예정입니다.\n\n지금은 테스트 모드예요 — 아래 이메일·비밀번호에 아무 값이나 넣고 로그인하면 전체 흐름을 체험할 수 있습니다.');
-  // TODO(백엔드): location.href='/auth/'+provider;  // Supabase/FastAPI OAuth
+  alert(names[provider]+' 로그인은 정식 오픈 예정입니다. 지금은 이메일 회원가입/로그인을 이용해 주세요.');
 }
-// 데모: 이메일/비번 검증 없이 세션 생성 → 계정으로 이동
-function submitForm(e,mode){
+// 실제 Supabase 인증
+async function submitForm(e,mode){
   e.preventDefault();
-  var f=e.target, d={};
-  new FormData(f).forEach((v,k)=>d[k]=v);
-  if(mode==='signup' && d.password!==d.password2){ alert('비밀번호가 일치하지 않습니다.'); return false; }
-  AZ.login(d.email, d.name);          // 데모 세션 저장
-  location.href='account.html';
-  // TODO(백엔드): fetch('/api/'+mode, ...) → 세션 쿠키 → account.html
+  var f=e.target, d={}; new FormData(f).forEach(function(v,k){d[k]=v;});
+  var btn=f.querySelector('button[type=submit]'), old=btn.textContent;
+  btn.disabled=true; btn.textContent='처리 중…';
+  try{
+    if(mode==='signup'){
+      if(d.password!==d.password2){ throw new Error('비밀번호가 일치하지 않습니다.'); }
+      await AZ.signup(d.email, d.password, d.name);
+      var s=await AZ.session();
+      if(s){ location.href='account.html'; return false; }   // 이메일 인증 꺼져 있으면 바로 로그인
+      alert('회원가입 완료! 확인 메일이 발송된 경우 인증 후 로그인하세요.');
+      setTab('login'); btn.disabled=false; btn.textContent=old;
+    } else {
+      await AZ.login(d.email, d.password);
+      location.href='account.html';
+    }
+  }catch(ex){
+    var msg=(ex && ex.message) || '처리에 실패했습니다.';
+    if(/Invalid login/i.test(msg)) msg='이메일 또는 비밀번호가 올바르지 않습니다.';
+    if(/already registered/i.test(msg)) msg='이미 가입된 이메일입니다.';
+    if(/Email not confirmed/i.test(msg)) msg='이메일 인증이 필요합니다. 받은 메일의 링크를 확인하세요.';
+    alert(msg); btn.disabled=false; btn.textContent=old;
+  }
   return false;
 }
 </script>
