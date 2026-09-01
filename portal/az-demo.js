@@ -12,10 +12,10 @@
   var SKEY = 'az_session', LKEY = 'az_licenses';
 
   var PRODMETA = {
-    KV:   { name: 'Klera Voice',      tag: 'KV',  ver: 'v0.4.3',  file: 'KleraVoice',      desc: '노이즈·잔향 제거 플러그인' },
-    KI:  { name: 'Klera Instrument', tag: 'KI', ver: 'v0.1.0',  file: 'KleraInstrument', desc: '악기 트랙 클린업' },
-    TALLY: { name: 'Flare Tally',  tag: 'FT',  ver: 'v1.14.0', file: 'FlareTally',desc: '스마트폰 카메라 탈리' },
-    LMAZ:  { name: 'Latency Meter AZ',    tag: 'LMAZ', ver: 'v1.0.0',  file: 'LatencyMeterAZ',    desc: '왕복 레이턴시 측정' }
+    KV:   { name: 'Klera Voice',      tag: 'KV',  ver: 'v0.4.3',  file: 'KleraVoice',      desc: '노이즈·잔향 제거 플러그인', price: 49000 },
+    KI:  { name: 'Klera Instrument', tag: 'KI', ver: 'v0.1.0',  file: 'KleraInstrument', desc: '악기 트랙 클린업', price: 49000 },
+    TALLY: { name: 'Flare Tally',  tag: 'FT',  ver: 'v1.14.0', file: 'FlareTally',desc: '스마트폰 카메라 탈리', price: 39000 },
+    LMAZ:  { name: 'Latency Meter AZ',    tag: 'LMAZ', ver: 'v1.0.0',  file: 'LatencyMeterAZ',    desc: '왕복 레이턴시 측정', price: 0 }
   };
   var TYPELABEL = {
     FULL: '정식 · 영구', D7: '데모 · 7일', D14: '데모 · 14일', D30: '데모 · 30일', FREE: '무료 · 영구'
@@ -63,6 +63,45 @@
       return key;
     },
     reset: function () { try { localStorage.removeItem(LKEY); localStorage.removeItem(SKEY); } catch (e) {} },
+
+    /* --- 가격 · 세일 (코드 없이 정가에서 할인) --- */
+    // 세일: { KV: { price: 39000, start: '2026-09-01', end: '2026-09-30', at: ... }, ... }
+    // 정식 전환 시 products 테이블의 sale_price / sale_from / sale_to 컬럼으로 이동.
+    basePrice: function (prod) { var m = PRODMETA[prod]; return m ? (m.price || 0) : 0; },
+    sales: function () { return read('az_sales', {}); },
+    setSale: function (prod, price, start, end) {
+      var s = this.sales();
+      s[prod] = { price: price, start: start || null, end: end || null, at: Date.now() };
+      write('az_sales', s);
+    },
+    clearSale: function (prod) { var s = this.sales(); delete s[prod]; write('az_sales', s); },
+    saleFor: function (prod) { // 오늘 기준 유효한 세일만 반환
+      var s = this.sales()[prod]; if (!s) return null;
+      var today = new Date().toISOString().slice(0, 10);
+      if (s.start && today < s.start) return null;
+      if (s.end && today > s.end) return null;
+      return s;
+    },
+    priceOf: function (prod) { // { base: 정가, sale: 세일가|null, now: 실제 판매가 }
+      var base = this.basePrice(prod), sale = this.saleFor(prod);
+      return { base: base, sale: sale ? sale.price : null, now: sale ? sale.price : base };
+    },
+
+    /* --- 프로모션/할인 코드 저장소 (관리자 콘솔에서 발행 → 결제에서 대조) --- */
+    // 정식 전환 시 promo_codes 테이블 + Edge Function 검증으로 이동.
+    promos: function () { return read('az_promos', []); },
+    savePromos: function (list) { write('az_promos', list); },
+    findPromo: function (code) {
+      code = String(code || '').trim().toUpperCase();
+      var L = this.promos();
+      for (var i = 0; i < L.length; i++) if (L[i].code === code) return L[i];
+      return null;
+    },
+    usePromo: function (code) { // 사용 횟수 +1
+      var L = this.promos();
+      for (var i = 0; i < L.length; i++) if (L[i].code === code) { L[i].used = (L[i].used || 0) + 1; break; }
+      this.savePromos(L);
+    },
 
     /* --- 활성화 바인딩: 컴퓨터(기기 UUID) 또는 USB(볼륨 ID) --- */
     // 데모용 식별자. 정식 전환 시 플러그인이 실제 하드웨어 UUID / USB 볼륨ID를 읽어 서버가 서명.

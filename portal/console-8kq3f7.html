@@ -247,9 +247,10 @@ td{color:var(--text)}
     </div>
     <nav>
       <a class="on" data-p="dash">대시보드</a>
+      <a data-p="appr">결재 <span id="apprBadge" style="display:none;background:#E7B252;color:#2E2410;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;margin-left:6px"></span></a>
       <div class="grp">판매 관리</div>
       <a data-p="lic">라이선스</a>
-      <a data-p="promo">프로모션 코드</a>
+      <a data-p="promo">프로모션 · 할인</a>
       <a data-p="orders">주문·결제</a>
       <a data-p="customers">고객</a>
       <div class="grp">콘텐츠</div>
@@ -287,6 +288,36 @@ td{color:var(--text)}
         </div>
       </section>
 
+      <!-- 결재 (승인 워크플로) -->
+      <section id="p-appr" class="page">
+        <div class="card"><h2>결재 올리기</h2><div class="sub">환불·프로모션·라이선스 조치는 결재로 신청합니다. <b>최고관리자가 승인하는 즉시 실제 반영</b>되며, 문서는 삭제할 수 없습니다.</div>
+          <form onsubmit="return azApprSubmit(event)">
+            <div class="grid2">
+              <div class="field"><label>유형</label>
+                <select id="aType" onchange="azApprFields()">
+                  <option value="refund">환불 (주문 환불 + 라이선스 회수)</option>
+                  <option value="promo_create">프로모션 코드 발행</option>
+                  <option value="promo_disable">프로모션 코드 중지</option>
+                  <option value="license_issue">라이선스 발급·재발급</option>
+                  <option value="license_revoke">라이선스 회수</option>
+                  <option value="etc">기타 (수동 조치)</option>
+                </select>
+              </div>
+              <div class="field"><label>제목</label><input id="aTitle" required placeholder="예: 홍길동님 KV 환불 요청"></div>
+            </div>
+            <div id="aFields" class="grid2" style="margin-top:4px"></div>
+            <div class="field" style="margin-top:4px"><label>사유 (승인자에게 전달)</label><textarea id="aReason" rows="2" placeholder="무엇이 왜 필요한지"></textarea></div>
+            <button class="btn" type="submit" style="margin-top:12px">결재 올리기</button>
+            <span id="aMsg" class="n" style="margin-left:10px"></span>
+          </form>
+        </div>
+        <div class="card"><h2>결재 목록 <button class="tbtn" style="margin-left:10px" onclick="azApprLoad()">새로고침</button></h2>
+          <div class="sub" id="apprHint">대기 중인 결재는 최고관리자가 승인/거절할 수 있습니다.</div>
+          <table><thead><tr><th>일시</th><th>유형</th><th>제목·사유</th><th>요청자</th><th>상태</th><th>처리</th></tr></thead>
+          <tbody id="apprRows"><tr><td colspan="6" class="n">불러오는 중…</td></tr></tbody></table>
+        </div>
+      </section>
+
       <!-- 라이선스 (핵심) -->
       <section id="p-lic" class="page">
         <div class="card"><h2>라이선스 발급</h2><div class="sub">Ed25519 서명 키를 발급합니다. 개인키는 서버에만 두며, 발급 즉시 구매자 이메일로 전송됩니다.</div>
@@ -313,9 +344,33 @@ td{color:var(--text)}
         </div>
       </section>
 
-      <!-- 프로모션 코드 -->
+      <!-- 프로모션 코드 · 세일 -->
       <section id="p-promo" class="page">
-        <div class="card"><h2>프로모션 코드 발행</h2><div class="sub">라이선스 코드(데모·무료)와 할인 코드를 발행합니다. 고객이 <b>결제 시</b> 코드를 입력하면 서버가 코드를 분석해 라이선스를 발급하거나 가격을 할인합니다.</div>
+
+        <!-- 제품 세일 (코드 없이 정가 할인) -->
+        <div class="card"><h2>제품 세일 — 코드 없이 가격 할인</h2><div class="sub">정가 자체를 내려서 판매합니다. 코드 입력 없이 <b>모든 고객</b>에게 적용되고, 홈페이지 <b>할인 탭</b>과 결제 금액에 바로 반영됩니다.</div>
+          <form onsubmit="return setSale(event)">
+            <div class="grid2">
+              <div class="field"><label>적용 제품</label><select name="product" id="saleProd" required onchange="salePrice()">
+                <option value="">선택</option>
+                <option value="KV">Klera Voice</option>
+                <option value="KI">Klera Instrument</option>
+                <option value="TALLY">Flare Tally</option>
+              </select></div>
+              <div class="field"><label>현재 정가</label><input id="saleCur" readonly placeholder="제품을 선택하세요" style="opacity:.85"></div>
+              <div class="field"><label>할인 판매가 (목표 금액)</label><input type="number" name="target" id="saleTarget" min="0" step="100" placeholder="예: 39000" oninput="saleCalc()" required><div class="note" id="saleCalcOut" style="margin-top:6px"></div></div>
+              <div class="field"><label>세일 기간</label><div class="rowflex"><input type="date" name="start" style="flex:1;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350">~<input type="date" name="end" style="flex:1;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"></div><div class="note" style="margin-top:6px">비워두면 해제할 때까지 상시 적용</div></div>
+            </div>
+            <button class="btn btn-pri" type="submit">세일 적용</button>
+          </form>
+          <div style="margin-top:18px">
+            <table><thead><tr><th>제품</th><th>정가</th><th>할인가</th><th>할인율</th><th>기간</th><th></th></tr></thead>
+            <tbody id="saleRows"></tbody></table>
+          </div>
+        </div>
+
+        <!-- 프로모션 코드 발행 -->
+        <div class="card"><h2>프로모션 코드 발행</h2><div class="sub">라이선스 코드(데모·무료)와 할인 코드를 발행합니다. <b>코드 텍스트는 직접 정해서</b> 입력하세요. 고객이 결제 시 코드를 입력하면 발행 DB와 대조해 라이선스를 발급하거나 가격을 할인합니다.</div>
           <form onsubmit="return genPromo(event)">
             <div class="field"><label>코드 유형</label>
               <div class="rowflex" style="gap:18px">
@@ -324,8 +379,9 @@ td{color:var(--text)}
               </div>
             </div>
             <div class="grid2">
-              <div class="field"><label>적용 제품</label><select name="product" required>
-                <option value="ALL">전 제품 (ALL)</option>
+              <div class="field"><label>코드 텍스트 (직접 입력)</label><input name="codetext" id="promoCode" placeholder="예: CHUSEOK2026, YOUTUBE-KIM" required maxlength="32" style="text-transform:uppercase" pattern="[A-Za-z0-9\-]{4,32}" title="영문·숫자·하이픈 4~32자"><div class="note" style="margin-top:6px">영문·숫자·하이픈 4~32자 · 고객이 입력할 코드 그대로</div></div>
+              <div class="field"><label>적용 제품</label><select name="product" id="promoProd" required onchange="promoPrice()">
+                <option value="ALL" id="promoAllOpt">전 제품 (ALL)</option>
                 <option value="KV">Klera Voice</option>
                 <option value="KI">Klera Instrument</option>
                 <option value="TALLY">Flare Tally</option>
@@ -340,40 +396,31 @@ td{color:var(--text)}
                 <option value="FREE">무료 라이선스 (영구)</option>
               </select></div>
 
-              <!-- 할인용 -->
-              <div class="field disc-f" style="display:none"><label>할인 방식</label><select name="dmethod" onchange="promoType()">
-                <option value="P">퍼센트 (%)</option>
-                <option value="W">정액 (₩)</option>
-              </select></div>
-              <div class="field disc-f" style="display:none"><label>할인 값</label><input type="number" name="dvalue" min="1" placeholder="예: 20 (%) 또는 10000 (원)"></div>
+              <!-- 할인용: 현재 금액 표시 + 목표 금액 입력 -->
+              <div class="field disc-f" style="display:none"><label>현재 판매가</label><input id="promoCur" readonly placeholder="제품을 선택하세요" style="opacity:.85"></div>
+              <div class="field disc-f" style="display:none"><label>목표 금액 (할인 후 결제 금액)</label><input type="number" name="target" id="promoTarget" min="0" step="100" placeholder="예: 29000" oninput="promoCalc()"><div class="note" id="promoCalcOut" style="margin-top:6px"></div></div>
               <div class="field disc-f" style="display:none"><label>할인 적용 시작</label><input type="date" name="dstart"></div>
               <div class="field disc-f" style="display:none"><label>할인 적용 종료</label><input type="date" name="dend"></div>
 
-              <div class="field"><label>발행 수량</label><input type="number" name="qty" value="1" min="1" max="500" required></div>
               <div class="field"><label>사용 제한</label><select name="uses">
                 <option value="1">1회용 (코드당 1명)</option>
                 <option value="5">5회</option>
                 <option value="50">50회</option>
                 <option value="0">무제한</option>
               </select></div>
-              <div class="field"><label>코드 만료일 (선택)</label><input type="date" name="expire"></div>
+              <div class="field lic-f"><label>코드 만료일 (선택)</label><input type="date" name="expire"></div>
               <div class="field"><label>메모 (내부용)</label><input name="memo" placeholder="예: 9월 프로모션, 유튜브 리뷰어"></div>
             </div>
-            <button class="btn btn-pri" type="submit">코드 생성</button>
+            <button class="btn btn-pri" type="submit">코드 발행</button>
           </form>
-          <div class="result" id="promoRes"><div style="font-size:11px;color:#8fa5c2;letter-spacing:.05em;text-transform:uppercase">생성된 코드 (미리보기)</div><div class="k" id="promoCodes">—</div></div>
-          <p class="note">코드 형식 — 라이선스: <b>AZ-{제품}-{종류}-{랜덤}</b> (예 <span class="mono">AZ-KV-D14-7K2M9Q</span> = KV 14일 데모) · 할인: <b>AZ-DISC-{할인}-{랜덤}</b> (예 <span class="mono">AZ-DISC-20P-8QK3</span> = 20% 할인, <span class="mono">AZ-DISC-W10000-…</span> = 1만원 할인). <b>할인 코드는 적용 기간(시작~종료) 내에서만 유효.</b> 서버가 발행 DB와 대조해 유효성·사용횟수·기간을 검증합니다.</p>
+          <div class="result" id="promoRes"><div style="font-size:11px;color:#8fa5c2;letter-spacing:.05em;text-transform:uppercase">발행된 코드</div><div class="k" id="promoCodes">—</div></div>
+          <p class="note">할인 코드는 <b>제품별로만</b> 발행됩니다(전 제품 불가). 목표 금액 방식 — 예: 현재 ₩49,000 제품에 목표 ₩29,000 입력 → 고객은 코드 입력 시 ₩29,000에 결제. <b>할인 코드는 적용 기간(시작~종료) 내에서만 유효.</b> 서버가 발행 DB와 대조해 유효성·사용횟수·기간을 검증합니다.</p>
         </div>
-        <div class="card"><h2>발행된 코드 <span class="demo">데모</span></h2>
-          <div class="toolbar"><input class="field search" style="margin:0" placeholder="코드·메모 검색"><select class="field" style="margin:0;width:auto"><option>전체 종류</option><option>데모 7일</option><option>데모 14일</option><option>데모 30일</option><option>무료</option></select><select class="field" style="margin:0;width:auto"><option>전체 상태</option><option>사용가능</option><option>소진</option><option>만료</option></select></div>
-          <table><thead><tr><th>코드</th><th>제품</th><th>종류</th><th>사용/한도</th><th>만료</th><th>메모</th><th></th></tr></thead>
-          <tbody>
-            <tr><td class="mono">AZ-KV-D14-7K2M9Q</td><td>Klera Voice</td><td><span class="pill p-trial">데모 14일</span></td><td>3/50</td><td class="mono">2026-09-30</td><td>9월 프로모션</td><td><button class="tbtn">복사</button> <button class="tbtn danger">비활성</button></td></tr>
-            <tr><td class="mono">AZ-ALL-D7-QX83MP</td><td>전 제품</td><td><span class="pill p-trial">데모 7일</span></td><td>12/∞</td><td class="mono">—</td><td>홈페이지 상시</td><td><button class="tbtn">복사</button> <button class="tbtn danger">비활성</button></td></tr>
-            <tr><td class="mono">AZ-TALLY-FREE-9ND2K7</td><td>Flare Tally</td><td><span class="pill p-active">무료</span></td><td>1/1</td><td class="mono">2026-09-10</td><td>유튜브 리뷰어</td><td><button class="tbtn">복사</button> <button class="tbtn danger">비활성</button></td></tr>
-            <tr><td class="mono">AZ-DISC-20P-8QK3M2</td><td>전 제품</td><td><span class="pill p-refund">할인 20%</span></td><td>7/∞</td><td class="mono">2026-09-01~09-30</td><td>추석 할인</td><td><button class="tbtn">복사</button> <button class="tbtn danger">비활성</button></td></tr>
-            <tr><td class="mono">AZ-DISC-W10000-KD73</td><td>Klera Voice</td><td><span class="pill p-refund">₩10,000 할인</span></td><td>2/100</td><td class="mono">~2026-09-15</td><td>얼리버드</td><td><button class="tbtn">복사</button> <button class="tbtn danger">비활성</button></td></tr>
-          </tbody></table>
+
+        <div class="card"><h2>발행된 코드</h2>
+          <div class="toolbar"><input class="field search" style="margin:0" id="promoSearch" placeholder="코드·메모 검색" oninput="renderPromos()"></div>
+          <table><thead><tr><th>코드</th><th>제품</th><th>종류</th><th>사용/한도</th><th>기간·만료</th><th>메모</th><th></th></tr></thead>
+          <tbody id="promoRows"></tbody></table>
         </div>
       </section>
 
@@ -484,6 +531,7 @@ td{color:var(--text)}
   </div>
 </div>
 
+<script src="az-demo.js"></script>
 <script>
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
@@ -514,6 +562,7 @@ async function afterAuthGate(verified){
   if(!p.passkey_enrolled){ showStep('stepEnroll'); return; }
   if(verified!==true){ showStep('stepVerify'); return; }   // ← 비번 로그인 후에도 패스키 확인 강제
   enterConsole(p);
+  try{ azApprFields(); azApprLoad(); }catch(_){}
 }
 // STEP 4: 패스키 2차 확인 — 네이티브 패스키 재로그인으로 "패스키 세션"을 발급받아야 통과
 async function verifyPasskey(){
@@ -588,6 +637,94 @@ async function pkLogin(){
 }
 // (디버그) 현재 세션의 인증방식 확인용
 window.azAmr=async function(){ var s=(await sb.auth.getSession()).data.session; if(!s) return 'no session'; try{ return JSON.parse(atob(s.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).amr; }catch(e){ return 'parse fail'; } };
+
+// ===== 결재(승인) 시스템 — 서버(RLS+decide_approval)가 강제, 화면은 편의 =====
+var APPR_TYPES={refund:'환불',promo_create:'프로모션 발행',promo_disable:'프로모션 중지',license_issue:'라이선스 발급',license_revoke:'라이선스 회수',etc:'기타'};
+var APPR_FIELDS={
+  refund:[['order_id','주문 ID','text','주문·결제 페이지에서 복사한 UUID']],
+  promo_create:[
+    ['code','코드','text','예: WELCOME10'],
+    ['kind','종류','select','license:무료 라이선스 코드,discount:할인 코드'],
+    ['product_id','대상 제품','select',':전체 제품,KV:Klera Voice,KI:Klera Instrument,TALLY:Flare Tally,LMAZ:Latency Meter AZ'],
+    ['license_type','라이선스 종류(무료코드)','select',':해당 없음,D7:7일 체험,D14:14일 체험,D30:30일 체험,FREE:영구 무료'],
+    ['discount_pct','할인율 %(할인코드)','text','예: 20'],
+    ['discount_won','할인액 ₩(할인코드)','text','예: 5000'],
+    ['valid_to','만료일','text','YYYY-MM-DD · 비우면 무기한'],
+    ['max_uses','최대 사용 횟수','text','기본 1 · 0=무제한']],
+  promo_disable:[['code','중지할 코드','text','']],
+  license_issue:[
+    ['email','회원 이메일','text','가입된 회원이어야 합니다'],
+    ['product_id','제품','select','KV:Klera Voice,KI:Klera Instrument,TALLY:Flare Tally,LMAZ:Latency Meter AZ'],
+    ['license_type','종류','select','FULL:정식,D7:7일,D14:14일,D30:30일,FREE:영구 무료']],
+  license_revoke:[['license_key','회수할 라이선스 키','text','AZ-XXXX-XXXX-XXXX']],
+  etc:[]
+};
+function azApprFields(){
+  var t=document.getElementById('aType').value, box=document.getElementById('aFields');
+  box.innerHTML=(APPR_FIELDS[t]||[]).map(function(f){
+    var id='af_'+f[0], inner;
+    if(f[2]==='select'){
+      inner='<select id="'+id+'">'+f[3].split(',').map(function(o){var kv=o.split(':');return '<option value="'+kv[0]+'">'+kv[1]+'</option>';}).join('')+'</select>';
+    }else{
+      inner='<input id="'+id+'" placeholder="'+esc(f[3])+'">';
+    }
+    return '<div class="field"><label>'+esc(f[1])+'</label>'+inner+'</div>';
+  }).join('');
+}
+async function azApprSubmit(ev){
+  ev.preventDefault();
+  var t=document.getElementById('aType').value, msg=document.getElementById('aMsg');
+  var payload={};
+  (APPR_FIELDS[t]||[]).forEach(function(f){ var el=document.getElementById('af_'+f[0]); if(el && el.value!=='') payload[f[0]]=el.value.trim(); });
+  msg.textContent='올리는 중…';
+  var r=await sb.from('approvals').insert({type:t, title:document.getElementById('aTitle').value.trim(), reason:document.getElementById('aReason').value.trim(), payload:payload});
+  if(r.error){ msg.textContent='실패: '+r.error.message; return false; }
+  msg.textContent='✓ 결재가 올라갔습니다';
+  document.getElementById('aTitle').value=''; document.getElementById('aReason').value=''; azApprFields();
+  azApprLoad(); return false;
+}
+function apprPill(st){
+  var m={pending:['대기','p-trial'],approved:['승인','p-active'],rejected:['거절','p-revoked'],canceled:['취소','p-refund']};
+  var x=m[st]||[st,'p-trial']; return '<span class="pill '+x[1]+'">'+x[0]+'</span>';
+}
+async function azApprLoad(){
+  var tb=document.getElementById('apprRows'); if(!tb) return;
+  var me=window.__ADMIN_PROFILE||{}; var isSuper=me.role==='super';
+  var q=await sb.from('approvals').select('*').order('created_at',{ascending:false}).limit(100);
+  if(q.error){ tb.innerHTML='<tr><td colspan="6" class="n">불러오기 실패: '+esc(q.error.message)+'</td></tr>'; return; }
+  var rows=q.data||[], uid=(sb.auth&&window.__ADMIN_UID)||null;
+  var pend=rows.filter(function(r){return r.status==='pending';}).length;
+  var bd=document.getElementById('apprBadge'); if(bd){ bd.textContent=pend; bd.style.display=pend?'inline-block':'none'; }
+  if(!rows.length){ tb.innerHTML='<tr><td colspan="6" class="n">결재 내역이 없습니다</td></tr>'; return; }
+  tb.innerHTML=rows.map(function(r){
+    var act='';
+    if(r.status==='pending'){
+      if(isSuper){ act='<button class="tbtn" onclick="azApprDecide(\''+r.id+'\',\'approved\')">승인</button> <button class="tbtn danger" onclick="azApprDecide(\''+r.id+'\',\'rejected\')">거절</button>'; }
+      else { act='<button class="tbtn" onclick="azApprCancel(\''+r.id+'\')">취소</button>'; }
+    } else if(r.applied_result){ act='<span class="n">'+esc(r.applied_result)+'</span>'; }
+    else if(r.decide_note){ act='<span class="n">'+esc(r.decide_note)+'</span>'; }
+    var dt=new Date(r.created_at); var ts=(dt.getMonth()+1)+'/'+dt.getDate()+' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
+    return '<tr><td class="mono">'+ts+'</td><td>'+esc(APPR_TYPES[r.type]||r.type)+'</td>'+
+      '<td><b>'+esc(r.title)+'</b>'+(r.reason?'<div class="n">'+esc(r.reason)+'</div>':'')+
+      (Object.keys(r.payload||{}).length?'<div class="n mono" style="font-size:11px">'+esc(Object.entries(r.payload).map(function(e){return e[0]+'='+e[1];}).join(' · '))+'</div>':'')+'</td>'+
+      '<td class="n">'+esc(r.requested_email||'')+'</td><td>'+apprPill(r.status)+'</td><td>'+act+'</td></tr>';
+  }).join('');
+}
+async function azApprDecide(id, dec){
+  var label=dec==='approved'?'승인':'거절';
+  if(!confirm('이 결재를 '+label+'할까요?'+(dec==='approved'?'\n승인 즉시 실제 데이터에 반영됩니다.':''))) return;
+  var note=prompt(label+' 메모 (선택)','')||null;
+  var r=await sb.rpc('decide_approval',{p_id:id,p_decision:dec,p_note:note});
+  if(r.error){ alert('실패: '+r.error.message); return; }
+  alert('✓ '+r.data);
+  azApprLoad();
+}
+async function azApprCancel(id){
+  if(!confirm('이 결재를 취소할까요?')) return;
+  var r=await sb.from('approvals').update({status:'canceled'}).eq('id',id);
+  if(r.error){ alert('실패: '+r.error.message); return; }
+  azApprLoad();
+}
 function adminLogout(){ try{sessionStorage.removeItem(SKEY);}catch(_){}; sb.auth.signOut().finally(function(){location.reload();}); }
 function b64urlToBuf(s){s=String(s).replace(/-/g,'+').replace(/_/g,'/');var pad=s.length%4;if(pad)s+='='.repeat(4-pad);var bin=atob(s);var b=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);return b.buffer;}
 function bufToB64url(buf){var b=new Uint8Array(buf),s='';for(var i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
@@ -699,7 +836,7 @@ function extendSession(){
   }catch(_){}
 })();
 
-var titles={dash:'대시보드',lic:'라이선스',promo:'프로모션 코드',orders:'주문·결제',customers:'고객',products:'제품·버전',notice:'공지',settings:'설정',admins:'관리자 계정'};
+var titles={dash:'대시보드',appr:'결재',lic:'라이선스',promo:'프로모션 코드',orders:'주문·결제',customers:'고객',products:'제품·버전',notice:'공지',settings:'설정',admins:'관리자 계정'};
 function toggleMenu(){
   var s=document.querySelector('.side'), b=document.getElementById('burger');
   var open=s.classList.toggle('open');
@@ -711,38 +848,149 @@ document.querySelectorAll('.side a[data-p]').forEach(a=>{
     document.querySelectorAll('.side a[data-p]').forEach(x=>x.classList.toggle('on',x===a));
     document.querySelectorAll('.page').forEach(s=>s.classList.toggle('on',s.id==='p-'+p));
     document.getElementById('ptitle').textContent=titles[p];
+    if(p==='appr'){ try{azApprLoad();}catch(_){} }
     document.querySelector('.side').classList.remove('open');   // 메뉴 선택 시 자동 닫힘
     var b=document.getElementById('burger'); if(b) b.setAttribute('aria-expanded','false');
     window.scrollTo(0,0);
   });
 });
+// ===== 프로모션 코드 · 세일 (AZ 데모 저장소 공유 — 정식 전환 시 promo_codes/products DB) =====
+var PRODNAME={ALL:'전 제품',KV:'Klera Voice',KI:'Klera Instrument',TALLY:'Flare Tally',LMAZ:'Latency Meter AZ'};
+var KINDLABEL={D7:'데모 7일',D14:'데모 14일',D30:'데모 30일',FREE:'무료(영구)'};
+var W=function(v){return '₩'+Number(v||0).toLocaleString();};
+
 function promoType(){
   var isDisc=document.querySelector('input[name=ctype]:checked').value==='discount';
   document.querySelectorAll('.lic-f').forEach(f=>f.style.display=isDisc?'none':'');
   document.querySelectorAll('.disc-f').forEach(f=>f.style.display=isDisc?'':'none');
+  // 할인 코드는 전 제품 선택 불가
+  var all=document.getElementById('promoAllOpt'), sel=document.getElementById('promoProd');
+  if(all){ all.disabled=isDisc; all.hidden=isDisc; if(isDisc&&sel.value==='ALL'){ sel.value='KV'; } }
+  promoPrice();
+}
+// 적용 제품 선택 → 현재 판매가 표시 (세일 반영가)
+function promoPrice(){
+  var sel=document.getElementById('promoProd'), cur=document.getElementById('promoCur');
+  if(!sel||!cur) return;
+  var p=sel.value;
+  if(!p||p==='ALL'){ cur.value=''; cur.placeholder='제품을 선택하세요'; promoCalc(); return; }
+  var pr=AZ.priceOf(p);
+  cur.value=W(pr.now)+(pr.sale!==null?' (세일가 · 정가 '+W(pr.base)+')':'');
+  cur.dataset.now=pr.now;
+  promoCalc();
+}
+function promoCalc(){
+  var cur=document.getElementById('promoCur'), t=document.getElementById('promoTarget'), out=document.getElementById('promoCalcOut');
+  if(!out) return;
+  var now=parseInt(cur&&cur.dataset.now||''), target=parseInt(t&&t.value||'');
+  if(isNaN(now)||isNaN(target)){ out.textContent=''; return; }
+  if(target>=now){ out.innerHTML='<b style="color:#ff9ea3">목표 금액이 현재 판매가('+W(now)+') 이상입니다.</b>'; return; }
+  var disc=now-target, pct=Math.round(disc/now*100);
+  out.innerHTML='할인액 <b style="color:#39D48C">'+W(disc)+'</b> ('+pct+'% 할인) → 고객 결제 금액 <b>'+W(target)+'</b>';
 }
 function genPromo(e){
   e.preventDefault();var d={};new FormData(e.target).forEach((v,k)=>d[k]=v);
-  var r=()=>Math.random().toString(36).slice(2,6).toUpperCase();
-  var codes=[], qty=Math.min(parseInt(d.qty||1),20); // 미리보기는 최대 20개
-  for(var i=0;i<qty;i++){
-    var code;
-    if(d.ctype==='discount'){
-      var seg = d.dmethod==='W' ? ('W'+(d.dvalue||'0')) : ((d.dvalue||'0')+'P');
-      code='AZ-DISC-'+seg+'-'+r()+r().slice(0,2);
-    }else{
-      code='AZ-'+d.product+'-'+d.kind+'-'+r()+r().slice(0,2);
-    }
-    codes.push(code);
+  var code=String(d.codetext||'').trim().toUpperCase();
+  var res=document.getElementById('promoRes'), out=document.getElementById('promoCodes');
+  function fail(m){ out.innerHTML='<b style="color:#ff9ea3">'+m+'</b>'; res.classList.add('on'); return false; }
+  if(!/^[A-Z0-9\-]{4,32}$/.test(code)) return fail('코드는 영문·숫자·하이픈 4~32자로 입력하세요.');
+  if(AZ.findPromo(code)) return fail('이미 발행된 코드입니다: '+code);
+  var p={ code:code, ctype:d.ctype, product:d.product, uses:parseInt(d.uses||'1'), used:0, active:true, memo:d.memo||'', at:new Date().toISOString().slice(0,10) };
+  if(d.ctype==='discount'){
+    if(d.product==='ALL') return fail('할인 코드는 제품별로만 발행할 수 있습니다.');
+    var now=AZ.priceOf(d.product).now, target=parseInt(d.target||'');
+    if(isNaN(target)||target<0) return fail('목표 금액을 입력하세요.');
+    if(target>=now) return fail('목표 금액이 현재 판매가('+W(now)+') 이상입니다.');
+    p.target=target; p.dstart=d.dstart||null; p.dend=d.dend||null;
+    out.innerHTML='<b>'+code+'</b><br>'+PRODNAME[d.product]+' · 목표 금액 '+W(target)+' (현재가 '+W(now)+' → 할인 '+W(now-target)+') · 기간 '+(d.dstart||'—')+'~'+(d.dend||'무기한');
+  }else{
+    p.kind=d.kind; p.expire=d.expire||null;
+    out.innerHTML='<b>'+code+'</b><br>'+PRODNAME[d.product]+' · '+KINDLABEL[d.kind]+' · 만료 '+(d.expire||'없음');
   }
-  var meta = d.ctype==='discount'
-    ? ('할인 '+(d.dmethod==='W'?('₩'+d.dvalue):(d.dvalue+'%'))+' · 기간 '+(d.dstart||'—')+'~'+(d.dend||'무기한'))
-    : ('제품 '+d.product+' · '+({D7:'데모7일',D14:'데모14일',D30:'데모30일',FREE:'무료'}[d.kind]));
-  document.getElementById('promoCodes').innerHTML = meta+'<br><br>'+codes.join('<br>');
-  document.getElementById('promoRes').classList.add('on');
-  // TODO(백엔드): POST /admin/api/promo → 코드·조건 DB 저장(사용횟수·기간·제품). 결제 시 검증.
+  var L=AZ.promos(); L.push(p); AZ.savePromos(L);
+  res.classList.add('on'); renderPromos();
+  e.target.reset(); promoType();
   return false;
+  // TODO(백엔드): POST /admin/api/promo → promo_codes DB 저장. 결제 시 Edge Function 검증.
 }
+function renderPromos(){
+  var tb=document.getElementById('promoRows'); if(!tb) return;
+  var q=(document.getElementById('promoSearch')||{}).value||''; q=q.trim().toUpperCase();
+  var L=AZ.promos().filter(function(p){ return !q || p.code.indexOf(q)>=0 || (p.memo||'').toUpperCase().indexOf(q)>=0; });
+  if(!L.length){ tb.innerHTML='<tr><td colspan="7" style="color:var(--dim)">발행된 코드가 없습니다.</td></tr>'; return; }
+  tb.innerHTML=L.map(function(p,i){
+    var kind = p.ctype==='discount'
+      ? '<span class="pill p-refund">목표가 '+W(p.target)+'</span>'
+      : '<span class="pill '+(p.kind==='FREE'?'p-active':'p-trial')+'">'+(KINDLABEL[p.kind]||p.kind)+'</span>';
+    var period = p.ctype==='discount' ? ((p.dstart||'—')+'~'+(p.dend||'무기한')) : (p.expire||'—');
+    return '<tr'+(p.active?'':' style="opacity:.45"')+'>'+
+      '<td class="mono">'+esc(p.code)+'</td>'+
+      '<td>'+(PRODNAME[p.product]||p.product)+'</td>'+
+      '<td>'+kind+'</td>'+
+      '<td>'+(p.used||0)+'/'+(p.uses?p.uses:'∞')+'</td>'+
+      '<td class="mono">'+period+'</td>'+
+      '<td>'+esc(p.memo||'')+'</td>'+
+      '<td style="white-space:nowrap"><button class="tbtn" onclick="copyPromo('+i+')">복사</button> <button class="tbtn'+(p.active?' danger':'')+'" onclick="togglePromo('+i+')">'+(p.active?'비활성':'활성')+'</button> <button class="tbtn danger" onclick="delPromo('+i+')">삭제</button></td>'+
+    '</tr>';
+  }).join('');
+}
+function copyPromo(i){ var p=AZ.promos()[i]; if(!p)return; navigator.clipboard&&navigator.clipboard.writeText(p.code); }
+function togglePromo(i){ var L=AZ.promos(); if(!L[i])return; L[i].active=!L[i].active; AZ.savePromos(L); renderPromos(); }
+function delPromo(i){ var L=AZ.promos(); if(!L[i])return; if(!confirm('코드 삭제: '+L[i].code+'\n계속할까요?'))return; L.splice(i,1); AZ.savePromos(L); renderPromos(); }
+
+// ===== 제품 세일 관리 =====
+function salePrice(){
+  var sel=document.getElementById('saleProd'), cur=document.getElementById('saleCur');
+  if(!sel||!cur) return;
+  var p=sel.value;
+  if(!p){ cur.value=''; cur.placeholder='제품을 선택하세요'; saleCalc(); return; }
+  var base=AZ.basePrice(p);
+  cur.value=W(base); cur.dataset.base=base;
+  saleCalc();
+}
+function saleCalc(){
+  var cur=document.getElementById('saleCur'), t=document.getElementById('saleTarget'), out=document.getElementById('saleCalcOut');
+  if(!out) return;
+  var base=parseInt(cur&&cur.dataset.base||''), target=parseInt(t&&t.value||'');
+  if(isNaN(base)||isNaN(target)){ out.textContent=''; return; }
+  if(target>=base){ out.innerHTML='<b style="color:#ff9ea3">할인가가 정가('+W(base)+') 이상입니다.</b>'; return; }
+  var disc=base-target, pct=Math.round(disc/base*100);
+  out.innerHTML='할인액 <b style="color:#39D48C">'+W(disc)+'</b> ('+pct+'% 할인) → 판매가 <b>'+W(target)+'</b>';
+}
+function setSale(e){
+  e.preventDefault();var d={};new FormData(e.target).forEach((v,k)=>d[k]=v);
+  var base=AZ.basePrice(d.product), target=parseInt(d.target||'');
+  if(isNaN(target)||target<0){ alert('할인 판매가를 입력하세요.'); return false; }
+  if(target>=base){ alert('할인가('+W(target)+')가 정가('+W(base)+') 이상입니다.'); return false; }
+  if(d.start&&d.end&&d.start>d.end){ alert('세일 기간이 잘못되었습니다 (시작 > 종료).'); return false; }
+  AZ.setSale(d.product, target, d.start||null, d.end||null);
+  renderSales(); e.target.reset(); salePrice();
+  return false;
+  // TODO(백엔드): products.sale_price / sale_from / sale_to 업데이트.
+}
+function clearSaleRow(prod){
+  if(!confirm(PRODNAME[prod]+' 세일을 해제할까요? 정가로 돌아갑니다.'))return;
+  AZ.clearSale(prod); renderSales();
+}
+function renderSales(){
+  var tb=document.getElementById('saleRows'); if(!tb) return;
+  var s=AZ.sales(), keys=Object.keys(s);
+  if(!keys.length){ tb.innerHTML='<tr><td colspan="6" style="color:var(--dim)">진행 중인 세일이 없습니다.</td></tr>'; return; }
+  var today=new Date().toISOString().slice(0,10);
+  tb.innerHTML=keys.map(function(k){
+    var v=s[k], base=AZ.basePrice(k), pct=base?Math.round((base-v.price)/base*100):0;
+    var live=(!v.start||today>=v.start)&&(!v.end||today<=v.end);
+    return '<tr>'+
+      '<td>'+(PRODNAME[k]||k)+'</td>'+
+      '<td class="mono" style="text-decoration:line-through;color:var(--dim)">'+W(base)+'</td>'+
+      '<td><b>'+W(v.price)+'</b></td>'+
+      '<td><span class="pill p-refund">'+pct+'%↓</span></td>'+
+      '<td class="mono">'+((v.start||'—')+'~'+(v.end||'상시'))+(live?' <span class="pill p-active">진행중</span>':' <span class="pill p-revoked">기간외</span>')+'</td>'+
+      '<td><button class="tbtn danger" onclick="clearSaleRow(\''+k+'\')">해제</button></td>'+
+    '</tr>';
+  }).join('');
+}
+try{ renderPromos(); renderSales(); promoType(); }catch(_){}
 var PRE={'Klera Voice':'AZCA','Klera Instrument':'AZCI','Flare Tally':'AZTL','Latency Meter AZ':'AZLM'};
 function issue(e){
   e.preventDefault();var d={};new FormData(e.target).forEach((v,k)=>d[k]=v);
