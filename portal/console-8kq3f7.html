@@ -125,8 +125,8 @@ tr:last-child td{border-bottom:0}
       <button type="submit">비밀번호로 로그인</button>
     </form>
     <div class="gdiv">또는</div>
-    <button type="button" class="tid" id="ga-touch" onclick="touchLogin()">🔒 이 맥 Touch ID로 로그인</button>
-    <button type="button" class="enrl" id="ga-enroll" onclick="enrollDevice()">이 맥을 Touch ID로 등록 (최초 1회)</button>
+    <button type="button" class="tid" id="ga-touch" onclick="touchLogin()">🔒 애플 패스키로 로그인 (Touch ID)</button>
+    <button type="button" class="enrl" id="ga-enroll" onclick="enrollDevice()">내 애플 패스키 등록 (최초 1회 · Safari 권장)</button>
     <p class="n">비인가 접근 금지 · 관리자 전용 페이지입니다.</p>
   </div>
 </div>
@@ -318,7 +318,7 @@ tr:last-child td{border-bottom:0}
 
       <!-- 관리자 계정 생성기 -->
       <section id="p-admins" class="page">
-        <div class="card"><h2>관리자 계정 생성기 🔒</h2><div class="sub">이 맥의 <b>Touch ID</b> 인증이 있어야만 새 관리자 로그인을 만들 수 있습니다. <b>생성 버튼을 누르는 순간 이 맥의 지문 확인</b>을 거치며, 등록되지 않은 다른 컴퓨터에서는 생성이 차단됩니다.</div>
+        <div class="card"><h2>관리자 계정 생성기 🔒</h2><div class="sub">이 맥의 <b>Touch ID</b> 인증이 있어야만 새 관리자 로그인을 만들 수 있습니다. <b>생성 버튼을 누르는 순간 애플 패스키(Touch ID) 확인</b>을 거치며, 대표님 애플 기기가 아닌 곳에서는 생성이 차단됩니다.</div>
           <form onsubmit="return genAdmin(event)">
             <div class="grid2">
               <div class="field"><label>관리자 이메일</label><input type="email" name="email" placeholder="name@audioazpro.com" required></div>
@@ -402,7 +402,7 @@ async function touchLogin(){
   if(!ADMIN_CRED_ID){ err.textContent='아직 등록된 맥이 없습니다. 아래 “이 맥을 Touch ID로 등록”을 먼저 진행하세요.'; err.classList.add('on'); return; }
   var r=await touchAssert();
   if(r.ok){ try{sessionStorage.setItem(SKEY,'1');}catch(_){}; err.classList.remove('on'); openConsole(); }
-  else{ err.textContent='Touch ID 인증 실패 — 등록된 이 맥에서만 열립니다.'; err.classList.add('on'); }
+  else{ err.textContent='Touch ID 인증 실패 — 등록된 애플 기기에서만 열립니다.'; err.classList.add('on'); }
 }
 // 등록: 2단계(비번 확인 → Touch ID 생성). Safari 사용자 제스처 보존 위해 분리.
 var pwVerified=false;
@@ -424,11 +424,11 @@ async function enrollDevice(){
       rp:{name:'AudioAZ Admin', id:location.hostname},
       user:{id:crypto.getRandomValues(new Uint8Array(16)), name:email2, displayName:'AudioAZ Admin'},
       pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
-      authenticatorSelection:{authenticatorAttachment:'platform', userVerification:'required', residentKey:'discouraged'},
+      authenticatorSelection:{authenticatorAttachment:'platform', userVerification:'required', residentKey:'required', requireResidentKey:true},
       timeout:60000, attestation:'none'
     }});
     var id=bufToB64url(cred.rawId);
-    window.prompt('✅ 이 맥 Touch ID 등록 완료!\n\n아래 credential ID 전체를 복사해서 클로드에게 붙여주세요. (이 값을 소스에 넣으면 이 맥에서만 열립니다)', id);
+    window.prompt('✅ 애플 패스키 등록 완료!\n\n아래 credential ID 전체를 복사해서 클로드에게 붙여주세요. (iCloud로 대표님 애플 기기에 동기화됩니다 — 이 값을 소스에 넣으면 대표님 애플 기기에서만 열립니다)', id);
   }catch(ex){ err.textContent='Touch ID 등록 실패: '+((ex&&ex.message)||ex); err.classList.add('on'); }
 }
 
