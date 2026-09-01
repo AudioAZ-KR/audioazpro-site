@@ -127,6 +127,18 @@ tr:last-child td{border-bottom:0}
   </div>
 </div>
 
+<!-- 자동 로그아웃 경고 팝업 -->
+<div id="idleModal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(4,8,16,.72);align-items:center;justify-content:center;padding:24px">
+  <div style="width:100%;max-width:340px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+    <div style="font-size:15px;font-weight:800;color:#E9EEF7;margin-bottom:8px">자동 로그아웃 안내</div>
+    <p style="font-size:13px;color:var(--dim);line-height:1.6;margin-bottom:16px">활동이 없어 곧 로그아웃됩니다.<br><b id="idleCount" style="color:#ffd27a;font-size:26px;font-family:ui-monospace,Menlo,monospace">60</b> 초 후 자동 로그아웃</p>
+    <div style="display:flex;gap:10px">
+      <button onclick="extendSession()" style="flex:1;height:44px;border:0;border-radius:10px;background:var(--blue);color:#fff;font-family:inherit;font-size:14px;font-weight:800;cursor:pointer">로그인 연장</button>
+      <button onclick="adminLogout()" style="flex:1;height:44px;border:1px solid var(--line);border-radius:10px;background:#0E1A2E;color:#E9EEF7;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer">로그아웃</button>
+    </div>
+  </div>
+</div>
+
 <div class="layout">
 
   <!-- 사이드바 -->
@@ -492,12 +504,28 @@ function renderAdmins(){
 function setRole(i,role){ var L=loadAdmins(); if(!L[i])return; L[i].role=role; saveAdmins(L); }
 function toggleAdmin(i){ var L=loadAdmins(); if(!L[i])return; L[i].status=(L[i].status==='suspended')?'active':'suspended'; saveAdmins(L); }
 function delAdmin(i){ var L=loadAdmins(); if(!L[i])return; if(!confirm('관리자 삭제: '+L[i].email+'\n이 관리자의 접근 권한을 제거합니다. 계속할까요?'))return; L.splice(i,1); saveAdmins(L); }
-// ===== 자동 로그아웃 (10분 무동작) =====
-var IDLE_MS=10*60*1000, idleTimer=null;
+// ===== 자동 로그아웃 (10분 무동작, 1분 전 경고 팝업+카운트다운) =====
+var IDLE_MS=10*60*1000, WARN_MS=60*1000; // 총 10분 · 마지막 1분 경고
+var warnTimer=null, logoutTimer=null, countTimer=null, idleWarning=false;
+function clearIdleTimers(){ clearTimeout(warnTimer); clearTimeout(logoutTimer); clearInterval(countTimer); }
 function resetIdle(){
   try{ if(sessionStorage.getItem(SKEY)!=='1') return; }catch(_){ return; }
-  clearTimeout(idleTimer);
-  idleTimer=setTimeout(function(){ try{alert('10분 이상 활동이 없어 자동 로그아웃되었습니다.');}catch(_){}; adminLogout(); }, IDLE_MS);
+  if(idleWarning) return; // 경고 팝업이 떠 있는 동안엔 활동 무시 — 명시적 '연장' 필요
+  clearIdleTimers();
+  warnTimer=setTimeout(showIdleWarning, IDLE_MS-WARN_MS);
+  logoutTimer=setTimeout(function(){ clearIdleTimers(); adminLogout(); }, IDLE_MS);
+}
+function showIdleWarning(){
+  idleWarning=true;
+  var m=document.getElementById('idleModal'); if(m) m.style.display='flex';
+  var el=document.getElementById('idleCount'), left=Math.round(WARN_MS/1000);
+  if(el) el.textContent=left;
+  countTimer=setInterval(function(){ left--; if(el) el.textContent=(left>0?left:0); if(left<=0) clearInterval(countTimer); }, 1000);
+}
+function extendSession(){
+  idleWarning=false; clearIdleTimers();
+  var m=document.getElementById('idleModal'); if(m) m.style.display='none';
+  resetIdle();
 }
 ['mousemove','mousedown','keydown','scroll','touchstart','click'].forEach(function(ev){ document.addEventListener(ev, resetIdle, {passive:true}); });
 
