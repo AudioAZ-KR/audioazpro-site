@@ -379,7 +379,7 @@ tr:last-child td{border-bottom:0}
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
 var SKEY='az_admin_ok';
-function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex';}
+function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
 // 콘솔 로그인은 패스키(touchLogin)로만. 비밀번호는 사용하지 않습니다(공개 소스에 해시 없음).
 // 새 기기는 makePasskey로 패스키만 만들고, 관리자가 ADMIN_CRED_IDS에 ID를 추가(승인)해야 로그인됩니다.
 function adminLogout(){ try{sessionStorage.removeItem(SKEY);}catch(_){}; location.reload(); }
@@ -492,6 +492,15 @@ function renderAdmins(){
 function setRole(i,role){ var L=loadAdmins(); if(!L[i])return; L[i].role=role; saveAdmins(L); }
 function toggleAdmin(i){ var L=loadAdmins(); if(!L[i])return; L[i].status=(L[i].status==='suspended')?'active':'suspended'; saveAdmins(L); }
 function delAdmin(i){ var L=loadAdmins(); if(!L[i])return; if(!confirm('관리자 삭제: '+L[i].email+'\n이 관리자의 접근 권한을 제거합니다. 계속할까요?'))return; L.splice(i,1); saveAdmins(L); }
+// ===== 자동 로그아웃 (10분 무동작) =====
+var IDLE_MS=10*60*1000, idleTimer=null;
+function resetIdle(){
+  try{ if(sessionStorage.getItem(SKEY)!=='1') return; }catch(_){ return; }
+  clearTimeout(idleTimer);
+  idleTimer=setTimeout(function(){ try{alert('10분 이상 활동이 없어 자동 로그아웃되었습니다.');}catch(_){}; adminLogout(); }, IDLE_MS);
+}
+['mousemove','mousedown','keydown','scroll','touchstart','click'].forEach(function(ev){ document.addEventListener(ev, resetIdle, {passive:true}); });
+
 (function(){ try{ if(sessionStorage.getItem(SKEY)==='1'){ openConsole(); } }catch(_){}; try{renderAdmins();}catch(_){}; try{var mc=document.getElementById('myCredCount'); if(mc)mc.textContent=ADMIN_CRED_IDS.length+'개 (이 계정에 승인된 패스키)';}catch(_){} })();
 
 var titles={dash:'대시보드',lic:'라이선스',promo:'프로모션 코드',orders:'주문·결제',customers:'고객',products:'제품·버전',notice:'공지',settings:'설정',admins:'관리자 계정'};
