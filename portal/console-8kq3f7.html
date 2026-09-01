@@ -161,7 +161,7 @@ tr:last-child td{border-bottom:0}
   <div class="main">
     <div class="top">
       <h1 id="ptitle">대시보드</h1>
-      <div class="who"><span class="av">김</span><span>김형준 · 최고관리자</span></div>
+      <div class="who"><span class="av">김</span><span>김형준 · 최고관리자</span><button onclick="adminLogout()" style="margin-left:10px;border:1px solid var(--line);background:#0E1A2E;color:#E9EEF7;border-radius:8px;padding:7px 14px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">로그아웃</button></div>
     </div>
     <div class="content">
 
@@ -379,7 +379,7 @@ function adminLogout(){ try{sessionStorage.removeItem(SKEY);}catch(_){}; locatio
 
 // ===== Touch ID (WebAuthn) — 이 맥에 고정된 자격증명으로만 로그인/생성 =====
 // ADMIN_CRED_IDS: 등록된 애플 패스키 credential ID들(base64url). 개인 애플 ID·회사 애플 ID·1Password·백업 기기 등 여러 개 등록 가능 — 이 중 하나라도 인증되면 통과.
-var ADMIN_CRED_IDS=[];
+var ADMIN_CRED_IDS=['M3O7Gbl6h0zgt1LK-5ErCm0GL28','rjWsP0rjAsLqBAjKNDH-w0lasBE'];
 function b64urlToBuf(s){s=String(s).replace(/-/g,'+').replace(/_/g,'/');var pad=s.length%4;if(pad)s+='='.repeat(4-pad);var bin=atob(s);var b=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);return b.buffer;}
 function bufToB64url(buf){var b=new Uint8Array(buf),s='';for(var i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
 function bufToHex(buf){return Array.prototype.map.call(new Uint8Array(buf),function(x){return x.toString(16).padStart(2,'0')}).join('');}
