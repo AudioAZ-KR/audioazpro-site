@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/png" href="/favicon.png"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<title>비밀번호 찾기 — AudioAZ</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+@font-face{font-family:'NanumSquareRound';src:url('fonts/NanumSquareRoundEB.woff2') format('woff2');font-weight:800;font-display:swap}
+h1{font-family:'NanumSquareRound','Pretendard',sans-serif}
+:root{--blue:#1877F2;--blue-deep:#0E5FCC;--blue-soft:#4D96F5;--navy:#0C2244;--page:#0B1220;--card:#121D33;--bg:#0C1424;--line:#243350;--text:#E9EEF7;--dim:#96A6BF}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',system-ui,sans-serif;color:var(--text);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}img{max-width:100%}
+.topbar{position:absolute;top:0;left:0;right:0;height:64px;display:flex;align-items:center;padding:0 24px}
+.wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:88px 20px 40px}
+.card{width:100%;max-width:400px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:34px 30px;box-shadow:0 18px 50px rgba(0,0,0,.35)}
+h1{font-size:22px;font-weight:800;letter-spacing:-.02em;text-align:center}
+.sub{text-align:center;color:var(--dim);font-size:14px;margin:6px 0 22px;line-height:1.55}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12.5px;font-weight:700;color:var(--dim);margin-bottom:5px}
+.field input{width:100%;height:48px;border:1px solid var(--line);border-radius:11px;padding:0 14px;font-family:inherit;font-size:15px;color:var(--text);background:#0E1A2E}
+.field input::placeholder{color:#6B7C96}
+.field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,119,242,.18)}
+.primary{width:100%;height:48px;border:0;border-radius:11px;background:var(--blue);color:#fff;font-family:inherit;font-size:15.5px;font-weight:800;cursor:pointer;transition:.15s}
+.primary:hover{background:var(--blue-deep)}
+.foot{text-align:center;font-size:13px;color:var(--dim);margin-top:18px}
+.foot a{color:var(--blue-soft);font-weight:600}
+.ok{display:none;background:#12351f;border:1px solid #1f5c37;color:#7ee0a6;border-radius:12px;padding:16px 16px;font-size:13.5px;line-height:1.6;margin-top:4px}
+.ok.on{display:block}
+.ok b{color:#b6f2cf}
+.note{font-size:12px;color:var(--dim);margin-top:14px;line-height:1.6;text-align:center}
+</style>
+</head>
+<body>
+<div class="topbar"><a href="/" class="logo" aria-label="AudioAZ 홈"><img src="/assets/logo-lockup-white.png" alt="AudioAZ" style="height:28px;width:auto;display:block"></a></div>
+<div class="wrap">
+  <div class="card">
+    <h1>비밀번호 찾기</h1>
+    <p class="sub">가입한 이메일 주소를 입력하시면<br>비밀번호 재설정 링크를 보내드립니다.</p>
+
+    <form id="form" onsubmit="return sendReset(event)">
+      <div class="field">
+        <label>이메일</label>
+        <input type="email" name="email" placeholder="you@example.com" required>
+      </div>
+      <button class="primary" type="submit">재설정 링크 받기</button>
+    </form>
+
+    <div class="ok" id="ok"></div>
+
+    <p class="foot"><a href="index.html">← 로그인으로 돌아가기</a></p>
+    <p class="note">테스트 모드 — 실제 메일 발송은 백엔드 연결 시 동작합니다.</p>
+  </div>
+</div>
+
+<script>
+function sendReset(e){
+  e.preventDefault();
+  var email=(new FormData(e.target).get('email')||'').trim();
+  // 데모: 실제 발송 대신 안내. 정식: Supabase auth.resetPasswordForEmail(email, {redirectTo: '.../reset-password.html'})
+  document.getElementById('form').style.display='none';
+  var ok=document.getElementById('ok');
+  ok.innerHTML='<b>메일을 보냈습니다.</b><br>'+email+' 로 비밀번호 재설정 링크를 보냈습니다. 메일함(스팸함 포함)을 확인해 링크를 눌러 새 비밀번호를 설정하세요.<br><br><a href="reset-password.html?demo=1" style="color:#7ee0a6;font-weight:700;text-decoration:underline">데모: 재설정 페이지 미리보기 →</a>';
+  ok.classList.add('on');
+  return false;
+}
+</script>
+</body>
+</html>
