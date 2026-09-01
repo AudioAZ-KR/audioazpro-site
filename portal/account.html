@@ -136,17 +136,19 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="az-demo.js"></script>
 <script>
-// 로그인 안 돼 있으면 로그인 페이지로
-if(!AZ.requireLogin()){ }
-(function(){
-  var s=AZ.session()||{};
-  var name=(s.name||'게스트');
+// 세션 = Supabase 실인증 (라이선스 표시는 아직 데모 데이터)
+var sbA=window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co','sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_');
+(async function(){
+  var u=(await sbA.auth.getUser()).data.user;
+  if(!u){ location.replace('index.html'); return; }
+  var name=(u.user_metadata&&u.user_metadata.name)||u.email.split('@')[0];
   document.getElementById('whoName').textContent=name+'님';
   document.getElementById('avatar').textContent=(name[0]||'·');
 })();
-function doLogout(){ AZ.logout(); location.href='index.html'; }
+function doLogout(){ try{AZ.logout();}catch(_){}; sbA.auth.signOut().finally(function(){ location.href='index.html'; }); }
 
 // 내 라이선스 리스트 (제품·수량 제한 없이 여러 개)
 function licCard(l, idx){
