@@ -1,4 +1,5 @@
 <meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AudioAZ System Designer (BETA) · for d&b</title>
 <meta name="description" content="Free concept tool that designs d&b speaker systems and generates real ArrayCalc .dbpr files — unofficial, by AudioAZ. 무료 d&b 시스템 설계 · ArrayCalc 파일 생성 도구.">
@@ -1955,7 +1956,8 @@
     var logo=(document.querySelector('.azlogo')||{outerHTML:''}).outerHTML;
     var bom=($('bom')||{innerHTML:''}).innerHTML;
     var tot='총 '+($('totBoxes')?$('totBoxes').textContent:'')+' · 앰프 '+($('totAmps')?$('totAmps').textContent:'')+' · 채널 '+($('totCh')?$('totCh').textContent:'');
-    var html='<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>'+esc(pn)+' '+esc(pv)+' — 시스템 리포트</title><meta name="color-scheme" content="light"><meta name="viewport" content="width=device-width, initial-scale=1"><style>'
+    var html='<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow"><title>'+esc(pn)+' '+esc(pv)+' — 시스템 리포트</title><meta name="color-scheme" content="light"><meta name="viewport" content="width=device-width, initial-scale=1"><style>'
       +'@page{size:A4;margin:12mm}*{box-sizing:border-box}html{color-scheme:light only;background:#fff}body{background:#fff;font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:#0C2244;margin:0;padding:24px;max-width:860px;margin:0 auto;font-size:13px;line-height:1.55}'
       +'h1{font-size:22px;margin:0}h2{font-size:15px;border-left:4px solid '+B+';padding-left:10px;margin:28px 0 10px;break-after:avoid}h3{font-size:13px;margin:14px 0 6px}'
       +'.hd{display:flex;align-items:center;gap:14px;border-bottom:3px solid '+B+';padding-bottom:14px}.hd svg{width:44px;height:auto}'
