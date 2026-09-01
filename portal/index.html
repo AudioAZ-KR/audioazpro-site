@@ -68,7 +68,7 @@ img,svg{max-width:100%}
 .foot a{color:var(--blue);font-weight:600}
 .pane{display:none}.pane.on{display:block}
 .notice{background:var(--sky);border-radius:11px;padding:12px 14px;font-size:12.5px;color:var(--blue-deep);margin-top:16px;line-height:1.55}
-:root{--page:#0B1220;--card:#121D33;--navbg:rgba(11,18,32,.9);--text:#E9EEF7;--dim:#96A6BF;--line:#243350;--bg:#0C1424;--sky:#17273F;--wordmark:#fff}body{background:var(--bg)}.logo{width:auto}.field input,.field select,.field textarea,.key{background:#0E1A2E;color:#E9EEF7;border-color:#243350}.field input::placeholder{color:#6B7C96}.notice{color:#9CC2F5}</style>
+:root{--page:#0B1220;--card:#121D33;--navbg:rgba(11,18,32,.9);--text:#E9EEF7;--dim:#96A6BF;--line:#243350;--bg:#0C1424;--sky:#17273F;--wordmark:#fff}body{background:var(--bg)}.logo{width:auto}.field input,.field select,.field textarea,.key{background:#0E1A2E;color:#E9EEF7;border-color:#243350}.field input::placeholder{color:#6B7C96}.notice{color:#9CC2F5}.linklike{background:none;border:0;color:var(--blue-soft);font-weight:600;cursor:pointer;font-family:inherit;font-size:inherit;padding:0}a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--blue-soft);outline-offset:2px}</style>
 </head>
 <body>
 
@@ -112,12 +112,12 @@ img,svg{max-width:100%}
     <div id="paneLogin" class="pane on">
       <form onsubmit="return submitForm(event,'login')">
         <div class="field">
-          <label>이메일</label>
-          <input type="email" name="email" placeholder="you@example.com" required>
+          <label for="login-email">이메일</label>
+          <input id="login-email" type="email" name="email" placeholder="you@example.com" autocomplete="username" required>
         </div>
         <div class="field">
-          <label>비밀번호</label>
-          <input type="password" name="password" placeholder="비밀번호" required>
+          <label for="login-pw">비밀번호</label>
+          <input id="login-pw" type="password" name="password" placeholder="비밀번호" autocomplete="current-password" required>
         </div>
         <div style="text-align:right;margin:-4px 0 12px"><a href="forgot.html" style="font-size:12.5px;color:var(--blue-soft);font-weight:600">비밀번호를 잊으셨나요?</a></div>
         <button class="primary" type="submit">로그인</button>
@@ -128,21 +128,21 @@ img,svg{max-width:100%}
     <div id="paneSignup" class="pane">
       <form onsubmit="return submitForm(event,'signup')">
         <div class="field">
-          <label>이름</label>
-          <input type="text" name="name" placeholder="홍길동" required>
+          <label for="su-name">이름</label>
+          <input id="su-name" type="text" name="name" placeholder="홍길동" autocomplete="name" required>
         </div>
         <div class="field">
-          <label>이메일</label>
-          <input type="email" name="email" placeholder="you@example.com" required>
+          <label for="su-email">이메일</label>
+          <input id="su-email" type="email" name="email" placeholder="you@example.com" autocomplete="username" required>
           <div class="hint">구매·라이선스 발급에 사용됩니다. 정확히 입력하세요.</div>
         </div>
         <div class="field">
-          <label>비밀번호</label>
-          <input type="password" name="password" placeholder="8자 이상" minlength="8" required>
+          <label for="su-pw">비밀번호</label>
+          <input id="su-pw" type="password" name="password" placeholder="8자 이상" minlength="8" autocomplete="new-password" required>
         </div>
         <div class="field">
-          <label>비밀번호 확인</label>
-          <input type="password" name="password2" placeholder="비밀번호 다시 입력" minlength="8" required>
+          <label for="su-pw2">비밀번호 확인</label>
+          <input id="su-pw2" type="password" name="password2" placeholder="비밀번호 다시 입력" minlength="8" autocomplete="new-password" required>
         </div>
         <button class="primary" type="submit">회원가입</button>
       </form>
@@ -153,7 +153,7 @@ img,svg{max-width:100%}
     </div>
 
     <p class="foot" id="foot">
-      계정이 없으신가요? <a href="#" onclick="setTab('signup');return false">회원가입</a>
+      계정이 없으신가요? <button type="button" class="linklike" onclick="setTab('signup')">회원가입</button>
     </p>
   </div>
 </div>
@@ -169,8 +169,8 @@ function setTab(t){
   document.getElementById('title').textContent = login?'AudioAZ 계정':'AudioAZ 회원가입';
   document.getElementById('subtitle').textContent = login?'로그인하고 내 라이선스를 관리하세요':'계정을 만들고 제품 라이선스를 받으세요';
   document.getElementById('foot').innerHTML = login
-    ? '계정이 없으신가요? <a href="#" onclick="setTab(\'signup\');return false">회원가입</a>'
-    : '이미 계정이 있으신가요? <a href="#" onclick="setTab(\'login\');return false">로그인</a>';
+    ? '계정이 없으신가요? <button type="button" class="linklike" onclick="setTab(\'signup\')">회원가입</button>'
+    : '이미 계정이 있으신가요? <button type="button" class="linklike" onclick="setTab(\'login\')">로그인</button>';
 }
 // 이미 로그인돼 있으면 계정으로
 if(AZ.session()){ location.replace('account.html'); }
