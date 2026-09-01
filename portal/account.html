@@ -101,7 +101,7 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
         <p style="font-size:14px;color:var(--dim);margin-bottom:14px">데모(7·14·30일)·무료 라이선스는 <b>프로모션 코드</b>로, 유료 라이선스는 구매로 발급됩니다. 코드 입력과 결제는 모두 <b>결제 페이지</b>에서 진행됩니다.</p>
         <div class="field" style="max-width:420px">
           <label>프로모션 / 할인 코드</label>
-          <input type="text" id="quickcode" placeholder="AZ-CAZ-D14-XXXX 또는 AZ-DISC-20P-XXXX" style="font-family:ui-monospace,Menlo,monospace;text-transform:uppercase">
+          <input type="text" id="quickcode" placeholder="AZ-KV-D14-XXXX 또는 AZ-DISC-20P-XXXX" style="font-family:ui-monospace,Menlo,monospace;text-transform:uppercase">
         </div>
         <button class="btn pri" onclick="goCheckout()" style="height:44px;padding:0 22px">결제 페이지에서 코드 적용 →</button>
         <p class="note">코드는 결제 페이지에서 서버가 분석·검증(사용횟수·기간)해 라이선스를 발급하거나 가격을 할인합니다. 개인키 서명은 서버에서만 이뤄집니다.</p>
@@ -140,10 +140,10 @@ if(!AZ.requireLogin()){ }
 })();
 function doLogout(){ AZ.logout(); location.href='index.html'; }
 
-// 내 제품 카드 렌더 — 카탈로그(CAZ·TALLY) + 보유 중인 모든 제품
+// 내 제품 카드 렌더 — 카탈로그(KV·TALLY) + 보유 중인 모든 제품
 function renderProds(){
   var owned=AZ.licenses();
-  var order=['CAZ','TALLY'];
+  var order=['KV','TALLY'];
   owned.forEach(function(l){ if(l.product!=='ALL' && order.indexOf(l.product)<0) order.push(l.product); });
   var box=document.getElementById('prods'); box.innerHTML='';
   order.forEach(function(prod){

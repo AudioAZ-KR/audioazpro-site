@@ -12,8 +12,8 @@
   var SKEY = 'az_session', LKEY = 'az_licenses';
 
   var PRODMETA = {
-    CAZ:   { name: 'Clear Audio AZ',      tag: 'CAZ',  ver: 'v0.4.3',  file: 'ClearAudioAZ',      desc: '노이즈·잔향 제거 플러그인' },
-    CIAZ:  { name: 'Clear Instrument AZ', tag: 'CIAZ', ver: 'v0.1.0',  file: 'ClearInstrumentAZ', desc: '악기 트랙 클린업' },
+    KV:   { name: 'Klera Voice',      tag: 'KV',  ver: 'v0.4.3',  file: 'KleraVoice',      desc: '노이즈·잔향 제거 플러그인' },
+    KI:  { name: 'Klera Instrument', tag: 'KI', ver: 'v0.1.0',  file: 'KleraInstrument', desc: '악기 트랙 클린업' },
     TALLY: { name: 'AudioAZ Tally Host',  tag: 'TLY',  ver: 'v1.14.0', file: 'AudioAZ-Tally-Host',desc: '스마트폰 카메라 탈리' },
     LMAZ:  { name: 'Latency Meter AZ',    tag: 'LMAZ', ver: 'v1.0.0',  file: 'LatencyMeterAZ',    desc: '왕복 레이턴시 측정' }
   };

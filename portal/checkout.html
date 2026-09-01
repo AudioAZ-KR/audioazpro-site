@@ -63,8 +63,8 @@ h1{font-size:24px;font-weight:800;margin-bottom:4px}.lead{color:var(--dim);font-
       <div class="card">
         <h2>주문 상품</h2>
         <div class="item">
-          <div class="ic" id="pTag">CAZ</div>
-          <div><h3 id="pName">Clear Audio AZ</h3><div class="d">영구 라이선스 · 2대 · 무료 업데이트</div></div>
+          <div class="ic" id="pTag">KV</div>
+          <div><h3 id="pName">Klera Voice</h3><div class="d">영구 라이선스 · 2대 · 무료 업데이트</div></div>
           <div class="p" id="pPrice">₩49,000</div>
         </div>
         <p class="note">※ 가격은 데모용 예시입니다. 실제 가격은 출시 시 확정됩니다.</p>
@@ -74,12 +74,12 @@ h1{font-size:24px;font-weight:800;margin-bottom:4px}.lead{color:var(--dim);font-
         <h2>프로모션 / 할인 코드</h2>
         <div class="field"><label>코드 입력 (라이선스 코드 또는 할인 코드)</label>
           <div class="coderow">
-            <input id="code" placeholder="AZ-CAZ-D14-XXXX 또는 AZ-DISC-20P-XXXX">
+            <input id="code" placeholder="AZ-KV-D14-XXXX 또는 AZ-DISC-20P-XXXX">
             <button class="btn btn-pri" onclick="applyCode()">적용</button>
           </div>
         </div>
         <div class="codemsg" id="codemsg"></div>
-        <p class="note">예시 — <span style="font-family:monospace">AZ-CAZ-D14-7K2M9Q</span>(14일 데모) · <span style="font-family:monospace">AZ-TALLY-FREE-9ND2K7</span>(무료) · <span style="font-family:monospace">AZ-DISC-20P-8QK3M2</span>(20% 할인) · <span style="font-family:monospace">AZ-DISC-W10000-KD73</span>(1만원 할인)</p>
+        <p class="note">예시 — <span style="font-family:monospace">AZ-KV-D14-7K2M9Q</span>(14일 데모) · <span style="font-family:monospace">AZ-TALLY-FREE-9ND2K7</span>(무료) · <span style="font-family:monospace">AZ-DISC-20P-8QK3M2</span>(20% 할인) · <span style="font-family:monospace">AZ-DISC-W10000-KD73</span>(1만원 할인)</p>
       </div>
     </div>
 
@@ -105,9 +105,9 @@ if(!AZ.session()){ location.href='index.html'; }
 
 var BASE=49000;                 // 데모용 예시 가격
 var W=v=>'₩'+v.toLocaleString();
-var PROD={CAZ:'Clear Audio AZ',CIAZ:'Clear Instrument AZ',TALLY:'AudioAZ Tally Host',LMAZ:'Latency Meter AZ',ALL:'전 제품'};
+var PROD={KV:'Klera Voice',KI:'Klera Instrument',TALLY:'AudioAZ Tally Host',LMAZ:'Latency Meter AZ',ALL:'전 제품'};
 var KIND={D7:'데모 · 7일',D14:'데모 · 14일',D30:'데모 · 30일(한달)',FREE:'무료 라이선스(영구)'};
-var CURPROD='CAZ';              // 구매 대상 (?p= 로 지정)
+var CURPROD='KV';              // 구매 대상 (?p= 로 지정)
 
 function reset(){document.getElementById('sDiscLine').style.display='none';document.getElementById('licBox').style.display='none';
   document.getElementById('sTotal').textContent=W(BASE);document.getElementById('totLabel').textContent='합계';}
