@@ -476,7 +476,7 @@ var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
 // ===== Supabase 기반 관리자 인증 =====
 // 플로우: [P] 패스키 원터치 / [1] 이메일+비번(서버검증, is_admin 필수) → [2] 최초 비번변경 → [3] 패스키 등록 강제 → 콘솔.
-var sb = window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co','sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_');
+var sb = window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co','sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_',{auth:{experimental:{passkey:true}}});
 function showStep(id){ ['stepPk','stepPw','stepChg','stepEnroll','stepVerify'].forEach(function(s){var el=document.getElementById(s); if(el) el.style.display=(s===id)?'block':'none';}); hideErr(); }
 function showPwStep(){ showStep('stepPw'); }
 function err(m){ var e=document.getElementById('ga-err'); e.textContent=m; e.classList.add('on'); }
