@@ -124,29 +124,17 @@ footer .wrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 footer .logo{width:26px;opacity:.85}
 footer .right{margin-left:auto}
 
-/* 다크모드 */
-@media (prefers-color-scheme: dark){
-  :root{
-    --page:#0B1526; --card:#111F37; --navbg:rgba(11,21,38,.90);
-    --wordmark:#ffffff;
-    --text:#E8EEF7; --dim:#9DB0C9; --line:#243550;
-    --bg:#0E1B30; --sky:#16263F;
-  }
-  .badge-free{background:#16263F;color:#7FB5E8}
-  .card:hover,.swcard:hover{box-shadow:0 12px 34px rgba(0,0,0,.45)}
-}
 </style>
 </head>
 <body>
 
 <nav>
   <div class="wrap nav-in">
-    <a href="/" class="brand" aria-label="AudioAZ 홈"><picture><source srcset="/assets/logo-lockup-white.png" media="(prefers-color-scheme:dark)"><img class="brandlock" src="/assets/logo-lockup.png" alt="AudioAZ" style="height:26px;width:auto;display:block"></picture></a>
+    <a href="/" class="brand" aria-label="AudioAZ 홈"><img class="brandlock" src="/assets/logo-lockup.png" alt="AudioAZ" style="height:42px;width:auto;display:block"></a>
     <div class="menu">
-      <a href="#software">제품</a>
+      <a href="products.html">제품</a>
       <a href="downloads.html" class="hide-sm">다운로드</a>
       <a href="support.html" class="hide-sm">지원</a>
-      <a href="#production" class="hide-sm">렌탈·프로덕션</a>
       <a href="portal/index.html" class="login">로그인</a>
     </div>
   </div>
@@ -159,7 +147,7 @@ footer .right{margin-left:auto}
     <h1>라이브 현장의 문제를<br>소프트웨어로 풉니다</h1>
     <p>오디오에이지는 공연·방송 현장을 직접 뛰는 엔지니어가 만드는 오디오 소프트웨어 회사입니다. 매주 무대에서 검증한 도구만 제품으로 내놓습니다.</p>
     <div class="cta">
-      <a class="btn btn-primary" href="#software">제품 보기</a>
+      <a class="btn btn-primary" href="products.html">제품 보기</a>
       <a class="btn btn-ghost" href="#production">렌탈·프로덕션 사업부</a>
     </div>
   </div>
@@ -199,61 +187,6 @@ footer .right{margin-left:auto}
       <div class="card"><div class="ic">02</div><h3>실황 녹음</h3><p>공연·예배 실황을 앨범 퀄리티 멀티트랙으로 기록</p></div>
       <div class="card"><div class="ic">03</div><h3>방송 · 온라인 중계</h3><p>생방송·유튜브 송출 현장 오디오와 중계 시스템</p></div>
       <div class="card"><div class="ic">04</div><h3>스튜디오 레코딩</h3><p>클래식·국악·밴드 세션 레코딩과 음향 시스템 렌탈</p></div>
-    </div>
-  </div>
-</section>
-
-<section id="works" class="sec works">
-  <div class="wrap">
-    <div class="eyebrow">Selected Works</div>
-    <h2>함께한 무대들</h2>
-    <div class="wgrid">
-      <div class="work"><span class="tag">실황 녹음</span><h3>킨텍스 대형 기독교 집회</h3><p>15,000명 · 10시간 · 4개 세션 — 공식 녹음팀으로 170채널 동시 기록</p></div>
-      <div class="work"><span class="tag">공연 음향 감독</span><h3>국립극장 해오름</h3><p>경기시나위 오케스트라 70인 국악관현악 대편성 공연 음향 감독</p></div>
-      <div class="work"><span class="tag">실황 녹음</span><h3>롯데콘서트홀</h3><p>레이어스 클래식 콘서트홀 공연 유튜브 실황 녹음</p></div>
-      <div class="work"><span class="tag">시스템 총괄</span><h3>정기 기독교 집회 파트너</h3><p>사랑의교회·부산부전교회 등 전국 정기 집회의 음향 파트너로 지속 협업</p></div>
-      <div class="work"><span class="tag">해외 투어</span><h3>디오니소스로봇 유럽 투어</h3><p>프랑스·영국·독일·세르비아 — 해외 극장 투어링 음향</p></div>
-      <div class="work"><span class="tag">행사 음향</span><h3>페스티벌 & 공공 행사</h3><p>관대리 재즈페스티벌, 영월군 한마음대회, 국립한글박물관 세미나 등</p></div>
-    </div>
-    <div class="chips">
-      <span class="chip">어노인팅</span><span class="chip">제이어스 J-US</span><span class="chip">ISAIAH61</span><span class="chip">팀룩워십</span><span class="chip">예수전도단 YWAM</span><span class="chip">레이어스 클래식</span><span class="chip">경기시나위 오케스트라</span><span class="chip">아프리카TV</span><span class="chip">한국세무사회</span><span class="chip">영월군</span><span class="chip">총신대학교</span><span class="chip">KINTEX</span><span class="chip">장충체육관</span><span class="chip">롯데콘서트홀</span><span class="chip">정부서울청사</span>
-    </div>
-  </div>
-</section>
-
-<section id="gear" class="sec">
-  <div class="wrap">
-    <div class="eyebrow">Equipment</div>
-    <h2>스튜디오급 장비를 현장으로</h2>
-    <p class="sec-sub">대형 실황도 흔들리지 않는 멀티 백업 레코딩과 하이브리드 라우팅 시스템을 운용합니다.</p>
-    <div class="gear-list">
-      <div class="gear"><b>DAD Core 256</b><span>Thunderbolt · 256ch 레코딩 시스템</span></div>
-      <div class="gear"><b>Neve 1073 OPX</b><span>클래스 A 마이크 프리앰프</span></div>
-      <div class="gear"><b>d&amp;b V10P / V-GSub</b><span>포인트소스 스피커 시스템</span></div>
-      <div class="gear"><b>YAMAHA DM7</b><span>디지털 믹싱 콘솔 · 실황 녹음 컨트롤</span></div>
-      <div class="gear"><b>Shure Axient Digital</b><span>디지털 무선 시스템 · RF 매니지먼트</span></div>
-      <div class="gear"><b>Dante / MADI / AES50</b><span>하이브리드 네트워크 라우팅 · SuperRack 40ch 인서트</span></div>
-    </div>
-  </div>
-</section>
-
-<section id="contact" class="sec contact">
-  <div class="wrap">
-    <div class="eyebrow">Contact</div>
-    <h2>함께 만들 무대를 기다립니다</h2>
-    <div class="box">
-      <div class="cinfo">
-        <dl>
-          <dt>대표</dt><dd>음향감독 김형준</dd>
-          <dt>전화</dt><dd><a href="tel:01035470502">010-3547-0502</a></dd>
-          <dt>이메일</dt><dd><a href="mailto:khjun99@naver.com">khjun99@naver.com</a></dd>
-          <dt>블로그</dt><dd><a href="https://blog.naver.com/audioaz" target="_blank" rel="noopener">blog.naver.com/audioaz</a></dd>
-        </dl>
-      </div>
-      <div class="cmap">
-        <b>오피스</b>
-        <p>경기도 남양주시 다산중앙로19번길 21<br>다산블루웨일 지식산업센터 F동 419호</p>
-      </div>
     </div>
   </div>
 </section>

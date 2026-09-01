@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/png" href="/favicon.png"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<title>제품 — AudioAZ</title>
+<meta name="description" content="AudioAZ 제품 — Klera(오디오 클린 플러그인)와 Flare(방송·라이브 툴). 라이브 현장에서 검증한 소프트웨어.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+@font-face{font-family:'NanumSquareRound';src:url('fonts/NanumSquareRoundEB.woff2') format('woff2');font-weight:800;font-display:swap}
+@font-face{font-family:'NanumSquareRound';src:url('fonts/NanumSquareRoundB.woff2') format('woff2');font-weight:700;font-display:swap}
+h1,h2{font-family:'NanumSquareRound','Pretendard',sans-serif}
+:root{--blue:#1877F2;--blue-deep:#0E5FCC;--blue-soft:#4D96F5;--navy:#0C2244;--navy-deep:#081729;--sky:#E8F1FE;--line:#DCE6F5;--bg:#EDF2FA;--text:#14213A;--dim:#5B6B85;--amber:#F5B93C;--page:#fff;--card:#fff;--navbg:rgba(255,255,255,.92);
+  --klera:#6D4BF0;--flare:#E5333F}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',system-ui,sans-serif;color:var(--text);background:var(--bg);line-height:1.6;word-break:keep-all}
+a{color:inherit;text-decoration:none}img{max-width:100%}
+.wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+.eyebrow{font-size:13px;font-weight:800;letter-spacing:.14em;color:var(--blue);text-transform:uppercase}
+h1{font-size:34px;font-weight:800;letter-spacing:-.02em;margin:8px 0 6px}
+h2{font-size:20px;font-weight:800;margin:40px 0 4px}
+nav{position:sticky;top:0;z-index:50;background:var(--navbg);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav-in{display:flex;align-items:center;gap:10px;height:64px}
+.brand{display:flex;align-items:center}
+.menu{margin-left:auto;display:flex;align-items:center;gap:24px;font-size:14.5px;font-weight:600;color:var(--dim)}
+.menu a:hover,.menu a.on{color:var(--blue)}
+.menu .login{border:1px solid var(--line);border-radius:9px;padding:7px 15px;color:var(--navy)}
+.menu .login:hover{background:var(--sky)}
+@media(max-width:760px){.menu{gap:13px;font-size:12.5px}.menu .hide-sm{display:none}}
+.head{padding:46px 0 8px}.head p{color:var(--dim);max-width:620px;font-size:16px}
+.grp-sub{color:var(--dim);font-size:14px;margin-top:2px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+@media(max-width:720px){.grid{grid-template-columns:1fr}}
+.pcard{display:block;position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px;transition:box-shadow .2s,transform .2s,border-color .2s;overflow:hidden}
+a.pcard:hover{box-shadow:0 12px 34px rgba(12,34,68,.12);transform:translateY(-2px);border-color:var(--blue-soft)}
+.pcard .accent{position:absolute;left:0;top:0;bottom:0;width:4px}
+.pcard.klera .accent{background:var(--klera)}.pcard.flare .accent{background:var(--flare)}
+.pcard .tag{display:inline-block;font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:700;letter-spacing:.05em;padding:4px 9px;border-radius:7px;margin-bottom:12px}
+.pcard.klera .tag{background:#EFEBFE;color:var(--klera)}.pcard.flare .tag{background:#FDECEC;color:var(--flare)}
+.pcard h3{font-size:20px;font-weight:800;margin-bottom:8px}
+.pcard p{font-size:14px;color:var(--dim);line-height:1.6}
+.badge{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:3px 11px;margin-left:8px;vertical-align:middle}
+.b-soon{background:var(--amber);color:#3A2A00}.b-free{background:var(--sky);color:var(--blue-deep)}
+.pcard .go{display:inline-block;margin-top:14px;font-size:13.5px;font-weight:700;color:var(--blue)}
+a.pcard:hover .go{color:var(--blue-deep)}
+.pcard.soon{opacity:.72}
+.free{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 26px;margin-top:18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.free b{font-size:16px}.free p{font-size:13.5px;color:var(--dim)}
+.free .btn{margin-left:auto;background:var(--blue);color:#fff;border-radius:10px;padding:11px 20px;font-weight:700;font-size:14px}
+.free .btn:hover{background:var(--blue-deep)}
+footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px;margin-top:56px}
+footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center}footer .right{margin-left:auto}footer a:hover{color:#fff}
+</style>
+</head>
+<body>
+<nav><div class="wrap nav-in">
+  <a href="/" class="brand" aria-label="AudioAZ 홈"><img src="/assets/logo-lockup.png" alt="AudioAZ" style="height:42px;width:auto;display:block"></a>
+  <div class="menu">
+    <a href="products.html" class="on">제품</a>
+    <a href="downloads.html" class="hide-sm">다운로드</a>
+    <a href="support.html" class="hide-sm">지원</a>
+    <a href="portal/index.html" class="login">로그인</a>
+  </div>
+</div></nav>
+
+<div class="wrap head">
+  <div class="eyebrow">Products</div>
+  <h1>제품</h1>
+  <p>라이브 현장에서 검증한 오디오 소프트웨어. 오디오 클린 플러그인 <b>Klera</b>와 방송·라이브 제작 툴 <b>Flare</b>.</p>
+</div>
+
+<div class="wrap">
+  <h2>Klera — 오디오 클린 플러그인</h2>
+  <div class="grp-sub">실시간으로 노이즈·잔향을 걷어 본래의 맑은 소리만 남깁니다.</div>
+  <div class="grid">
+    <a class="pcard klera" href="product-klera-voice.html"><span class="accent"></span>
+      <div class="tag">KLERA · VOICE</div>
+      <h3>Klera Voice <span class="badge b-soon">출시 예정</span></h3>
+      <p>라이브용 제로레이턴시 AI 보이스 클린. FOH·모니터용 Zero 엔진, 방송·녹음용 Full 엔진. VST3·AU.</p>
+      <span class="go">자세히 →</span>
+    </a>
+    <div class="pcard klera soon"><span class="accent"></span>
+      <div class="tag">KLERA · INSTRUMENT</div>
+      <h3>Klera Instrument <span class="badge b-soon">출시 예정</span></h3>
+      <p>악기 트랙의 노이즈·간섭음을 정리해 깨끗한 톤으로. 세부 페이지는 준비 중입니다.</p>
+      <span class="go" style="color:var(--dim)">준비 중</span>
+    </div>
+  </div>
+
+  <h2>Flare — 방송·라이브 제작 툴</h2>
+  <div class="grp-sub">멀리서도 보이는 신호 — 온에어(레드)·프리뷰(그린)를 어디서든.</div>
+  <div class="grid">
+    <a class="pcard flare" href="product-flare-tally.html"><span class="accent"></span>
+      <div class="tag">FLARE · TALLY</div>
+      <h3>Flare Tally <span class="badge b-soon">출시 예정</span></h3>
+      <p>스마트폰이 곧 탈리 라이트. ATEM 스위처와 연결하면 카메라맨 폰에 PGM/PVW 실시간 표시. LTE 원격까지.</p>
+      <span class="go">자세히 →</span>
+    </a>
+  </div>
+
+  <h2>무료 도구</h2>
+  <div class="grp-sub">현장에서 바로 쓰는 무료 웹·앱 도구.</div>
+  <div class="free">
+    <div><b>System Designer · 쇼파일 생성기 · Latency Meter AZ</b><p>d&amp;b 시스템 설계, 쇼파일 자동 생성, 왕복 레이턴시 측정 — 모두 무료.</p></div>
+    <a class="btn" href="downloads.html">다운로드로 이동</a>
+  </div>
+</div>
+
+<footer><div class="wrap"><span>© AudioAZ (오디오에이지)</span><span class="right"><a href="products.html">제품</a> · <a href="downloads.html">다운로드</a> · <a href="support.html">지원</a> · <a href="portal/index.html">로그인</a></span></div></footer>
+</body>
+</html>
