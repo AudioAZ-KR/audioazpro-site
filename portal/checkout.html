@@ -102,8 +102,28 @@ h1{font-size:24px;font-weight:800;margin-bottom:4px}.lead{color:var(--dim);font-
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="az-demo.js"></script>
 <script>
+// 실제 주문·라이선스 기록용 Supabase (테스트 결제도 orders/licenses DB에 남겨 콘솔에서 보이게)
+var sbC=window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co','sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_');
+function amountNow(){ return parseInt(String(document.getElementById('sTotal').textContent).replace(/[^0-9]/g,''),10)||0; }
+// 주문+라이선스 DB 기록. 정식 전환 시 이 부분은 결제 웹훅(Edge Function, service_role)로 이동.
+async function recordPurchase(opts){
+  var u=(await sbC.auth.getUser()).data.user;
+  if(!u) return {ok:false, why:'로그인 세션 없음'};
+  var orderId=null;
+  if(opts.order){
+    var o=await sbC.from('orders').insert({user_id:u.id, product_id:opts.product, amount:opts.amount, currency:'KRW', status:'paid', provider:opts.provider}).select('id').single();
+    if(o.error) return {ok:false, why:'주문 기록 실패: '+o.error.message};
+    orderId=o.data.id;
+  }
+  var exp=null; var days={D7:7,D14:14,D30:30}[opts.type];
+  if(days){ var d=new Date(); d.setDate(d.getDate()+days); exp=d.toISOString(); }
+  var l=await sbC.from('licenses').insert({user_id:u.id, product_id:opts.product, type:opts.type, license_key:opts.key, status:'active', max_devices:2, expires_at:exp, order_id:orderId}).select('id').single();
+  if(l.error) return {ok:false, why:'라이선스 기록 실패: '+l.error.message};
+  return {ok:true};
+}
 // 로그인 필요 (라이선스를 계정에 붙이기 위해)
 // 데모 페이지 — 세션 가드는 계정 페이지(Supabase)에서 처리
 
@@ -165,21 +185,23 @@ function applyCode(){
   document.querySelector('.pay').innerHTML='<button class="pbtn kr" onclick="grantCode()">라이선스 발급받기 (무료)</button>';
 }
 // 코드로 무료·데모 라이선스 발급 (데모: localStorage에 저장 → 내 계정에 표시)
-function grantCode(){
+async function grantCode(){
   if(!APPLIED) return;
   var target = (APPLIED.product==='ALL') ? CURPROD : APPLIED.product;
   var key = AZ.grant(target, APPLIED.kind);
   AZ.usePromo(APPLIED.code);
-  alert('라이선스가 발급됐습니다.\n\n'+PROD[target]+' · '+KIND[APPLIED.kind]+'\n키: '+key+'\n\n내 계정에서 다운로드할 수 있습니다.\n(정식 전환 시: 서버가 코드 검증 → Ed25519 서명 → 이메일 전송)');
+  var rec=await recordPurchase({order:false, product:target, type:APPLIED.kind, key:key});
+  alert('라이선스가 발급됐습니다.\n\n'+PROD[target]+' · '+KIND[APPLIED.kind]+'\n키: '+key+'\n\n'+(rec.ok?'서버에 기록됐습니다.':'⚠ 서버 기록 안 됨 — '+rec.why)+'\n내 계정에서 다운로드할 수 있습니다.');
   location.href='account.html';
 }
 // 결제 (데모: 실제 결제 없이 정식 라이선스 발급 → 내 계정)
-function pay(ch){
+async function pay(ch){
   var amt=document.getElementById('sTotal').textContent;
   if(!confirm(ch+' 결제 (테스트 모드)\n\n결제 금액: '+amt+'\n실제 결제 없이 '+PROD[CURPROD]+' 정식 라이선스를 발급합니다. 진행할까요?')) return;
   var key = AZ.grant(CURPROD,'FULL');
   if(APPLIED) AZ.usePromo(APPLIED.code);
-  alert('결제 완료 (테스트).\n\n'+PROD[CURPROD]+' 정식 라이선스 발급 ('+amt+')\n키: '+key+'\n\n내 계정으로 이동합니다.\n(정식 전환 시: '+ch+' 결제창 → 웹훅 → 자동 발급)');
+  var rec=await recordPurchase({order:true, product:CURPROD, amount:amountNow(), provider:ch+'(테스트)', type:'FULL', key:key});
+  alert('결제 완료 (테스트).\n\n'+PROD[CURPROD]+' 정식 라이선스 발급 ('+amt+')\n키: '+key+'\n\n'+(rec.ok?'주문·라이선스가 서버에 기록됐습니다 (관리자 콘솔 주문·결제에서 확인).':'⚠ 서버 기록 안 됨 — '+rec.why)+'\n내 계정으로 이동합니다.');
   location.href='account.html';
 }
 // ?p=제품 로 구매 대상 설정, ?code= 로 코드 자동 적용
