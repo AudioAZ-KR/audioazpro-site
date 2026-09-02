@@ -34,7 +34,6 @@
       +'<div class="acctmenu" role="menu">'
       +'<div class="am-h"><b>'+esc(name)+'님</b><span>'+esc(user.email||'')+'</span></div>'
       +'<a href="/portal/account.html" role="menuitem"><span class="mi">▤</span>내 라이선스 (마이페이지)</a>'
-      +'<a href="/downloads.html" role="menuitem"><span class="mi">↓</span>다운로드</a>'
       +'<a href="/contact.html" role="menuitem"><span class="mi">?</span>문의하기</a>'
       +'<button type="button" class="out" role="menuitem" id="azNavLogout"><span class="mi">⎋</span>로그아웃</button>'
       +'</div>';
