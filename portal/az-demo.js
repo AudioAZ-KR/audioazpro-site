@@ -73,6 +73,26 @@
       var m = PRODMETA[prod]; return m ? (m.price || 0) : 0;
     },
     setBasePrice: function (prod, price) { var o = read('az_prices', {}); o[prod] = price; write('az_prices', o); },
+    // DB(products 테이블)의 정가·버전을 내려받아 로컬 캐시(az_prices/az_vers)에 반영 — 관리자 콘솔에서 정한 값이 고객 화면에 적용됨
+    syncCatalog: function (cb) {
+      var done = function () { try { cb && cb(); } catch (e) {} };
+      try {
+        fetch('https://lkbbenyvchddsjsihofv.supabase.co/rest/v1/products?select=id,price_krw,version&active=is.true',
+          { headers: { apikey: 'sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_' } })
+        .then(function (r) { return r.ok ? r.json() : []; })
+        .then(function (rows) {
+          var pr = read('az_prices', {}), vs = read('az_vers', {});
+          (rows || []).forEach(function (row) {
+            if (!PRODMETA[row.id]) return;
+            if (row.price_krw != null) pr[row.id] = row.price_krw; else delete pr[row.id];
+            if (row.version) vs[row.id] = row.version;
+          });
+          write('az_prices', pr); write('az_vers', vs);
+        })
+        .catch(function () {})
+        .then(done);
+      } catch (e) { done(); }
+    },
     versionOf: function (prod) { var o = read('az_vers', {}); if (o[prod]) return o[prod]; var m = PRODMETA[prod]; return m ? m.ver : ''; },
     setVersion: function (prod, ver) { var o = read('az_vers', {}); o[prod] = ver; write('az_vers', o); },
     notices: function () { return read('az_notices', []); },

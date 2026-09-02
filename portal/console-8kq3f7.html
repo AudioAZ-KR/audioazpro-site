@@ -445,7 +445,7 @@ td{color:var(--text)}
 
       <!-- 제품 -->
       <section id="p-products" class="page">
-        <div class="card"><h2>제품 · 버전</h2><div class="sub">가격과 버전을 편집하면 <b>홈페이지·결제·할인 탭에 바로 반영</b>됩니다. (데모 저장소 — 정식 전환 시 products DB)</div>
+        <div class="card"><h2>제품 · 버전</h2><div class="sub"><b>정가</b>와 버전은 products DB에 저장되어 <b>홈페이지·결제·할인 탭의 모든 고객에게 즉시 반영</b>됩니다. 정가를 비워두면 "미정(출시 예정)"으로 표시됩니다.</div>
           <table><thead><tr><th>제품</th><th>최신버전</th><th>정가</th><th>세일가</th><th>상태</th><th></th></tr></thead>
           <tbody id="prodRows"></tbody></table>
         </div>
@@ -1078,7 +1078,8 @@ function renderSales(){
   }).join('');
 }
 try{ renderPromos(); renderSales(); promoType(); }catch(_){}
-try{ renderIssued(); renderProducts(); renderNotices(); }catch(_){}
+try{ renderIssued(); renderNotices(); }catch(_){}
+try{ loadProducts(); }catch(_){}
 try{ loadCustomers(); }catch(_){}
 // ===== 실데이터 공통: 모든 변경은 결재(approvals)를 거침 — 최고관리자는 즉시 자동 승인(감사 기록 남음) =====
 var PRODID={'Klera Voice':'KV','Klera Instrument':'KI','Flare Tally':'TALLY','Latency Meter AZ':'LMAZ'};
@@ -1246,38 +1247,47 @@ async function custDetail(id){
 }
 
 // ===== 제품 · 버전 (가격·버전 편집 → 홈페이지·결제 즉시 반영) =====
+var PRODUCTS={};  // DB products 캐시 {id:{name,version,price_krw,active}}
+async function loadProducts(){
+  var r=await sb.from('products').select('id,name,version,price_krw,active').order('id');
+  if(r.error){ var tb=document.getElementById('prodRows'); if(tb) tb.innerHTML='<tr><td colspan="6" style="color:#ff9ea3">불러오기 실패: '+esc(r.error.message)+'</td></tr>'; return; }
+  PRODUCTS={}; (r.data||[]).forEach(function(x){ PRODUCTS[x.id]=x; if(x.price_krw!=null) AZ.setBasePrice(x.id,x.price_krw); if(x.version) AZ.setVersion(x.id,x.version); });
+  renderProducts();
+}
 function renderProducts(){
   var tb=document.getElementById('prodRows'); if(!tb) return;
-  tb.innerHTML=['KV','KI','TALLY','LMAZ'].map(function(p){
-    var m=AZ.PRODMETA[p], base=AZ.basePrice(p), sale=AZ.saleFor(p);
-    var status = p==='LMAZ' ? '<span class="pill p-active">배포중 · 무료</span>' : '<span class="pill p-trial">출시 예정</span>';
-    return '<tr><td>'+esc(m.name)+'</td>'+
-      '<td class="mono">'+esc(AZ.versionOf(p))+'</td>'+
-      '<td>'+(base?W(base):'무료')+'</td>'+
+  var ids=['KV','KI','TALLY','LMAZ'];
+  tb.innerHTML=ids.map(function(p){
+    var m=AZ.PRODMETA[p], db=PRODUCTS[p]||{}, price=db.price_krw, sale=AZ.saleFor(p);
+    var status = price==null ? '<span class="pill p-trial">정가 미정</span>' : (price===0 ? '<span class="pill p-active">무료</span>' : '<span class="pill p-active">판매중</span>');
+    return '<tr><td>'+esc(db.name||m.name)+'</td>'+
+      '<td class="mono">'+esc(db.version||AZ.versionOf(p))+'</td>'+
+      '<td>'+(price==null?'<span style="color:var(--dim)">미정</span><div style="font-size:11px;color:var(--dim)">현재 데모가 '+W(AZ.basePrice(p))+' 적용 중</div>':(price?W(price):'무료'))+'</td>'+
       '<td>'+(sale?('<b>'+W(sale.price)+'</b>'):'—')+'</td>'+
       '<td>'+status+'</td>'+
-      '<td style="white-space:nowrap"><button class="tbtn" onclick="editProduct(\''+p+'\')">편집</button> <button class="tbtn" onclick="bumpVersion(\''+p+'\')">새 버전</button></td>'+
+      '<td style="white-space:nowrap"><button class="tbtn pri" onclick="editProduct(\''+p+'\')">정가 설정</button> <button class="tbtn" onclick="bumpVersion(\''+p+'\')">버전</button></td>'+
     '</tr>';
   }).join('');
 }
-function editProduct(p){
-  var m=AZ.PRODMETA[p];
-  var price=prompt(m.name+' — 정가(원)를 입력하세요.\n현재: '+AZ.basePrice(p)+'원\n(0 = 무료. 홈페이지·결제·할인 탭에 바로 반영)', AZ.basePrice(p));
+async function editProduct(p){
+  var m=AZ.PRODMETA[p], db=PRODUCTS[p]||{}, cur=db.price_krw;
+  var price=prompt(m.name+' — 정가(원)를 입력하세요.\n현재: '+(cur==null?'미정':cur+'원')+'\n0 = 무료 · 빈칸 = 미정(출시 예정)\n저장 즉시 모든 고객의 결제·할인 탭에 반영됩니다.', cur==null?'':cur);
   if(price===null) return;
-  var v=parseInt(price,10);
-  if(isNaN(v)||v<0){ alert('숫자를 입력하세요.'); return; }
-  AZ.setBasePrice(p,v);
-  renderProducts(); try{renderSales();}catch(_){}
-  // TODO(백엔드): products.price_krw 업데이트
+  price=String(price).replace(/[^0-9]/g,'');
+  var v = price===''? null : parseInt(price,10);
+  var r=await sb.from('products').update({price_krw:v}).eq('id',p).select('id,price_krw').single();
+  if(r.error){ alert('저장 실패: '+r.error.message+'\n(관리자 update 정책이 적용됐는지 확인)'); return; }
+  if(v==null){ var o={}; try{o=JSON.parse(localStorage.getItem('az_prices')||'{}');}catch(_){ } delete o[p]; localStorage.setItem('az_prices',JSON.stringify(o)); } else AZ.setBasePrice(p,v);
+  await loadProducts(); try{renderSales();}catch(_){}
 }
-function bumpVersion(p){
-  var m=AZ.PRODMETA[p];
-  var ver=prompt(m.name+' — 새 버전을 입력하세요.\n현재: '+AZ.versionOf(p)+'\n(실제 설치파일 업로드는 백엔드 연결 시 제공)', AZ.versionOf(p));
+async function bumpVersion(p){
+  var m=AZ.PRODMETA[p], db=PRODUCTS[p]||{};
+  var ver=prompt(m.name+' — 버전을 입력하세요.\n현재: '+(db.version||AZ.versionOf(p))+'\n(설치파일 업로드는 백엔드 연결 시 제공)', db.version||AZ.versionOf(p));
   if(ver===null) return;
   ver=ver.trim(); if(!ver){ alert('버전을 입력하세요.'); return; }
-  AZ.setVersion(p,ver);
-  renderProducts();
-  // TODO(백엔드): products.version 업데이트 + 빌드 업로드(스토리지)
+  var r=await sb.from('products').update({version:ver}).eq('id',p);
+  if(r.error){ alert('저장 실패: '+r.error.message); return; }
+  AZ.setVersion(p,ver); await loadProducts();
 }
 
 // ===== 공지 =====

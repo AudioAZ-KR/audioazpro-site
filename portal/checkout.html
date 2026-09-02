@@ -211,7 +211,9 @@ async function pay(ch){
   if(PROD[p]){ CURPROD=p; document.getElementById('pName').textContent=PROD[p];
     var tag=document.getElementById('pTag'); if(tag&&AZ.PRODMETA[p]) tag.textContent=AZ.PRODMETA[p].tag; }
   renderPrice();
-  var c=qp.get('code'); if(c){document.getElementById('code').value=c;applyCode();}
+  var c=qp.get('code');
+  // DB 정가 동기화 후 다시 렌더 (관리자 콘솔에서 정한 정가 반영)
+  AZ.syncCatalog(function(){ if(!APPLIED) renderPrice(); if(c){document.getElementById('code').value=c;applyCode();} });
 })();
 </script>
 </body>
