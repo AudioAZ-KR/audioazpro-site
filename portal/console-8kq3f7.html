@@ -275,17 +275,14 @@ td{color:var(--text)}
       <!-- 대시보드 -->
       <section id="p-dash" class="page on">
         <div class="kpis">
-          <div class="kpi"><div class="l">총 매출 (누적)</div><div class="v">₩ —</div><div class="d flat">백엔드 연결 시</div></div>
-          <div class="kpi"><div class="l">활성 라이선스</div><div class="v">0</div><div class="d flat">데모</div></div>
-          <div class="kpi"><div class="l">이번 달 발급</div><div class="v">0</div><div class="d flat">데모</div></div>
-          <div class="kpi"><div class="l">회원</div><div class="v">0</div><div class="d flat">데모</div></div>
+          <div class="kpi"><div class="l">총 매출 (결제완료·KRW)</div><div class="v" id="kpiRev">—</div><div class="d flat">실데이터</div></div>
+          <div class="kpi"><div class="l">활성 라이선스</div><div class="v" id="kpiLic">—</div><div class="d flat">실데이터</div></div>
+          <div class="kpi"><div class="l">이번 달 발급</div><div class="v" id="kpiMonth">—</div><div class="d flat">실데이터</div></div>
+          <div class="kpi"><div class="l">회원</div><div class="v" id="kpiUsers">—</div><div class="d flat">실데이터</div></div>
         </div>
-        <div class="card"><h2>최근 활동 <span class="demo">데모</span></h2><div class="sub">최근 발급·주문·가입 로그</div>
+        <div class="card"><h2>최근 활동 <button class="tbtn" style="margin-left:10px" onclick="loadDash()">새로고침</button></h2><div class="sub">라이선스 발급·주문·문의·결재 최신 기록</div>
           <table><thead><tr><th>시각</th><th>유형</th><th>내용</th></tr></thead>
-          <tbody>
-            <tr><td class="mono">—</td><td><span class="pill p-active">발급</span></td><td>백엔드 연결 후 실데이터 표시</td></tr>
-            <tr><td class="mono">—</td><td><span class="pill p-paid">주문</span></td><td>포트원/Paddle 웹훅 연동 시</td></tr>
-          </tbody></table>
+          <tbody id="actRows"><tr><td colspan="3" class="n">불러오는 중…</td></tr></tbody></table>
         </div>
       </section>
 
@@ -340,7 +337,7 @@ td{color:var(--text)}
             <div class="rowflex"><button class="btn btn-pri" type="submit">발급</button><label style="font-size:12.5px;color:var(--dim)"><input type="checkbox" checked style="width:auto"> 발급 후 이메일 자동 전송 (백엔드 연결 시)</label></div>
           </form>
           <div class="result" id="issRes"><div style="font-size:11px;color:#8fa5c2;letter-spacing:.05em;text-transform:uppercase">발급된 키</div><div class="k" id="issKey">—</div></div>
-          <p class="note">실제 서명은 서버의 <b>private_key.pem</b>으로만 수행됩니다 — 브라우저·이 화면엔 개인키가 없습니다. 지금은 발급 이력이 이 브라우저(데모 저장소)에 기록되고, 정식 전환 시 licenses DB + Ed25519 서명 + 이메일 발송으로 바뀝니다.</p>
+          <p class="note">발급은 <b>가입된 회원 이메일</b>에만 됩니다. 라이선스 키는 서버(DB 함수)가 생성하며, 최고관리자는 즉시 발급·직원은 결재 대기로 올라갑니다. 모든 발급·회수는 결재 이력으로 남습니다.</p>
         </div>
         <div class="card"><h2>발급된 라이선스</h2>
           <div class="toolbar"><input class="field search" style="margin:0" id="issSearch" placeholder="키·이메일·이름 검색" oninput="renderIssued()"></div>
@@ -431,13 +428,9 @@ td{color:var(--text)}
 
       <!-- 주문 -->
       <section id="p-orders" class="page">
-        <div class="card"><h2>주문·결제 <span class="demo">데모</span></h2><div class="sub">포트원(국내)·Paddle(해외) 웹훅으로 자동 기록됩니다.</div>
-          <table><thead><tr><th>주문번호</th><th>제품</th><th>고객</th><th>채널</th><th>금액</th><th>상태</th><th>일시</th></tr></thead>
-          <tbody>
-            <tr><td class="mono">#10231</td><td>Klera Voice</td><td>hong@ex.com</td><td>포트원</td><td>₩ —</td><td><span class="pill p-paid">결제완료</span></td><td class="mono">2026-08-31</td></tr>
-            <tr><td class="mono">#10230</td><td>Klera Voice</td><td>john@ex.com</td><td>Paddle</td><td>$ —</td><td><span class="pill p-paid">결제완료</span></td><td class="mono">2026-08-30</td></tr>
-            <tr><td class="mono">#10229</td><td>Flare Tally</td><td>park@ex.com</td><td>포트원</td><td>₩ —</td><td><span class="pill p-refund">환불</span></td><td class="mono">2026-08-29</td></tr>
-          </tbody></table>
+        <div class="card"><h2>주문·결제 <button class="tbtn" style="margin-left:10px" onclick="loadOrders()">새로고침</button></h2><div class="sub">실제 주문 데이터(orders)입니다. 결제 연동(포트원·Paddle) 후 웹훅으로 자동 기록되며, 환불은 결재 기록을 남기고 연결 라이선스를 함께 회수합니다.</div>
+          <table><thead><tr><th>주문</th><th>제품</th><th>고객</th><th>채널</th><th>금액</th><th>상태</th><th>일시</th><th></th></tr></thead>
+          <tbody id="orderRows"><tr><td colspan="8" class="n">불러오는 중…</td></tr></tbody></table>
         </div>
       </section>
 
@@ -565,7 +558,7 @@ async function afterAuthGate(verified){
   if(!p.passkey_enrolled){ showStep('stepEnroll'); return; }
   if(verified!==true){ showStep('stepVerify'); return; }   // ← 비번 로그인 후에도 패스키 확인 강제
   enterConsole(p);
-  try{ azApprFields(); azApprLoad(); azInqLoad(); renderAdmins(); }catch(_){}
+  try{ azApprFields(); azApprLoad(); azInqLoad(); renderAdmins(); loadDash(); loadLicenses(); renderPromos(); loadOrders(); loadCustomers(); }catch(_){}
 }
 // STEP 4: 패스키 2차 확인 — 네이티브 패스키 재로그인으로 "패스키 세션"을 발급받아야 통과
 async function verifyPasskey(){
@@ -927,6 +920,12 @@ document.querySelectorAll('.side a[data-p]').forEach(a=>{
     document.getElementById('ptitle').textContent=titles[p];
     if(p==='appr'){ try{azApprLoad();}catch(_){} }
     if(p==='inq'){ try{azInqLoad();}catch(_){} }
+    if(p==='lic'){ try{loadLicenses();}catch(_){} }
+    if(p==='promo'){ try{renderPromos();}catch(_){} }
+    if(p==='orders'){ try{loadOrders();}catch(_){} }
+    if(p==='dash'){ try{loadDash();}catch(_){} }
+    if(p==='customers'){ try{loadCustomers();}catch(_){} }
+    if(p==='admins'){ try{renderAdmins();}catch(_){} }
     document.querySelector('.side').classList.remove('open');   // 메뉴 선택 시 자동 닫힘
     var b=document.getElementById('burger'); if(b) b.setAttribute('aria-expanded','false');
     window.scrollTo(0,0);
@@ -966,55 +965,65 @@ function promoCalc(){
   var disc=now-target, pct=Math.round(disc/now*100);
   out.innerHTML='할인액 <b style="color:#39D48C">'+W(disc)+'</b> ('+pct+'% 할인) → 고객 결제 금액 <b>'+W(target)+'</b>';
 }
-function genPromo(e){
+// ===== 프로모션 코드 (실데이터 promo_codes — 발행/중지는 결재 경유, super는 즉시 승인) =====
+var PROMOS=[];
+async function genPromo(e){
   e.preventDefault();var d={};new FormData(e.target).forEach((v,k)=>d[k]=v);
   var code=String(d.codetext||'').trim().toUpperCase();
   var res=document.getElementById('promoRes'), out=document.getElementById('promoCodes');
   function fail(m){ out.innerHTML='<b style="color:#ff9ea3">'+m+'</b>'; res.classList.add('on'); return false; }
   if(!/^[A-Z0-9\-]{4,32}$/.test(code)) return fail('코드는 영문·숫자·하이픈 4~32자로 입력하세요.');
-  if(AZ.findPromo(code)) return fail('이미 발행된 코드입니다: '+code);
-  var p={ code:code, ctype:d.ctype, product:d.product, uses:parseInt(d.uses||'1'), used:0, active:true, memo:d.memo||'', at:AZ.today() };
+  if(PROMOS.some(function(p){return p.code===code;})) return fail('이미 발행된 코드입니다: '+code);
+  var payload={code:code, kind:d.ctype, product_id:(d.product==='ALL'?'':d.product), max_uses:String(parseInt(d.uses||'1'))};
+  var desc;
   if(d.ctype==='discount'){
     if(d.product==='ALL') return fail('할인 코드는 제품별로만 발행할 수 있습니다.');
     var now=AZ.priceOf(d.product).now, target=parseInt(d.target||'');
     if(isNaN(target)||target<0) return fail('목표 금액을 입력하세요.');
     if(target>=now) return fail('목표 금액이 현재 판매가('+W(now)+') 이상입니다.');
-    p.target=target; p.dstart=d.dstart||null; p.dend=d.dend||null;
-    out.innerHTML='<b>'+code+'</b><br>'+PRODNAME[d.product]+' · 목표 금액 '+W(target)+' (현재가 '+W(now)+' → 할인 '+W(now-target)+') · 기간 '+(d.dstart||'—')+'~'+(d.dend||'무기한');
+    payload.discount_won=String(now-target); if(d.dend) payload.valid_to=d.dend;
+    desc=PRODNAME[d.product]+' · 할인 '+W(now-target)+' (→ '+W(target)+') · 기간 '+(d.dstart||'—')+'~'+(d.dend||'무기한');
   }else{
-    p.kind=d.kind; p.expire=d.expire||null;
-    out.innerHTML='<b>'+code+'</b><br>'+PRODNAME[d.product]+' · '+KINDLABEL[d.kind]+' · 만료 '+(d.expire||'없음');
+    payload.license_type=d.kind; if(d.expire) payload.valid_to=d.expire;
+    desc=(PRODNAME[d.product]||'전 제품')+' · '+KINDLABEL[d.kind]+' · 만료 '+(d.expire||'없음');
   }
-  var L=AZ.promos(); L.push(p); AZ.savePromos(L);
-  res.classList.add('on'); renderPromos();
-  e.target.reset(); promoType();
+  res.classList.add('on'); out.innerHTML='발행 중…';
+  try{
+    var r=await azSuperDo('promo_create','프로모션 코드 발행 — '+code, (d.memo||'')+' · '+desc, payload);
+    out.innerHTML='<b>'+esc(code)+'</b><br>'+esc(desc)+'<br><span style="color:#8fa5c2">'+esc(r.text)+'</span>';
+    e.target.reset(); promoType(); renderPromos();
+  }catch(ex){ return fail('실패: '+esc(ex.message)); }
   return false;
-  // TODO(백엔드): POST /admin/api/promo → promo_codes DB 저장. 결제 시 Edge Function 검증.
 }
-function renderPromos(){
+async function renderPromos(){
   var tb=document.getElementById('promoRows'); if(!tb) return;
+  var r=await sb.from('promo_codes').select('*').order('created_at',{ascending:false}).limit(200);
+  if(r.error){ tb.innerHTML='<tr><td colspan="7" style="color:#ff9ea3">불러오기 실패: '+esc(r.error.message)+'</td></tr>'; return; }
+  PROMOS=r.data||[];
   var q=(document.getElementById('promoSearch')||{}).value||''; q=q.trim().toUpperCase();
-  var L=AZ.promos().filter(function(p){ return !q || p.code.indexOf(q)>=0 || (p.memo||'').toUpperCase().indexOf(q)>=0; });
-  if(!L.length){ tb.innerHTML='<tr><td colspan="7" style="color:var(--dim)">발행된 코드가 없습니다.</td></tr>'; return; }
-  tb.innerHTML=L.map(function(p,i){
-    var kind = p.ctype==='discount'
-      ? '<span class="pill p-refund">목표가 '+W(p.target)+'</span>'
-      : '<span class="pill '+(p.kind==='FREE'?'p-active':'p-trial')+'">'+(KINDLABEL[p.kind]||p.kind)+'</span>';
-    var period = p.ctype==='discount' ? ((p.dstart||'—')+'~'+(p.dend||'무기한')) : (p.expire||'—');
+  var L=PROMOS.filter(function(p){ return !q || p.code.indexOf(q)>=0 || (p.memo||'').toUpperCase().indexOf(q)>=0; });
+  if(!L.length){ tb.innerHTML='<tr><td colspan="7" style="color:var(--dim)">'+(q?'검색 결과가 없습니다.':'발행된 코드가 없습니다.')+'</td></tr>'; return; }
+  tb.innerHTML=L.map(function(p){
+    var kind = p.kind==='discount'
+      ? '<span class="pill p-refund">할인 '+(p.discount_won?W(p.discount_won):(p.discount_pct+'%'))+'</span>'
+      : '<span class="pill '+(p.license_type==='FREE'?'p-active':'p-trial')+'">'+(KINDLABEL[p.license_type]||p.license_type||'라이선스')+'</span>';
+    var period=(p.valid_from?fmtDate(p.valid_from):'—')+'~'+(p.valid_to?fmtDate(p.valid_to):'무기한');
     return '<tr'+(p.active?'':' style="opacity:.45"')+'>'+
-      '<td class="mono">'+esc(p.code)+'</td>'+
-      '<td>'+(PRODNAME[p.product]||p.product)+'</td>'+
+      '<td class="mono">'+esc(p.code)+(p.active?'':' <span class="pill p-revoked">중지</span>')+'</td>'+
+      '<td>'+(p.product_id?(PRODNAME[p.product_id]||p.product_id):'전 제품')+'</td>'+
       '<td>'+kind+'</td>'+
-      '<td>'+(p.used||0)+'/'+(p.uses?p.uses:'∞')+'</td>'+
+      '<td>'+(p.used_count||0)+'/'+(p.max_uses?p.max_uses:'∞')+'</td>'+
       '<td class="mono">'+period+'</td>'+
       '<td>'+esc(p.memo||'')+'</td>'+
-      '<td style="white-space:nowrap"><button class="tbtn" onclick="copyPromo('+i+')">복사</button> <button class="tbtn'+(p.active?' danger':'')+'" onclick="togglePromo('+i+')">'+(p.active?'비활성':'활성')+'</button> <button class="tbtn danger" onclick="delPromo('+i+')">삭제</button></td>'+
+      '<td style="white-space:nowrap"><button class="tbtn" onclick="copyText(\''+esc(p.code)+'\',this)">복사</button> '+(p.active?'<button class="tbtn danger" onclick="disablePromo(\''+esc(p.code)+'\')">중지</button>':'')+'</td>'+
     '</tr>';
   }).join('');
 }
-function copyPromo(i){ var p=AZ.promos()[i]; if(!p)return; navigator.clipboard&&navigator.clipboard.writeText(p.code); }
-function togglePromo(i){ var L=AZ.promos(); if(!L[i])return; L[i].active=!L[i].active; AZ.savePromos(L); renderPromos(); }
-function delPromo(i){ var L=AZ.promos(); if(!L[i])return; if(!confirm('코드 삭제: '+L[i].code+'\n계속할까요?'))return; L.splice(i,1); AZ.savePromos(L); renderPromos(); }
+async function disablePromo(code){
+  if(!confirm('코드 중지: '+code+'\n더 이상 사용할 수 없게 됩니다. (기록은 남습니다)')) return;
+  try{ var r=await azSuperDo('promo_disable','프로모션 중지 — '+code,'콘솔에서 중지',{code:code}); alert('✓ '+r.text); }catch(ex){ alert('실패: '+ex.message); }
+  renderPromos();
+}
 
 // ===== 제품 세일 관리 =====
 function salePrice(){
@@ -1071,58 +1080,136 @@ function renderSales(){
 try{ renderPromos(); renderSales(); promoType(); }catch(_){}
 try{ renderIssued(); renderProducts(); renderNotices(); }catch(_){}
 try{ loadCustomers(); }catch(_){}
-// ===== 라이선스 발급 (데모 저장소 az_issued — 정식 전환 시 licenses DB + Ed25519 서명) =====
-var PRE={'Klera Voice':'AZCA','Klera Instrument':'AZCI','Flare Tally':'AZTL','Latency Meter AZ':'AZLM'};
-function issuedList(){ try{return JSON.parse(localStorage.getItem('az_issued')||'[]');}catch(_){return [];} }
-function saveIssued(L){ try{localStorage.setItem('az_issued',JSON.stringify(L));}catch(_){}; renderIssued(); }
-function makeIssueKey(product){
-  var r=()=>Math.random().toString(36).slice(2,6).toUpperCase();
-  return (PRE[product]||'AZ')+'-'+[r(),r(),r(),r()].join('-');
+// ===== 실데이터 공통: 모든 변경은 결재(approvals)를 거침 — 최고관리자는 즉시 자동 승인(감사 기록 남음) =====
+var PRODID={'Klera Voice':'KV','Klera Instrument':'KI','Flare Tally':'TALLY','Latency Meter AZ':'LMAZ'};
+var TYPELABEL={FULL:'정식',D7:'체험 7일',D14:'체험 14일',D30:'체험 30일',FREE:'무료(영구)'};
+var EMAILS={};   // user_id → email/name 캐시
+async function azSuperDo(type,title,reason,payload){
+  var me=window.__ADMIN_PROFILE||{};
+  var ins=await sb.from('approvals').insert({type:type,title:title,reason:reason||'',payload:payload}).select('id').single();
+  if(ins.error) throw new Error(ins.error.message);
+  if(me.role!=='super') return {pending:true, text:'결재가 올라갔습니다 (최고관리자 승인 대기)'};
+  var r=await sb.rpc('decide_approval',{p_id:ins.data.id,p_decision:'approved',p_note:'콘솔에서 직접 실행'});
+  if(r.error) throw new Error(r.error.message);
+  return {pending:false, text:r.data};
 }
-function issue(e){
+async function loadEmails(ids){
+  var need=ids.filter(function(id){return id && !EMAILS[id];});
+  if(need.length){ var r=await sb.from('profiles').select('id,email,name').in('id',need); (r.data||[]).forEach(function(p){EMAILS[p.id]=p;}); }
+}
+function fmtDate(s){ if(!s) return '—'; var d=new Date(s); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+// ===== 라이선스 (실데이터 licenses) =====
+var LICS=[];
+async function issue(e){
   e.preventDefault();var d={};new FormData(e.target).forEach((v,k)=>d[k]=v);
-  var key=makeIssueKey(d.product);
-  var L=issuedList();
-  L.unshift({key:key,product:d.product,type:d.type,name:d.name,email:d.email,status:'active',at:AZ.today()});
-  saveIssued(L);
-  document.getElementById('issKey').innerHTML='<b>'+key+'</b><br>'+esc(d.product)+' · '+esc(d.type)+' · '+esc(d.name)+' ('+esc(d.email)+')<br><span style="color:#8fa5c2">아래 발급 목록에 기록됐습니다. 정식 전환 시 서버가 Ed25519 서명 후 이메일로 전송합니다.</span>';
-  document.getElementById('issRes').classList.add('on');
-  e.target.reset();
+  var pid=PRODID[d.product]||d.product;
+  var lt=/체험/.test(d.type)?'D14':(/NFR|리뷰/.test(d.type)?'FREE':'FULL');
+  var res=document.getElementById('issRes'), out=document.getElementById('issKey'); res.classList.add('on');
+  out.innerHTML='발급 중…';
+  try{
+    var r=await azSuperDo('license_issue', d.product+' 라이선스 발급 — '+d.email, '콘솔 발급 · '+d.name+' · '+d.type, {email:d.email.trim().toLowerCase(), product_id:pid, license_type:lt});
+    out.innerHTML='<b>'+esc(r.text)+'</b><br><span style="color:#8fa5c2">'+(r.pending?'승인되면 발급됩니다.':'DB에 기록되었습니다. 아래 목록에서 키를 복사해 고객에게 전달하세요.')+'</span>';
+    e.target.reset(); loadLicenses();
+  }catch(ex){ out.innerHTML='<b style="color:#ff9ea3">실패: '+esc(ex.message)+'</b><br><span class="n">가입된 회원 이메일이어야 발급됩니다.</span>'; }
   return false;
+}
+async function loadLicenses(){
+  var tb=document.getElementById('issuedRows'); if(!tb) return;
+  var r=await sb.from('licenses').select('id,license_key,product_id,type,status,issued_at,expires_at,user_id').order('issued_at',{ascending:false}).limit(200);
+  if(r.error){ tb.innerHTML='<tr><td colspan="7" style="color:#ff9ea3">불러오기 실패: '+esc(r.error.message)+'</td></tr>'; return; }
+  LICS=r.data||[];
+  await loadEmails(LICS.map(function(l){return l.user_id;}));
+  renderIssued();
 }
 function renderIssued(){
   var tb=document.getElementById('issuedRows'); if(!tb) return;
   var q=((document.getElementById('issSearch')||{}).value||'').trim().toLowerCase();
-  var L=issuedList().filter(function(l){ return !q || (l.key+' '+l.email+' '+l.name).toLowerCase().indexOf(q)>=0; });
-  if(!L.length){ tb.innerHTML='<tr><td colspan="7" style="color:var(--dim)">발급된 라이선스가 없습니다. 위에서 발급하세요.</td></tr>'; return; }
-  tb.innerHTML=L.map(function(l,i){
-    var revoked=l.status==='revoked';
+  var L=LICS.filter(function(l){ var p=EMAILS[l.user_id]||{}; return !q || (l.license_key+' '+(p.email||'')+' '+(p.name||'')).toLowerCase().indexOf(q)>=0; });
+  if(!L.length){ tb.innerHTML='<tr><td colspan="7" style="color:var(--dim)">'+(q?'검색 결과가 없습니다.':'발급된 라이선스가 없습니다.')+'</td></tr>'; return; }
+  tb.innerHTML=L.map(function(l){
+    var p=EMAILS[l.user_id]||{}; var revoked=l.status!=='active';
     return '<tr'+(revoked?' style="opacity:.5"':'')+'>'+
-      '<td class="mono">'+esc(l.key)+'</td>'+
-      '<td>'+esc(l.product)+'</td>'+
-      '<td>'+esc(l.name)+'<br><span style="color:var(--dim);font-size:11px">'+esc(l.email)+'</span></td>'+
-      '<td style="font-size:12px">'+esc(l.type)+'</td>'+
-      '<td>'+(revoked?'<span class="pill p-revoked">폐기</span>':'<span class="pill p-active">활성</span>')+'</td>'+
-      '<td class="mono">'+esc(l.at)+'</td>'+
-      '<td style="white-space:nowrap">'+
-        '<button class="tbtn" onclick="copyIssued('+i+',this)">복사</button> '+
-        (revoked
-          ? '<button class="tbtn" onclick="setIssued('+i+',\'active\')">재활성</button> <button class="tbtn danger" onclick="delIssued('+i+')">삭제</button>'
-          : '<button class="tbtn" onclick="reissue('+i+')">재발급</button> <button class="tbtn danger" onclick="setIssued('+i+',\'revoked\')">폐기</button>')+
-      '</td>'+
-    '</tr>';
+      '<td class="mono">'+esc(l.license_key)+'</td>'+
+      '<td>'+esc(PRODNAME[l.product_id]||l.product_id)+'</td>'+
+      '<td>'+esc(p.name||'—')+'<br><span style="color:var(--dim);font-size:11px">'+esc(p.email||l.user_id)+'</span></td>'+
+      '<td style="font-size:12px">'+esc(TYPELABEL[l.type]||l.type)+(l.expires_at?'<br><span class="n">~'+fmtDate(l.expires_at)+'</span>':'')+'</td>'+
+      '<td>'+(revoked?'<span class="pill p-revoked">'+(l.status==='revoked'?'회수':l.status)+'</span>':'<span class="pill p-active">활성</span>')+'</td>'+
+      '<td class="mono">'+fmtDate(l.issued_at)+'</td>'+
+      '<td style="white-space:nowrap"><button class="tbtn" onclick="copyText(\''+esc(l.license_key)+'\',this)">복사</button> '+
+        (revoked?'':'<button class="tbtn" onclick="reissue(\''+l.id+'\')">재발급</button> <button class="tbtn danger" onclick="revokeLic(\''+l.id+'\')">회수</button>')+
+      '</td></tr>';
   }).join('');
 }
-function copyIssued(i,btn){ var l=issuedList()[i]; if(!l)return; navigator.clipboard&&navigator.clipboard.writeText(l.key); btn.textContent='복사됨'; setTimeout(function(){btn.textContent='복사';},1200); }
-function setIssued(i,st){ var L=issuedList(); if(!L[i])return; L[i].status=st; saveIssued(L); }
-function reissue(i){
-  var L=issuedList(); if(!L[i])return;
-  if(!confirm('재발급: '+L[i].email+'\n기존 키를 폐기하고 새 키를 발급합니다. 계속할까요?'))return;
-  var old=L[i]; old.status='revoked';
-  L.unshift({key:makeIssueKey(old.product),product:old.product,type:old.type,name:old.name,email:old.email,status:'active',at:AZ.today()});
-  saveIssued(L);
+function copyText(t,btn){ navigator.clipboard&&navigator.clipboard.writeText(t); if(btn){btn.textContent='복사됨'; setTimeout(function(){btn.textContent='복사';},1200);} }
+async function revokeLic(id){
+  var l=LICS.find(function(x){return x.id===id;}); if(!l) return;
+  if(!confirm('라이선스 회수: '+l.license_key+'\n고객이 더 이상 활성화할 수 없게 됩니다. 계속할까요?')) return;
+  try{ var r=await azSuperDo('license_revoke','라이선스 회수 — '+l.license_key,'콘솔에서 회수',{license_key:l.license_key}); alert('✓ '+r.text); }catch(ex){ alert('실패: '+ex.message); }
+  loadLicenses();
 }
-function delIssued(i){ var L=issuedList(); if(!L[i])return; if(!confirm('발급 기록 삭제: '+L[i].key+'\n계속할까요?'))return; L.splice(i,1); saveIssued(L); }
+async function reissue(id){
+  var l=LICS.find(function(x){return x.id===id;}); if(!l) return;
+  var p=EMAILS[l.user_id]||{}; if(!p.email){ alert('회원 이메일을 찾을 수 없습니다.'); return; }
+  if(!confirm('재발급: '+p.email+'\n기존 키('+l.license_key+')를 회수하고 새 키를 발급합니다. 계속할까요?')) return;
+  try{
+    await azSuperDo('license_revoke','재발급(회수) — '+l.license_key,'재발급을 위한 회수',{license_key:l.license_key});
+    var r=await azSuperDo('license_issue','재발급 — '+p.email,'기존 키 회수 후 재발급',{email:p.email, product_id:l.product_id, license_type:l.type});
+    alert('✓ '+r.text);
+  }catch(ex){ alert('실패: '+ex.message); }
+  loadLicenses();
+}
+
+// ===== 주문 (실데이터 orders) =====
+var ORDERS=[];
+async function loadOrders(){
+  var tb=document.getElementById('orderRows'); if(!tb) return;
+  var r=await sb.from('orders').select('*').order('created_at',{ascending:false}).limit(200);
+  if(r.error){ tb.innerHTML='<tr><td colspan="8" style="color:#ff9ea3">불러오기 실패: '+esc(r.error.message)+'</td></tr>'; return; }
+  ORDERS=r.data||[];
+  await loadEmails(ORDERS.map(function(o){return o.user_id;}));
+  if(!ORDERS.length){ tb.innerHTML='<tr><td colspan="8" style="color:var(--dim)">주문이 아직 없습니다. (결제 연동 후 자동 기록)</td></tr>'; return; }
+  var ST={pending:['대기','p-trial'],paid:['결제완료','p-paid'],refunded:['환불','p-refund']};
+  tb.innerHTML=ORDERS.map(function(o){
+    var p=EMAILS[o.user_id]||{}; var s=ST[o.status]||[o.status,'p-trial'];
+    var amt=(o.currency==='KRW'?'₩':o.currency+' ')+Number(o.amount||0).toLocaleString();
+    return '<tr><td class="mono" title="'+esc(o.id)+'">'+esc(String(o.id).slice(0,8))+'</td><td>'+esc(PRODNAME[o.product_id]||o.product_id)+'</td><td>'+esc(p.email||o.user_id)+'</td><td>'+esc(o.provider||'—')+'</td><td class="mono">'+amt+'</td><td><span class="pill '+s[1]+'">'+s[0]+'</span></td><td class="mono">'+fmtDate(o.created_at)+'</td>'+
+      '<td>'+(o.status==='paid'?'<button class="tbtn danger" onclick="refundOrder(\''+o.id+'\')">환불</button>':'')+' <button class="tbtn" onclick="copyText(\''+o.id+'\',this)">ID복사</button></td></tr>';
+  }).join('');
+}
+async function refundOrder(id){
+  if(!confirm('이 주문을 환불 처리할까요?\n연결된 라이선스도 함께 회수됩니다. (실제 결제 환급은 결제사에서 별도 처리)')) return;
+  try{ var r=await azSuperDo('refund','주문 환불 — '+id.slice(0,8),'콘솔에서 환불 처리',{order_id:id}); alert('✓ '+r.text); }catch(ex){ alert('실패: '+ex.message); }
+  loadOrders(); loadLicenses();
+}
+
+// ===== 대시보드 (실데이터 집계) =====
+async function loadDash(){
+  try{
+    var rev=await sb.from('orders').select('amount,currency,status');
+    var paid=(rev.data||[]).filter(function(o){return o.status==='paid'&&o.currency==='KRW';}).reduce(function(a,o){return a+Number(o.amount||0);},0);
+    var lic=await sb.from('licenses').select('status,issued_at');
+    var Ls=lic.data||[]; var active=Ls.filter(function(l){return l.status==='active';}).length;
+    var now=new Date(), m0=new Date(now.getFullYear(),now.getMonth(),1).toISOString();
+    var month=Ls.filter(function(l){return l.issued_at>=m0;}).length;
+    var cu=await sb.from('profiles').select('id',{count:'exact',head:true}).eq('is_admin',false);
+    var set=function(id,v){var el=document.getElementById(id); if(el) el.textContent=v;};
+    set('kpiRev', rev.error?'—':'₩ '+paid.toLocaleString()); set('kpiLic', lic.error?'—':active); set('kpiMonth', lic.error?'—':month); set('kpiUsers', cu.error?'—':(cu.count||0));
+    // 최근 활동: 라이선스·주문·문의·결재 최신 8건
+    var acts=[];
+    var l2=await sb.from('licenses').select('license_key,product_id,issued_at,status').order('issued_at',{ascending:false}).limit(4);
+    (l2.data||[]).forEach(function(l){acts.push({t:l.issued_at,k:'발급',c:'p-active',d:(PRODNAME[l.product_id]||l.product_id)+' · '+l.license_key});});
+    var o2=await sb.from('orders').select('product_id,amount,status,created_at').order('created_at',{ascending:false}).limit(4);
+    (o2.data||[]).forEach(function(o){acts.push({t:o.created_at,k:'주문',c:'p-paid',d:(PRODNAME[o.product_id]||o.product_id)+' · ₩'+Number(o.amount||0).toLocaleString()+' · '+o.status});});
+    var i2=await sb.from('inquiries').select('subject,status,created_at').order('created_at',{ascending:false}).limit(4);
+    (i2.data||[]).forEach(function(q){acts.push({t:q.created_at,k:'문의',c:'p-trial',d:q.subject+' · '+q.status});});
+    var a2=await sb.from('approvals').select('title,status,created_at').order('created_at',{ascending:false}).limit(4);
+    (a2.data||[]).forEach(function(a){acts.push({t:a.created_at,k:'결재',c:'p-refund',d:a.title+' · '+a.status});});
+    acts.sort(function(a,b){return (b.t||'').localeCompare(a.t||'');});
+    var tb=document.getElementById('actRows');
+    if(tb){ tb.innerHTML=acts.length? acts.slice(0,8).map(function(a){var d=new Date(a.t); return '<tr><td class="mono">'+(d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+'</td><td><span class="pill '+a.c+'">'+a.k+'</span></td><td>'+esc(a.d)+'</td></tr>';}).join('') : '<tr><td colspan="3" class="n">아직 활동이 없습니다</td></tr>'; }
+  }catch(_){}
+}
 
 // ===== 고객 (실제 Supabase 가입 회원 — profiles 관리자 조회 정책 필요) =====
 var CUSTOMERS=[];
