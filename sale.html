@@ -116,5 +116,7 @@ footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center}footer .rig
 })();
 (function(){var t=document.querySelector(".navtoggle"),m=document.querySelector(".nav-in .menu");if(!t||!m)return;t.addEventListener("click",function(){var o=m.classList.toggle("open");t.setAttribute("aria-expanded",o?"true":"false")});m.addEventListener("click",function(e){if(e.target.closest("a")){m.classList.remove("open");t.setAttribute("aria-expanded","false")}});document.addEventListener("keydown",function(e){if(e.key==="Escape"){m.classList.remove("open");t.setAttribute("aria-expanded","false")}});})();
 </script>
+<script src="https://cdn.jsdelivr.net/npm//supabase-js"></script>
+<script src="/portal/az-nav.js"></script>
 </body>
 </html>

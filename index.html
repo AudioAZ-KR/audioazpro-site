@@ -196,9 +196,8 @@ footer .right{margin-left:auto}
   var s=null; try{ s=await AZ.session(); }catch(_){}
   // 인증 링크의 토큰 처리가 끝나는 데 잠깐 걸릴 수 있어 한 번 더 확인
   if(!s && welcome){ await new Promise(function(r){setTimeout(r,800);}); try{ s=await AZ.session(); }catch(_){} }
-  if(s && nav){ nav.textContent='내 계정'; nav.href='portal/account.html'; }
   if(welcome){
-    toast.innerHTML = s ? '🎉 이메일 인증 완료 — <b>로그인되었습니다.</b> 오른쪽 위 <b>내 계정</b>에서 라이선스를 관리할 수 있습니다.'
+    toast.innerHTML = s ? '🎉 이메일 인증 완료 — <b>로그인되었습니다.</b> 오른쪽 위 <b>이름 버튼</b>을 눌러 내 라이선스로 이동할 수 있습니다.'
                         : '✓ 이메일 인증이 완료되었습니다. <a href="portal/index.html" style="color:#4D96F5;font-weight:800">로그인</a>하여 시작하세요.';
     toast.style.display='block';
     setTimeout(function(){ toast.style.display='none'; }, 9000);
@@ -206,5 +205,6 @@ footer .right{margin-left:auto}
   }
 })();
 </script>
+<script src="/portal/az-nav.js"></script>
 </body>
 </html>
