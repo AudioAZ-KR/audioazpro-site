@@ -117,7 +117,7 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
 :root{--page:#0B1220;--card:#121D33;--navbg:rgba(11,18,32,.9);--text:#E9EEF7;--dim:#96A6BF;--line:#243350;--bg:#0C1424;--sky:#17273F;--wordmark:#fff}body{background:var(--bg)}.logo{width:auto !important}.field input,.field select,.field textarea,.key{background:#0E1A2E;color:#E9EEF7;border-color:#243350}.field input::placeholder{color:#6B7C96}.notice{color:#9CC2F5}.demobar{position:fixed;top:0;left:0;right:0;z-index:300;background:#8a5a00;color:#ffe0ad;text-align:center;font-size:12px;font-weight:600;padding:7px 12px}body{padding-top:32px}.topbar{top:32px}nav{top:32px}.side{top:32px}.nav-in .who span,.nav-in .who a{white-space:nowrap}@media(max-width:560px){.nav-in>span{display:none}.nav-in .who{gap:8px;font-size:12.5px}}</style>
 </head>
 <body>
-<div class="demobar" role="note">데모 환경 · 실제 인증·결제·라이선스는 준비 중입니다</div>
+<div class="demobar" role="note">결제 연동 준비 중 · 계정·인증은 실운영 (테스트 기간)</div>
 
 <!-- 가입 축하 (이메일 인증 완료 직후 1회) -->
 <div id="welcomeModal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(4,8,16,.72);align-items:center;justify-content:center;padding:24px">
@@ -131,9 +131,12 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
 
 <nav><div class="wrap nav-in">
   <a href="/" class="logo" aria-label="AudioAZ 홈" style="display:block"><img src="/assets/logo-lockup-white.png" alt="AudioAZ" style="height:30px;width:auto;display:block"></a>
-  <span style="color:var(--dim);font-size:13px;font-weight:600">라이선스</span>
+  <div class="menu" style="display:flex;align-items:center;gap:20px;margin-left:18px;font-size:14px;font-weight:600;color:var(--dim)">
+    <a href="/products.html">제품</a><a href="/downloads.html">다운로드</a><a href="/support.html" class="hide-sm">지원</a><a href="/portal/account.html" style="color:var(--blue-soft)">내 라이선스</a>
+  </div>
   <div class="who"><span class="av" id="avatar">·</span><span id="whoName">—</span><a href="#" onclick="doLogout();return false">로그아웃</a></div>
 </div></nav>
+<style>.nav-in .menu a:hover{color:var(--blue-soft)}@media(max-width:640px){.nav-in .menu{gap:12px;margin-left:10px;font-size:13px}.nav-in .menu .hide-sm{display:none}.nav-in .who #whoName{display:none}}</style>
 
 <div class="wrap" style="padding-top:30px;padding-bottom:60px">
 

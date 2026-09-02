@@ -143,7 +143,7 @@ footer .right{margin-left:auto}
       <a href="sale.html">할인</a>
       <a href="downloads.html" class="hide-sm">다운로드</a>
       <a href="support.html" class="hide-sm">지원</a>
-      <a href="portal/index.html" class="login">로그인</a>
+      <a href="portal/index.html" class="login" id="navLogin">로그인</a>
     </div>
   </div>
 </nav>
@@ -185,5 +185,26 @@ footer .right{margin-left:auto}
 </footer>
 
 <script>(function(){var t=document.querySelector(".navtoggle"),m=document.querySelector(".nav-in .menu");if(!t||!m)return;t.addEventListener("click",function(){var o=m.classList.toggle("open");t.setAttribute("aria-expanded",o?"true":"false")});m.addEventListener("click",function(e){if(e.target.closest("a")){m.classList.remove("open");t.setAttribute("aria-expanded","false")}});document.addEventListener("keydown",function(e){if(e.key==="Escape"){m.classList.remove("open");t.setAttribute("aria-expanded","false")}});})();</script>
+<!-- 로그인 상태 반영 + 이메일 인증 후 환영 안내 (인증 링크가 홈으로 돌아옴) -->
+<div id="welcomeToast" style="display:none;position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#0C2244;color:#fff;border:1px solid #1877F2;border-radius:14px;padding:14px 20px;font-size:14.5px;font-weight:600;box-shadow:0 14px 40px rgba(0,0,0,.35);z-index:200;max-width:92vw;text-align:center;line-height:1.6"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="portal/az-supabase.js"></script>
+<script>
+(async function(){
+  var toast=document.getElementById('welcomeToast'), nav=document.getElementById('navLogin');
+  var welcome=new URLSearchParams(location.search).get('welcome')==='1';
+  var s=null; try{ s=await AZ.session(); }catch(_){}
+  // 인증 링크의 토큰 처리가 끝나는 데 잠깐 걸릴 수 있어 한 번 더 확인
+  if(!s && welcome){ await new Promise(function(r){setTimeout(r,800);}); try{ s=await AZ.session(); }catch(_){} }
+  if(s && nav){ nav.textContent='내 계정'; nav.href='portal/account.html'; }
+  if(welcome){
+    toast.innerHTML = s ? '🎉 이메일 인증 완료 — <b>로그인되었습니다.</b> 오른쪽 위 <b>내 계정</b>에서 라이선스를 관리할 수 있습니다.'
+                        : '✓ 이메일 인증이 완료되었습니다. <a href="portal/index.html" style="color:#4D96F5;font-weight:800">로그인</a>하여 시작하세요.';
+    toast.style.display='block';
+    setTimeout(function(){ toast.style.display='none'; }, 9000);
+    try{ history.replaceState(null,'',location.pathname); }catch(_){}
+  }
+})();
+</script>
 </body>
 </html>
