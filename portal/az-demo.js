@@ -68,7 +68,15 @@
     /* --- 가격 · 세일 (코드 없이 정가에서 할인) --- */
     // 세일: { KV: { price: 39000, start: '2026-09-01', end: '2026-09-30', at: ... }, ... }
     // 정식 전환 시 products 테이블의 sale_price / sale_from / sale_to 컬럼으로 이동.
-    basePrice: function (prod) { var m = PRODMETA[prod]; return m ? (m.price || 0) : 0; },
+    basePrice: function (prod) { // 콘솔에서 편집한 가격(az_prices)이 있으면 우선
+      var o = read('az_prices', {}); if (o[prod] != null) return o[prod];
+      var m = PRODMETA[prod]; return m ? (m.price || 0) : 0;
+    },
+    setBasePrice: function (prod, price) { var o = read('az_prices', {}); o[prod] = price; write('az_prices', o); },
+    versionOf: function (prod) { var o = read('az_vers', {}); if (o[prod]) return o[prod]; var m = PRODMETA[prod]; return m ? m.ver : ''; },
+    setVersion: function (prod, ver) { var o = read('az_vers', {}); o[prod] = ver; write('az_vers', o); },
+    notices: function () { return read('az_notices', []); },
+    saveNotices: function (list) { write('az_notices', list); },
     sales: function () { return read('az_sales', {}); },
     setSale: function (prod, price, start, end) {
       var s = this.sales();

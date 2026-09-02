@@ -119,6 +119,16 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
 <body>
 <div class="demobar" role="note">데모 환경 · 실제 인증·결제·라이선스는 준비 중입니다</div>
 
+<!-- 가입 축하 (이메일 인증 완료 직후 1회) -->
+<div id="welcomeModal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(4,8,16,.72);align-items:center;justify-content:center;padding:24px">
+  <div style="width:100%;max-width:400px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:36px 30px;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.55)">
+    <div style="font-size:44px;line-height:1;margin-bottom:14px">🎉</div>
+    <div style="font-size:20px;font-weight:800;color:#fff;font-family:'NanumSquareRound','Pretendard',sans-serif">회원가입을 축하합니다!</div>
+    <p style="font-size:14px;color:var(--dim);line-height:1.7;margin:10px 0 22px"><b id="welcomeName" style="color:var(--text)"></b>님, 이메일 인증이 완료되어<br>AudioAZ 계정이 활성화됐습니다.<br>이제 제품 구매와 라이선스 관리를 시작할 수 있어요.</p>
+    <button onclick="closeWelcome()" style="width:100%;height:48px;border:0;border-radius:11px;background:var(--blue);color:#fff;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer">시작하기</button>
+  </div>
+</div>
+
 <nav><div class="wrap nav-in">
   <a href="/" class="logo" aria-label="AudioAZ 홈" style="display:block"><img src="/assets/logo-lockup-white.png" alt="AudioAZ" style="height:30px;width:auto;display:block"></a>
   <span style="color:var(--dim);font-size:13px;font-weight:600">라이선스</span>
@@ -194,7 +204,14 @@ var sbA=window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co',
     var owner=localStorage.getItem('az_lic_owner');
     if(owner!==u.id){ localStorage.removeItem('az_licenses'); localStorage.setItem('az_lic_owner',u.id); renderLicenses(); }
   }catch(_){}
+  // 이메일 인증 완료 직후(?welcome=1) 가입 축하
+  if(new URLSearchParams(location.search).get('welcome')){
+    document.getElementById('welcomeName').textContent=name;
+    document.getElementById('welcomeModal').style.display='flex';
+    history.replaceState(null,'',location.pathname); // 새로고침 시 재표시 방지
+  }
 })();
+function closeWelcome(){ document.getElementById('welcomeModal').style.display='none'; }
 function doLogout(){ try{AZ.logout();}catch(_){}; sbA.auth.signOut().finally(function(){ location.href='index.html'; }); }
 
 // 내 라이선스 — 제품별 그룹 테이블 (키·유형·상세·메모·상태)

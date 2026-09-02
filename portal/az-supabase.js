@@ -38,7 +38,7 @@ async function signup(email, password, name) {
   const { data, error } = await sb.auth.signUp({
     email, password, options: {
       data: { name },                                          // name → profiles 트리거로 복사
-      emailRedirectTo: location.origin + '/portal/index.html'  // 확인 링크 클릭 후 돌아올 곳
+      emailRedirectTo: location.origin + '/portal/index.html?welcome=1'  // 확인 링크 클릭 후 돌아올 곳 (가입 축하 표시)
     }
   });
   if (error) throw error;

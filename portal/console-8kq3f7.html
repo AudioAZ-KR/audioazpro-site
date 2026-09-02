@@ -337,19 +337,15 @@ td{color:var(--text)}
               <div class="field"><label>구매자 이름</label><input name="name" placeholder="홍길동" required></div>
               <div class="field"><label>이메일</label><input type="email" name="email" placeholder="buyer@example.com" required></div>
             </div>
-            <div class="rowflex"><button class="btn btn-pri" type="submit">발급 + 이메일 전송</button><label style="font-size:12.5px;color:var(--dim)"><input type="checkbox" checked style="width:auto"> 발급 후 이메일 자동 전송</label></div>
+            <div class="rowflex"><button class="btn btn-pri" type="submit">발급</button><label style="font-size:12.5px;color:var(--dim)"><input type="checkbox" checked style="width:auto"> 발급 후 이메일 자동 전송 (백엔드 연결 시)</label></div>
           </form>
-          <div class="result" id="issRes"><div style="font-size:11px;color:#8fa5c2;letter-spacing:.05em;text-transform:uppercase">발급된 키 (미리보기)</div><div class="k" id="issKey">—</div></div>
-          <p class="note">실제 서명은 서버(FastAPI)의 <b>private_key.pem</b>으로만 수행됩니다 — 브라우저·이 화면엔 개인키가 없습니다. 발급 이력은 issued_licenses DB에 기록됩니다.</p>
+          <div class="result" id="issRes"><div style="font-size:11px;color:#8fa5c2;letter-spacing:.05em;text-transform:uppercase">발급된 키</div><div class="k" id="issKey">—</div></div>
+          <p class="note">실제 서명은 서버의 <b>private_key.pem</b>으로만 수행됩니다 — 브라우저·이 화면엔 개인키가 없습니다. 지금은 발급 이력이 이 브라우저(데모 저장소)에 기록되고, 정식 전환 시 licenses DB + Ed25519 서명 + 이메일 발송으로 바뀝니다.</p>
         </div>
-        <div class="card"><h2>발급된 라이선스 <span class="demo">데모</span></h2>
-          <div class="toolbar"><input class="field search" style="margin:0" placeholder="키·이메일·이름 검색"><select class="field" style="margin:0;width:auto"><option>전체 제품</option><option>Klera Voice</option><option>Flare Tally</option></select><select class="field" style="margin:0;width:auto"><option>전체 상태</option><option>활성</option><option>폐기</option></select></div>
-          <table><thead><tr><th>키</th><th>제품</th><th>구매자</th><th>상태</th><th>발급일</th><th>기기</th><th></th></tr></thead>
-          <tbody>
-            <tr><td class="mono">AZCA-9F3K-…-QH2Z</td><td>Klera Voice</td><td>홍길동<br><span style="color:var(--dim);font-size:11px">hong@ex.com</span></td><td><span class="pill p-active">활성</span></td><td class="mono">2026-08-31</td><td>1/2</td><td><button class="tbtn">재발급</button> <button class="tbtn danger">폐기</button></td></tr>
-            <tr><td class="mono">AZTL-2B7Q-…-7T1P</td><td>Flare Tally</td><td>김철수<br><span style="color:var(--dim);font-size:11px">kim@ex.com</span></td><td><span class="pill p-trial">체험</span></td><td class="mono">2026-08-30</td><td>0/1</td><td><button class="tbtn">전환</button> <button class="tbtn danger">폐기</button></td></tr>
-            <tr><td class="mono">AZCA-X4M2-…-KE8N</td><td>Klera Voice</td><td>이영희<br><span style="color:var(--dim);font-size:11px">lee@ex.com</span></td><td><span class="pill p-revoked">폐기</span></td><td class="mono">2026-08-28</td><td>—</td><td><button class="tbtn">재활성</button></td></tr>
-          </tbody></table>
+        <div class="card"><h2>발급된 라이선스</h2>
+          <div class="toolbar"><input class="field search" style="margin:0" id="issSearch" placeholder="키·이메일·이름 검색" oninput="renderIssued()"></div>
+          <table><thead><tr><th>키</th><th>제품</th><th>구매자</th><th>유형</th><th>상태</th><th>발급일</th><th></th></tr></thead>
+          <tbody id="issuedRows"></tbody></table>
         </div>
       </section>
 
@@ -447,52 +443,50 @@ td{color:var(--text)}
 
       <!-- 고객 -->
       <section id="p-customers" class="page">
-        <div class="card"><h2>고객 <span class="demo">데모</span></h2><div class="sub">소셜/이메일 가입 회원. 구매·라이선스와 자동 연결.</div>
-          <div class="toolbar"><input class="field search" style="margin:0" placeholder="이름·이메일 검색"></div>
-          <table><thead><tr><th>이름</th><th>이메일</th><th>가입</th><th>보유 제품</th><th>가입일</th><th></th></tr></thead>
-          <tbody>
-            <tr><td>홍길동</td><td>hong@ex.com</td><td>구글</td><td>Klera Voice</td><td class="mono">2026-08-31</td><td><button class="tbtn">상세</button></td></tr>
-            <tr><td>김철수</td><td>kim@ex.com</td><td>카카오</td><td>Flare Tally(체험)</td><td class="mono">2026-08-30</td><td><button class="tbtn">상세</button></td></tr>
-          </tbody></table>
+        <div class="card"><h2>고객 <button class="tbtn" style="margin-left:10px" onclick="loadCustomers()">새로고침</button></h2><div class="sub"><b>실제 가입 회원</b>(Supabase)입니다. 이메일 인증을 마친 계정이 여기 표시됩니다.</div>
+          <div class="toolbar"><input class="field search" style="margin:0" id="custSearch" placeholder="이름·이메일 검색" oninput="renderCustomers()"></div>
+          <table><thead><tr><th>이름</th><th>이메일</th><th>가입일</th><th></th></tr></thead>
+          <tbody id="custRows"><tr><td colspan="4" style="color:var(--dim)">불러오는 중…</td></tr></tbody></table>
         </div>
       </section>
 
       <!-- 제품 -->
       <section id="p-products" class="page">
-        <div class="card"><h2>제품 · 버전 <span class="demo">데모</span></h2><div class="sub">제품 정보, 가격, 최신 빌드/버전을 관리합니다.</div>
-          <table><thead><tr><th>제품</th><th>최신버전</th><th>가격</th><th>상태</th><th></th></tr></thead>
-          <tbody>
-            <tr><td>Klera Voice</td><td class="mono">v0.4.3</td><td>미설정</td><td><span class="pill p-trial">출시 예정</span></td><td><button class="tbtn">편집</button> <button class="tbtn">새 버전 업로드</button></td></tr>
-            <tr><td>Flare Tally</td><td class="mono">v1.14.0</td><td>미설정</td><td><span class="pill p-trial">출시 예정</span></td><td><button class="tbtn">편집</button> <button class="tbtn">새 버전 업로드</button></td></tr>
-            <tr><td>Latency Meter AZ</td><td class="mono">v1.0</td><td>무료</td><td><span class="pill p-active">배포중</span></td><td><button class="tbtn">편집</button></td></tr>
-          </tbody></table>
+        <div class="card"><h2>제품 · 버전</h2><div class="sub">가격과 버전을 편집하면 <b>홈페이지·결제·할인 탭에 바로 반영</b>됩니다. (데모 저장소 — 정식 전환 시 products DB)</div>
+          <table><thead><tr><th>제품</th><th>최신버전</th><th>정가</th><th>세일가</th><th>상태</th><th></th></tr></thead>
+          <tbody id="prodRows"></tbody></table>
         </div>
       </section>
 
       <!-- 공지 -->
       <section id="p-notice" class="page">
-        <div class="card"><h2>공지 작성</h2><div class="sub">고객 사이트·포털에 표시할 공지를 등록합니다.</div>
-          <div class="field"><label>제목</label><input placeholder="예: Klera Voice 정식 출시 안내"></div>
-          <div class="field"><label>내용</label><textarea rows="4" placeholder="공지 내용"></textarea></div>
-          <button class="btn btn-pri" onclick="alert('공지 등록 (준비 중) — 백엔드 연결 시 게시')">등록</button>
+        <div class="card"><h2>공지 작성</h2><div class="sub">고객 사이트·포털에 표시할 공지를 등록합니다. (지금은 목록 관리 — 사이트 노출은 백엔드 연결 시)</div>
+          <form onsubmit="return addNotice(event)">
+            <div class="field"><label>제목</label><input name="title" placeholder="예: Klera Voice 정식 출시 안내" required></div>
+            <div class="field"><label>내용</label><textarea name="body" rows="4" placeholder="공지 내용" style="width:100%;border:1px solid #243350;border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7"></textarea></div>
+            <button class="btn btn-pri" type="submit">등록</button>
+          </form>
+        </div>
+        <div class="card"><h2>등록된 공지</h2>
+          <table><thead><tr><th>제목</th><th>내용</th><th>등록일</th><th></th></tr></thead>
+          <tbody id="noticeRows"></tbody></table>
         </div>
       </section>
 
       <!-- 관리자 계정 -->
       <section id="p-admins" class="page">
 
-        <div class="card"><h2>내 관리자 정보</h2><div class="sub">최고관리자 계정 정보와 로그인 기기(패스키)를 관리합니다.</div>
+        <div class="card"><h2>내 관리자 정보</h2><div class="sub">최고관리자 계정 정보와 로그인 방식입니다.</div>
           <table style="margin-bottom:4px"><tbody>
             <tr><td style="width:160px;color:var(--dim);font-weight:700">이름</td><td>김형준</td></tr>
             <tr><td style="color:var(--dim);font-weight:700">이메일(아이디)</td><td class="mono">hj@audioazpro.com</td></tr>
             <tr><td style="color:var(--dim);font-weight:700">등급</td><td><span class="pill p-active">최고관리자</span></td></tr>
-            <tr><td style="color:var(--dim);font-weight:700">로그인 방식</td><td>애플 패스키(Touch ID) 전용 · <b>비밀번호 없음</b></td></tr>
-            <tr><td style="color:var(--dim);font-weight:700">등록된 패스키</td><td id="myCredCount" class="mono">—</td></tr>
+            <tr><td style="color:var(--dim);font-weight:700">로그인 방식</td><td>패스키(Touch ID / Face ID) · 비밀번호만으로는 진입 불가</td></tr>
           </tbody></table>
-          <div class="sub" style="margin-top:14px;line-height:1.7">🔒 <b>보안</b> — 이 계정은 <b>비밀번호가 없습니다.</b> 로그인은 등록된 애플 패스키로만 되고, 새 기기는 로그인 화면에서 <b>패스키를 만든 뒤 저장소에서 승인(ID 추가)</b>해야 추가됩니다. 공개 소스에 크랙할 비밀번호 해시가 없어 자가 등록 공격이 불가능합니다.</div>
+          <div class="sub" style="margin-top:14px;line-height:1.7">🔒 <b>보안</b> — 패스키는 Supabase 서버가 직접 검증하며, 패스키 인증이 없는 세션은 관리자 데이터·결재·문의 답장·관리자 관리 API가 <b>서버에서 거부</b>됩니다. 패스키는 iCloud로 애플 기기 간 동기화됩니다.</div>
         </div>
 
-        <div class="card"><h2>관리자 계정 생성기 🔒</h2><div class="sub">대표님 <b>애플 패스키(Touch ID)</b> 인증이 있어야만 새 관리자 로그인을 만들 수 있습니다. <b>생성 버튼을 누르는 순간 지문 확인</b>을 거치며, 대표님 애플 기기가 아닌 곳에서는 생성이 차단됩니다.</div>
+        <div class="card"><h2>관리자 계정 생성기 🔒</h2><div class="sub">직원 관리자 계정을 <b>실제로 생성</b>하고 즉시 권한을 부여합니다. 서버가 <b>최고관리자 + 패스키 세션</b>일 때만 실행하며, 그 외에는 거부됩니다.</div>
           <form onsubmit="return genAdmin(event)">
             <div class="grid2">
               <div class="field"><label>관리자 이메일</label><input type="email" name="email" placeholder="name@audioazpro.com" required></div>
@@ -506,7 +500,7 @@ td{color:var(--text)}
             <button class="btn btn-pri" type="submit">🔒 Touch ID로 관리자 생성</button>
           </form>
           <div class="result" id="genRes">—</div>
-          <p class="note">임시 비밀번호는 새 관리자에게 안전하게 전달하고, <b>SALT·HASH</b>는 (백엔드 연결 전) 저장소에 등록해야 실제 로그인으로 동작합니다. 백엔드 연결 후에는 이 생성이 <b>Supabase(App Attest 검증)</b>로 실제 계정을 발급합니다. 비밀번호 원문은 서버·소스에 저장하지 않습니다.</p>
+          <p class="note">비밀번호는 직원에게 직접(메신저·구두) 전달하세요. 첫 로그인에서 비밀번호 변경과 패스키 등록이 강제되며, 비밀번호 원문은 어디에도 저장되지 않습니다.</p>
         </div>
 
         <div class="card"><h2>등급·권한 기준</h2><div class="sub">최고관리자인 대표님이 다른 관리자에게 지정할 수 있는 권한 범위입니다.</div>
@@ -526,12 +520,12 @@ td{color:var(--text)}
 
       <!-- 설정 -->
       <section id="p-settings" class="page">
-        <div class="card"><h2>설정 <span class="demo">데모</span></h2><div class="sub">관리자·결제·이메일 연동 설정.</div>
+        <div class="card"><h2>설정</h2><div class="sub">결제·이메일 연동 상태. 버튼을 누르면 각 항목의 진행 방법이 안내됩니다.</div>
           <table><tbody>
-            <tr><td style="width:180px;color:var(--dim);font-weight:700">결제 (국내)</td><td>포트원 <span class="pill p-revoked">미연결</span></td><td style="text-align:right"><button class="tbtn">연결</button></td></tr>
-            <tr><td style="color:var(--dim);font-weight:700">결제 (해외)</td><td>Paddle <span class="pill p-revoked">미연결</span></td><td style="text-align:right"><button class="tbtn">연결</button></td></tr>
-            <tr><td style="color:var(--dim);font-weight:700">발송 이메일</td><td>support@audioazpro.com <span class="pill p-active">연결</span></td><td style="text-align:right"><button class="tbtn">변경</button></td></tr>
-            <tr><td style="color:var(--dim);font-weight:700">라이선스 개인키</td><td><span class="pill p-active">서버 보관</span> (절대 노출 안 함)</td><td style="text-align:right"><button class="tbtn">회전</button></td></tr>
+            <tr><td style="width:180px;color:var(--dim);font-weight:700">결제 (국내)</td><td>포트원 <span class="pill p-revoked">미연결</span></td><td style="text-align:right"><button class="tbtn" onclick="setupInfo('portone')">연결 안내</button></td></tr>
+            <tr><td style="color:var(--dim);font-weight:700">결제 (해외)</td><td>Paddle <span class="pill p-revoked">미연결</span></td><td style="text-align:right"><button class="tbtn" onclick="setupInfo('paddle')">연결 안내</button></td></tr>
+            <tr><td style="color:var(--dim);font-weight:700">발송 이메일</td><td>noreply@audioazpro.com (Resend) <span class="pill p-active">연결됨</span></td><td style="text-align:right"><button class="tbtn" onclick="setupInfo('email')">상세</button></td></tr>
+            <tr><td style="color:var(--dim);font-weight:700">라이선스 개인키</td><td><span class="pill p-trial">Phase 2</span> 서버(Edge Function) 보관 예정</td><td style="text-align:right"><button class="tbtn" onclick="setupInfo('key')">상세</button></td></tr>
           </tbody></table>
         </div>
       </section>
@@ -571,7 +565,7 @@ async function afterAuthGate(verified){
   if(!p.passkey_enrolled){ showStep('stepEnroll'); return; }
   if(verified!==true){ showStep('stepVerify'); return; }   // ← 비번 로그인 후에도 패스키 확인 강제
   enterConsole(p);
-  try{ azApprFields(); azApprLoad(); azInqLoad(); }catch(_){}
+  try{ azApprFields(); azApprLoad(); azInqLoad(); renderAdmins(); }catch(_){}
 }
 // STEP 4: 패스키 2차 확인 — 네이티브 패스키 재로그인으로 "패스키 세션"을 발급받아야 통과
 async function verifyPasskey(){
@@ -810,6 +804,14 @@ function hasWebAuthn(){return !!(window.PublicKeyCredential && navigator.credent
 // ===== 관리자 계정 생성기 =====
 function genPw(n){var c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#%^&*';var a=crypto.getRandomValues(new Uint8Array(n||16)),s='';for(var i=0;i<a.length;i++)s+=c[a[i]%c.length];return s;}
 async function pbkdf2hex(pw,saltBuf,iter){var key=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveBits']);var bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:saltBuf,iterations:iter,hash:'SHA-256'},key,256);return bufToHex(bits);}
+// ===== 관리자 관리 — 서버 Edge Function(admin-manage)이 실행. super+패스키 세션 아니면 서버가 거부 =====
+async function adminApi(body){
+  var r=await sb.functions.invoke('admin-manage',{body:body});
+  if(r.error){ var msg=r.error.message; try{ var ctx=await r.error.context.json(); if(ctx&&ctx.error) msg=ctx.error; }catch(_){}
+    throw new Error(msg); }
+  if(r.data && r.data.error) throw new Error(r.data.error);
+  return r.data||{};
+}
 async function genAdmin(e){
   e.preventDefault();
   var email=e.target.email.value.trim().toLowerCase(), name=e.target.name.value.trim(), role=e.target.role.value;
@@ -817,61 +819,60 @@ async function genAdmin(e){
   var res=document.getElementById('genRes'); res.classList.add('on');
   if(pw.length<8){ res.innerHTML='<b style="color:#ff9ea3">비밀번호는 8자 이상이어야 합니다.</b>'; return false; }
   if(pw!==pw2){ res.innerHTML='<b style="color:#ff9ea3">비밀번호가 일치하지 않습니다.</b>'; return false; }
-  // 생성 순간 최고관리자 본인 패스키(지문) 확인
-  var me=(await sb.auth.getUser()).data.user;
-  if(!me){ res.innerHTML='<b style="color:#ff9ea3">세션이 만료되었습니다. 다시 로그인하세요.</b>'; return false; }
-  var pks=await sb.from('admin_passkeys').select('credential_id').eq('user_id',me.id);
-  var ids=(pks.data||[]).map(function(r){return r.credential_id;});
-  if(ids.length){
-    try{
-      await navigator.credentials.get({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),
-        allowCredentials:ids.map(function(id){return {id:b64urlToBuf(id),type:'public-key'};}),userVerification:'required',timeout:60000}});
-    }catch(_){ res.innerHTML='<b style="color:#ff9ea3">최고관리자 Touch ID 인증이 필요합니다.</b>'; return false; }
-  }
-  // 별도 클라이언트로 실제 Supabase 계정 생성 (대표님 세션 유지)
-  var sb2=window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co','sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_',{auth:{persistSession:false,autoRefreshToken:false}});
-  var su=await sb2.auth.signUp({email:email,password:pw,options:{data:{name:name}}});
-  if(su.error){ res.innerHTML='<b style="color:#ff9ea3">계정 생성 실패: '+esc(su.error.message)+'</b>'; return false; }
-  res.innerHTML=
-    '<div style="font-size:11px;color:#8fa5c2;letter-spacing:.05em;text-transform:uppercase">실제 계정 생성됨 (Supabase)</div>'+
-    '<div class="k">이메일: '+esc(email)+' · 이름: '+esc(name)+' · 등급: '+(ROLES[role]?ROLES[role].label:role)+'</div>'+
-    '<div class="k" style="margin-top:8px">직원에게 <b>이메일+지정한 비밀번호</b>를 전달하세요. 최초 로그인 시 비밀번호 변경 + 패스키 등록이 강제됩니다.</div>'+
-    '<div class="k" style="margin-top:8px;color:#ffd27a">⚠ 관리자 권한 부여: Supabase 대시보드 SQL에서<br>update profiles set is_admin=true, role=\''+esc(role)+'\' where email=\''+esc(email)+'\';<br>실행해야 콘솔 접근이 가능합니다. (자동화는 Edge Function 예정)</div>';
-  e.target.reset();
+  if(!confirm('관리자 계정을 생성할까요?\n'+email+' · '+(ROLES[role]?ROLES[role].label:role))) return false;
+  res.innerHTML='<div class="k">생성 중…</div>';
+  try{
+    var d=await adminApi({action:'create', email:email, name:name, password:pw, role:role});
+    res.innerHTML=
+      '<div style="font-size:11px;color:#8fa5c2;letter-spacing:.05em;text-transform:uppercase">실제 계정 생성 + 관리자 권한 부여 완료</div>'+
+      '<div class="k">이메일: '+esc(d.email)+' · 이름: '+esc(name)+' · 등급: '+(ROLES[d.role]?ROLES[d.role].label:d.role)+'</div>'+
+      '<div class="k" style="margin-top:8px">직원에게 <b>이메일 + 지정한 비밀번호</b>를 안전하게 전달하세요.<br>최초 로그인 시 <b>비밀번호 변경 → 패스키 등록</b>이 강제되며, 이후엔 패스키로만 들어옵니다.</div>';
+    e.target.reset();
+    renderAdmins();
+  }catch(ex){ res.innerHTML='<b style="color:#ff9ea3">실패: '+esc(ex.message)+'</b>'; }
   return false;
 }
 
-// ===== 관리자 등급·권한 관리 =====
+// ===== 관리자 등급·권한 관리 (실데이터: profiles.is_admin) =====
 var SUPERADMIN={email:'hj@audioazpro.com', name:'김형준'};
 var ROLES={
   super:{label:'최고관리자', perms:'전체 · 관리자 생성·삭제·권한 지정'},
   ops:{label:'운영관리자', perms:'라이선스·프로모션·주문·고객·제품·공지'},
   support:{label:'지원(뷰어)', perms:'조회 전용'}
 };
-function loadAdmins(){ try{return JSON.parse(localStorage.getItem('az_admins')||'[]');}catch(_){return [];} }
-function saveAdmins(L){ try{localStorage.setItem('az_admins',JSON.stringify(L));}catch(_){}; renderAdmins(); }
+var ADMIN_LIST=[];
 function roleOptions(sel){ return Object.keys(ROLES).filter(function(k){return k!=='super';}).map(function(k){return '<option value="'+k+'"'+(sel===k?' selected':'')+'>'+ROLES[k].label+'</option>';}).join(''); }
 function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
-function renderAdmins(){
+async function renderAdmins(){
   var tb=document.getElementById('adminRows'); if(!tb) return;
-  var L=loadAdmins();
-  var head='<tr><td>'+esc(SUPERADMIN.name)+' <span class="pill p-active">나</span></td><td class="mono">'+esc(SUPERADMIN.email)+'</td><td><span class="pill p-active">최고관리자</span></td><td><span class="pill p-active">활성</span></td><td class="mono">—</td><td style="color:var(--dim)">보호됨</td></tr>';
-  var rows=L.map(function(a,i){
+  var me=window.__ADMIN_PROFILE||{};
+  if(me.role!=='super'){ tb.innerHTML='<tr><td colspan="6" style="color:var(--dim)">관리자 목록은 최고관리자만 볼 수 있습니다.</td></tr>'; return; }
+  tb.innerHTML='<tr><td colspan="6" class="n">불러오는 중…</td></tr>';
+  try{
+    var d=await adminApi({action:'list'});
+    ADMIN_LIST=d.admins||[];
+  }catch(ex){ tb.innerHTML='<tr><td colspan="6" style="color:#ff9ea3">불러오기 실패: '+esc(ex.message)+'</td></tr>'; return; }
+  var rows=ADMIN_LIST.map(function(a){
+    var isSuper=(a.role==='super'||String(a.email||'').toLowerCase()===SUPERADMIN.email);
     var sus=(a.status==='suspended');
+    var dt=a.created_at?new Date(a.created_at):null; var at=dt?(dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0')):'—';
+    if(isSuper){
+      return '<tr><td>'+esc(a.name||'')+' <span class="pill p-active">나</span></td><td class="mono">'+esc(a.email)+'</td><td><span class="pill p-active">최고관리자</span></td><td><span class="pill p-active">활성</span></td><td class="mono">'+at+'</td><td style="color:var(--dim)">보호됨</td></tr>';
+    }
     return '<tr'+(sus?' style="opacity:.5"':'')+'>'+
-      '<td>'+esc(a.name)+'</td>'+
+      '<td>'+esc(a.name||'')+(a.passkey_enrolled?'':' <span class="n" title="아직 패스키 미등록">(첫 로그인 전)</span>')+'</td>'+
       '<td class="mono">'+esc(a.email)+'</td>'+
-      '<td><select class="field" style="margin:0;width:auto;padding:6px 8px" onchange="setRole('+i+',this.value)">'+roleOptions(a.role||'ops')+'</select></td>'+
+      '<td><select class="field" style="margin:0;width:auto;padding:6px 8px" onchange="setRole(\''+a.id+'\',this.value)">'+roleOptions(a.role||'support')+'</select></td>'+
       '<td>'+(sus?'<span class="pill p-revoked">정지</span>':'<span class="pill p-active">활성</span>')+'</td>'+
-      '<td class="mono">'+esc(a.at||'—')+'</td>'+
-      '<td style="white-space:nowrap"><button class="tbtn" onclick="toggleAdmin('+i+')">'+(sus?'해제':'정지')+'</button> <button class="tbtn danger" onclick="delAdmin('+i+')">삭제</button></td>'+
+      '<td class="mono">'+at+'</td>'+
+      '<td style="white-space:nowrap"><button class="tbtn" onclick="toggleAdmin(\''+a.id+'\','+(sus?'false':'true')+')">'+(sus?'해제':'정지')+'</button> <button class="tbtn danger" onclick="delAdmin(\''+a.id+'\',\''+esc(a.email)+'\')">삭제</button></td>'+
     '</tr>';
   }).join('');
-  tb.innerHTML = head + (L.length? rows : '<tr><td colspan="6" style="color:var(--dim)">생성된 추가 관리자가 없습니다.</td></tr>');
+  tb.innerHTML = rows || '<tr><td colspan="6" style="color:var(--dim)">관리자가 없습니다.</td></tr>';
 }
-function setRole(i,role){ var L=loadAdmins(); if(!L[i])return; L[i].role=role; saveAdmins(L); }
-function toggleAdmin(i){ var L=loadAdmins(); if(!L[i])return; L[i].status=(L[i].status==='suspended')?'active':'suspended'; saveAdmins(L); }
-function delAdmin(i){ var L=loadAdmins(); if(!L[i])return; if(!confirm('관리자 삭제: '+L[i].email+'\n이 관리자의 접근 권한을 제거합니다. 계속할까요?'))return; L.splice(i,1); saveAdmins(L); }
+async function setRole(id,role){ try{ await adminApi({action:'set_role', id:id, role:role}); }catch(ex){ alert('실패: '+ex.message); } renderAdmins(); }
+async function toggleAdmin(id,suspend){ if(!confirm(suspend?'이 관리자를 정지할까요? (즉시 접근 차단, 세션 종료)':'정지를 해제할까요?')) return; try{ await adminApi({action:'suspend', id:id, suspend:suspend}); }catch(ex){ alert('실패: '+ex.message); } renderAdmins(); }
+async function delAdmin(id,email){ if(!confirm('관리자 삭제: '+email+'\n계정 자체가 삭제되며 되돌릴 수 없습니다. 계속할까요?')) return; try{ await adminApi({action:'delete', id:id}); }catch(ex){ alert('실패: '+ex.message); } renderAdmins(); }
 // ===== 자동 로그아웃 (10분 무동작, 1분 전 경고 팝업+카운트다운) =====
 var IDLE_MS=10*60*1000, WARN_MS=60*1000; // 총 10분 · 마지막 1분 경고
 var warnTimer=null, logoutTimer=null, countTimer=null, idleWarning=false;
@@ -1068,14 +1069,158 @@ function renderSales(){
   }).join('');
 }
 try{ renderPromos(); renderSales(); promoType(); }catch(_){}
+try{ renderIssued(); renderProducts(); renderNotices(); }catch(_){}
+try{ loadCustomers(); }catch(_){}
+// ===== 라이선스 발급 (데모 저장소 az_issued — 정식 전환 시 licenses DB + Ed25519 서명) =====
 var PRE={'Klera Voice':'AZCA','Klera Instrument':'AZCI','Flare Tally':'AZTL','Latency Meter AZ':'AZLM'};
+function issuedList(){ try{return JSON.parse(localStorage.getItem('az_issued')||'[]');}catch(_){return [];} }
+function saveIssued(L){ try{localStorage.setItem('az_issued',JSON.stringify(L));}catch(_){}; renderIssued(); }
+function makeIssueKey(product){
+  var r=()=>Math.random().toString(36).slice(2,6).toUpperCase();
+  return (PRE[product]||'AZ')+'-'+[r(),r(),r(),r()].join('-');
+}
 function issue(e){
   e.preventDefault();var d={};new FormData(e.target).forEach((v,k)=>d[k]=v);
-  var r=()=>Math.random().toString(36).slice(2,6).toUpperCase();
-  document.getElementById('issKey').textContent=(PRE[d.product]||'AZ')+'-'+[r(),r(),r(),r(),r()].join('-')+'-（서버 Ed25519 서명）';
+  var key=makeIssueKey(d.product);
+  var L=issuedList();
+  L.unshift({key:key,product:d.product,type:d.type,name:d.name,email:d.email,status:'active',at:AZ.today()});
+  saveIssued(L);
+  document.getElementById('issKey').innerHTML='<b>'+key+'</b><br>'+esc(d.product)+' · '+esc(d.type)+' · '+esc(d.name)+' ('+esc(d.email)+')<br><span style="color:#8fa5c2">아래 발급 목록에 기록됐습니다. 정식 전환 시 서버가 Ed25519 서명 후 이메일로 전송합니다.</span>';
   document.getElementById('issRes').classList.add('on');
-  // TODO(백엔드): POST /admin/api/license/issue → 서버가 서명·DB기록·이메일발송
+  e.target.reset();
   return false;
+}
+function renderIssued(){
+  var tb=document.getElementById('issuedRows'); if(!tb) return;
+  var q=((document.getElementById('issSearch')||{}).value||'').trim().toLowerCase();
+  var L=issuedList().filter(function(l){ return !q || (l.key+' '+l.email+' '+l.name).toLowerCase().indexOf(q)>=0; });
+  if(!L.length){ tb.innerHTML='<tr><td colspan="7" style="color:var(--dim)">발급된 라이선스가 없습니다. 위에서 발급하세요.</td></tr>'; return; }
+  tb.innerHTML=L.map(function(l,i){
+    var revoked=l.status==='revoked';
+    return '<tr'+(revoked?' style="opacity:.5"':'')+'>'+
+      '<td class="mono">'+esc(l.key)+'</td>'+
+      '<td>'+esc(l.product)+'</td>'+
+      '<td>'+esc(l.name)+'<br><span style="color:var(--dim);font-size:11px">'+esc(l.email)+'</span></td>'+
+      '<td style="font-size:12px">'+esc(l.type)+'</td>'+
+      '<td>'+(revoked?'<span class="pill p-revoked">폐기</span>':'<span class="pill p-active">활성</span>')+'</td>'+
+      '<td class="mono">'+esc(l.at)+'</td>'+
+      '<td style="white-space:nowrap">'+
+        '<button class="tbtn" onclick="copyIssued('+i+',this)">복사</button> '+
+        (revoked
+          ? '<button class="tbtn" onclick="setIssued('+i+',\'active\')">재활성</button> <button class="tbtn danger" onclick="delIssued('+i+')">삭제</button>'
+          : '<button class="tbtn" onclick="reissue('+i+')">재발급</button> <button class="tbtn danger" onclick="setIssued('+i+',\'revoked\')">폐기</button>')+
+      '</td>'+
+    '</tr>';
+  }).join('');
+}
+function copyIssued(i,btn){ var l=issuedList()[i]; if(!l)return; navigator.clipboard&&navigator.clipboard.writeText(l.key); btn.textContent='복사됨'; setTimeout(function(){btn.textContent='복사';},1200); }
+function setIssued(i,st){ var L=issuedList(); if(!L[i])return; L[i].status=st; saveIssued(L); }
+function reissue(i){
+  var L=issuedList(); if(!L[i])return;
+  if(!confirm('재발급: '+L[i].email+'\n기존 키를 폐기하고 새 키를 발급합니다. 계속할까요?'))return;
+  var old=L[i]; old.status='revoked';
+  L.unshift({key:makeIssueKey(old.product),product:old.product,type:old.type,name:old.name,email:old.email,status:'active',at:AZ.today()});
+  saveIssued(L);
+}
+function delIssued(i){ var L=issuedList(); if(!L[i])return; if(!confirm('발급 기록 삭제: '+L[i].key+'\n계속할까요?'))return; L.splice(i,1); saveIssued(L); }
+
+// ===== 고객 (실제 Supabase 가입 회원 — profiles 관리자 조회 정책 필요) =====
+var CUSTOMERS=[];
+async function loadCustomers(){
+  var tb=document.getElementById('custRows'); if(!tb) return;
+  tb.innerHTML='<tr><td colspan="4" style="color:var(--dim)">불러오는 중…</td></tr>';
+  try{
+    var r=await sb.from('profiles').select('id,email,name,created_at').eq('is_admin',false).order('created_at',{ascending:false});
+    if(r.error) throw r.error;
+    CUSTOMERS=r.data||[];
+    renderCustomers();
+  }catch(ex){
+    tb.innerHTML='<tr><td colspan="4" style="color:#ff9ea3">고객 목록을 불러오지 못했습니다: '+esc((ex&&ex.message)||ex)+'</td></tr>';
+  }
+}
+function renderCustomers(){
+  var tb=document.getElementById('custRows'); if(!tb) return;
+  var q=((document.getElementById('custSearch')||{}).value||'').trim().toLowerCase();
+  var L=CUSTOMERS.filter(function(c){ return !q || ((c.name||'')+' '+(c.email||'')).toLowerCase().indexOf(q)>=0; });
+  if(!L.length){ tb.innerHTML='<tr><td colspan="4" style="color:var(--dim)">'+(q?'검색 결과가 없습니다.':'가입한 고객이 아직 없습니다.')+'</td></tr>'; return; }
+  tb.innerHTML=L.map(function(c,i){
+    return '<tr><td>'+esc(c.name||'—')+'</td><td class="mono">'+esc(c.email)+'</td><td class="mono">'+String(c.created_at||'').slice(0,10)+'</td>'+
+      '<td><button class="tbtn" onclick="custDetail(\''+c.id+'\')">상세</button></td></tr>';
+  }).join('');
+}
+async function custDetail(id){
+  var c=CUSTOMERS.find(function(x){return x.id===id;}); if(!c) return;
+  var licLine='라이선스: 조회 실패';
+  try{
+    var r=await sb.from('licenses').select('product_id,type,status').eq('user_id',id);
+    if(!r.error){ var ls=r.data||[]; licLine='라이선스(DB): '+(ls.length? ls.map(function(l){return l.product_id+'('+l.status+')';}).join(', ') : '없음'); }
+  }catch(_){}
+  alert('고객 상세\n\n이름: '+(c.name||'—')+'\n이메일: '+c.email+'\n가입일: '+String(c.created_at||'').slice(0,19).replace('T',' ')+'\nID: '+c.id+'\n'+licLine);
+}
+
+// ===== 제품 · 버전 (가격·버전 편집 → 홈페이지·결제 즉시 반영) =====
+function renderProducts(){
+  var tb=document.getElementById('prodRows'); if(!tb) return;
+  tb.innerHTML=['KV','KI','TALLY','LMAZ'].map(function(p){
+    var m=AZ.PRODMETA[p], base=AZ.basePrice(p), sale=AZ.saleFor(p);
+    var status = p==='LMAZ' ? '<span class="pill p-active">배포중 · 무료</span>' : '<span class="pill p-trial">출시 예정</span>';
+    return '<tr><td>'+esc(m.name)+'</td>'+
+      '<td class="mono">'+esc(AZ.versionOf(p))+'</td>'+
+      '<td>'+(base?W(base):'무료')+'</td>'+
+      '<td>'+(sale?('<b>'+W(sale.price)+'</b>'):'—')+'</td>'+
+      '<td>'+status+'</td>'+
+      '<td style="white-space:nowrap"><button class="tbtn" onclick="editProduct(\''+p+'\')">편집</button> <button class="tbtn" onclick="bumpVersion(\''+p+'\')">새 버전</button></td>'+
+    '</tr>';
+  }).join('');
+}
+function editProduct(p){
+  var m=AZ.PRODMETA[p];
+  var price=prompt(m.name+' — 정가(원)를 입력하세요.\n현재: '+AZ.basePrice(p)+'원\n(0 = 무료. 홈페이지·결제·할인 탭에 바로 반영)', AZ.basePrice(p));
+  if(price===null) return;
+  var v=parseInt(price,10);
+  if(isNaN(v)||v<0){ alert('숫자를 입력하세요.'); return; }
+  AZ.setBasePrice(p,v);
+  renderProducts(); try{renderSales();}catch(_){}
+  // TODO(백엔드): products.price_krw 업데이트
+}
+function bumpVersion(p){
+  var m=AZ.PRODMETA[p];
+  var ver=prompt(m.name+' — 새 버전을 입력하세요.\n현재: '+AZ.versionOf(p)+'\n(실제 설치파일 업로드는 백엔드 연결 시 제공)', AZ.versionOf(p));
+  if(ver===null) return;
+  ver=ver.trim(); if(!ver){ alert('버전을 입력하세요.'); return; }
+  AZ.setVersion(p,ver);
+  renderProducts();
+  // TODO(백엔드): products.version 업데이트 + 빌드 업로드(스토리지)
+}
+
+// ===== 공지 =====
+function addNotice(e){
+  e.preventDefault();var d={};new FormData(e.target).forEach((v,k)=>d[k]=v);
+  var L=AZ.notices(); L.unshift({title:d.title,body:d.body||'',at:AZ.today()}); AZ.saveNotices(L);
+  renderNotices(); e.target.reset();
+  return false;
+  // TODO(백엔드): notices 테이블 + 사이트/포털 노출
+}
+function renderNotices(){
+  var tb=document.getElementById('noticeRows'); if(!tb) return;
+  var L=AZ.notices();
+  if(!L.length){ tb.innerHTML='<tr><td colspan="4" style="color:var(--dim)">등록된 공지가 없습니다.</td></tr>'; return; }
+  tb.innerHTML=L.map(function(n,i){
+    return '<tr><td style="font-weight:700">'+esc(n.title)+'</td><td style="color:var(--dim);max-width:340px">'+esc((n.body||'').slice(0,80))+((n.body||'').length>80?'…':'')+'</td><td class="mono">'+esc(n.at)+'</td>'+
+      '<td><button class="tbtn danger" onclick="delNotice('+i+')">삭제</button></td></tr>';
+  }).join('');
+}
+function delNotice(i){ var L=AZ.notices(); if(!L[i])return; if(!confirm('공지 삭제: '+L[i].title+'\n계속할까요?'))return; L.splice(i,1); AZ.saveNotices(L); renderNotices(); }
+
+// ===== 설정 안내 =====
+function setupInfo(k){
+  var t={
+    portone:'포트원(국내 결제) 연결 절차\n\n1) 사업자등록증으로 포트원 가입 → 채널(카드·카카오페이) 심사\n2) 발급받은 API 키를 서버(Edge Function) 환경변수에 등록\n3) checkout 페이지의 결제 버튼이 실제 결제창을 띄우고, 웹훅이 주문·라이선스를 자동 기록\n\n심사에 영업일 수일이 걸립니다 — 제품 출시가에 맞춰 진행하세요.',
+    paddle:'Paddle(해외 결제) 연결 절차\n\n1) paddle.com 판매자 가입 (사이트 심사 — 제품 페이지·환불정책 필요, 현재 사이트로 신청 가능)\n2) API 키·웹훅을 서버에 등록\n3) 해외 고객은 Paddle이 부가세(VAT) 처리까지 대행\n\n승인까지 보통 1~2주 걸립니다.',
+    email:'발송 이메일 — 연결 완료 ✓\n\nResend(smtp.resend.com)를 통해 noreply@audioazpro.com 이름으로 발송됩니다.\n· 회원가입 인증 메일: Supabase Auth → Resend\n· 문의 답장 메일: Edge Function → Resend\n\n무료 한도: 하루 100통 / 월 3,000통. 초과가 예상되면 Resend 유료 플랜으로 올리면 됩니다.',
+    key:'라이선스 개인키 (Ed25519)\n\nPhase 2에서 서버(Edge Function)에 개인키를 보관하고, 발급 시 서버가 서명합니다.\n브라우저·소스코드에는 절대 개인키를 넣지 않습니다.\n키 생성·회전은 백엔드 구축 때 함께 진행합니다.'
+  }[k];
+  alert(t||'준비 중입니다.');
 }
 </script>
 </body>

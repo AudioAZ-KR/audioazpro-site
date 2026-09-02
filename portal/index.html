@@ -176,8 +176,13 @@ function setTab(t){
     ? '계정이 없으신가요? <button type="button" class="linklike" onclick="setTab(\'signup\')">회원가입</button>'
     : '이미 계정이 있으신가요? <button type="button" class="linklike" onclick="setTab(\'login\')">로그인</button>';
 }
-// 이미 로그인돼 있으면 계정으로
-AZ.session().then(function(s){ if(s) location.replace('account.html'); }).catch(function(){});
+// 이미 로그인돼 있으면 계정으로 (인증 링크로 돌아온 경우 welcome=1 유지 → 가입 축하 표시)
+AZ.session().then(function(s){
+  if(s){
+    var w=new URLSearchParams(location.search).get('welcome');
+    location.replace('account.html'+(w?'?welcome=1':''));
+  }
+}).catch(function(){});
 
 // 소셜 로그인 — 정식 오픈 예정 (버튼은 비활성). Supabase Auth Provider 연결 후 활성화.
 function oauth(provider){
