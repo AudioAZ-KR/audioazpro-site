@@ -167,7 +167,7 @@ td{color:var(--text)}
 }</style>
 </head>
 <body>
-<div class="demobar" role="note">데모 환경 · 실제 인증·결제·라이선스는 준비 중입니다</div>
+<div class="demobar" role="note">결제 연동(포트원·Paddle) 준비 중 · 인증·라이선스·결재·문의는 실데이터로 운영 중</div>
 
 <!-- 관리자 로그인 게이트 -->
 <div class="gate" id="gate">
@@ -326,7 +326,7 @@ td{color:var(--text)}
 
       <!-- 라이선스 (핵심) -->
       <section id="p-lic" class="page">
-        <div class="card"><h2>라이선스 발급</h2><div class="sub">Ed25519 서명 키를 발급합니다. 개인키는 서버에만 두며, 발급 즉시 구매자 이메일로 전송됩니다.</div>
+        <div class="card"><h2>라이선스 발급</h2><div class="sub">가입 회원에게 라이선스를 발급합니다. 키는 서버가 생성해 DB에 기록되며, 아래 목록에서 복사해 전달할 수 있습니다.</div>
           <form onsubmit="return issue(event)">
             <div class="grid2">
               <div class="field"><label>제품</label><select name="product" required><option value="">선택</option><option>Klera Voice</option><option>Klera Instrument</option><option>Flare Tally</option><option>Latency Meter AZ</option></select></div>
@@ -334,7 +334,7 @@ td{color:var(--text)}
               <div class="field"><label>구매자 이름</label><input name="name" placeholder="홍길동" required></div>
               <div class="field"><label>이메일</label><input type="email" name="email" placeholder="buyer@example.com" required></div>
             </div>
-            <div class="rowflex"><button class="btn btn-pri" type="submit">발급</button><label style="font-size:12.5px;color:var(--dim)"><input type="checkbox" checked style="width:auto"> 발급 후 이메일 자동 전송 (백엔드 연결 시)</label></div>
+            <div class="rowflex"><button class="btn btn-pri" type="submit">발급</button><span class="n">발급 즉시 DB 기록 · 결재 이력 자동 생성</span></div>
           </form>
           <div class="result" id="issRes"><div style="font-size:11px;color:#8fa5c2;letter-spacing:.05em;text-transform:uppercase">발급된 키</div><div class="k" id="issKey">—</div></div>
           <p class="note">발급은 <b>가입된 회원 이메일</b>에만 됩니다. 라이선스 키는 서버(DB 함수)가 생성하며, 최고관리자는 즉시 발급·직원은 결재 대기로 올라갑니다. 모든 발급·회수는 결재 이력으로 남습니다.</p>
