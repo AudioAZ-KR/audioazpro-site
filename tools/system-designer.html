@@ -321,7 +321,7 @@
 </svg>
       <div>
       <div class="eyebrow" style="letter-spacing:.24em"><b style="color:var(--brand)">AudioAZ</b> · AUDIO PRODUCTION COMPANY</div>
-      <h1>AudioAZ System Designer <span style="font-size:11px;font-family:var(--mono);letter-spacing:.12em;vertical-align:middle;color:#fff;background:var(--brand);border-radius:999px;padding:3px 9px;position:relative;top:-3px">BETA</span> <span style="font-size:11px;font-family:var(--mono);color:var(--ink-3);vertical-align:middle;position:relative;top:-3px">for d&amp;b</span> <span style="font-size:12px;font-family:var(--mono);font-weight:700;letter-spacing:.04em;vertical-align:middle;color:var(--brand);border:1.5px solid var(--brand);border-radius:999px;padding:2px 10px;position:relative;top:-3px">v1.98</span></h1>
+      <h1>AudioAZ System Designer <span style="font-size:11px;font-family:var(--mono);letter-spacing:.12em;vertical-align:middle;color:#fff;background:var(--brand);border-radius:999px;padding:3px 9px;position:relative;top:-3px">BETA</span> <span style="font-size:11px;font-family:var(--mono);color:var(--ink-3);vertical-align:middle;position:relative;top:-3px">for d&amp;b</span> <span style="font-size:12px;font-family:var(--mono);font-weight:700;letter-spacing:.04em;vertical-align:middle;color:var(--brand);border:1.5px solid var(--brand);border-radius:999px;padding:2px 10px;position:relative;top:-3px">v1.99</span></h1>
       <div class="sub">모델과 앰프를 고르면 — 목표 SPL·베뉴 크기로 통수를, 통수로 스플레이 각을 추천하고, 링크로 앰프를 절약해 ArrayCalc/R1 물량을 산출합니다.<br><span data-t="sub2" style="font-size:11px;color:var(--ink-3)">AudioAZ가 만든 <b>독립·비공식</b> 도구입니다. d&amp;b audiotechnik과 무관하며 공식 승인·제휴가 아닙니다. <button type="button" id="legalBtn" style="background:none;border:none;color:var(--brand);cursor:pointer;text-decoration:underline;font-size:11px;padding:0">고지·라이선스</button></span></div>
       </div>
     </div>
@@ -332,7 +332,6 @@
       <span id="verBadge" style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--brand);background:rgba(24,119,242,.12);border-radius:6px;padding:6px 10px;min-width:36px;text-align:center;user-select:none" title="제목별 자동 버전 — 같은 제목으로 추출할 때마다 올라갑니다. 새 제목은 v.1부터.">v.1</span>
       <button class="themebtn" id="openbtn" type="button" title="저장된 설정(.json) 불러오기">설정 열기</button>
       <button class="themebtn" id="shareBtn" type="button" title="현재 설계를 링크로 복사 — 링크를 열면 그대로 복원됩니다">🔗 공유</button>
-      <button class="themebtn" id="cloudBtn" type="button" title="AudioAZ 계정으로 설계를 온라인에 저장·불러오기">☁ 온라인</button>
       <button class="themebtn" id="unitBtn" type="button" title="앰프 유닛 ID(서브넷·시작번호) 편집 — 현장 관례에 맞게">유닛 ID</button>
       <input type="file" id="openFile" accept=".json,application/json" style="display:none">
       <button class="themebtn" id="genbtn" type="button" style="background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600">ArrayCalc 파일 생성 →</button>
@@ -343,8 +342,7 @@
         <button class="themebtn" id="authBtn" type="button" style="border-color:var(--brand);color:var(--brand)">👤 로그인</button>
         <div id="authMenu" style="display:none;position:absolute;top:calc(100% + 6px);right:0;z-index:9000;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.45);min-width:180px;overflow:hidden">
           <div id="amEmail" style="padding:9px 13px;font-family:var(--mono);font-size:11px;color:var(--ink-3);border-bottom:1px solid var(--line)"></div>
-          <button type="button" id="amOpen" style="display:block;width:100%;text-align:left;padding:10px 13px;background:none;border:none;color:var(--ink);font-size:12.5px;cursor:pointer">☁ 내 설계</button>
-          <button type="button" id="amLogout" style="display:block;width:100%;text-align:left;padding:10px 13px;background:none;border:none;color:var(--ink-2);font-size:12.5px;cursor:pointer;border-top:1px solid var(--line)">로그아웃</button>
+          <button type="button" id="amLogout" style="display:block;width:100%;text-align:left;padding:10px 13px;background:none;border:none;color:var(--ink-2);font-size:12.5px;cursor:pointer">로그아웃</button>
         </div>
       </span>
     </div>
@@ -681,7 +679,7 @@
 
 <div id="cloudModal" role="dialog" aria-label="온라인 저장">
   <div class="uidCard">
-    <h3 style="margin:0 0 10px">☁ 온라인 저장 <span id="cdUser" style="font-weight:400;font-size:11px;color:var(--ink-3);font-family:var(--mono)"></span></h3>
+    <h3 style="margin:0 0 10px">☁ 로그인</h3>
     <div id="cdLoginBox">
       <div class="uidHint" data-t="cloudhint">audioazpro.com 계정으로 설계를 클라우드에 저장하고 어느 기기에서든 불러옵니다. 계정은 현재 <b>audioazpro.com</b>을 통해 발급됩니다.</div>
       <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
@@ -693,16 +691,6 @@
           <span id="cdMsg1" style="font-size:11.5px;color:var(--warn,#eab308)"></span>
         </div>
       </div>
-    </div>
-    <div id="cdMainBox" style="display:none">
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
-        <button type="button" class="themebtn" id="cdSave" style="background:var(--brand);color:#fff;border:none;font-weight:700;padding:9px 18px">⬆ 현재 설계 저장</button>
-        <span id="cdMsg2" style="font-size:11.5px;color:var(--ink-3)"></span>
-        <span style="flex:1"></span>
-        <button type="button" class="themebtn" id="cdLogout" style="font-size:11px">로그아웃</button>
-      </div>
-      <div style="font-size:11px;font-family:var(--mono);color:var(--ink-3);letter-spacing:.08em;text-transform:uppercase">내 설계</div>
-      <div id="cdList" style="max-height:300px;overflow:auto"></div>
     </div>
     <div style="display:flex;justify-content:flex-end;margin-top:14px">
       <button type="button" class="themebtn" id="cdClose">닫기</button>
@@ -751,7 +739,7 @@
     </div>
   </div>
 </div>
-<div id="verbadge" data-t="foot"><b style="color:#1877F2">AudioAZ</b> <b>AudioAZ System Designer BETA v1.98</b> · 2026-08 · <span style="opacity:.85">Made in Korea 🇰🇷</span><br>비공식·독립 도구 — d&amp;b audiotechnik과 무관 · 결과 무보증 · 리깅/하중은 공식 ArrayCalc·전문가 검증 필수</div>
+<div id="verbadge" data-t="foot"><b style="color:#1877F2">AudioAZ</b> <b>AudioAZ System Designer BETA v1.99</b> · 2026-08 · <span style="opacity:.85">Made in Korea 🇰🇷</span><br>비공식·독립 도구 — d&amp;b audiotechnik과 무관 · 결과 무보증 · 리깅/하중은 공식 ArrayCalc·전문가 검증 필수</div>
 <script>
   (function(){
     if(!document.querySelector('meta[name=viewport]')){
@@ -3467,24 +3455,10 @@
     function cli(){ if(sb)return sb; if(!window.supabase){ return null; } sb=window.supabase.createClient(SB_URL,SB_KEY); return sb; }
     function esc2(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
     function msg1(t){ $('cdMsg1').textContent=t||''; }
-    function msg2(t){ $('cdMsg2').textContent=t||''; }
     async function refresh(){
       var c=cli(); if(!c)return;
       var s=(await c.auth.getSession()).data.session;
-      $('cdLoginBox').style.display=s?'none':'block';
-      $('cdMainBox').style.display=s?'block':'none';
-      $('cdUser').textContent=s?(s.user.email||''):'';
-      if(s) loadList();
-    }
-    async function loadList(){
-      var c=cli(); var el=$('cdList'); el.innerHTML='<div style="padding:10px;color:var(--ink-3);font-size:12px">불러오는 중…</div>';
-      var r=await c.from('designs').select('id,title,ver,updated_at').order('updated_at',{ascending:false}).limit(50);
-      if(r.error){ el.innerHTML='<div style="padding:10px;color:var(--warn,#eab308);font-size:12px">'+(r.error.code==='42P01'?'서버 테이블 준비 중 — 잠시 후 다시':'목록 오류: '+esc2(r.error.message))+'</div>'; return; }
-      if(!r.data.length){ el.innerHTML='<div style="padding:10px;color:var(--ink-3);font-size:12px">저장된 설계가 없습니다</div>'; return; }
-      el.innerHTML=r.data.map(function(d){
-        var dt=(d.updated_at||'').slice(0,16).replace('T',' ');
-        return '<div class="cdRow" data-id="'+d.id+'"><span class="nm">'+esc2(d.title)+' <span style="color:var(--brand);font-family:var(--mono);font-size:11px">'+esc2(d.ver||'')+'</span></span><span class="mt">'+dt+'</span><button type="button" class="rn" data-rn="'+d.id+'" data-nm="'+esc2(d.title)+'" title="이름 변경">✎</button><button type="button" class="themebtn" data-del="'+d.id+'" style="padding:2px 8px;font-size:11px">×</button></div>';
-      }).join('');
+      if(s){ modal.style.display='none'; updateAuth(); }
     }
     // ── 공용: 저장/목록 (모달·씬리스트 공유) ──
     async function fetchDesigns(){
@@ -3512,7 +3486,7 @@
       if(nv===null)return; nv=nv.trim(); if(!nv||nv===cur)return;
       var r=await c.from('designs').update({title:nv}).eq('id',id);
       if(r.error){ $('genOut').style.display='block'; $('genDl').textContent='☁ 이름 변경 실패: '+(r.error.message||''); return; }
-      renderScenes(); if(getComputedStyle(modal).display!=='none') loadList();
+      renderScenes();
     }
     function t9(s){ return (window.DBSD_lang&&window.DBSD_lang()==='en')?({'새 이름을 입력하세요':'Enter a new name'}[s]||s):s; }
     async function loadDesign(id){
@@ -3537,10 +3511,9 @@
     $('authBtn').addEventListener('click',function(){
       if(!window.supabase){ $('genOut').style.display='block'; $('genDl').textContent='☁ 온라인 저장은 인터넷 연결이 필요합니다'; return; }
       if(this.dataset.logged){ am.style.display=(am.style.display==='none'||!am.style.display)?'block':'none'; }
-      else { modal.style.display='flex'; msg1(''); msg2(''); refresh(); }
+      else { modal.style.display='flex'; msg1(''); refresh(); }
     });
     document.addEventListener('click',function(e){ if(am&&!$('authBox').contains(e.target)) am.style.display='none'; });
-    $('amOpen').addEventListener('click',function(){ am.style.display='none'; modal.style.display='flex'; msg1(''); msg2(''); refresh(); });
     $('amLogout').addEventListener('click',async function(){ am.style.display='none'; var c=cli(); if(c)await c.auth.signOut(); updateAuth(); });
     // ── 종단면 씬리스트 ──
     var sbSel=null;
@@ -3550,7 +3523,7 @@
       var c=cli();
       var s=(sessionOrNull!==undefined)?sessionOrNull:(await c.auth.getSession()).data.session;
       if(!s){ el.innerHTML='<div class="sbEmpty">로그인하면 설계를 저장·불러올 수 있습니다</div><button type="button" class="sbLoginBtn" id="sbLoginBtn">로그인</button>';
-        var lb=$('sbLoginBtn'); if(lb)lb.addEventListener('click',function(){ modal.style.display='flex'; msg1(''); msg2(''); refresh(); });
+        var lb=$('sbLoginBtn'); if(lb)lb.addEventListener('click',function(){ modal.style.display='flex'; msg1(''); refresh(); });
         return; }
       var r=await fetchDesigns();
       if(!r||r.error){ el.innerHTML='<div class="sbEmpty">'+(r&&r.error&&r.error.code==='42P01'?'서버 테이블 준비 중 — 잠시 후 다시':'목록 오류')+'</div>'; return; }
@@ -3558,21 +3531,25 @@
       if(sbSel&&!r.data.some(function(d){return d.id===sbSel;})) sbSel=null;
       el.innerHTML=r.data.map(function(d,i){
         var dt=(d.updated_at||'').slice(5,16).replace('T',' ');
-        return '<div class="sbRow'+(d.id===sbSel?' sel':'')+'" data-id="'+d.id+'"><span class="no">'+(i+1<10?'0':'')+(i+1)+'</span><span class="nm">'+esc2(d.title)+'</span><span class="vv">'+esc2(d.ver||'')+'</span><button type="button" class="rn" data-rn="'+d.id+'" data-nm="'+esc2(d.title)+'" title="이름 변경">✎</button></div>';
+        return '<div class="sbRow'+(d.id===sbSel?' sel':'')+'" data-id="'+d.id+'"><span class="no">'+(i+1<10?'0':'')+(i+1)+'</span><span class="nm">'+esc2(d.title)+'</span><span class="vv">'+esc2(d.ver||'')+'</span><button type="button" class="rn" data-rn="'+d.id+'" data-nm="'+esc2(d.title)+'" title="이름 변경">✎</button><button type="button" class="rn" data-del2="'+d.id+'" title="삭제">×</button></div>';
       }).join('');
     }
     var _sbl=$('sbList');
     if(_sbl){
-      _sbl.addEventListener('click',function(e){
+      _sbl.addEventListener('click',async function(e){
         var rn=e.target.getAttribute&&e.target.getAttribute('data-rn');
         if(rn){ renameDesign(rn,e.target.getAttribute('data-nm')); return; }
+        var dl=e.target.getAttribute&&e.target.getAttribute('data-del2');
+        if(dl){ if(!confirm('이 설계를 삭제할까요?\nDelete this design?'))return;
+          var c=cli(); if(c)await c.from('designs').delete().eq('id',dl);
+          if(sbSel===dl)sbSel=null; renderScenes(); return; }
         var row=e.target.closest&&e.target.closest('.sbRow'); if(!row)return;
         sbSel=row.getAttribute('data-id');
         _sbl.querySelectorAll('.sbRow').forEach(function(x){ x.classList.toggle('sel',x.getAttribute('data-id')===sbSel); }); });
       _sbl.addEventListener('dblclick',function(e){ var row=e.target.closest&&e.target.closest('.sbRow'); if(row) loadDesign(row.getAttribute('data-id')); });
       $('sbSave').addEventListener('click',async function(){
         var r=await saveCurrent();
-        if(r.needLogin){ modal.style.display='flex'; msg1(''); msg2(''); refresh(); return; }
+        if(r.needLogin){ modal.style.display='flex'; msg1(''); refresh(); return; }
         if(r.error){ $('genOut').style.display='block'; $('genDl').textContent='☁ 저장 실패: '+(r.error.message||''); return; }
         $('genOut').style.display='block'; $('genDl').textContent='☁ 저장됨: '+r.title;
         renderScenes();
@@ -3585,42 +3562,15 @@
     // supabase-js는 defer CDN — 로드 후 상태 반영 (+ 로그인 변화 반영)
     function initAuth(){ if(!window.supabase){ renderScenes(null); return; } updateAuth(); var c=cli(); c.auth.onAuthStateChange(function(){ updateAuth(); }); }
     if(document.readyState==='complete') setTimeout(initAuth,300); else window.addEventListener('load',function(){ setTimeout(initAuth,300); });
-    var cb=$('cloudBtn');
-    if(cb) cb.addEventListener('click',function(){
-      if(!window.supabase){ $('genOut').style.display='block'; $('genDl').textContent='☁ 온라인 저장은 인터넷 연결이 필요합니다'; return; }
-      modal.style.display='flex'; msg1(''); msg2(''); refresh();
-    });
     $('cdClose').addEventListener('click',function(){ modal.style.display='none'; });
     modal.addEventListener('click',function(e){ if(e.target===modal)modal.style.display='none'; });
     $('cdLogin').addEventListener('click',async function(){
       var c=cli(); if(!c)return; msg1('로그인 중…');
       var r=await c.auth.signInWithPassword({email:$('cdEmail').value.trim(),password:$('cdPw').value});
       if(r.error){ msg1('로그인 실패: '+(r.error.message||'')); return; }
-      msg1(''); refresh(); updateAuth();
+      msg1(''); modal.style.display='none'; updateAuth();
     });
     $('cdPw').addEventListener('keydown',function(e){ if(e.key==='Enter')$('cdLogin').click(); });
-    $('cdLogout').addEventListener('click',async function(){ var c=cli(); if(c)await c.auth.signOut(); refresh(); updateAuth(); });
-    $('cdSave').addEventListener('click',async function(){
-      msg2('저장 중…');
-      var r=await saveCurrent();
-      if(r.needLogin){ refresh(); return; }
-      if(r.error){ msg2((r.error.code==='42P01')?'서버 테이블 준비 중 — 잠시 후 다시':'저장 실패: '+(r.error.message||'')); return; }
-      msg2('✓ 저장됨: '+r.title); loadList(); renderScenes();
-    });
-    $('cdList').addEventListener('click',async function(e){
-      var c=cli(); if(!c)return;
-      var rn2=e.target.getAttribute&&e.target.getAttribute('data-rn');
-      if(rn2){ renameDesign(rn2,e.target.getAttribute('data-nm')); return; }
-      var del=e.target.getAttribute&&e.target.getAttribute('data-del');
-      if(del){ if(!confirm('이 설계를 삭제할까요?\nDelete this design?'))return;
-        await c.from('designs').delete().eq('id',del); loadList(); renderScenes(); return; }
-      var row=e.target.closest&&e.target.closest('.cdRow'); if(!row)return;
-      var r=await c.from('designs').select('state,title').eq('id',row.getAttribute('data-id')).limit(1);
-      if(r.error||!r.data.length){ msg2('불러오기 실패'); return; }
-      loadState({_state:r.data[0].state});
-      modal.style.display='none';
-      $('genOut').style.display='block'; $('genDl').textContent='☁ 불러옴: '+r.data[0].title;
-    });
   })();
   (function(){ // 부트: #s= 해시가 있으면 설계 복원
     var m=location.hash.match(/^#s=([dp])(.+)$/); if(!m) return;
