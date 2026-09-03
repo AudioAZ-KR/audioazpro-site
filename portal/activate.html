@@ -61,7 +61,7 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:4px 0 2px}
     </div>
 
     <div class="ey">License Activation</div>
-    <h1 id="pName">Klera Voice<span class="demo">데모</span></h1>
+    <h1 id="pName">Klera Voice</h1>
     <p class="psub">라이선스 키를 확인하고 <b>저장 위치</b>를 선택해 활성화하세요. 실제 플러그인 안에서 보이는 화면입니다.</p>
 
     <label class="lab">라이선스 키</label>
@@ -82,28 +82,38 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:4px 0 2px}
         <p>USB에 저장. 꽂은 어느 컴퓨터에서든 사용.</p>
       </label>
     </div>
-    <div class="usbrow" id="usbrow">활성화할 USB: <b id="usbName">감지된 USB 없음 (데모에서는 자동 지정)</b><br>이 USB의 볼륨 ID에 묶여, 다른 USB로 복사해도 동작하지 않습니다.</div>
+    <div class="usbrow" id="usbrow">활성화할 USB: <b id="usbName">감지된 USB 없음 (테스트에서는 자동 지정)</b><br>이 USB의 볼륨 ID에 묶여, 다른 USB로 복사해도 동작하지 않습니다.</div>
 
     <button class="go" id="goBtn" onclick="activate()">이 컴퓨터에 활성화</button>
     <p class="note">활성화 방식은 나중에 <a href="account.html" style="color:var(--blue-soft);font-weight:700">내 계정</a>에서 변경할 수 있습니다.</p>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="az-demo.js"></script>
 <script>
-// 데모 페이지 — 세션 가드는 계정 페이지(Supabase)에서 처리
-var CUR='KV', LOC='machine', IDX=-1;
-(function(){
+// 실데이터: licenses(본인) + activations(본인 라이선스에만 insert/delete 허용 · RLS)
+var sbX=window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co','sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_');
+var CUR='KV', LOC='machine', LIC=null;
+function seg(){ var s='',A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; for(var i=0;i<4;i++) s+=A[Math.floor(Math.random()*A.length)]; return s; }
+function machineId(){ try{ var v=localStorage.getItem('az_machine'); if(!v){ v='MAC-'+seg()+'-'+seg(); localStorage.setItem('az_machine',v); } return v; }catch(_){ return 'MAC-'+seg()+'-'+seg(); } }
+(async function(){
+  var u=(await sbX.auth.getUser()).data.user;
+  if(!u){ location.replace('index.html'); return; }
   var qp=new URLSearchParams(location.search);
-  var p=(qp.get('p')||'KV').toUpperCase();
-  var iv=parseInt(qp.get('i')); if(!isNaN(iv)) IDX=iv;
-  var m=AZ.PRODMETA[p];
-  if(m){ CUR=p;
-    document.getElementById('pName').innerHTML=m.name+'<span class="demo">데모</span>';
-    document.getElementById('winTitle').textContent=m.name+' — 활성화';
+  var id=qp.get('id'), p=(qp.get('p')||'').toUpperCase();
+  var q=sbX.from('licenses').select('id,product_id,license_key,status,max_devices,activations(id,binding_type,binding_id,label)');
+  q = id ? q.eq('id',id) : q.eq('product_id',p||'KV').eq('status','active').order('issued_at',{ascending:false}).limit(1);
+  var r=await q; LIC=(r.data&&r.data[0])||null;
+  if(LIC) CUR=LIC.product_id; else if(AZ.PRODMETA[p]) CUR=p;
+  var m=AZ.PRODMETA[CUR]||{name:CUR};
+  document.getElementById('pName').textContent=m.name;
+  document.getElementById('winTitle').textContent=m.name+' — 활성화';
+  document.getElementById('key').value = LIC ? LIC.license_key : '라이선스가 없습니다 — 결제 페이지에서 발급';
+  if(LIC && LIC.activations && LIC.activations.length){
+    var note=document.querySelector('.note');
+    note.innerHTML='현재 활성화된 기기 '+LIC.activations.length+'/'+(LIC.max_devices||1)+': '+LIC.activations.map(function(a){ return '<b>'+(a.label||(a.binding_type==='usb'?'USB 드라이브':'이 컴퓨터'))+'</b> <span style="font-family:ui-monospace,Menlo,monospace">'+a.binding_id+'</span> <a href="#" onclick="deact(\''+a.id+'\');return false" style="color:#ff9ea3;font-weight:700">해제</a>'; }).join(' · ')+'<br>활성화 방식은 <a href="account.html" style="color:var(--blue-soft);font-weight:700">내 계정</a>에서도 관리할 수 있습니다.';
   }
-  var lic=(IDX>=0 && AZ.licenseAt(IDX) && AZ.licenseAt(IDX).product===CUR) ? AZ.licenseAt(IDX) : AZ.licenseFor(CUR);
-  document.getElementById('key').value = lic ? lic.key : (AZ.hasLicense(CUR)?'':'라이선스가 없습니다 — 결제 페이지에서 발급');
 })();
 function pick(loc){
   LOC=loc;
@@ -112,13 +122,24 @@ function pick(loc){
   document.getElementById('usbrow').classList.toggle('on',loc==='usb');
   document.getElementById('goBtn').textContent = (loc==='usb') ? 'USB에 활성화' : '이 컴퓨터에 활성화';
 }
-function activate(){
-  var lic=(IDX>=0 && AZ.licenseAt(IDX) && AZ.licenseAt(IDX).product===CUR) ? AZ.licenseAt(IDX) : AZ.licenseFor(CUR);
-  if(!lic){ alert('먼저 라이선스를 발급받아야 합니다.\n결제 페이지에서 구매하거나 프로모션 코드를 입력하세요.'); location.href='checkout.html?p='+CUR; return; }
-  AZ.setBinding(CUR, LOC, IDX);
-  var b=AZ.bindingLabel((IDX>=0&&AZ.licenseAt(IDX)?AZ.licenseAt(IDX):AZ.licenseFor(CUR)).binding);
-  alert('활성화 완료 (테스트)\n\n'+AZ.PRODMETA[CUR].name+'\n저장 위치: '+b.name+' ('+b.id+')\n\n'+b.hint+'.\n(정식 전환 시: 플러그인이 실제 기기 UUID / USB 볼륨ID를 읽어 서버가 서명)');
+async function activate(){
+  if(!LIC){ alert('먼저 라이선스를 발급받아야 합니다.\n결제 페이지에서 구매하거나 프로모션 코드를 입력하세요.'); location.href='checkout.html?p='+CUR; return; }
+  if(LIC.status!=='active'){ alert('이 라이선스는 사용할 수 없는 상태입니다 ('+LIC.status+').'); return; }
+  var acts=LIC.activations||[], max=LIC.max_devices||1;
+  if(acts.length>=max){ alert('이 라이선스는 최대 '+max+'대까지 활성화할 수 있습니다.\n먼저 기존 기기를 해제하세요.'); return; }
+  var bid = LOC==='usb' ? ('USB-'+seg()+'-'+seg()) : machineId();
+  var label = LOC==='usb' ? 'USB 드라이브' : '이 컴퓨터';
+  if(acts.some(function(a){return a.binding_id===bid;})){ alert('이 기기는 이미 활성화되어 있습니다.'); location.href='account.html'; return; }
+  var r=await sbX.from('activations').insert({license_id:LIC.id, binding_type:LOC, binding_id:bid, label:label});
+  if(r.error){ alert('활성화 실패: '+r.error.message); return; }
+  alert('활성화 완료\n\n'+(AZ.PRODMETA[CUR]||{name:CUR}).name+'\n저장 위치: '+label+' ('+bid+')\n\n'+(LOC==='usb'?'USB를 꽂은 어느 컴퓨터에서든 사용할 수 있습니다.':'이 기기에서만 사용할 수 있습니다.')+'\n(정식 전환 시: 플러그인이 실제 기기 UUID / USB 볼륨ID를 읽어 서버가 서명)');
   location.href='account.html';
+}
+async function deact(actId){
+  if(!confirm('이 기기의 활성화를 해제할까요?')) return;
+  var r=await sbX.from('activations').delete().eq('id',actId);
+  if(r.error){ alert('해제 실패: '+r.error.message); return; }
+  location.reload();
 }
 </script>
 </body>

@@ -194,7 +194,7 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="az-demo.js"></script>
 <script>
-// 세션 = Supabase 실인증 (라이선스 표시는 아직 데모 데이터)
+// 세션·라이선스 모두 Supabase 실데이터
 var sbA=window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co','sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_');
 (async function(){
   var u=(await sbA.auth.getUser()).data.user;
@@ -202,11 +202,7 @@ var sbA=window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co',
   var name=(u.user_metadata&&u.user_metadata.name)||u.email.split('@')[0];
   document.getElementById('whoName').textContent=name+'님';
   document.getElementById('avatar').textContent=(name[0]||'·');
-  // 데모 라이선스는 계정별로 — 다른(새) 계정으로 로그인하면 이전 브라우저의 데모 라이선스를 비움
-  try{
-    var owner=localStorage.getItem('az_lic_owner');
-    if(owner!==u.id){ localStorage.removeItem('az_licenses'); localStorage.setItem('az_lic_owner',u.id); renderLicenses(); }
-  }catch(_){}
+  await loadLicenses();   // 내 라이선스는 DB(licenses + activations)에서 — 어느 기기에서 로그인해도 동일
   // 이메일 인증 완료 직후(?welcome=1) 가입 축하
   if(new URLSearchParams(location.search).get('welcome')){
     document.getElementById('welcomeName').textContent=name;
@@ -217,21 +213,37 @@ var sbA=window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co',
 function closeWelcome(){ document.getElementById('welcomeModal').style.display='none'; }
 function doLogout(){ try{AZ.logout();}catch(_){}; sbA.auth.signOut().finally(function(){ location.href='index.html'; }); }
 
+// 내 라이선스 — DB licenses(+activations) → 화면 모델
+var LICS=[];   // {id, product, type, key, at, status, expires, max, acts:[{id,type,bid,label,at}], note}
+async function loadLicenses(){
+  var box=document.getElementById('licenses');
+  var r=await sbA.from('licenses').select('id,product_id,type,license_key,status,issued_at,expires_at,max_devices,user_note,activations(id,binding_type,binding_id,label,activated_at)').order('issued_at',{ascending:false});
+  if(r.error){ box.innerHTML='<p class="muted" style="color:#ff9ea3">라이선스를 불러오지 못했습니다: '+escH(r.error.message)+'</p>'; return; }
+  LICS=(r.data||[]).map(function(x){
+    return { id:x.id, product:x.product_id, type:x.type, key:x.license_key, at:x.issued_at, status:x.status, expires:x.expires_at, max:x.max_devices||1,
+      acts:(x.activations||[]).map(function(a){ return {id:a.id, type:a.binding_type, bid:a.binding_id, label:a.label, at:a.activated_at}; }), note:x.user_note||'' };
+  });
+  renderLicenses();
+}
+function licAt(i){ return LICS[i]||null; }
+function actLabel(a){ return a.type==='usb' ? 'USB 드라이브' : '이 컴퓨터'; }
 // 내 라이선스 — 제품별 그룹 테이블 (키·유형·상세·메모·상태)
 function escH(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
 function fmtDate(t){ if(!t) return '—'; var d=new Date(t); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function licRow(l, idx){
-  var b=AZ.bindingLabel(l.binding);
-  var details = b
-    ? '<div class="d1">'+escH(b.name)+' 활성화</div><div class="d2 mono">'+escH(b.id)+'</div><div class="d2">발급 '+fmtDate(l.at)+'</div>'
-    : '<div class="d1" style="color:var(--dim)">미활성화</div><div class="d2">발급 '+fmtDate(l.at)+'</div>';
-  var status = b
-    ? '<span class="pill inuse">사용 중</span>'
-    : '<span class="pill avail">사용 가능</span>';
+  var expired = l.expires && new Date(l.expires) < new Date();
+  var revoked = l.status==='revoked';
+  var details = l.acts.length
+    ? l.acts.map(function(a){ return '<div class="d1">'+escH(a.label||actLabel(a))+' 활성화</div><div class="d2 mono">'+escH(a.bid)+'</div>'; }).join('')
+      + '<div class="d2">기기 '+l.acts.length+'/'+l.max+' · 발급 '+fmtDate(l.at)+(l.expires?' · 만료 '+fmtDate(l.expires):'')+'</div>'
+    : '<div class="d1" style="color:var(--dim)">미활성화</div><div class="d2">기기 0/'+l.max+' · 발급 '+fmtDate(l.at)+(l.expires?' · 만료 '+fmtDate(l.expires):'')+'</div>';
+  var status = revoked ? '<span class="pill" style="background:#2E1519;color:#F0727C">폐기</span>'
+    : expired ? '<span class="pill" style="background:#2E2410;color:#E7B252">만료</span>'
+    : l.acts.length ? '<span class="pill inuse">사용 중</span>' : '<span class="pill avail">사용 가능</span>';
   var noteHtml = l.note
     ? '<div class="txt" onclick="editNote(this,'+idx+')" title="눌러서 수정">'+escH(l.note)+'<span class="pen">✎</span></div>'
     : '<div class="txt empty" onclick="editNote(this,'+idx+')">+ 메모 추가</div>';
-  return '<tr>'+
+  return '<tr'+((revoked||expired)?' style="opacity:.55"':'')+'>'+
     '<td class="mono">'+escH(l.key)+'</td>'+
     '<td style="white-space:nowrap">'+escH(AZ.TYPELABEL[l.type]||l.type)+'</td>'+
     '<td>'+details+'</td>'+
@@ -241,7 +253,7 @@ function licRow(l, idx){
   '</tr>';
 }
 function renderLicenses(){
-  var box=document.getElementById('licenses'); var ls=AZ.licenses();
+  var box=document.getElementById('licenses'); var ls=LICS;
   var fb=document.getElementById('licFilterBox');
   if(!ls.length){ if(fb)fb.style.display='none'; box.innerHTML='<p class="muted" style="background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:22px;text-align:center;margin-top:14px">아직 보유한 라이선스가 없습니다. 아래 <b>제품</b>에서 구매하거나 코드를 등록하세요.</p>'; return; }
   if(fb)fb.style.display=(ls.length>1)?'flex':'none';
@@ -249,8 +261,7 @@ function renderLicenses(){
   // 제품별 그룹 (원본 인덱스 유지)
   var groups={}, order=[];
   ls.forEach(function(l,i){
-    var b=AZ.bindingLabel(l.binding);
-    var hay=(l.key+' '+(l.note||'')+' '+(b?b.name+' '+b.id:'')+' '+(AZ.TYPELABEL[l.type]||'')).toLowerCase();
+    var hay=(l.key+' '+(l.note||'')+' '+l.acts.map(function(a){return (a.label||actLabel(a))+' '+a.bid;}).join(' ')+' '+(AZ.TYPELABEL[l.type]||'')).toLowerCase();
     if(q && hay.indexOf(q)<0) return;
     if(!groups[l.product]){ groups[l.product]=[]; order.push(l.product); }
     groups[l.product].push({l:l,i:i});
@@ -260,7 +271,7 @@ function renderLicenses(){
     var m=AZ.PRODMETA[prod]||{name:prod,tag:prod,ver:''};
     var rows=groups[prod].map(function(g){ return licRow(g.l,g.i); }).join('');
     return '<div class="lic-group">'+
-      '<div class="lg-head"><span class="ic">'+escH(m.tag)+'</span><h3>'+escH(m.name)+'</h3><span class="ver">'+escH(m.ver)+' · 보유 '+groups[prod].length+'개</span>'+
+      '<div class="lg-head"><span class="ic">'+escH(m.tag)+'</span><h3>'+escH(m.name)+'</h3><span class="ver">'+escH(AZ.versionOf?AZ.versionOf(prod):m.ver)+' · 보유 '+groups[prod].length+'개</span>'+
       '<button class="tbtn buy" onclick="location.href=\'checkout.html?p='+prod+'\'">추가 구매 →</button></div>'+
       '<div class="tblwrap"><table class="lictbl"><thead><tr><th>라이선스 키</th><th>유형</th><th>상세</th><th>메모</th><th>상태</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
     '</div>';
@@ -268,15 +279,14 @@ function renderLicenses(){
 }
 // 메모 편집 — 셀을 입력창으로 전환, Enter/포커스아웃 시 저장
 function editNote(el, idx){
-  var cell=el.parentNode, cur=(AZ.licenseAt(idx)||{}).note||'';
+  var cell=el.parentNode, l=licAt(idx), cur=(l||{}).note||'';
   cell.innerHTML='<input maxlength="60" placeholder="예: 사무실 맥, 공연용 USB" value="'+escH(cur)+'">';
   var inp=cell.querySelector('input');
   inp.focus(); inp.setSelectionRange(inp.value.length,inp.value.length);
   var done=false;
-  function save(){ if(done)return; done=true; AZ.setNote(idx, inp.value.trim()); renderLicenses(); }
+  function save(){ if(done)return; done=true; var v=inp.value.trim().slice(0,60); if(l){ l.note=v; sbA.rpc('set_license_note',{p_id:l.id,p_note:v}).then(function(r){ if(r.error) alert('메모 저장 실패: '+r.error.message); }); } renderLicenses(); }
   inp.addEventListener('keydown',function(ev){ if(ev.key==='Enter'){save();} if(ev.key==='Escape'){done=true;renderLicenses();} });
   inp.addEventListener('blur',save);
-  // TODO(백엔드): PATCH /api/license/:id { user_note } — licenses.user_note 컬럼에 저장
 }
 // ⋯ 팝업 메뉴 — 한 번에 하나만, 바깥 클릭/스크롤 시 닫힘
 var licMenuEl=null;
@@ -285,8 +295,8 @@ function licMenu(ev, idx){
   ev.stopPropagation();
   var wasOpen = licMenuEl && licMenuEl.dataset.i==String(idx);
   closeLicMenu(); if(wasOpen) return;
-  var l=AZ.licenseAt(idx); if(!l) return;
-  var b=AZ.bindingLabel(l.binding);
+  var l=licAt(idx); if(!l) return;
+  var b=l.acts.length;
   licMenuEl=document.createElement('div'); licMenuEl.className='licmenu'; licMenuEl.dataset.i=idx;
   licMenuEl.innerHTML='<div class="mh">라이선스</div>'+
     '<button onclick="licMenuAct('+idx+',\'copy\',this)"><span class="mi">⧉</span>키 복사</button>'+
@@ -303,13 +313,13 @@ function licMenu(ev, idx){
 document.addEventListener('click', closeLicMenu);
 window.addEventListener('scroll', closeLicMenu, {passive:true});
 function licMenuAct(idx, act, btn){
-  var l=AZ.licenseAt(idx); if(!l){ closeLicMenu(); return; }
+  var l=licAt(idx); if(!l){ closeLicMenu(); return; }
   if(act==='copy'){
     navigator.clipboard&&navigator.clipboard.writeText(l.key);
     if(btn){ btn.innerHTML='<span class="mi" style="color:var(--green)">✓</span>복사됨'; setTimeout(closeLicMenu,700); return; }
   }
   else if(act==='dl') AZ.download(l.product);
-  else if(act==='act'){ location.href='activate.html?p='+l.product+'&i='+idx; return; }
+  else if(act==='act'){ location.href='activate.html?id='+encodeURIComponent(l.id); return; }
   else if(act==='note'){
     closeLicMenu();
     var cell=document.querySelector('.notecell[data-i="'+idx+'"]');
@@ -331,7 +341,7 @@ function renderCatalog(){
     box.appendChild(el);
   });
 }
-renderLicenses(); renderCatalog();
+renderCatalog();
 
 function setP(t){
   var issue=t==='issue';
