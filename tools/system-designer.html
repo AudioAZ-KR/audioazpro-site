@@ -288,6 +288,7 @@
 #sceneBox .sbRow .no{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);flex:none;width:16px}
 #sceneBox .sbRow .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);font-weight:600}
 #sceneBox .sbRow .vv{font-family:var(--mono);font-size:9.5px;color:var(--brand);flex:none}
+#sceneBox .sbRow input.rnIn{flex:1;min-width:0;background:var(--panel-2);border:1px solid var(--brand);border-radius:5px;color:var(--ink);font-size:11px;padding:2px 5px;font-weight:600}
 #sceneBox .sbRow .rn,#cloudModal .cdRow .rn{background:none;border:none;color:var(--ink-3);cursor:pointer;font-size:11px;padding:0 2px;opacity:.45;flex:none}
 #sceneBox .sbRow:hover .rn,#cloudModal .cdRow:hover .rn{opacity:1}
 #sceneBox .sbEmpty{padding:10px;font-size:10.5px;color:var(--ink-3);line-height:1.6}
@@ -321,7 +322,7 @@
 </svg>
       <div>
       <div class="eyebrow" style="letter-spacing:.24em"><b style="color:var(--brand)">AudioAZ</b> · AUDIO PRODUCTION COMPANY</div>
-      <h1>AudioAZ System Designer <span style="font-size:11px;font-family:var(--mono);letter-spacing:.12em;vertical-align:middle;color:#fff;background:var(--brand);border-radius:999px;padding:3px 9px;position:relative;top:-3px">BETA</span> <span style="font-size:11px;font-family:var(--mono);color:var(--ink-3);vertical-align:middle;position:relative;top:-3px">for d&amp;b</span> <span style="font-size:12px;font-family:var(--mono);font-weight:700;letter-spacing:.04em;vertical-align:middle;color:var(--brand);border:1.5px solid var(--brand);border-radius:999px;padding:2px 10px;position:relative;top:-3px">v1.99</span></h1>
+      <h1>AudioAZ System Designer <span style="font-size:11px;font-family:var(--mono);letter-spacing:.12em;vertical-align:middle;color:#fff;background:var(--brand);border-radius:999px;padding:3px 9px;position:relative;top:-3px">BETA</span> <span style="font-size:11px;font-family:var(--mono);color:var(--ink-3);vertical-align:middle;position:relative;top:-3px">for d&amp;b</span> <span style="font-size:12px;font-family:var(--mono);font-weight:700;letter-spacing:.04em;vertical-align:middle;color:var(--brand);border:1.5px solid var(--brand);border-radius:999px;padding:2px 10px;position:relative;top:-3px">v2.00</span></h1>
       <div class="sub">모델과 앰프를 고르면 — 목표 SPL·베뉴 크기로 통수를, 통수로 스플레이 각을 추천하고, 링크로 앰프를 절약해 ArrayCalc/R1 물량을 산출합니다.<br><span data-t="sub2" style="font-size:11px;color:var(--ink-3)">AudioAZ가 만든 <b>독립·비공식</b> 도구입니다. d&amp;b audiotechnik과 무관하며 공식 승인·제휴가 아닙니다. <button type="button" id="legalBtn" style="background:none;border:none;color:var(--brand);cursor:pointer;text-decoration:underline;font-size:11px;padding:0">고지·라이선스</button></span></div>
       </div>
     </div>
@@ -739,7 +740,7 @@
     </div>
   </div>
 </div>
-<div id="verbadge" data-t="foot"><b style="color:#1877F2">AudioAZ</b> <b>AudioAZ System Designer BETA v1.99</b> · 2026-08 · <span style="opacity:.85">Made in Korea 🇰🇷</span><br>비공식·독립 도구 — d&amp;b audiotechnik과 무관 · 결과 무보증 · 리깅/하중은 공식 ArrayCalc·전문가 검증 필수</div>
+<div id="verbadge" data-t="foot"><b style="color:#1877F2">AudioAZ</b> <b>AudioAZ System Designer BETA v2.00</b> · 2026-08 · <span style="opacity:.85">Made in Korea 🇰🇷</span><br>비공식·독립 도구 — d&amp;b audiotechnik과 무관 · 결과 무보증 · 리깅/하중은 공식 ArrayCalc·전문가 검증 필수</div>
 <script>
   (function(){
     if(!document.querySelector('meta[name=viewport]')){
@@ -3480,15 +3481,30 @@
       }
       r.title=title; return r;
     }
-    async function renameDesign(id,cur){
-      var c=cli(); if(!c)return;
-      var nv=prompt(t9('새 이름을 입력하세요'),cur||'');
-      if(nv===null)return; nv=nv.trim(); if(!nv||nv===cur)return;
-      var r=await c.from('designs').update({title:nv}).eq('id',id);
-      if(r.error){ $('genOut').style.display='block'; $('genDl').textContent='☁ 이름 변경 실패: '+(r.error.message||''); return; }
-      renderScenes();
+    function startRename(row,id,cur){
+      var nm=row.querySelector('.nm'); if(!nm||row.querySelector('.rnIn'))return;
+      var inp=document.createElement('input');
+      inp.className='rnIn'; inp.type='text'; inp.value=cur||''; inp.maxLength=80;
+      nm.replaceWith(inp); inp.focus(); inp.select();
+      var done=false;
+      async function commit(){
+        if(done)return; done=true;
+        var nv=inp.value.trim();
+        if(!nv||nv===cur){ renderScenes(); return; }
+        var c=cli(); if(!c){ renderScenes(); return; }
+        var r=await c.from('designs').update({title:nv}).eq('id',id);
+        if(r.error){ $('genOut').style.display='block'; $('genDl').textContent='☁ 이름 변경 실패: '+(r.error.message||''); }
+        renderScenes();
+      }
+      inp.addEventListener('keydown',function(e){
+        e.stopPropagation();                                    // 방향키·문자 입력이 편집기/앱 단축키로 새지 않게
+        if(e.key==='Enter'){ e.preventDefault(); commit(); }
+        else if(e.key==='Escape'){ done=true; renderScenes(); }
+      });
+      inp.addEventListener('blur',commit);
+      inp.addEventListener('click',function(e){ e.stopPropagation(); });
+      inp.addEventListener('dblclick',function(e){ e.stopPropagation(); });
     }
-    function t9(s){ return (window.DBSD_lang&&window.DBSD_lang()==='en')?({'새 이름을 입력하세요':'Enter a new name'}[s]||s):s; }
     async function loadDesign(id){
       var c=cli(); if(!c)return false;
       var r=await c.from('designs').select('state,title').eq('id',id).limit(1);
@@ -3537,8 +3553,9 @@
     var _sbl=$('sbList');
     if(_sbl){
       _sbl.addEventListener('click',async function(e){
+        if(e.target.tagName==='INPUT')return;
         var rn=e.target.getAttribute&&e.target.getAttribute('data-rn');
-        if(rn){ renameDesign(rn,e.target.getAttribute('data-nm')); return; }
+        if(rn){ startRename(e.target.closest('.sbRow'),rn,e.target.getAttribute('data-nm')); return; }
         var dl=e.target.getAttribute&&e.target.getAttribute('data-del2');
         if(dl){ if(!confirm('이 설계를 삭제할까요?\nDelete this design?'))return;
           var c=cli(); if(c)await c.from('designs').delete().eq('id',dl);
@@ -3546,7 +3563,7 @@
         var row=e.target.closest&&e.target.closest('.sbRow'); if(!row)return;
         sbSel=row.getAttribute('data-id');
         _sbl.querySelectorAll('.sbRow').forEach(function(x){ x.classList.toggle('sel',x.getAttribute('data-id')===sbSel); }); });
-      _sbl.addEventListener('dblclick',function(e){ var row=e.target.closest&&e.target.closest('.sbRow'); if(row) loadDesign(row.getAttribute('data-id')); });
+      _sbl.addEventListener('dblclick',function(e){ if(e.target.tagName==='INPUT')return; var row=e.target.closest&&e.target.closest('.sbRow'); if(row) loadDesign(row.getAttribute('data-id')); });
       $('sbSave').addEventListener('click',async function(){
         var r=await saveCurrent();
         if(r.needLogin){ modal.style.display='flex'; msg1(''); refresh(); return; }
