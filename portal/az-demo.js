@@ -77,17 +77,19 @@
     syncCatalog: function (cb) {
       var done = function () { try { cb && cb(); } catch (e) {} };
       try {
-        fetch('https://lkbbenyvchddsjsihofv.supabase.co/rest/v1/products?select=id,price_krw,version&active=is.true',
+        fetch('https://lkbbenyvchddsjsihofv.supabase.co/rest/v1/products?select=id,price_krw,version,sale_price,sale_from,sale_to&active=is.true',
           { headers: { apikey: 'sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_' } })
         .then(function (r) { return r.ok ? r.json() : []; })
         .then(function (rows) {
-          var pr = read('az_prices', {}), vs = read('az_vers', {});
+          var pr = read('az_prices', {}), vs = read('az_vers', {}), sl = {};
           (rows || []).forEach(function (row) {
             if (!PRODMETA[row.id]) return;
             if (row.price_krw != null) pr[row.id] = row.price_krw; else delete pr[row.id];
             if (row.version) vs[row.id] = row.version;
+            if (row.sale_price != null) sl[row.id] = { price: row.sale_price, start: row.sale_from || null, end: row.sale_to || null };
           });
           write('az_prices', pr); write('az_vers', vs);
+          if (rows && rows.length) write('az_sales', sl); // 세일은 DB가 단일 진실 — 로컬 잔재 제거
         })
         .catch(function () {})
         .then(done);

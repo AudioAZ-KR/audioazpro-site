@@ -350,7 +350,7 @@ td{color:var(--text)}
       <section id="p-promo" class="page">
 
         <!-- 제품 세일 (코드 없이 정가 할인) -->
-        <div class="card"><h2>제품 세일 — 코드 없이 가격 할인</h2><div class="sub">정가 자체를 내려서 판매합니다. 코드 입력 없이 <b>모든 고객</b>에게 적용되고, 홈페이지 <b>할인 탭</b>과 결제 금액에 바로 반영됩니다.</div>
+        <div class="card"><h2>제품 세일 — 코드 없이 가격 할인</h2><div class="sub">정가 자체를 내려서 판매합니다. products DB에 저장되어 코드 입력 없이 <b>모든 고객</b>에게 적용되고, 홈페이지 <b>할인 탭</b>과 결제 금액에 바로 반영됩니다.</div>
           <form onsubmit="return setSale(event)">
             <div class="grid2">
               <div class="field"><label>적용 제품</label><select name="product" id="saleProd" required onchange="salePrice()">
@@ -1050,14 +1050,19 @@ function setSale(e){
   if(isNaN(target)||target<0){ alert('할인 판매가를 입력하세요.'); return false; }
   if(target>=base){ alert('할인가('+W(target)+')가 정가('+W(base)+') 이상입니다.'); return false; }
   if(d.start&&d.end&&d.start>d.end){ alert('세일 기간이 잘못되었습니다 (시작 > 종료).'); return false; }
-  AZ.setSale(d.product, target, d.start||null, d.end||null);
-  renderSales(); e.target.reset(); salePrice();
+  sb.from('products').update({sale_price:target, sale_from:d.start||null, sale_to:d.end||null}).eq('id',d.product).then(function(r){
+    if(r.error){ alert('세일 저장 실패: '+r.error.message); return; }
+    AZ.setSale(d.product, target, d.start||null, d.end||null);
+    renderSales(); e.target.reset(); salePrice(); try{loadProducts();}catch(_){}
+  });
   return false;
-  // TODO(백엔드): products.sale_price / sale_from / sale_to 업데이트.
 }
 function clearSaleRow(prod){
   if(!confirm(PRODNAME[prod]+' 세일을 해제할까요? 정가로 돌아갑니다.'))return;
-  AZ.clearSale(prod); renderSales();
+  sb.from('products').update({sale_price:null, sale_from:null, sale_to:null}).eq('id',prod).then(function(r){
+    if(r.error){ alert('세일 해제 실패: '+r.error.message); return; }
+    AZ.clearSale(prod); renderSales(); try{loadProducts();}catch(_){}
+  });
 }
 function renderSales(){
   var tb=document.getElementById('saleRows'); if(!tb) return;
@@ -1249,10 +1254,12 @@ async function custDetail(id){
 // ===== 제품 · 버전 (가격·버전 편집 → 홈페이지·결제 즉시 반영) =====
 var PRODUCTS={};  // DB products 캐시 {id:{name,version,price_krw,active}}
 async function loadProducts(){
-  var r=await sb.from('products').select('id,name,version,price_krw,active').order('id');
+  var r=await sb.from('products').select('id,name,version,price_krw,active,sale_price,sale_from,sale_to').order('id');
   if(r.error){ var tb=document.getElementById('prodRows'); if(tb) tb.innerHTML='<tr><td colspan="6" style="color:#ff9ea3">불러오기 실패: '+esc(r.error.message)+'</td></tr>'; return; }
-  PRODUCTS={}; (r.data||[]).forEach(function(x){ PRODUCTS[x.id]=x; if(x.price_krw!=null) AZ.setBasePrice(x.id,x.price_krw); if(x.version) AZ.setVersion(x.id,x.version); });
-  renderProducts();
+  PRODUCTS={}; var sl={};
+  (r.data||[]).forEach(function(x){ PRODUCTS[x.id]=x; if(x.price_krw!=null) AZ.setBasePrice(x.id,x.price_krw); if(x.version) AZ.setVersion(x.id,x.version); if(x.sale_price!=null) sl[x.id]={price:x.sale_price,start:x.sale_from||null,end:x.sale_to||null}; });
+  try{ localStorage.setItem('az_sales',JSON.stringify(sl)); }catch(_){}
+  renderProducts(); try{renderSales();}catch(_){}
 }
 function renderProducts(){
   var tb=document.getElementById('prodRows'); if(!tb) return;
