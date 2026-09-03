@@ -453,7 +453,7 @@ td{color:var(--text)}
 
       <!-- 공지 -->
       <section id="p-notice" class="page">
-        <div class="card"><h2>공지 작성</h2><div class="sub">고객 사이트·포털에 표시할 공지를 등록합니다. (지금은 목록 관리 — 사이트 노출은 백엔드 연결 시)</div>
+        <div class="card"><h2>공지 작성</h2><div class="sub">공지는 notices DB에 저장됩니다. "숨김"으로 노출을 끌 수 있고, 사이트 노출 위치는 다음 단계에서 연결합니다.</div>
           <form onsubmit="return addNotice(event)">
             <div class="field"><label>제목</label><input name="title" placeholder="예: Klera Voice 정식 출시 안내" required></div>
             <div class="field"><label>내용</label><textarea name="body" rows="4" placeholder="공지 내용" style="width:100%;border:1px solid #243350;border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7"></textarea></div>
@@ -1298,23 +1298,32 @@ async function bumpVersion(p){
 }
 
 // ===== 공지 =====
-function addNotice(e){
+async function addNotice(e){
   e.preventDefault();var d={};new FormData(e.target).forEach((v,k)=>d[k]=v);
-  var L=AZ.notices(); L.unshift({title:d.title,body:d.body||'',at:AZ.today()}); AZ.saveNotices(L);
+  var r=await sb.from('notices').insert({title:d.title,body:d.body||''});
+  if(r.error){ alert('공지 등록 실패: '+r.error.message); return false; }
   renderNotices(); e.target.reset();
   return false;
-  // TODO(백엔드): notices 테이블 + 사이트/포털 노출
 }
-function renderNotices(){
+var NOTICES=[];
+async function renderNotices(){
   var tb=document.getElementById('noticeRows'); if(!tb) return;
-  var L=AZ.notices();
-  if(!L.length){ tb.innerHTML='<tr><td colspan="4" style="color:var(--dim)">등록된 공지가 없습니다.</td></tr>'; return; }
-  tb.innerHTML=L.map(function(n,i){
-    return '<tr><td style="font-weight:700">'+esc(n.title)+'</td><td style="color:var(--dim);max-width:340px">'+esc((n.body||'').slice(0,80))+((n.body||'').length>80?'…':'')+'</td><td class="mono">'+esc(n.at)+'</td>'+
-      '<td><button class="tbtn danger" onclick="delNotice('+i+')">삭제</button></td></tr>';
+  var r=await sb.from('notices').select('id,title,body,active,created_at').order('created_at',{ascending:false}).limit(100);
+  if(r.error){ tb.innerHTML='<tr><td colspan="4" style="color:#ff9ea3">불러오기 실패: '+esc(r.error.message)+'</td></tr>'; return; }
+  NOTICES=r.data||[];
+  if(!NOTICES.length){ tb.innerHTML='<tr><td colspan="4" style="color:var(--dim)">등록된 공지가 없습니다.</td></tr>'; return; }
+  tb.innerHTML=NOTICES.map(function(n){
+    return '<tr'+(n.active?'':' style="opacity:.45"')+'><td style="font-weight:700">'+esc(n.title)+(n.active?'':' <span class="pill p-revoked">숨김</span>')+'</td><td style="color:var(--dim);max-width:340px">'+esc((n.body||'').slice(0,80))+((n.body||'').length>80?'…':'')+'</td><td class="mono">'+fmtDate(n.created_at)+'</td>'+
+      '<td style="white-space:nowrap"><button class="tbtn" onclick="toggleNotice(\''+n.id+'\','+(n.active?'false':'true')+')">'+(n.active?'숨김':'표시')+'</button> <button class="tbtn danger" onclick="delNotice(\''+n.id+'\')">삭제</button></td></tr>';
   }).join('');
 }
-function delNotice(i){ var L=AZ.notices(); if(!L[i])return; if(!confirm('공지 삭제: '+L[i].title+'\n계속할까요?'))return; L.splice(i,1); AZ.saveNotices(L); renderNotices(); }
+async function toggleNotice(id,active){ var r=await sb.from('notices').update({active:active}).eq('id',id); if(r.error) alert('실패: '+r.error.message); renderNotices(); }
+async function delNotice(id){
+  var n=NOTICES.find(function(x){return x.id===id;}); if(!n) return;
+  if(!confirm('공지 삭제: '+n.title+'\n계속할까요?')) return;
+  var r=await sb.from('notices').delete().eq('id',id); if(r.error) alert('실패: '+r.error.message);
+  renderNotices();
+}
 
 // ===== 설정 안내 =====
 function setupInfo(k){
