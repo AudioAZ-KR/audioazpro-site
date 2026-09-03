@@ -296,7 +296,7 @@
 </svg>
       <div>
       <div class="eyebrow" style="letter-spacing:.24em"><b style="color:var(--brand)">AudioAZ</b> · AUDIO PRODUCTION COMPANY</div>
-      <h1>AudioAZ System Designer <span style="font-size:11px;font-family:var(--mono);letter-spacing:.12em;vertical-align:middle;color:#fff;background:var(--brand);border-radius:999px;padding:3px 9px;position:relative;top:-3px">BETA</span> <span style="font-size:11px;font-family:var(--mono);color:var(--ink-3);vertical-align:middle;position:relative;top:-3px">for d&amp;b</span> <span style="font-size:12px;font-family:var(--mono);font-weight:700;letter-spacing:.04em;vertical-align:middle;color:var(--brand);border:1.5px solid var(--brand);border-radius:999px;padding:2px 10px;position:relative;top:-3px">v1.93</span></h1>
+      <h1>AudioAZ System Designer <span style="font-size:11px;font-family:var(--mono);letter-spacing:.12em;vertical-align:middle;color:#fff;background:var(--brand);border-radius:999px;padding:3px 9px;position:relative;top:-3px">BETA</span> <span style="font-size:11px;font-family:var(--mono);color:var(--ink-3);vertical-align:middle;position:relative;top:-3px">for d&amp;b</span> <span style="font-size:12px;font-family:var(--mono);font-weight:700;letter-spacing:.04em;vertical-align:middle;color:var(--brand);border:1.5px solid var(--brand);border-radius:999px;padding:2px 10px;position:relative;top:-3px">v1.94</span></h1>
       <div class="sub">모델과 앰프를 고르면 — 목표 SPL·베뉴 크기로 통수를, 통수로 스플레이 각을 추천하고, 링크로 앰프를 절약해 ArrayCalc/R1 물량을 산출합니다.<br><span data-t="sub2" style="font-size:11px;color:var(--ink-3)">AudioAZ가 만든 <b>독립·비공식</b> 도구입니다. d&amp;b audiotechnik과 무관하며 공식 승인·제휴가 아닙니다. <button type="button" id="legalBtn" style="background:none;border:none;color:var(--brand);cursor:pointer;text-decoration:underline;font-size:11px;padding:0">고지·라이선스</button></span></div>
       </div>
     </div>
@@ -679,7 +679,7 @@
     </div>
   </div>
 </div>
-<div id="verbadge" data-t="foot"><b style="color:#1877F2">AudioAZ</b> <b>AudioAZ System Designer BETA v1.93</b> · 2026-08 · <span style="opacity:.85">Made in Korea 🇰🇷</span><br>비공식·독립 도구 — d&amp;b audiotechnik과 무관 · 결과 무보증 · 리깅/하중은 공식 ArrayCalc·전문가 검증 필수</div>
+<div id="verbadge" data-t="foot"><b style="color:#1877F2">AudioAZ</b> <b>AudioAZ System Designer BETA v1.94</b> · 2026-08 · <span style="opacity:.85">Made in Korea 🇰🇷</span><br>비공식·독립 도구 — d&amp;b audiotechnik과 무관 · 결과 무보증 · 리깅/하중은 공식 ArrayCalc·전문가 검증 필수</div>
 <script>
   (function(){
     if(!document.querySelector('meta[name=viewport]')){
@@ -3909,6 +3909,13 @@ var SNAP_PROPS=[['Config_InputEnable1','1.0'],['Config_InputEnable2','0.0'],['Co
   ['Config_LoadMatchCableCrossSection','4.0'],['Config_DelayOn','1'],['ChStatus_MsDelay','0.3'],
   ['Config_Mute','0'],['Config_PotiLevel','0.0'],
   ['Config_Filter1','0'],['Config_Filter2','0'],['Config_Filter3','0']];
+var SNAP_PROPS_SMALL=[['Config_InputEnable1','1.0'],['Config_InputEnable2','0'],['Config_InputEnable3','0'],
+ ['Config_InputEnable4','0'],['Config_InputEnable5','0.0'],['Config_InputEnable6','0.0'],
+ ['Config_InputEnable7','0.0'],['Config_InputEnable8','0.0'],
+ ['Config_DelayOn','1'],['Config_Mute','0'],['Config_PotiLevel','0.0'],
+ ['Config_Filter1','0'],['Config_Filter2','0'],['Config_Filter3','0'],['ChStatus_MsDelay','0.3']];
+var SMALL_AMPS={'D20':1,'D40':1};   // LoadMatch 미탑재 — D90식 세트 넣으면 ArrayCalc가 입력을 못 읽음(260903 오라클)
+
 Builder.prototype.flushsnap=function(){
   var e=this.sql;
   var sd=this.snapdate||'';
@@ -3917,13 +3924,19 @@ Builder.prototype.flushsnap=function(){
   var svid=1;
   for(var d in this.devinfo){
     var info=this.devinfo[d];
+    var small=!!SMALL_AMPS[info.model];
+    if(small){
+      e.push("INSERT INTO SnapshotValues(SnapshotValueId,SnapshotId,SnapshotTargetType,Value,TargetId,TargetNode,TargetProperty,TargetRecord) VALUES("+(svid++)+",1,0,1,"+d+",0,'Input_Digital_Mode',1);");
+      e.push("INSERT INTO SnapshotValues(SnapshotValueId,SnapshotId,SnapshotTargetType,Value,TargetId,TargetNode,TargetProperty,TargetRecord) VALUES("+(svid++)+",1,0,2,"+d+",0,'Input_Digital_Mode',3);");
+    }
+    var props=small?SNAP_PROPS_SMALL:SNAP_PROPS;
     var leads=(info.leads||[]).slice().sort(function(a,b){return a-b;}).filter(function(v,i,arr){return i===0||arr[i-1]!==v;});
     for(var i=0;i<leads.length;i++){
-      for(var j=0;j<SNAP_PROPS.length;j++){
-        var v=SNAP_PROPS[j][1];
-        if(SNAP_PROPS[j][0]==='Config_LoadMatchSpeakerCount')v=String(info.cnt[leads[i]]||1);
-        else if(SNAP_PROPS[j][0]==='ChStatus_MsDelay')v=String(info.dms===undefined?0.3:info.dms);
-        e.push("INSERT INTO SnapshotValues(SnapshotValueId,SnapshotId,SnapshotTargetType,Value,TargetId,TargetNode,TargetProperty,TargetRecord) VALUES("+(svid++)+",1,0,"+v+","+d+","+leads[i]+",'"+SNAP_PROPS[j][0]+"',0);");
+      for(var j=0;j<props.length;j++){
+        var v=props[j][1];
+        if(props[j][0]==='Config_LoadMatchSpeakerCount')v=String(info.cnt[leads[i]]||1);
+        else if(props[j][0]==='ChStatus_MsDelay')v=String(info.dms===undefined?0.3:info.dms);
+        e.push("INSERT INTO SnapshotValues(SnapshotValueId,SnapshotId,SnapshotTargetType,Value,TargetId,TargetNode,TargetProperty,TargetRecord) VALUES("+(svid++)+",1,0,"+v+","+d+","+leads[i]+",'"+props[j][0]+"',0);");
       }
     }
   }
