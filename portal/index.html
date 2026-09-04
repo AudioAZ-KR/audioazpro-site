@@ -177,10 +177,16 @@ function setTab(t){
     : '이미 계정이 있으신가요? <button type="button" class="linklike" onclick="setTab(\'login\')">로그인</button>';
 }
 // 이미 로그인돼 있으면 계정으로 (인증 링크로 돌아온 경우 welcome=1 유지 → 가입 축하 표시)
-AZ.session().then(function(s){
-  if(s){
+// 로컬에 남은 세션이 서버에서 이미 무효(만료·탈퇴·재설정)면 account.html이 다시 여기로 보내 무한 왕복이 생기므로,
+// 서버 검증(getUser)을 통과한 경우에만 이동하고, 실패하면 낡은 세션을 지우고 로그인 화면에 머문다.
+AZ.session().then(async function(s){
+  if(!s) return;
+  var r=await AZ.currentUser().then(function(u){return {user:u};}).catch(function(e){return {err:e};});
+  if(r.user){
     var w=new URLSearchParams(location.search).get('welcome');
     location.replace('account.html'+(w?'?welcome=1':''));
+  } else {
+    try{ await AZ.logout(); }catch(_){}
   }
 }).catch(function(){});
 

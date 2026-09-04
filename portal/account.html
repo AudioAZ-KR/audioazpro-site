@@ -198,7 +198,7 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
 var sbA=window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co','sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_');
 (async function(){
   var u=(await sbA.auth.getUser()).data.user;
-  if(!u){ location.replace('index.html'); return; }
+  if(!u){ try{ await sbA.auth.signOut({scope:'local'}); }catch(_){}; location.replace('index.html'); return; }  // 낡은 로컬 세션 제거 → index와의 왕복 방지
   var name=(u.user_metadata&&u.user_metadata.name)||u.email.split('@')[0];
   document.getElementById('whoName').textContent=name+'님';
   document.getElementById('avatar').textContent=(name[0]||'·');
