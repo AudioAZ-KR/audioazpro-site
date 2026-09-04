@@ -349,14 +349,14 @@ td{color:var(--text)}
   <div class="main">
     <div class="top">
       <h1 id="ptitle">대시보드</h1>
-      <div class="who"><span class="av">김</span><span>김형준 · 최고관리자</span><button onclick="adminLogout()" style="margin-left:10px;border:1px solid var(--line);background:#0E1A2E;color:#E9EEF7;border-radius:8px;padding:7px 14px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">로그아웃</button></div>
+      <div class="who"><span class="av">·</span><span>—</span><button onclick="adminLogout()" style="margin-left:10px;border:1px solid var(--line);background:#0E1A2E;color:#E9EEF7;border-radius:8px;padding:7px 14px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">로그아웃</button></div>
     </div>
     <div class="content">
 
       <!-- 대시보드 -->
       <section id="p-dash" class="page on">
         <div class="kpis">
-          <div class="kpi"><div class="l">총 매출 (결제완료·KRW)</div><div class="v" id="kpiRev">—</div><div class="d flat">실데이터</div></div>
+          <div class="kpi"><div class="l">총 매출 (결제완료)</div><div class="v" id="kpiRev" style="font-size:21px">—</div><div class="d flat">국내+해외 · 통화별 합산</div></div>
           <div class="kpi"><div class="l">국내 매출 (포트원)</div><div class="v" id="kpiRevDom" style="font-size:21px">—</div><div class="d flat">결제완료 기준</div></div>
           <div class="kpi"><div class="l">해외 매출 (Paddle)</div><div class="v" id="kpiRevAbroad" style="font-size:21px">—</div><div class="d flat">결제완료 기준</div></div>
           <div class="kpi"><div class="l">활성 라이선스</div><div class="v" id="kpiLic">—</div><div class="d flat">실데이터</div></div>
@@ -450,7 +450,7 @@ td{color:var(--text)}
           <form onsubmit="return issue(event)">
             <div class="grid2">
               <div class="field"><label>제품</label><select name="product" required><option value="">선택</option><option>Klera Voice</option><option>Klera Instrument</option><option>Flare Tally</option><option>Latency Meter AZ</option></select></div>
-              <div class="field"><label>유형</label><select name="type"><option>영구</option><option>체험 (14일)</option><option>NFR/리뷰용</option></select><div class="note" style="margin-top:6px">허용 기기 수는 제품 설정(제품·버전 탭)을 따릅니다 — 현재 전 제품 1대</div></div>
+              <div class="field"><label>유형</label><select name="type"><option value="FULL">정식 (영구)</option><option value="D7">체험 7일</option><option value="D14">체험 14일</option><option value="D30">체험 30일</option><option value="FREE">NFR·리뷰용 (영구 무료)</option></select><div class="note" style="margin-top:6px">허용 기기 수는 제품 설정(제품·버전 탭)을 따릅니다 — 현재 전 제품 1대</div></div>
               <div class="field"><label>구매자 이름</label><input name="name" placeholder="홍길동" required></div>
               <div class="field"><label>이메일</label><input type="email" name="email" placeholder="buyer@example.com" required></div>
             </div>
@@ -549,9 +549,24 @@ td{color:var(--text)}
       <!-- 주문 -->
       <section id="p-orders" class="page">
         <div class="card"><h2>주문·결제 <button class="tbtn" style="margin-left:10px" onclick="loadOrders()">새로고침</button></h2><div class="sub">실제 주문 데이터(orders)입니다. 결제 연동(포트원·Paddle) 후 웹훅으로 자동 기록되며, 환불은 결재 기록을 남기고 연결 라이선스를 함께 회수합니다.</div>
+        <div class="toolbar" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <select id="ordRange" class="field" style="margin:0;width:auto;padding:8px 10px" onchange="ordRangeUI();if(this.value!=='custom')renderOrders()">
+              <option value="all">전체 기간</option><option value="tm">이번 달</option><option value="lm">지난 달</option><option value="custom">직접 지정</option>
+            </select>
+            <span id="ordCustom" style="display:none;gap:6px;align-items:center"><input type="date" id="ordFrom" onchange="renderOrders()" style="background:#0E1A2E;color:#E9EEF7;border:1px solid #243350;border-radius:8px;padding:7px 9px;font-family:inherit;font-size:13px">~<input type="date" id="ordTo" onchange="renderOrders()" style="background:#0E1A2E;color:#E9EEF7;border:1px solid #243350;border-radius:8px;padding:7px 9px;font-family:inherit;font-size:13px"></span>
+            <select id="ordStatus" class="field" style="margin:0;width:auto;padding:8px 10px" onchange="renderOrders()">
+              <option value="">모든 상태</option><option value="paid">결제완료</option><option value="pending">대기</option><option value="refunded">환불</option>
+            </select>
+            <button class="tbtn" onclick="ordCsv()">CSV 내보내기</button>
+        </div>
         <div id="ordSum" style="display:none;margin:12px 0 2px;gap:10px;flex-wrap:wrap"></div>
           <table><thead><tr><th>주문</th><th>제품</th><th>고객</th><th>채널</th><th>금액</th><th>상태</th><th>일시</th><th></th></tr></thead>
           <tbody id="orderRows"><tr><td colspan="8" class="n">불러오는 중…</td></tr></tbody></table>
+          <p class="note">24시간 지난 대기 주문은 <b>만료</b>로 표시합니다 (결제창만 열고 이탈한 주문). 표시용 구분이며 서버 자동 취소는 아직 없습니다 · 목록·CSV는 최근 1,000건.</p>
+        </div>
+        <div class="card"><h2>월별 매출</h2><div class="sub">결제완료 주문 기준 · 국내(포트원)/해외(Paddle) 분리 · <b>최근 1,000건 기준</b> (기간 필터와 무관)</div>
+          <table><thead><tr><th>월</th><th>국내 (₩)</th><th>해외</th><th>건수</th></tr></thead>
+          <tbody id="ordMonthRows"><tr><td colspan="4" class="n">—</td></tr></tbody></table>
         </div>
       </section>
 
@@ -574,7 +589,7 @@ td{color:var(--text)}
 
       <!-- 공지 -->
       <section id="p-notice" class="page">
-        <div class="card"><h2>공지 작성</h2><div class="sub">공지는 notices DB에 저장됩니다. "숨김"으로 노출을 끌 수 있고, 사이트 노출 위치는 다음 단계에서 연결합니다.</div>
+        <div class="card"><h2>공지 작성</h2><div class="sub">공지는 notices DB에 저장되며, <b>지원 센터(support.html) 공지사항 섹션</b>에 즉시 노출됩니다. "숨김"으로 노출을 끌 수 있습니다.</div>
           <form onsubmit="return addNotice(event)">
             <div class="field"><label>제목</label><input name="title" placeholder="예: Klera Voice 정식 출시 안내" required></div>
             <div class="field"><label>내용</label><textarea name="body" rows="4" placeholder="공지 내용" style="width:100%;border:1px solid #243350;border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7"></textarea></div>
@@ -592,9 +607,9 @@ td{color:var(--text)}
 
         <div class="card"><h2>내 관리자 정보</h2><div class="sub">최고관리자 계정 정보와 로그인 방식입니다.</div>
           <table style="margin-bottom:4px"><tbody>
-            <tr><td style="width:160px;color:var(--dim);font-weight:700">이름</td><td>김형준</td></tr>
-            <tr><td style="color:var(--dim);font-weight:700">이메일(아이디)</td><td class="mono">hj@audioazpro.com</td></tr>
-            <tr><td style="color:var(--dim);font-weight:700">등급</td><td><span class="pill p-active">최고관리자</span></td></tr>
+            <tr><td style="width:160px;color:var(--dim);font-weight:700">이름</td><td id="myName">—</td></tr>
+            <tr><td style="color:var(--dim);font-weight:700">이메일(아이디)</td><td class="mono" id="myEmail">—</td></tr>
+            <tr><td style="color:var(--dim);font-weight:700">등급</td><td id="myRole">—</td></tr>
             <tr><td style="color:var(--dim);font-weight:700">로그인 방식</td><td>패스키(Touch ID / Face ID) · 비밀번호만으로는 진입 불가</td></tr>
           </tbody></table>
           <div class="sub" style="margin-top:14px;line-height:1.7">🔒 <b>보안</b> — 패스키는 Supabase 서버가 직접 검증하며, 패스키 인증이 없는 세션은 관리자 데이터·결재·문의 답장·관리자 관리 API가 <b>서버에서 거부</b>됩니다. 패스키는 iCloud로 애플 기기 간 동기화됩니다.</div>
@@ -634,12 +649,12 @@ td{color:var(--text)}
 
       <!-- 설정 -->
       <section id="p-settings" class="page">
-        <div class="card"><h2>설정</h2><div class="sub">결제·이메일 연동 상태. 버튼을 누르면 각 항목의 진행 방법이 안내됩니다.</div>
+        <div class="card"><h2>설정</h2><div class="sub">결제·이메일 연동 상태(요약). 실시간 사용량·한도·장애는 <b>서비스·한도 탭</b>이 30분마다 자동 점검합니다.</div>
           <table><tbody>
-            <tr><td style="width:180px;color:var(--dim);font-weight:700">결제 (국내)</td><td>포트원 <span class="pill p-revoked">미연결</span></td><td style="text-align:right"><button class="tbtn" onclick="setupInfo('portone')">연결 안내</button></td></tr>
-            <tr><td style="color:var(--dim);font-weight:700">결제 (해외)</td><td>Paddle <span class="pill p-revoked">미연결</span></td><td style="text-align:right"><button class="tbtn" onclick="setupInfo('paddle')">연결 안내</button></td></tr>
+            <tr><td style="width:180px;color:var(--dim);font-weight:700">결제 (국내)</td><td>포트원 <span class="pill p-active">연결됨</span> <span class="pill p-trial">이니시스 심사 중</span><div class="n" style="margin-top:4px">토스 테스트 채널 E2E 검증 완료 · KG이니시스 실연동은 카드사 심사 후 전환</div></td><td style="text-align:right"><button class="tbtn" onclick="setupInfo('portone')">상세</button></td></tr>
+            <tr><td style="color:var(--dim);font-weight:700">결제 (해외)</td><td>Paddle <span class="pill p-active">샌드박스 연결됨</span> <span class="pill p-trial">Live 심사 예정</span><div class="n" style="margin-top:4px">샌드박스 결제·웹훅·발급 E2E 검증 완료 · 실판매는 Paddle Live 계정 심사 후</div></td><td style="text-align:right"><button class="tbtn" onclick="setupInfo('paddle')">상세</button></td></tr>
             <tr><td style="color:var(--dim);font-weight:700">발송 이메일</td><td>noreply@audioazpro.com (Resend) <span class="pill p-active">연결됨</span></td><td style="text-align:right"><button class="tbtn" onclick="setupInfo('email')">상세</button></td></tr>
-            <tr><td style="color:var(--dim);font-weight:700">라이선스 개인키</td><td><span class="pill p-trial">Phase 2</span> 서버(Edge Function) 보관 예정</td><td style="text-align:right"><button class="tbtn" onclick="setupInfo('key')">상세</button></td></tr>
+            <tr><td style="color:var(--dim);font-weight:700">라이선스 발급</td><td>서버 발급 <span class="pill p-active">운영 중</span><div class="n" style="margin-top:4px">키는 서버(Edge Function·DB 함수)가 생성·기록 — 브라우저에는 개인키 없음</div></td><td style="text-align:right"><button class="tbtn" onclick="setupInfo('key')">상세</button></td></tr>
           </tbody></table>
         </div>
       </section>
@@ -679,7 +694,7 @@ async function afterAuthGate(verified){
   if(!p.passkey_enrolled){ showStep('stepEnroll'); return; }
   if(verified!==true){ showStep('stepVerify'); return; }   // ← 비번 로그인 후에도 패스키 확인 강제
   enterConsole(p);
-  try{ azApprFields(); azApprLoad(); azInqLoad(); renderAdmins(); loadDash(); loadLicenses(); renderPromos(); loadOrders(); loadCustomers(); bdLoad(true); usLoad(); }catch(_){}
+  try{ azApprFields(); azApprLoad(); azInqLoad(); renderAdmins(); loadDash(); loadLicenses(); renderPromos(); loadCustomers(); bdLoad(true); usLoad(); }catch(_){}
 }
 // STEP 4: 패스키 2차 확인 — 네이티브 패스키 재로그인으로 "패스키 세션"을 발급받아야 통과
 async function verifyPasskey(){
@@ -700,8 +715,14 @@ function enterConsole(p){
   try{sessionStorage.setItem(SKEY,'1');}catch(_){}
   try{
     var who=document.querySelector('.top .who span:nth-child(2)');
-    if(who&&p) who.textContent=(p.name||p.email)+' · '+({super:'최고관리자',ops:'운영관리자',support:'지원'}[p.role]||p.role);
+    if(who&&p) who.textContent=(p.name||p.email)+' · '+((ROLES[p.role]||{}).label||p.role);
     var av=document.querySelector('.top .who .av'); if(av&&p&&p.name) av.textContent=p.name.slice(0,1);
+    if(p){
+      var setT=function(id,v){var el=document.getElementById(id); if(el) el.textContent=v;};
+      setT('myName', p.name||'—'); setT('myEmail', p.email||'—');
+      var rl=document.getElementById('myRole');
+      if(rl) rl.innerHTML='<span class="pill '+(p.role==='super'?'p-active':'p-trial')+'">'+esc((ROLES[p.role]||{}).label||p.role||'—')+'</span>';
+    }
   }catch(_){}
   openConsole();
 }
@@ -829,8 +850,10 @@ async function azApprLoad(){
 }
 async function azApprDecide(id, dec){
   var label=dec==='approved'?'승인':'거절';
-  if(!confirm('이 결재를 '+label+'할까요?'+(dec==='approved'?'\n승인 즉시 실제 데이터에 반영됩니다.':''))) return;
-  var note=prompt(label+' 메모 (선택)','')||null;
+  var v0=await azModal({title:'결재 '+label, body:(dec==='approved'?'승인 즉시 <b style="color:#E9EEF7">실제 데이터에 반영</b>됩니다.':'이 결재를 거절합니다.'),
+    fields:[{id:'note',label:label+' 메모 (선택)',placeholder:'요청자에게 남길 메모'}], okText:label, cancelText:'돌아가기 (결재 유지)', danger:dec!=='approved'});
+  if(v0===null) return;
+  var note=(v0.note||'').trim()||null;
   var r=await sb.rpc('decide_approval',{p_id:id,p_decision:dec,p_note:note});
   if(r.error){ alert('실패: '+r.error.message); return; }
   alert('✓ '+r.data);
@@ -909,16 +932,38 @@ async function azInqClose(id){
   if(r.error){ alert('실패: '+r.error.message); return; }
   azInqLoad();
 }
+// ===== 공용 모달 (장비톤 — prompt/alert 대체) =====
+function azModal(opt){
+  return new Promise(function(resolve){
+    var wrap=document.createElement('div');
+    wrap.style.cssText='position:fixed;inset:0;z-index:600;background:rgba(4,8,16,.72);display:flex;align-items:center;justify-content:center;padding:24px';
+    var fields=(opt.fields||[]).map(function(f){
+      return '<div class="field" style="text-align:left;margin-top:10px"><label>'+esc(f.label)+'</label><input id="azm_'+f.id+'" type="'+(f.type||'text')+'" value="'+esc(f.value==null?'':f.value)+'" placeholder="'+esc(f.placeholder||'')+'">'+(f.note?'<div class="note" style="margin-top:5px">'+f.note+'</div>':'')+'</div>';
+    }).join('');
+    wrap.innerHTML='<div style="width:100%;max-width:'+(opt.width||440)+'px;max-height:86vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.55)">'
+      +'<div style="font-size:15px;font-weight:800;color:#E9EEF7;margin-bottom:8px">'+esc(opt.title||'')+'</div>'
+      +(opt.body?'<div style="font-size:13px;color:var(--dim);line-height:1.65">'+opt.body+'</div>':'')
+      +fields
+      +'<div style="display:flex;gap:10px;margin-top:16px">'
+      +'<button data-m="ok" class="btn btn-pri" style="flex:1;height:44px'+(opt.danger?';background:#E5484D':'')+'">'+esc(opt.okText||'확인')+'</button>'
+      +(opt.noCancel?'':'<button data-m="no" class="tbtn" style="flex:1;height:44px">'+esc(opt.cancelText||'취소')+'</button>')+'</div></div>';
+    document.body.appendChild(wrap);
+    function onKey(e){ if(e.key==='Escape') done(null); }
+    function done(v){ document.removeEventListener('keydown',onKey); wrap.remove(); resolve(v); }
+    document.addEventListener('keydown',onKey);
+    wrap.addEventListener('click',function(e){ if(e.target===wrap) done(null); });
+    var no=wrap.querySelector('[data-m=no]'); if(no) no.onclick=function(){ done(null); };
+    wrap.querySelector('[data-m=ok]').onclick=function(){
+      var out={}; (opt.fields||[]).forEach(function(f){ out[f.id]=wrap.querySelector('#azm_'+f.id).value; });
+      done(out);
+    };
+    var fi=wrap.querySelector('input'); if(fi){ fi.focus(); try{ fi.setSelectionRange(fi.value.length,fi.value.length); }catch(_){}} 
+  });
+}
 function adminLogout(){ try{sessionStorage.removeItem(SKEY);}catch(_){}; sb.auth.signOut().finally(function(){location.reload();}); }
-function b64urlToBuf(s){s=String(s).replace(/-/g,'+').replace(/_/g,'/');var pad=s.length%4;if(pad)s+='='.repeat(4-pad);var bin=atob(s);var b=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);return b.buffer;}
-function bufToB64url(buf){var b=new Uint8Array(buf),s='';for(var i=0;i<b.length;i++)s+=String.fromCharCode(b[i]);return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
-function bufToHex(buf){return Array.prototype.map.call(new Uint8Array(buf),function(x){return x.toString(16).padStart(2,'0')}).join('');}
 function hasWebAuthn(){return !!(window.PublicKeyCredential && navigator.credentials && navigator.credentials.create);}
 
-// ===== 관리자 계정 생성기 =====
-function genPw(n){var c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#%^&*';var a=crypto.getRandomValues(new Uint8Array(n||16)),s='';for(var i=0;i<a.length;i++)s+=c[a[i]%c.length];return s;}
-async function pbkdf2hex(pw,saltBuf,iter){var key=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveBits']);var bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:saltBuf,iterations:iter,hash:'SHA-256'},key,256);return bufToHex(bits);}
-// ===== 관리자 관리 — 서버 Edge Function(admin-manage)이 실행. super+패스키 세션 아니면 서버가 거부 =====
+// ===== 관리자 계정 생성·관리 — 서버 Edge Function(admin-manage)이 실행. super+패스키 세션 아니면 서버가 거부 =====
 async function adminApi(body){
   var r=await sb.functions.invoke('admin-manage',{body:body});
   if(r.error){ var msg=r.error.message; try{ var ctx=await r.error.context.json(); if(ctx&&ctx.error) msg=ctx.error; }catch(_){}
@@ -956,7 +1001,7 @@ var ROLES={
 };
 var ADMIN_LIST=[];
 function roleOptions(sel){ return Object.keys(ROLES).filter(function(k){return k!=='super';}).map(function(k){return '<option value="'+k+'"'+(sel===k?' selected':'')+'>'+ROLES[k].label+'</option>';}).join(''); }
-function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
 async function renderAdmins(){
   var tb=document.getElementById('adminRows'); if(!tb) return;
   var me=window.__ADMIN_PROFILE||{};
@@ -979,14 +1024,14 @@ async function renderAdmins(){
       '<td><select class="field" style="margin:0;width:auto;padding:6px 8px" onchange="setRole(\''+a.id+'\',this.value)">'+roleOptions(a.role||'support')+'</select></td>'+
       '<td>'+(sus?'<span class="pill p-revoked">정지</span>':'<span class="pill p-active">활성</span>')+'</td>'+
       '<td class="mono">'+at+'</td>'+
-      '<td style="white-space:nowrap"><button class="tbtn" onclick="toggleAdmin(\''+a.id+'\','+(sus?'false':'true')+')">'+(sus?'해제':'정지')+'</button> <button class="tbtn danger" onclick="delAdmin(\''+a.id+'\',\''+esc(a.email)+'\')">삭제</button></td>'+
+      '<td style="white-space:nowrap"><button class="tbtn" onclick="toggleAdmin(\''+a.id+'\','+(sus?'false':'true')+')">'+(sus?'해제':'정지')+'</button> <button class="tbtn danger" onclick="delAdmin(\''+a.id+'\')">삭제</button></td>'+
     '</tr>';
   }).join('');
   tb.innerHTML = rows || '<tr><td colspan="6" style="color:var(--dim)">관리자가 없습니다.</td></tr>';
 }
 async function setRole(id,role){ try{ await adminApi({action:'set_role', id:id, role:role}); }catch(ex){ alert('실패: '+ex.message); } renderAdmins(); }
 async function toggleAdmin(id,suspend){ if(!confirm(suspend?'이 관리자를 정지할까요? (즉시 접근 차단, 세션 종료)':'정지를 해제할까요?')) return; try{ await adminApi({action:'suspend', id:id, suspend:suspend}); }catch(ex){ alert('실패: '+ex.message); } renderAdmins(); }
-async function delAdmin(id,email){ if(!confirm('관리자 삭제: '+email+'\n계정 자체가 삭제되며 되돌릴 수 없습니다. 계속할까요?')) return; try{ await adminApi({action:'delete', id:id}); }catch(ex){ alert('실패: '+ex.message); } renderAdmins(); }
+async function delAdmin(id){ var email=((ADMIN_LIST.find(function(a){return a.id===id;})||{}).email)||id; if(!confirm('관리자 삭제: '+email+'\n계정 자체가 삭제되며 되돌릴 수 없습니다. 계속할까요?')) return; try{ await adminApi({action:'delete', id:id}); }catch(ex){ alert('실패: '+ex.message); } renderAdmins(); }
 // ===== 자동 로그아웃 (10분 무동작, 1분 전 경고 팝업+카운트다운) =====
 var IDLE_MS=10*60*1000, WARN_MS=60*1000; // 총 10분 · 마지막 1분 경고
 var warnTimer=null, logoutTimer=null, countTimer=null, idleWarning=false;
@@ -1020,11 +1065,6 @@ function extendSession(){
     if(s){ await afterAuthGate(false); return; }
   }catch(_){}
   showStep('stepPk');
-  try{
-    var me=(await sb.auth.getUser()).data.user;
-    var mc=document.getElementById('myCredCount');
-    if(mc&&me){ var pk=await sb.from('admin_passkeys').select('id').eq('user_id',me.id); mc.textContent=((pk.data||[]).length)+'개 (내 계정 등록 패스키)'; }
-  }catch(_){}
 })();
 
 var titles={dash:'대시보드',board:'작업현황',usage:'서비스·한도',appr:'결재',inq:'문의',lic:'라이선스',promo:'프로모션 · 할인',orders:'주문·결제',customers:'고객',products:'제품·버전',notice:'공지',settings:'설정',admins:'관리자 계정'};
@@ -1138,7 +1178,7 @@ async function renderPromos(){
       '<td>'+(p.used_count||0)+'/'+(p.max_uses?p.max_uses:'∞')+'</td>'+
       '<td class="mono">'+period+'</td>'+
       '<td>'+esc(p.memo||'')+'</td>'+
-      '<td style="white-space:nowrap"><button class="tbtn" onclick="copyText(\''+esc(p.code)+'\',this)">복사</button> '+(p.active?'<button class="tbtn danger" onclick="disablePromo(\''+esc(p.code)+'\')">중지</button>':'')+'</td>'+
+      '<td style="white-space:nowrap"><button class="tbtn" onclick="copyText(PROMOS['+PROMOS.indexOf(p)+'].code,this)">복사</button> '+(p.active?'<button class="tbtn danger" onclick="disablePromo(PROMOS['+PROMOS.indexOf(p)+'].code)">중지</button>':'')+'</td>'+
     '</tr>';
   }).join('');
 }
@@ -1227,17 +1267,20 @@ async function loadEmails(ids){
   if(need.length){ var r=await sb.from('profiles').select('id,email,name').in('id',need); (r.data||[]).forEach(function(p){EMAILS[p.id]=p;}); }
 }
 function fmtDate(s){ if(!s) return '—'; var d=new Date(s); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function fmtDateTime(s){ if(!s) return ''; var d=new Date(s); return fmtDate(s)+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+function chanLabel(pv){ return pv==='portone'?'국내 · 포트원':pv==='paddle'?'해외 · Paddle':(pv||'—'); }
+function ordStatusLabel(o){ if(ordStale(o)) return '만료 (대기 24h+)'; return ({pending:'대기',paid:'결제완료',refunded:'환불'})[o.status]||o.status; }
 
 // ===== 라이선스 (실데이터 licenses) =====
 var LICS=[];
 async function issue(e){
   e.preventDefault();var d={};new FormData(e.target).forEach((v,k)=>d[k]=v);
   var pid=PRODID[d.product]||d.product;
-  var lt=/체험/.test(d.type)?'D14':(/NFR|리뷰/.test(d.type)?'FREE':'FULL');
+  var lt=(TYPELABEL[d.type]?d.type:'FULL');
   var res=document.getElementById('issRes'), out=document.getElementById('issKey'); res.classList.add('on');
   out.innerHTML='발급 중…';
   try{
-    var r=await azSuperDo('license_issue', d.product+' 라이선스 발급 — '+d.email, '콘솔 발급 · '+d.name+' · '+d.type, {email:d.email.trim().toLowerCase(), product_id:pid, license_type:lt});
+    var r=await azSuperDo('license_issue', d.product+' 라이선스 발급 — '+d.email, '콘솔 발급 · '+d.name+' · '+(TYPELABEL[lt]||lt), {email:d.email.trim().toLowerCase(), product_id:pid, license_type:lt});
     out.innerHTML='<b>'+esc(r.text)+'</b><br><span style="color:#8fa5c2">'+(r.pending?'승인되면 발급됩니다.':'DB에 기록되었습니다. 아래 목록에서 키를 복사해 고객에게 전달하세요.')+'</span>';
     e.target.reset(); loadLicenses();
   }catch(ex){ out.innerHTML='<b style="color:#ff9ea3">실패: '+esc(ex.message)+'</b><br><span class="n">가입된 회원 이메일이어야 발급됩니다.</span>'; }
@@ -1291,30 +1334,103 @@ async function reissue(id){
 
 // ===== 주문 (실데이터 orders) =====
 var ORDERS=[];
+function ordRangeUI(){ var c=document.getElementById('ordCustom'); if(c) c.style.display=(document.getElementById('ordRange').value==='custom')?'inline-flex':'none'; }
+function ordStale(o){ return o.status==='pending' && (Date.now()-new Date(o.created_at).getTime())>24*3600*1000; }
+function ordRange(){
+  var v=(document.getElementById('ordRange')||{}).value||'all', now=new Date();
+  if(v==='tm'){ return [new Date(now.getFullYear(),now.getMonth(),1), null]; }
+  if(v==='lm'){ return [new Date(now.getFullYear(),now.getMonth()-1,1), new Date(now.getFullYear(),now.getMonth(),1)]; }
+  if(v==='custom'){
+    var f=(document.getElementById('ordFrom')||{}).value, t=(document.getElementById('ordTo')||{}).value;
+    var loc=function(x){ var a=x.split('-'); return new Date(+a[0],+a[1]-1,+a[2]); };
+    return [f?loc(f):null, t?new Date(loc(t).getTime()+24*3600*1000):null];
+  }
+  return [null,null];
+}
+function ordFiltered(){
+  var st=(document.getElementById('ordStatus')||{}).value||'', rg=ordRange();
+  return ORDERS.filter(function(o){
+    if(st && o.status!==st) return false;
+    var t=new Date(o.created_at);
+    if(rg[0] && t<rg[0]) return false;
+    if(rg[1] && t>=rg[1]) return false;
+    return true;
+  });
+}
 async function loadOrders(){
   var tb=document.getElementById('orderRows'); if(!tb) return;
-  var r=await sb.from('orders').select('*').order('created_at',{ascending:false}).limit(200);
+  var r=await sb.from('orders').select('id,user_id,product_id,provider,provider_ref,amount,currency,paid_amount,paid_currency,status,created_at').order('created_at',{ascending:false}).limit(1000);
   if(r.error){ tb.innerHTML='<tr><td colspan="8" style="color:#ff9ea3">불러오기 실패: '+esc(r.error.message)+'</td></tr>'; return; }
   ORDERS=r.data||[];
+  await loadEmails(ORDERS.map(function(o){return o.user_id;}));
+  renderOrders(); renderOrdMonths();
+}
+function renderOrders(){
+  var tb=document.getElementById('orderRows'); if(!tb) return;
+  var L=ordFiltered();
   var sm=document.getElementById('ordSum');
   if(sm){
-    var sp=revSplit(ORDERS);
+    var sp=revSplit(L);
     var box=function(l,v,n){return '<div style="border:1px solid var(--line);background:#0E1A2E;border-radius:10px;padding:9px 14px;font-size:12.5px;color:var(--dim);font-weight:700">'+l+' <b style="color:#E9EEF7;font-family:ui-monospace,Menlo,monospace;font-size:13px;margin-left:6px">'+v+'</b><span style="margin-left:6px">'+n+'건</span></div>';};
     sm.innerHTML=box('국내 매출 · 포트원',fmtMoney(sp.dom),sp.domN)+box('해외 매출 · Paddle',fmtMoney(sp.abroad),sp.abroadN);
     sm.style.display='flex';
   }
-  await loadEmails(ORDERS.map(function(o){return o.user_id;}));
   if(!ORDERS.length){ tb.innerHTML='<tr><td colspan="8" style="color:var(--dim)">주문이 아직 없습니다. (결제 연동 후 자동 기록)</td></tr>'; return; }
-  var ST={pending:['대기','p-trial'],paid:['결제완료','p-paid'],refunded:['환불','p-refund']};
-  tb.innerHTML=ORDERS.map(function(o){
-    var p=EMAILS[o.user_id]||{}; var s=ST[o.status]||[o.status,'p-trial'];
-    var amt=(o.paid_currency&&o.paid_currency!=='KRW') ? (o.paid_currency+' '+Number(o.paid_amount||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})) : ((o.currency==='KRW'?'₩':(o.currency||'')+' ')+Number(o.amount||0).toLocaleString());
-    return '<tr><td class="mono" title="'+esc(o.id)+'">'+esc(String(o.id).slice(0,8))+'</td><td>'+esc(PRODNAME[o.product_id]||o.product_id)+'</td><td>'+esc(p.email||o.user_id)+'</td><td>'+(o.provider==='portone'?'국내 · 포트원':o.provider==='paddle'?'해외 · Paddle':esc(o.provider||'—'))+'</td><td class="mono">'+amt+'</td><td><span class="pill '+s[1]+'">'+s[0]+'</span></td><td class="mono">'+fmtDate(o.created_at)+'</td>'+
+  if(!L.length){ tb.innerHTML='<tr><td colspan="8" style="color:var(--dim)">조건에 맞는 주문이 없습니다.</td></tr>'; return; }
+  var PCLS={pending:'p-trial',paid:'p-paid',refunded:'p-refund'};
+  tb.innerHTML=L.map(function(o){
+    var p=EMAILS[o.user_id]||{}; var stale=ordStale(o);
+    var cls=stale?'p-refund':(PCLS[o.status]||'p-trial');
+    return '<tr'+(stale||o.status==='refunded'?' style="opacity:.55"':'')+'><td class="mono" title="'+esc(o.id)+'">'+esc(String(o.id).slice(0,8))+'</td><td>'+esc(PRODNAME[o.product_id]||o.product_id)+'</td><td>'+esc(p.email||o.user_id)+'</td><td>'+esc(chanLabel(o.provider))+'</td><td class="mono">'+fmtOrderAmt(o)+'</td><td><span class="pill '+cls+'">'+esc(ordStatusLabel(o))+'</span></td><td class="mono">'+fmtDate(o.created_at)+'</td>'+
       '<td>'+(o.status==='paid'?'<button class="tbtn danger" onclick="refundOrder(\''+o.id+'\')">환불</button>':'')+' <button class="tbtn" onclick="copyText(\''+o.id+'\',this)">ID복사</button></td></tr>';
   }).join('');
 }
+function renderOrdMonths(){
+  var tb=document.getElementById('ordMonthRows'); if(!tb) return;
+  var M={};
+  ORDERS.forEach(function(o){
+    if(o.status!=='paid') return;
+    var d=new Date(o.created_at); if(isNaN(d)) return;
+    var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    (M[k]=M[k]||[]).push(o);
+  });
+  var ks=Object.keys(M).sort().reverse();
+  if(!ks.length){ tb.innerHTML='<tr><td colspan="4" class="n">결제완료 주문이 아직 없습니다.</td></tr>'; return; }
+  tb.innerHTML=ks.map(function(k){
+    var sp=revSplit(M[k]);
+    return '<tr><td class="mono">'+k+'</td><td class="mono">'+(sp.domN?fmtMoney(sp.dom):'—')+'</td><td class="mono">'+(sp.abroadN?fmtMoney(sp.abroad):'—')+'</td><td>'+(sp.domN+sp.abroadN)+'</td></tr>';
+  }).join('');
+}
+function ordCsv(){
+  var L=ordFiltered();
+  if(!L.length){ alert('내보낼 주문이 없습니다.'); return; }
+  var head=['주문ID','일시','제품','고객','채널','상태','통화','금액','결제통화','결제금액','결제참조'];
+  var rows=L.map(function(o){
+    var p=EMAILS[o.user_id]||{};
+    return [o.id, fmtDateTime(o.created_at), (PRODNAME[o.product_id]||o.product_id), (p.email||o.user_id),
+      chanLabel(o.provider), ordStatusLabel(o),
+      (o.currency||'KRW'), (o.amount!=null?o.amount:''), (o.paid_currency||''), (o.paid_amount!=null?o.paid_amount:''), (o.provider_ref||'')];
+  });
+  var cell=function(c){ c=String(c==null?'':c); if(/^[=+\-@\t\r]/.test(c)) c="'"+c; return /[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c; };
+  var csv='\uFEFF'+[head].concat(rows).map(function(r){ return r.map(cell).join(','); }).join('\n');
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  var d=new Date(); a.download='audioaz_orders_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.csv';
+  document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500);
+}
 async function refundOrder(id){
-  if(!confirm('이 주문을 환불 처리할까요?\n연결된 라이선스도 함께 회수됩니다. (실제 결제 환급은 결제사에서 별도 처리)')) return;
+  var o=ORDERS.find(function(x){return x.id===id;})||{};
+  var p=EMAILS[o.user_id]||{};
+  var payLink=o.provider==='paddle'
+    ? '<a href="https://sandbox-vendors.paddle.com/transactions-v2" target="_blank" rel="noopener" style="color:#9CC2F5;font-weight:700">Paddle 콘솔 열기 →</a> <span class="n">(Live 전환 후엔 vendors.paddle.com)</span>'
+    : '<a href="https://admin.portone.io/payments" target="_blank" rel="noopener" style="color:#9CC2F5;font-weight:700">포트원 콘솔 열기 →</a>';
+  var v0=await azModal({title:'주문 환불', danger:true, okText:'2) DB 환불 + 라이선스 회수 실행', width:480,
+    body:'<b style="color:#E9EEF7">'+esc(PRODNAME[o.product_id]||o.product_id||'')+'</b> · '+esc(p.email||'')+' · <span class="mono">'+fmtOrderAmt(o)+'</span>'
+      +(o.provider_ref?'<div class="mono" style="font-size:11px;margin-top:4px">결제 참조: '+esc(o.provider_ref)+'</div>':'')
+      +'<div style="margin-top:12px;padding:10px 12px;background:#2E2410;border-radius:10px;color:#E7B252;font-weight:700">환불은 2단계입니다</div>'
+      +'<div style="margin-top:8px">1) <b style="color:#E9EEF7">실제 돈 환급</b> — 결제사에서 이 건을 취소하세요: '+payLink+'</div>'
+      +'<div style="margin-top:6px">2) 아래 버튼 — <b style="color:#E9EEF7">주문을 환불로 기록하고 라이선스를 회수</b>합니다.</div>'});
+  if(v0===null) return;
   try{ var r=await azSuperDo('refund','주문 환불 — '+id.slice(0,8),'콘솔에서 환불 처리',{order_id:id}); alert('✓ '+r.text); }catch(ex){ alert('실패: '+ex.message); }
   loadOrders(); loadLicenses();
 }
@@ -1333,6 +1449,11 @@ function revSplit(rows){
   });
   return r;
 }
+function mergeCur(a,b){ var m={}; [a,b].forEach(function(x){ Object.keys(x||{}).forEach(function(c){ m[c]=(m[c]||0)+x[c]; }); }); return m; }
+function fmtOrderAmt(o){
+  if(o.paid_currency&&o.paid_currency!=='KRW') return o.paid_currency+' '+Number(o.paid_amount||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  return (o.currency==='KRW'||!o.currency?'₩':o.currency+' ')+Number(o.amount||0).toLocaleString();
+}
 function fmtMoney(byCur){
   var ks=Object.keys(byCur);
   if(!ks.length) return '₩ 0';
@@ -1344,28 +1465,29 @@ function fmtMoney(byCur){
 // ===== 대시보드 (실데이터 집계) =====
 async function loadDash(){
   try{
-    var rev=await sb.from('orders').select('amount,currency,status,provider,paid_amount,paid_currency');
-    if(rev.error) rev=await sb.from('orders').select('amount,currency,status'); // 구버전 스키마 대비
-    var paid=(rev.data||[]).filter(function(o){return o.status==='paid'&&o.currency==='KRW';}).reduce(function(a,o){return a+Number(o.amount||0);},0);
+    var q=await Promise.all([
+      sb.from('orders').select('product_id,created_at,amount,currency,status,provider,paid_amount,paid_currency').order('created_at',{ascending:false}),
+      sb.from('licenses').select('status,issued_at'),
+      sb.from('profiles').select('id',{count:'exact',head:true}).eq('is_admin',false),
+      sb.from('licenses').select('license_key,product_id,issued_at,status').order('issued_at',{ascending:false}).limit(4),
+      sb.from('inquiries').select('subject,status,created_at').order('created_at',{ascending:false}).limit(4),
+      sb.from('approvals').select('title,status,created_at').order('created_at',{ascending:false}).limit(4)
+    ]);
+    var rev=q[0], lic=q[1], cu=q[2], l2=q[3], i2=q[4], a2=q[5];
+    if(rev.error) rev=await sb.from('orders').select('product_id,created_at,amount,currency,status').order('created_at',{ascending:false}); // 구버전 스키마 대비
     var split=revSplit(rev.data||[]);
-    var lic=await sb.from('licenses').select('status,issued_at');
     var Ls=lic.data||[]; var active=Ls.filter(function(l){return l.status==='active';}).length;
     var now=new Date(), m0=new Date(now.getFullYear(),now.getMonth(),1).toISOString();
     var month=Ls.filter(function(l){return l.issued_at>=m0;}).length;
-    var cu=await sb.from('profiles').select('id',{count:'exact',head:true}).eq('is_admin',false);
     var set=function(id,v){var el=document.getElementById(id); if(el) el.textContent=v;};
-    set('kpiRev', rev.error?'—':'₩ '+paid.toLocaleString());
+    set('kpiRev', rev.error?'—':fmtMoney(mergeCur(split.dom,split.abroad)));
     set('kpiRevDom', rev.error?'—':fmtMoney(split.dom));
     set('kpiRevAbroad', rev.error?'—':fmtMoney(split.abroad)); set('kpiLic', lic.error?'—':active); set('kpiMonth', lic.error?'—':month); set('kpiUsers', cu.error?'—':(cu.count||0));
-    // 최근 활동: 라이선스·주문·문의·결재 최신 8건
+    // 최근 활동: 라이선스·주문·문의·결재 최신 8건 (주문은 위 조회 재사용)
     var acts=[];
-    var l2=await sb.from('licenses').select('license_key,product_id,issued_at,status').order('issued_at',{ascending:false}).limit(4);
     (l2.data||[]).forEach(function(l){acts.push({t:l.issued_at,k:'발급',c:'p-active',d:(PRODNAME[l.product_id]||l.product_id)+' · '+l.license_key});});
-    var o2=await sb.from('orders').select('product_id,amount,status,created_at').order('created_at',{ascending:false}).limit(4);
-    (o2.data||[]).forEach(function(o){acts.push({t:o.created_at,k:'주문',c:'p-paid',d:(PRODNAME[o.product_id]||o.product_id)+' · ₩'+Number(o.amount||0).toLocaleString()+' · '+o.status});});
-    var i2=await sb.from('inquiries').select('subject,status,created_at').order('created_at',{ascending:false}).limit(4);
-    (i2.data||[]).forEach(function(q){acts.push({t:q.created_at,k:'문의',c:'p-trial',d:q.subject+' · '+q.status});});
-    var a2=await sb.from('approvals').select('title,status,created_at').order('created_at',{ascending:false}).limit(4);
+    (rev.data||[]).slice(0,4).forEach(function(o){acts.push({t:o.created_at,k:'주문',c:'p-paid',d:(PRODNAME[o.product_id]||o.product_id)+' · '+fmtOrderAmt(o)+' · '+o.status});});
+    (i2.data||[]).forEach(function(q2){acts.push({t:q2.created_at,k:'문의',c:'p-trial',d:q2.subject+' · '+q2.status});});
     (a2.data||[]).forEach(function(a){acts.push({t:a.created_at,k:'결재',c:'p-refund',d:a.title+' · '+a.status});});
     acts.sort(function(a,b){return (b.t||'').localeCompare(a.t||'');});
     var tb=document.getElementById('actRows');
@@ -1399,12 +1521,34 @@ function renderCustomers(){
 }
 async function custDetail(id){
   var c=CUSTOMERS.find(function(x){return x.id===id;}); if(!c) return;
-  var licLine='라이선스: 조회 실패';
+  var licHtml='<div class="n">조회 실패</div>', ordHtml='<div class="n">조회 실패</div>';
+  var both=await Promise.all([
+    sb.from('licenses').select('license_key,product_id,type,status,issued_at,activations(binding_type,binding_id,label)').eq('user_id',id).order('issued_at',{ascending:false}),
+    sb.from('orders').select('product_id,status,created_at,amount,currency,paid_amount,paid_currency,provider').eq('user_id',id).order('created_at',{ascending:false}).limit(20)
+  ]);
   try{
-    var r=await sb.from('licenses').select('product_id,type,status').eq('user_id',id);
-    if(!r.error){ var ls=r.data||[]; licLine='라이선스(DB): '+(ls.length? ls.map(function(l){return l.product_id+'('+l.status+')';}).join(', ') : '없음'); }
+    var r=both[0];
+    if(!r.error){
+      var ls=r.data||[];
+      licHtml=ls.length? '<table style="min-width:0"><thead><tr><th>키</th><th>제품</th><th>유형</th><th>상태</th><th>기기</th></tr></thead><tbody>'+ls.map(function(l){
+        var acts=(l.activations||[]).map(function(a){return esc(a.label||(a.binding_type==='usb'?'USB':'컴퓨터'));}).join(', ')||'—';
+        return '<tr><td class="mono" style="font-size:11px">'+esc(l.license_key)+'</td><td>'+esc(PRODNAME[l.product_id]||l.product_id)+'</td><td>'+esc(TYPELABEL[l.type]||l.type)+'</td><td>'+(l.status==='active'?'<span class="pill p-active">활성</span>':'<span class="pill p-revoked">'+esc(l.status)+'</span>')+'</td><td style="font-size:12px">'+acts+'</td></tr>';
+      }).join('')+'</tbody></table>' : '<div class="n">라이선스 없음</div>';
+    }
   }catch(_){}
-  alert('고객 상세\n\n이름: '+(c.name||'—')+'\n이메일: '+c.email+'\n가입일: '+String(c.created_at||'').slice(0,19).replace('T',' ')+'\nID: '+c.id+'\n'+licLine);
+  try{
+    var ro=both[1];
+    if(!ro.error){
+      var os=ro.data||[];
+      ordHtml=os.length? '<table style="min-width:0"><thead><tr><th>제품</th><th>금액</th><th>채널</th><th>상태</th><th>일시</th></tr></thead><tbody>'+os.map(function(o){
+        return '<tr><td>'+esc(PRODNAME[o.product_id]||o.product_id)+'</td><td class="mono">'+fmtOrderAmt(o)+'</td><td>'+esc(chanLabel(o.provider))+'</td><td>'+esc(o.status)+'</td><td class="mono">'+fmtDate(o.created_at)+'</td></tr>';
+      }).join('')+'</tbody></table>' : '<div class="n">주문 없음</div>';
+    }
+  }catch(_){}
+  azModal({title:'고객 상세 — '+(c.name||c.email), width:680, okText:'닫기', noCancel:true,
+    body:'<div style="margin-bottom:10px"><span class="mono">'+esc(c.email)+'</span> · 가입 '+fmtDate(c.created_at)+' · <span class="mono" style="font-size:11px">'+esc(c.id)+'</span></div>'
+      +'<div style="font-weight:800;color:#E9EEF7;margin:12px 0 6px">라이선스</div><div style="overflow-x:auto">'+licHtml+'</div>'
+      +'<div style="font-weight:800;color:#E9EEF7;margin:14px 0 6px">주문</div><div style="overflow-x:auto">'+ordHtml+'</div>'});
 }
 
 // ===== 제품 · 버전 (가격·버전 편집 → 홈페이지·결제 즉시 반영) =====
@@ -1435,9 +1579,10 @@ function renderProducts(){
 }
 async function editProduct(p){
   var m=AZ.PRODMETA[p], db=PRODUCTS[p]||{}, cur=db.price_krw;
-  var price=prompt(m.name+' — 정가(원)를 입력하세요.\n현재: '+(cur==null?'미정':cur+'원')+'\n0 = 무료 · 빈칸 = 미정(출시 예정)\n저장 즉시 모든 고객의 결제·할인 탭에 반영됩니다.', cur==null?'':cur);
-  if(price===null) return;
-  price=String(price).replace(/[^0-9]/g,'');
+  var v0=await azModal({title:m.name+' — 정가 설정', body:'현재: <b style="color:#E9EEF7">'+(cur==null?'미정':W(cur))+'</b><br>저장 즉시 모든 고객의 결제·할인에 반영됩니다.',
+    fields:[{id:'price',label:'정가 (원)',type:'number',value:(cur==null?'':cur),placeholder:'0 = 무료 · 빈칸 = 미정(출시 예정)'}], okText:'저장'});
+  if(v0===null) return;
+  var price=String(v0.price).replace(/[^0-9]/g,'');
   var v = price===''? null : parseInt(price,10);
   var r=await sb.from('products').update({price_krw:v}).eq('id',p).select('id,price_krw').single();
   if(r.error){ alert('저장 실패: '+r.error.message+'\n(관리자 update 정책이 적용됐는지 확인)'); return; }
@@ -1446,17 +1591,19 @@ async function editProduct(p){
 }
 async function editDevices(p){
   var m=AZ.PRODMETA[p], db=PRODUCTS[p]||{};
-  var v=prompt(m.name+' — 라이선스 1개당 허용 기기 수를 입력하세요.\n현재: '+(db.max_devices!=null?db.max_devices:1)+'대\n(이후 발급되는 라이선스에 자동 적용, 기존 라이선스는 DB 트리거 기준)', db.max_devices!=null?db.max_devices:1);
-  if(v===null) return; v=parseInt(v,10); if(isNaN(v)||v<1||v>10){ alert('1~10 사이 숫자를 입력하세요.'); return; }
+  var v0=await azModal({title:m.name+' — 허용 기기 수', body:'현재: <b style="color:#E9EEF7">'+(db.max_devices!=null?db.max_devices:1)+'대</b> · 이후 발급되는 라이선스에 적용됩니다.',
+    fields:[{id:'n',label:'라이선스 1개당 기기 수 (1~10)',type:'number',value:(db.max_devices!=null?db.max_devices:1)}], okText:'저장'});
+  if(v0===null) return; var v=parseInt(v0.n,10); if(isNaN(v)||v<1||v>10){ alert('1~10 사이 숫자를 입력하세요.'); return; }
   var r=await sb.from('products').update({max_devices:v}).eq('id',p);
   if(r.error){ alert('저장 실패: '+r.error.message); return; }
   await loadProducts();
 }
 async function bumpVersion(p){
   var m=AZ.PRODMETA[p], db=PRODUCTS[p]||{};
-  var ver=prompt(m.name+' — 버전을 입력하세요.\n현재: '+(db.version||AZ.versionOf(p))+'\n(설치파일 업로드는 백엔드 연결 시 제공)', db.version||AZ.versionOf(p));
-  if(ver===null) return;
-  ver=ver.trim(); if(!ver){ alert('버전을 입력하세요.'); return; }
+  var v0=await azModal({title:m.name+' — 버전 변경', body:'현재: <b style="color:#E9EEF7">'+esc(db.version||AZ.versionOf(p))+'</b>',
+    fields:[{id:'ver',label:'버전',value:db.version||AZ.versionOf(p),placeholder:'예: v1.2.0'}], okText:'저장'});
+  if(v0===null) return;
+  var ver=String(v0.ver).trim(); if(!ver){ alert('버전을 입력하세요.'); return; }
   var r=await sb.from('products').update({version:ver}).eq('id',p);
   if(r.error){ alert('저장 실패: '+r.error.message); return; }
   AZ.setVersion(p,ver); await loadProducts();
@@ -1493,10 +1640,10 @@ async function delNotice(id){
 // ===== 설정 안내 =====
 function setupInfo(k){
   var t={
-    portone:'포트원(국내 결제) 연결 절차\n\n1) 사업자등록증으로 포트원 가입 → 채널(카드·카카오페이) 심사\n2) 발급받은 API 키를 서버(Edge Function) 환경변수에 등록\n3) checkout 페이지의 결제 버튼이 실제 결제창을 띄우고, 웹훅이 주문·라이선스를 자동 기록\n\n심사에 영업일 수일이 걸립니다 — 제품 출시가에 맞춰 진행하세요.',
-    paddle:'Paddle(해외 결제) 연결 절차\n\n1) paddle.com 판매자 가입 (사이트 심사 — 제품 페이지·환불정책 필요, 현재 사이트로 신청 가능)\n2) API 키·웹훅을 서버에 등록\n3) 해외 고객은 Paddle이 부가세(VAT) 처리까지 대행\n\n승인까지 보통 1~2주 걸립니다.',
+    portone:'포트원(국내 결제) — 현재 상태\n\n✓ 포트원 가입·웹훅·시크릿 등록 완료\n✓ 토스 테스트 채널로 결제→웹훅→주문 paid→라이선스 발급 E2E 검증 완료\n✓ KG이니시스 실연동 채널 생성 (audioazpro.com에서 자동 선택)\n\n남은 일\n· KG이니시스 카드사 심사(7~10영업일) 통과 → 실연동 전환\n· 통신판매업 신고번호 발급 → 전 페이지 푸터 반영',
+    paddle:'Paddle(해외 결제) — 현재 상태\n\n✓ 샌드박스 계정·상품(KV $199 / TALLY $99)·웹훅 등록 완료\n✓ 샌드박스 카드 결제→웹훅→주문 paid(USD)→라이선스 발급 E2E 검증 완료\n✓ 실도메인에서는 샌드박스 결제 버튼 비활성 (무료 발급 구멍 차단)\n\n남은 일\n· Paddle Live 계정 심사 → live 토큰·가격ID·웹훅 교체',
     email:'발송 이메일 — 연결 완료 ✓\n\nResend(smtp.resend.com)를 통해 noreply@audioazpro.com 이름으로 발송됩니다.\n· 회원가입 인증 메일: Supabase Auth → Resend\n· 문의 답장 메일: Edge Function → Resend\n\n무료 한도: 하루 100통 / 월 3,000통. 초과가 예상되면 Resend 유료 플랜으로 올리면 됩니다.',
-    key:'라이선스 개인키 (Ed25519)\n\nPhase 2에서 서버(Edge Function)에 개인키를 보관하고, 발급 시 서버가 서명합니다.\n브라우저·소스코드에는 절대 개인키를 넣지 않습니다.\n키 생성·회전은 백엔드 구축 때 함께 진행합니다.'
+    key:'라이선스 발급 — 운영 중\n\n발급·회수는 서버(DB 함수 decide_approval + Edge Function)가 수행하고,\n키는 서버가 생성해 licenses 테이블에 기록됩니다.\n브라우저·소스코드에는 개인키·service_role 키가 없습니다.'
   }[k];
   alert(t||'준비 중입니다.');
 }
