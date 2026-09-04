@@ -38,9 +38,9 @@
   // 상단 메뉴 스위치 (KR · EN) — nav 우측, 이모지 없음
   function mountSwitch(){
     if(document.getElementById('az-lang-switch')) return;
-    var host=document.querySelector('nav .nav-in, nav .wrap, nav .inner, header nav, nav'); if(!host) return;
+    var host=document.querySelector('nav .menu, nav .nav-in, nav .wrap, header nav, nav'); if(!host) return;
     var box=document.createElement('div'); box.id='az-lang-switch'; box.setAttribute('aria-label','Language');
-    box.style.cssText='display:inline-flex;align-items:center;gap:6px;margin-left:12px;font:600 11.5px ui-monospace,Menlo,monospace;letter-spacing:.08em;color:var(--dim,#96A6BF);white-space:nowrap';
+    box.style.cssText='display:inline-flex;align-items:center;gap:6px;margin-left:14px;font:600 11.5px ui-monospace,Menlo,monospace;letter-spacing:.08em;color:var(--dim,#96A6BF);white-space:nowrap;vertical-align:middle';
     var cur=lang();
     function b(code,label){ var a=document.createElement('a'); a.href='#'; a.textContent=label; a.setAttribute('role','button');
       a.style.cssText='color:'+(cur===code?'var(--text,#E9EEF7)':'inherit')+';text-decoration:none;padding:3px 6px;border:1px solid '+(cur===code?'var(--blue,#1877F2)':'transparent')+';border-radius:2px';
