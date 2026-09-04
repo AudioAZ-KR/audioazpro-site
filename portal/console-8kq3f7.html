@@ -159,6 +159,8 @@ tr:last-child td{border-bottom:0}
 .us-bar .chip.red.on{border-color:var(--red);color:#ff9ea3}.us-bar .chip.amb.on{border-color:#F4801F;color:#F4801F}.us-bar .chip.grn{color:#5CE0A0}
 .us-bar .sp{flex:1}.us-bar .at{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--dim)}
 .us-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.us-grp{margin-top:16px}.us-grp:first-child{margin-top:0}
+.us-grp-h{font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);padding:0 2px 7px;border-bottom:1px solid var(--line);margin-bottom:10px}
 .us-t{position:relative;display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 14px 12px;color:inherit;min-height:150px;transition:.12s}
 .us-t:hover{border-color:var(--blue);background:#132140}
 .us-t.warn{border-color:#8A4A12}.us-t.over,.us-t.down{border-color:#7A2E33;background:#1C1418}
@@ -400,7 +402,7 @@ td{color:var(--text)}
           <span class="at" id="usVAt">—</span>
           <button class="tbtn" onclick="usCheckNow()" id="usCheckBtn">지금 점검</button>
         </div>
-        <div class="us-tiles" id="usGrid"><div class="n" style="padding:20px">불러오는 중…</div></div>
+        <div id="usGrid"><div class="n" style="padding:20px">불러오는 중…</div></div>
         <p class="n" style="margin-top:12px;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--dim)">타일을 누르면 그 서비스의 결제·요금제 화면이 열립니다 · 30분마다 자동 점검 · 사용량 70% 경고 · 90% 초과 · 결제일 30일 전 경고 · 7일 전 초과</p>
       </section>
 
@@ -1595,6 +1597,7 @@ window.azBoardPreview=function(md){ BD.content=md; BD.updated=new Date().toISOSt
 var US={svcs:[],st:{},at:null};
 var US_LV={over:'초과',down:'장애',warn:'경고',ok:'정상',manual:'날짜 입력',unknown:'확인 필요'};
 var US_ORDER={down:0,over:0,warn:1,unknown:2,manual:3,ok:4};
+var GRP={supabase:'서버·인프라',render:'서버·인프라',github:'서버·인프라',domain:'서버·인프라',portone:'결제',inicis:'결제',paddle:'결제',resend:'이메일',google:'이메일',apple:'앱 배포'}, GRP_ORDER=['서버·인프라','결제','이메일','앱 배포','기타'];
 function usEsc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function usNum(v,unit){
   if(v==null) return '—';
@@ -1615,7 +1618,7 @@ function usMetric(x){
 }
 function usRender(){
   var list=US.svcs.slice().sort(function(a,b){var la=(US.st[a.id]||{}).level||'unknown',lb=(US.st[b.id]||{}).level||'unknown';return (US_ORDER[la]-US_ORDER[lb])||(a.sort-b.sort)});
-  var bad=0,warn=0,ok=0,man=0,html='';
+  var bad=0,warn=0,ok=0,man=0,html='',groups={};
   list.forEach(function(sv){
     var st=US.st[sv.id]||{level:'unknown',summary:'아직 점검 전',metrics:[]}, lv=st.level||'unknown', ms=st.metrics||[];
     if(lv==='over'||lv==='down')bad++; else if(lv==='warn')warn++; else if(lv==='ok')ok++; else man++;
@@ -1631,7 +1634,8 @@ function usRender(){
     var pay=sv.renew_at?('결제일 '+sv.renew_at):(/free/i.test(sv.plan||'')?'무료 · 결제 없음':(sv.cost_note||''));
     var manualDate=['apple','google','inicis','paddle'].indexOf(sv.id)>=0;
     var go=lv==='over'||lv==='down'?'지금 결제 →':lv==='warn'?'결제 확인 →':'요금제 →';
-    html+='<a class="us-t '+lv+'" data-id="'+usEsc(sv.id)+'" href="'+usEsc(sv.billing_url||sv.site_url||'#')+'" target="_blank" rel="noopener">'
+    var g=GRP[sv.id]||'기타'; if(!groups[g])groups[g]='';
+    groups[g]+='<a class="us-t '+lv+'" data-id="'+usEsc(sv.id)+'" href="'+usEsc(sv.billing_url||sv.site_url||'#')+'" target="_blank" rel="noopener">'
       +'<div class="top"><i class="led"></i><span class="nm">'+usEsc(sv.name)+'</span><span class="tag">'+(US_LV[lv]||lv)+'</span></div>'
       +'<div class="role">'+usEsc(sv.role||sv.category||'')+'</div>'
       +'<div class="big">'+usEsc(big)+'</div>'
@@ -1642,6 +1646,7 @@ function usRender(){
       +(manualDate?'<span class="dt" onclick="event.preventDefault();event.stopPropagation()"><input type="date" value="'+usEsc(sv.renew_at||'')+'" onchange="usSaveDate(\''+sv.id+'\',this.value)"></span>':'')
       +'</a>';
   });
+  GRP_ORDER.forEach(function(g){ if(groups[g]) html+='<div class="us-grp"><div class="us-grp-h">'+usEsc(g)+'</div><div class="us-tiles">'+groups[g]+'</div></div>'; });
   document.getElementById('usGrid').innerHTML=html||'<div class="n" style="padding:20px">서비스 목록이 없습니다.</div>';
   var set=function(id,n,on){var el=document.getElementById(id); el.querySelector('b').textContent=n; el.classList.toggle('on',!!on)};
   set('usCBad',bad,bad); set('usCWarn',warn,warn); set('usCOk',ok,true); set('usCMan',man,false);
