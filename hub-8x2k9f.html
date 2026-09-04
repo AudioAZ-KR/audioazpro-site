@@ -111,6 +111,38 @@ section:first-child{margin-top:0}
 footer{border-top:1px solid var(--line); color:var(--faint); font-size:12.5px; padding:22px 0 30px}
 footer .wrap{display:flex; gap:14px; flex-wrap:wrap; align-items:center}
 footer .mono{color:var(--dim)}
+
+/* ===== 서비스 잔량·결제일 타일 (관리자 세션일 때 실시간) ===== */
+.bill-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.bill-bar .chip b{font-family:"IBM Plex Mono",monospace;margin-left:4px}
+.chip.red{color:#E5484D;background:var(--flare-bg)} .chip.dim{color:var(--faint);background:var(--line-soft)}
+.bill-bar .at{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--faint)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.tile{position:relative;display:block;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 15px 12px;box-shadow:var(--shadow);transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease}
+.tile:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--blue) 55%,var(--line));box-shadow:var(--shadow-hover)}
+.tile.warn{border-color:color-mix(in srgb,var(--amber) 55%,var(--line))}
+.tile.over,.tile.down{border-color:color-mix(in srgb,#E5484D 60%,var(--line));background:linear-gradient(180deg,var(--flare-bg),var(--card) 70%)}
+.tile .top{display:flex;align-items:center;gap:8px}
+.tile .led{width:8px;height:8px;border-radius:50%;background:var(--faint);flex:none}
+.tile.ok .led{background:var(--green);box-shadow:0 0 6px color-mix(in srgb,var(--green) 70%,transparent)}
+.tile.warn .led{background:var(--amber);box-shadow:0 0 6px color-mix(in srgb,var(--amber) 70%,transparent)}
+.tile.over .led,.tile.down .led{background:#E5484D;box-shadow:0 0 7px rgba(229,72,77,.8)}
+.tile .nm{font-weight:600;font-size:14px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .tag{font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:600;border-radius:999px;padding:2px 7px;white-space:nowrap;color:var(--faint);background:var(--line-soft)}
+.tile.ok .tag{color:var(--green);background:var(--green-bg)}.tile.warn .tag{color:var(--amber);background:var(--amber-bg)}.tile.over .tag,.tile.down .tag{color:#fff;background:#E5484D}
+.tile .big{font-family:"IBM Plex Mono",monospace;font-size:28px;font-weight:600;letter-spacing:-.02em;line-height:1.1;margin:10px 0 3px}
+.tile.warn .big{color:var(--amber)}.tile.over .big,.tile.down .big{color:#E5484D}
+.tile .sub{font-size:12px;color:var(--dim);line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .sub b{color:var(--text);font-weight:600}
+.tile .bar{height:4px;background:var(--line-soft);border-radius:2px;overflow:hidden;margin:9px 0 7px}
+.tile .bar i{display:block;height:100%;background:var(--blue)}
+.tile.warn .bar i{background:var(--amber)}.tile.over .bar i,.tile.down .bar i{background:#E5484D}
+.tile .ft{display:flex;align-items:center;gap:8px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--faint);margin-top:4px}
+.tile .ft .go{margin-left:auto;font-weight:600;color:var(--blue-ink)}
+.tile.warn .ft .go{color:var(--amber)}.tile.over .ft .go,.tile.down .ft .go{color:#E5484D}
+.bill-empty{background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:16px 18px;font-size:13.5px;color:var(--dim);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.bill-empty a{color:var(--blue-ink);font-weight:600;border:1px solid var(--line);border-radius:999px;padding:5px 12px;background:var(--panel)}
+
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -137,6 +169,16 @@ footer .mono{color:var(--dim)}
 </header>
 
 <main class="wrap">
+
+  <section>
+    <div class="eyebrow"><span class="lbl">Billing</span><h2>서비스 잔량 · 결제일</h2><span class="count" id="billCount">관리자 세션에서 실시간</span></div>
+    <div class="bill-bar" id="billBar" style="display:none">
+      <span class="chip red" id="bcBad">초과·장애 <b>0</b></span><span class="chip lock" id="bcWarn">경고 <b>0</b></span><span class="chip live" id="bcOk">정상 <b>0</b></span><span class="chip dim" id="bcMan">날짜 입력 필요 <b>0</b></span>
+      <span class="at" id="billAt"></span>
+    </div>
+    <div class="tiles" id="g-bill"><div class="bill-empty" id="billEmpty">불러오는 중…</div></div>
+    <p class="hint">타일을 누르면 그 서비스의 결제·요금제 화면이 열립니다 · 30분마다 자동 점검 · 사용량 70% 경고 · 90% 초과 · 결제일 30일 전 경고 · 7일 전 초과 · 날짜 입력은 <a href="https://audioazpro.com/portal/console-8kq3f7.html" style="color:var(--blue-ink)">관리자 콘솔 › 서비스·한도</a></p>
+  </section>
 
   <section>
     <div class="eyebrow"><span class="lbl">Public</span><h2>공개 사이트</h2><span class="count">audioazpro.com</span></div>
@@ -178,6 +220,7 @@ footer .mono{color:var(--dim)}
 <div class="wrap" style="display:block;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;line-height:1.8;color:#6F84A3">오디오에이지(AudioAZ) · 대표 김형준 · 사업자등록번호 456-17-01966 · 경기도 남양주시 다산중앙로19번길 21, F동 419호 (다산동, 다산진건블루웨일지식산업센터1차) · 전화 010-3547-0502 · 이메일 <a href="mailto:support@audioazpro.com" style="color:#8FA5C2">support@audioazpro.com</a></div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const short = u => u.replace(/^https?:\/\//,'').replace(/\/$/,'');
 function card(o){
@@ -259,6 +302,56 @@ fill('g-other', [
   {t:'audioaz.co.kr', href:'http://audioaz.co.kr', d:'렌탈 · 장비 대여 (기존 사이트, 유지)', chip:{k:'auth',t:'렌탈'}},
   {t:'네이버 블로그', href:'https://blog.naver.com/audioaz', d:'현장 기록 · 포트폴리오 원문', chip:{k:'auth',t:'블로그'}},
 ]);
+
+/* ===== 서비스 잔량·결제일 (Supabase services/service_status · 관리자 세션 필요) ===== */
+(function(){
+  var LV={over:'초과',down:'장애',warn:'경고',ok:'정상',manual:'날짜 입력',unknown:'확인 필요'}, ORD={down:0,over:0,warn:1,unknown:2,manual:3,ok:4};
+  var esc=function(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')};
+  function num(v,u){ if(v==null)return '—'; if(u==='MB'||u==='GB'){var mb=v/1048576;return mb>=1024?(mb/1024).toFixed(2)+' GB':mb.toFixed(1)+' MB'} if(u==='원')return Math.round(v).toLocaleString('ko-KR')+'원'; if(u==='USD')return '$'+Number(v).toLocaleString('en-US'); return Number(v).toLocaleString('ko-KR')+(u?' '+u:''); }
+  function fmt(d){ var x=new Date(d); return (x.getMonth()+1)+'/'+x.getDate()+' '+String(x.getHours()).padStart(2,'0')+':'+String(x.getMinutes()).padStart(2,'0'); }
+  function render(svcs,sts){
+    var st={},at=null; sts.forEach(function(x){st[x.id]=x; if(!at||x.checked_at>at)at=x.checked_at;});
+    var list=svcs.slice().sort(function(a,b){var la=(st[a.id]||{}).level||'unknown',lb=(st[b.id]||{}).level||'unknown';return (ORD[la]-ORD[lb])||(a.sort-b.sort)});
+    var bad=0,warn=0,ok=0,man=0,html='';
+    list.forEach(function(sv){
+      var s=st[sv.id]||{level:'unknown',summary:'아직 점검 전',metrics:[]}, lv=s.level||'unknown', ms=s.metrics||[];
+      if(lv==='over'||lv==='down')bad++; else if(lv==='warn')warn++; else if(lv==='ok')ok++; else man++;
+      var pcts=ms.filter(function(x){return x.pct!=null}), days=ms.filter(function(x){return x.unit==='일'&&x.used!=null})[0], big='',sub='',bar=null;
+      if(pcts.length){ var w=pcts.reduce(function(a,x){return x.pct>a.pct?x:a}); big='남은 '+Math.max(0,Math.round(100-w.pct))+'%'; sub=w.label+' '+num(w.used,w.unit)+' / '+num(w.limit,w.unit); bar=Math.min(100,w.pct); }
+      else if(days){ big=days.used<0?'만료 +'+(-days.used)+'일':'D-'+days.used; sub='결제·갱신일 '+(sv.renew_at||''); bar=Math.min(100,Math.max(0,100-Math.round(days.used/365*100))); }
+      else if(lv==='down'){ big='장애'; sub=s.summary||''; }
+      else if(lv==='manual'){ big='날짜 입력'; sub='콘솔에서 결제일을 넣으면 D-day 표시'; }
+      else if(lv==='warn'){ big='주의'; sub=s.summary||''; }
+      else { big='정상'; sub=s.summary||''; }
+      var pay=sv.renew_at?('결제일 '+sv.renew_at):(/free/i.test(sv.plan||'')?'무료 · 결제 없음':(sv.cost_note||''));
+      var go=lv==='over'||lv==='down'?'지금 결제 →':lv==='warn'?'결제 확인 →':'요금제 →';
+      html+='<a class="tile '+lv+'" href="'+esc(sv.billing_url||sv.site_url||'#')+'" target="_blank" rel="noopener" title="'+esc(s.summary||'')+'">'
+        +'<div class="top"><i class="led"></i><span class="nm">'+esc(sv.name)+'</span><span class="tag">'+(LV[lv]||lv)+'</span></div>'
+        +'<div class="big">'+esc(big)+'</div><div class="sub">'+esc(sub)+'</div>'
+        +'<div class="bar"'+(bar==null?' style="opacity:.35"':'')+'><i style="width:'+(bar==null?0:bar)+'%"></i></div>'
+        +'<div class="sub"><b>'+esc(pay)+'</b>'+(sv.plan?' · '+esc(sv.plan):'')+'</div>'
+        +'<div class="ft"><span>'+esc(sv.category||'')+'</span><span class="go">'+go+'</span></div></a>';
+    });
+    document.getElementById('g-bill').innerHTML=html;
+    var set=function(id,n){document.getElementById(id).querySelector('b').textContent=n};
+    set('bcBad',bad); set('bcWarn',warn); set('bcOk',ok); set('bcMan',man);
+    document.getElementById('billBar').style.display='flex';
+    document.getElementById('billAt').textContent=at?'점검 '+fmt(at):'';
+    document.getElementById('billCount').textContent=(bad?'조치 필요 '+bad+'건':'문제 없음')+' · '+list.length+'개 서비스';
+  }
+  function empty(msg){ document.getElementById('g-bill').innerHTML='<div class="bill-empty"><span>'+msg+'</span><a href="https://audioazpro.com/portal/console-8kq3f7.html">관리자 콘솔 로그인 →</a></div>'; document.getElementById('billCount').textContent='관리자 세션 없음'; }
+  window.azBillPreview=render;
+  if(!window.supabase){ empty('실시간 데이터를 불러올 수 없습니다.'); return; }
+  var sb=window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co','sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_');
+  async function load(){
+    var sess=(await sb.auth.getSession()).data.session;
+    if(!sess){ empty('잔량·결제일은 관리자 콘솔에 패스키로 로그인한 뒤 이 페이지를 열면 보입니다.'); return; }
+    var r1=await sb.from('services').select('*').order('sort'), r2=await sb.from('service_status').select('*');
+    if(r1.error||r2.error||!(r1.data||[]).length){ empty('관리자 권한이 없거나 아직 수집 전입니다.'); return; }
+    render(r1.data,r2.data||[]);
+  }
+  load(); setInterval(function(){ if(document.visibilityState==='visible') load(); },60000);
+})();
 
 (function(){
   const root=document.documentElement, btn=document.getElementById('tg');
