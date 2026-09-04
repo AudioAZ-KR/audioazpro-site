@@ -670,7 +670,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.9.0', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.9.1', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1655,13 +1655,14 @@ function setupInfo(k){
 // ===== 작업현황 보드 (board_docs.main = ~/Projects/AudioAZ/00_작업현황.md) =====
 var BD={content:'',updated:null,mtime:null,q:'',raw:false,closed:{},last:null,timer:null};
 try{BD.closed=JSON.parse(localStorage.getItem('az_board_closed')||'{}')}catch(_){}
-function bdEsc(x){return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function bdEsc(x){return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function bdUrl(u){try{var x=new URL(u);return (x.protocol==='https:'||x.protocol==='http:')?bdEsc(x.href):'#'}catch(e){return '#'}}
 function bdInline(t){
   t=bdEsc(t);
   t=t.replace(/`([^`]+)`/g,function(_,c){return '<code>'+c+'</code>'});
   t=t.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
-  t=t.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
-  t=t.replace(/(^|[\s(（])((https?:\/\/)[^\s<)）]+)/g,function(_,p,u){return p+'<a href="'+u+'" target="_blank" rel="noopener">'+u+'</a>'});
+  t=t.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,function(_,a,u){return '<a href="'+bdUrl(u.replace(/&amp;/g,'&'))+'" target="_blank" rel="noopener">'+a+'</a>'});
+  t=t.replace(/(^|[\s(（])((https?:\/\/)[^\s<)）]+)/g,function(_,p,u){return p+'<a href="'+bdUrl(u.replace(/&amp;/g,'&'))+'" target="_blank" rel="noopener">'+u+'</a>'});
   return t;
 }
 function bdParse(md){

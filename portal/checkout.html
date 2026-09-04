@@ -151,7 +151,8 @@ function renderPrice(){
   else sl.style.display='none';
   document.getElementById('sTotal').textContent=W(pr.now);
 }
-function reset(){APPLIED=null;document.getElementById('sDiscLine').style.display='none';document.getElementById('licBox').style.display='none';
+function showGrantButton(on){ var pay=document.querySelector('.pay'); if(!pay) return; Array.prototype.forEach.call(pay.children,function(c){ if(c.id!=='grantBtn') c.style.display=on?'none':''; }); var g=document.getElementById('grantBtn'); if(on){ if(!g){ g=document.createElement('button'); g.id='grantBtn'; g.className='pbtn kr'; g.type='button'; g.textContent='라이선스 발급받기 (무료)'; g.addEventListener('click',function(){grantCode()}); pay.appendChild(g);} g.style.display=''; } else if(g){ g.style.display='none'; } }
+function reset(){APPLIED=null;showGrantButton(false);document.getElementById('sDiscLine').style.display='none';document.getElementById('licBox').style.display='none';
   document.getElementById('totLabel').textContent='합계';renderPrice();}
 
 // 코드 검증 — 관리자 콘솔이 발행한 코드 DB와 대조 (정식 전환 시 서버 Edge Function 검증)
@@ -194,7 +195,7 @@ async function applyCode(){
   box.style.display='block';
   box.innerHTML='<b>'+(PROD[product==='ALL'?CURPROD:product])+' — '+(KIND[kind]||kind)+'</b> 라이선스가 발급됩니다.<br>결제 없이 바로 이용할 수 있습니다.';
   m.className='codemsg lic';m.textContent='라이선스 코드 인식: '+(PROD[product]||'전 제품')+' · '+(KIND[kind]||kind)+'. 아래 "발급받기"로 진행하세요.';
-  document.querySelector('.pay').innerHTML='<button class="pbtn kr" onclick="grantCode()">라이선스 발급받기 (무료)</button>';
+  showGrantButton(true);
 }
 // 라이선스 코드 → 서버가 검증·발급 (결제 없음)
 async function grantCode(){
