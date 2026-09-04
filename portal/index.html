@@ -163,6 +163,7 @@ img,svg{max-width:100%}
 
 <script src="az-supabase.js"></script>
 <script>
+(function(){ try{ var t=new URLSearchParams(location.search).get('tab'); if(t==='signup'){ window.addEventListener('DOMContentLoaded',function(){ setTab('signup'); }); } }catch(e){} })();
 function setTab(t){
   var login=t==='login';
   document.getElementById('tabLogin').classList.toggle('on',login);
