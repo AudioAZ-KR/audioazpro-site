@@ -68,7 +68,7 @@
 (function(){ try{
   if(/^(www\.)?audioazpro\.com$/.test(location.hostname)) return;
   var m=document.createElement('div'); m.id='az-staging-mark';
-  m.style.cssText='position:fixed;left:0;right:0;top:0;z-index:9999;height:22px;line-height:22px;text-align:center;font:600 11px ui-monospace,Menlo,monospace;letter-spacing:.14em;color:#FFD08A;background:#3A2A00;border-bottom:1px solid #6B4F00;pointer-events:none';
+  m.style.cssText='position:fixed;left:0;right:0;top:0;z-index:9999;height:22px;line-height:22px;text-align:center;font:600 11px ui-monospace,Menlo,monospace;letter-spacing:.14em;color:#FFD08A;background:#3A2A00;border-bottom:1px solid #6B4F00;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8px';
   m.textContent='STAGING \u00b7 TEST SITE \u00b7 '+location.hostname;
   document.documentElement.style.setProperty('--az-staging-offset','22px');
   var add=function(){ document.body.appendChild(m); document.body.style.paddingTop=(parseInt(getComputedStyle(document.body).paddingTop)||0)+22+'px'; };
