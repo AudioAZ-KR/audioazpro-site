@@ -38,6 +38,16 @@ footer .wrap{display:flex;gap:14px;flex-wrap:wrap}footer .right{margin-left:auto
 <h2>3. 보관 및 파기</h2><p>수집한 정보는 이용 목적 달성 시까지 보관하며, 관련 법령이 정한 기간(전자상거래 기록 등)에 따라 보관 후 안전하게 파기합니다.</p>
 <h2>4. 제3자 제공·처리위탁</h2><p>결제 처리(포트원·Paddle 등), 이메일 발송, 클라우드 인프라 등 서비스 운영에 필요한 범위에서 처리위탁할 수 있으며, 위탁 시 관련 사항을 고지합니다.</p>
 <h2>5. 이용자 권리</h2><p>이용자는 언제든 본인 정보의 열람·정정·삭제·처리정지를 요청할 수 있습니다. 요청은 support@audioazpro.com 으로 접수합니다.</p>
+<h2>5-1. Flare Tally 앱(iOS·macOS)이 처리하는 정보</h2>
+<p>Flare Tally 카메라 탈리 앱은 계정 없이 동작하며 이름·이메일 등 개인정보를 요구하지 않습니다. 실시간 탈리 전달을 위해 다음 정보만 서버(camera-tally.onrender.com)로 전송·일시 보관합니다.</p>
+<ul>
+<li><b>방 코드·카메라 번호</b> — 어느 방의 어느 카메라에 표시할지 정하기 위해 접속 중에만 사용</li>
+<li><b>기기 식별자(iOS identifierForVendor)</b> — 같은 기기의 중복 알림 등록을 정리하기 위한 익명 식별자. 사용자를 식별하지 않으며 다른 정보와 결합하지 않음</li>
+<li><b>푸시 알림 토큰(Apple APNs)</b> — 앱이 뒤에 있을 때 다이나믹 아일랜드·알림으로 탈리를 갱신하기 위한 토큰. Apple 푸시 서비스로만 전달</li>
+<li><b>서버 왕복 지연(ms)</b> — 호스트 화면의 접속 현황 표시용</li>
+</ul>
+<p>위 정보는 접속(세션) 중 서버 메모리에만 있으며 접속 종료·앱 종료 시 삭제되고, 별도 저장·분석·광고·추적에 사용하지 않습니다. 카메라 권한은 방 QR 코드를 읽을 때만 사용하며 영상은 저장·전송하지 않습니다.</p>
+<p><b>Flare Tally (iOS/macOS) — English summary:</b> The app needs no account and collects no personal data. To deliver tally in real time it sends only the room code, camera number, an anonymous device identifier (identifierForVendor, used solely to de-duplicate push registrations), the Apple push token, and round-trip latency to our relay server (camera-tally.onrender.com). These are kept in server memory only for the duration of the session, are never stored, analysed, sold, or used for tracking or advertising, and are not linked to any identity. Camera access is used only to scan a room QR code; no video is stored or transmitted. Contact: support@audioazpro.com</p>
 <h2>6. 문의</h2><p>개인정보 관련 문의: support@audioazpro.com</p></div></div>
 <footer><div class="wrap"><span>© AudioAZ (오디오에이지) · 대표 김형준 · 사업자 456-17-01966</span>
 <span class="right"><a href="privacy.html">개인정보처리방침</a><a href="terms.html">이용약관</a><a href="refund.html">환불·라이선스</a><a href="/contact.html">문의</a></span></div></footer>
