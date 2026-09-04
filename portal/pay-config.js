@@ -9,7 +9,7 @@
                        : "channel-key-7ed3eb02-87a3-46db-9c61-a79d7109251f",   // 토스페이먼츠 V2 테스트 채널 (스테이징 전용)
       live: LIVE
     },
-    paddle:  { clientToken: "", env: "sandbox", priceIds: { KV: "", KI: "", TALLY: "" } },
+    paddle:  { clientToken: "test_5509b9b264cb4dfca7510fdf707", env: "sandbox", priceIds: { KV: "pri_01m1p7nqc1ktc8w5tqsm95hg33", KI: "", TALLY: "pri_01m1p7tnqhs25nr9r1422kn7es" } },   // Paddle 샌드박스 · clientToken(공개) 입력 시 해외 결제 버튼 활성
     functions: "https://lkbbenyvchddsjsihofv.supabase.co/functions/v1"
   };
 })();
