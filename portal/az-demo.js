@@ -96,7 +96,7 @@
         .then(done);
       } catch (e) { done(); }
     },
-    maxDevices: function (prod) { var o = read('az_maxdev', {}); return o[prod] != null ? o[prod] : (prod === 'TALLY' ? 1 : 2); }, // 제품별 허용 기기 수 (DB products.max_devices)
+    maxDevices: function (prod) { var o = read('az_maxdev', {}); return o[prod] != null ? o[prod] : 1; }, // 제품별 허용 기기 수 (DB products.max_devices)
     versionOf: function (prod) { var o = read('az_vers', {}); if (o[prod]) return o[prod]; var m = PRODMETA[prod]; return m ? m.ver : ''; },
     setVersion: function (prod, ver) { var o = read('az_vers', {}); o[prod] = ver; write('az_vers', o); },
     notices: function () { return read('az_notices', []); },

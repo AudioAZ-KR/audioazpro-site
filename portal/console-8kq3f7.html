@@ -329,7 +329,7 @@ td{color:var(--text)}
           <form onsubmit="return issue(event)">
             <div class="grid2">
               <div class="field"><label>제품</label><select name="product" required><option value="">선택</option><option>Klera Voice</option><option>Klera Instrument</option><option>Flare Tally</option><option>Latency Meter AZ</option></select></div>
-              <div class="field"><label>유형</label><select name="type"><option>영구</option><option>체험 (14일)</option><option>NFR/리뷰용</option></select><div class="note" style="margin-top:6px">허용 기기 수는 제품 설정(제품·버전 탭)을 따릅니다 — 탈리 1대, 플러그인 2대</div></div>
+              <div class="field"><label>유형</label><select name="type"><option>영구</option><option>체험 (14일)</option><option>NFR/리뷰용</option></select><div class="note" style="margin-top:6px">허용 기기 수는 제품 설정(제품·버전 탭)을 따릅니다 — 현재 전 제품 1대</div></div>
               <div class="field"><label>구매자 이름</label><input name="name" placeholder="홍길동" required></div>
               <div class="field"><label>이메일</label><input type="email" name="email" placeholder="buyer@example.com" required></div>
             </div>
@@ -1289,7 +1289,7 @@ async function editProduct(p){
 }
 async function editDevices(p){
   var m=AZ.PRODMETA[p], db=PRODUCTS[p]||{};
-  var v=prompt(m.name+' — 라이선스 1개당 허용 기기 수를 입력하세요.\n현재: '+(db.max_devices!=null?db.max_devices:2)+'대\n(이후 발급되는 라이선스에 자동 적용, 기존 라이선스는 DB 트리거 기준)', db.max_devices!=null?db.max_devices:2);
+  var v=prompt(m.name+' — 라이선스 1개당 허용 기기 수를 입력하세요.\n현재: '+(db.max_devices!=null?db.max_devices:1)+'대\n(이후 발급되는 라이선스에 자동 적용, 기존 라이선스는 DB 트리거 기준)', db.max_devices!=null?db.max_devices:1);
   if(v===null) return; v=parseInt(v,10); if(isNaN(v)||v<1||v>10){ alert('1~10 사이 숫자를 입력하세요.'); return; }
   var r=await sb.from('products').update({max_devices:v}).eq('id',p);
   if(r.error){ alert('저장 실패: '+r.error.message); return; }
