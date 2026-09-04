@@ -110,6 +110,47 @@ tr:last-child td{border-bottom:0}
 .gate .enrl2:hover{color:#E9EEF7;border-color:var(--blue)}
 .side .foot a{cursor:pointer}
 
+
+/* ===== 작업현황 보드 ===== */
+.bd-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:2px}
+@media(max-width:900px){.bd-sum{grid-template-columns:1fr 1fr}}
+.bd-sum .k{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.bd-sum .k .l{font-size:11px;font-weight:700;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+.bd-sum .k .v{font-family:ui-monospace,Menlo,monospace;font-size:22px;font-weight:700;margin-top:2px;color:#fff}
+.bd-sum .k.hot .v{color:#ff9ea3}
+.bd-attn{background:#2A2210;border:1px solid #5A4A1E;border-left:3px solid var(--amber);border-radius:10px;padding:12px 14px;margin-top:14px}
+.bd-attn h3{font-size:12px;font-weight:800;color:#FFD27A;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.bd-attn ul{list-style:none}.bd-attn li{font-size:13px;padding:5px 0;border-top:1px dashed #5A4A1E;color:#E9EEF7}.bd-attn li:first-child{border-top:0}
+.bd-attn li .a{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#FFD27A;margin-right:6px}
+.bd-tools{display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.bd-tools input{flex:1;min-width:180px;border:1px solid var(--line);border-radius:8px;padding:8px 11px;font-family:inherit;font-size:13.5px;background:#0E1A2E;color:#E9EEF7}
+.bd-tools input:focus{outline:none;border-color:var(--blue)}
+.bd-tools .st{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--dim);display:flex;align-items:center;gap:7px;white-space:nowrap}
+.bd-led{display:inline-block;width:8px;height:8px;border-radius:50%;background:#4B5B75}
+.bd-led.ok{background:var(--green);box-shadow:0 0 6px rgba(18,183,106,.7)}.bd-led.warn{background:var(--amber);box-shadow:0 0 6px rgba(245,185,60,.7)}.bd-led.bad{background:var(--red);box-shadow:0 0 6px rgba(229,72,77,.7)}
+.bd-sec{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-top:12px;overflow:hidden}
+.bd-sec .h{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none;background:#0E1A2E}
+.bd-sec .h .n{font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:700;color:#9CC2F5;background:#17273F;border-radius:4px;padding:1px 6px}
+.bd-sec .h h3{font-size:14.5px;font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#fff}
+.bd-sec .h .m,.bd-sec .h .c,.bd-sec .h .tg{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--dim);white-space:nowrap}
+.bd-sec.closed .b{display:none}.bd-sec.closed .h .tg{transform:rotate(-90deg)}
+.bd-sec .b{padding:6px 14px 10px}
+.bd-sec .note{font-size:12.5px;color:var(--dim);background:#0E1A2E;border-left:2px solid var(--line);padding:6px 10px;margin:8px 0}
+.bd-it{display:flex;gap:10px;padding:7px 0;border-top:1px solid #1B2A44;font-size:13.5px;line-height:1.6}
+.bd-it:first-child{border-top:0}
+.bd-it .mk{flex:none;width:6px;height:6px;border-radius:1px;background:#3A4D6E;margin-top:9px}
+.bd-it.next .mk{background:var(--blue)}.bd-it.req .mk{background:var(--amber)}.bd-it.boss .mk{background:var(--red)}
+.bd-it .tx{flex:1;min-width:0;word-break:break-word;color:#D5DEEC}
+.bd-it .tx b{color:#fff}.bd-it .tx code{font-family:ui-monospace,Menlo,monospace;font-size:.9em;background:#0E1A2E;border:1px solid var(--line);border-radius:3px;padding:0 4px;color:#AFC6E8}
+.bd-it .tx a{color:#4D96F5}.bd-it .tx a:hover{text-decoration:underline}
+.bd-it .chip{display:inline-block;font-family:ui-monospace,Menlo,monospace;font-size:10px;font-weight:700;letter-spacing:.04em;border:1px solid var(--line);border-radius:3px;padding:0 5px;margin-right:6px;vertical-align:1px;color:var(--dim)}
+.bd-it.next .chip{color:#9CC2F5;border-color:#2B4A7A}.bd-it.req .chip{color:#FFD27A;border-color:#5A4A1E}.bd-it.boss .chip{color:#ff9ea3;border-color:#5A2A30}
+.bd-it .ts{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--dim);margin-right:6px}
+.bd-it .sub{margin:4px 0 0;padding-left:14px;border-left:1px solid #1B2A44}.bd-it .sub .bd-it{padding:3px 0;border:0;font-size:13px}
+.bd-it.hide{display:none}
+.bd-raw{font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-word;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;color:#D5DEEC;margin-top:12px}
+.bd-empty{color:var(--dim);font-size:13px;padding:30px;text-align:center}
+
 /* ===== 다크 대비 보정 (라이트 테마 잔재 제거) ===== */
 .mono{color:#AFC6E8}
 .result .k,.result .mono{color:#fff}
@@ -246,6 +287,7 @@ td{color:var(--text)}
     </div>
     <nav>
       <a class="on" data-p="dash">대시보드</a>
+      <a data-p="board">작업현황 <span id="boardBadge" style="display:none;background:#E7B252;color:#2E2410;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;margin-left:6px"></span></a>
       <a data-p="appr">결재 <span id="apprBadge" style="display:none;background:#E7B252;color:#2E2410;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;margin-left:6px"></span></a>
       <a data-p="inq">문의 <span id="inqBadge" style="display:none;background:#4D96F5;color:#081729;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;margin-left:6px"></span></a>
       <div class="grp">판매 관리</div>
@@ -285,6 +327,28 @@ td{color:var(--text)}
           <table><thead><tr><th>시각</th><th>유형</th><th>내용</th></tr></thead>
           <tbody id="actRows"><tr><td colspan="3" class="n">불러오는 중…</td></tr></tbody></table>
         </div>
+      </section>
+
+      <!-- 작업현황 보드 (00_작업현황.md → board_docs) -->
+      <section id="p-board" class="page">
+        <div class="bd-sum">
+          <div class="k" id="bdKBoss"><div class="l">사장님 확인</div><div class="v" id="bdVBoss">—</div></div>
+          <div class="k"><div class="l">다음 할 일</div><div class="v" id="bdVNext">—</div></div>
+          <div class="k"><div class="l">채팅 요청</div><div class="v" id="bdVReq">—</div></div>
+          <div class="k"><div class="l">파일 갱신</div><div class="v" id="bdVUpd" style="font-size:15px;line-height:30px">—</div></div>
+        </div>
+        <div class="bd-attn" id="bdAttn" style="display:none"><h3>사장님 확인 필요</h3><ul id="bdAttnList"></ul></div>
+        <div class="bd-tools">
+          <input type="search" id="bdQ" placeholder="검색 (예: 이니시스, 정부24, 탈리)">
+          <button class="tbtn" id="bdViewBtn" onclick="bdToggleView()">원문</button>
+          <button class="tbtn" onclick="bdOpenAll()">모두 펼침</button>
+          <button class="tbtn" onclick="bdCloseAll()">모두 접기</button>
+          <button class="tbtn" onclick="bdLoad(true)">새로고침</button>
+          <span class="st"><i class="bd-led" id="bdLed"></i><span id="bdAgo">—</span></span>
+        </div>
+        <div id="bdBoard"><div class="bd-empty">불러오는 중…</div></div>
+        <pre class="bd-raw" id="bdRaw" style="display:none"></pre>
+        <p class="n" style="margin-top:10px;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--dim)" id="bdFoot">맥의 ~/Projects/AudioAZ/00_작업현황.md 가 바뀌면 launchd(board-sync)가 올리고, 이 화면은 30초마다 확인합니다.</p>
       </section>
 
       <!-- 결재 (승인 워크플로) -->
@@ -560,7 +624,7 @@ async function afterAuthGate(verified){
   if(!p.passkey_enrolled){ showStep('stepEnroll'); return; }
   if(verified!==true){ showStep('stepVerify'); return; }   // ← 비번 로그인 후에도 패스키 확인 강제
   enterConsole(p);
-  try{ azApprFields(); azApprLoad(); azInqLoad(); renderAdmins(); loadDash(); loadLicenses(); renderPromos(); loadOrders(); loadCustomers(); }catch(_){}
+  try{ azApprFields(); azApprLoad(); azInqLoad(); renderAdmins(); loadDash(); loadLicenses(); renderPromos(); loadOrders(); loadCustomers(); bdLoad(true); }catch(_){}
 }
 // STEP 4: 패스키 2차 확인 — 네이티브 패스키 재로그인으로 "패스키 세션"을 발급받아야 통과
 async function verifyPasskey(){
@@ -908,7 +972,7 @@ function extendSession(){
   }catch(_){}
 })();
 
-var titles={dash:'대시보드',appr:'결재',inq:'문의',lic:'라이선스',promo:'프로모션 · 할인',orders:'주문·결제',customers:'고객',products:'제품·버전',notice:'공지',settings:'설정',admins:'관리자 계정'};
+var titles={dash:'대시보드',board:'작업현황',appr:'결재',inq:'문의',lic:'라이선스',promo:'프로모션 · 할인',orders:'주문·결제',customers:'고객',products:'제품·버전',notice:'공지',settings:'설정',admins:'관리자 계정'};
 function toggleMenu(){
   var s=document.querySelector('.side'), b=document.getElementById('burger');
   var open=s.classList.toggle('open');
@@ -926,6 +990,7 @@ document.querySelectorAll('.side a[data-p]').forEach(a=>{
     if(p==='promo'){ try{renderPromos();}catch(_){} }
     if(p==='orders'){ try{loadOrders();}catch(_){} }
     if(p==='dash'){ try{loadDash();}catch(_){} }
+    if(p==='board'){ try{bdLoad(true);}catch(_){} }
     if(p==='customers'){ try{loadCustomers();}catch(_){} }
     if(p==='admins'){ try{renderAdmins();}catch(_){} }
     document.querySelector('.side').classList.remove('open');   // 메뉴 선택 시 자동 닫힘
@@ -1379,6 +1444,98 @@ function setupInfo(k){
   }[k];
   alert(t||'준비 중입니다.');
 }
+
+// ===== 작업현황 보드 (board_docs.main = ~/Projects/AudioAZ/00_작업현황.md) =====
+var BD={content:'',updated:null,mtime:null,q:'',raw:false,closed:{},last:null,timer:null};
+try{BD.closed=JSON.parse(localStorage.getItem('az_board_closed')||'{}')}catch(_){}
+function bdEsc(x){return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function bdInline(t){
+  t=bdEsc(t);
+  t=t.replace(/`([^`]+)`/g,function(_,c){return '<code>'+c+'</code>'});
+  t=t.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
+  t=t.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  t=t.replace(/(^|[\s(（])((https?:\/\/)[^\s<)）]+)/g,function(_,p,u){return p+'<a href="'+u+'" target="_blank" rel="noopener">'+u+'</a>'});
+  return t;
+}
+function bdParse(md){
+  var lines=md.split(/\r?\n/), secs=[], cur=null, intro=[];
+  lines.forEach(function(ln){
+    var m;
+    if((m=ln.match(/^##\s+(.*)$/))){ cur={title:m[1].trim(),items:[],notes:[]}; var t=cur.title.split(/\s+[—-]+\s*갱신\s*/); if(t.length>1){cur.title=t[0].trim();cur.upd=t[1].trim()} secs.push(cur); return; }
+    if(/^#\s/.test(ln)) return;
+    if((m=ln.match(/^>\s?(.*)$/))){ (cur?cur.notes:intro).push(m[1]); return; }
+    if((m=ln.match(/^(\s*)[-*]\s+(.*)$/))){
+      var depth=Math.floor(m[1].replace(/\t/g,'  ').length/2), it={text:m[2],sub:[]};
+      if(!cur){cur={title:'일반',items:[],notes:[]};secs.push(cur)}
+      if(depth>0 && cur.items.length){cur.items[cur.items.length-1].sub.push(it)} else cur.items.push(it);
+      return;
+    }
+    if(ln.trim() && cur && cur.items.length){ var last=cur.items[cur.items.length-1]; var tgt=last.sub.length?last.sub[last.sub.length-1]:last; tgt.text+=' '+ln.trim(); }
+  });
+  return {intro:intro,secs:secs};
+}
+var BD_BOSS=/대기\s*\(사장님?\)|남은\s*것\s*\(사장님?\)|사장님\s*(할\s*일|확인\s*필요|결정\s*필요|승인\s*필요)|사장님[^.。]{0,18}(입력|로그인|결정|확인|승인|서명|납부)\s*대기|(입력|결정|확인|승인|서명|납부)\s*대기\s*\(사장님?\)|\(사장님이?\s*(직접\s*)?(해야|하실|누르)/;
+function bdBossSentences(t){
+  var s=t.replace(/\*\*/g,'').replace(/^\(?\d{1,2}-\d{1,2}[^)]*\)?\s*/,'');
+  var parts=s.split(/(?<=[.。])\s+|\s+·\s+|\s+—\s+|\s+\/\s+/), hit=parts.filter(function(x){return BD_BOSS.test(x)});
+  var out=(hit.length?hit:[s]).join(' · '); return out.length>170?out.slice(0,168)+'…':out;
+}
+function bdClass(t){ var s=t.replace(/\*\*/g,''); if(BD_BOSS.test(s)) return 'boss'; if(/^\s*다음\s*[:：]|^\s*다음\s*할/.test(s)) return 'next'; if(/^\s*요청함|^\s*요청\s*[:：]|요청\(|→\s*[①②③④⑤]|[①②③④⑤]\s*(에게|에)\s*요청/.test(s)) return 'req'; return ''; }
+function bdChip(k){return k==='boss'?'사장님':k==='next'?'다음':k==='req'?'요청':''}
+function bdItem(it){
+  var k=bdClass(it.text), t=it.text, ts='';
+  var m=t.match(/^\**\(?(\d{1,2}-\d{1,2}(?:\s+\d{1,2}:\d{2})?)\)?\**\s*[:：]?\s*/); if(m){ts=m[1];t=t.slice(m[0].length)}
+  var hit=!BD.q||(it.text+' '+it.sub.map(function(s){return s.text}).join(' ')).toLowerCase().indexOf(BD.q)>=0;
+  var h='<div class="bd-it '+k+(hit?'':' hide')+'"><div class="mk"></div><div class="tx">'+(k?'<span class="chip">'+bdChip(k)+'</span>':'')+(ts?'<span class="ts">'+bdEsc(ts)+'</span>':'')+bdInline(t);
+  if(it.sub.length){h+='<div class="sub">'+it.sub.map(bdItem).join('')+'</div>'}
+  return h+'</div></div>';
+}
+function bdFmt(d){ if(!d)return '—'; var x=new Date(d); return (x.getMonth()+1)+'/'+x.getDate()+' '+String(x.getHours()).padStart(2,'0')+':'+String(x.getMinutes()).padStart(2,'0'); }
+function bdStat(){
+  var ref=BD.mtime||BD.updated; if(!ref) return;
+  var min=Math.floor((Date.now()-new Date(ref).getTime())/60000), s=min<1?'방금':min<60?min+'분 전':min<1440?Math.floor(min/60)+'시간 전':Math.floor(min/1440)+'일 전';
+  document.getElementById('bdAgo').textContent='파일 갱신 '+s; document.getElementById('bdVUpd').textContent=bdFmt(ref);
+  document.getElementById('bdLed').className='bd-led '+(min<180?'ok':min<1440?'warn':'bad');
+}
+function bdRender(){
+  var p=bdParse(BD.content), boss=[], nNext=0, nReq=0, html='';
+  p.secs.forEach(function(sec){
+    var num=(sec.title.match(/^[①②③④⑤⑥⑦⑧⑨⑩]/)||[''])[0], title=num?sec.title.slice(1).trim():sec.title, body='', cnt=0;
+    sec.notes.forEach(function(n){body+='<div class="note">'+bdInline(n)+'</div>'});
+    sec.items.forEach(function(it){
+      var k=bdClass(it.text); if(k==='boss')boss.push({a:num||title,t:it.text}); if(k==='next')nNext++; if(k==='req')nReq++;
+      it.sub.forEach(function(s){ if(bdClass(s.text)==='boss') boss.push({a:num||title,t:s.text}) });
+      body+=bdItem(it); cnt++;
+    });
+    var key=num||title, closed=!!BD.closed[key] && !BD.q;
+    html+='<div class="bd-sec'+(closed?' closed':'')+'" data-key="'+bdEsc(key)+'"><div class="h" onclick="bdToggle(this)">'+(num?'<span class="n">'+num+'</span>':'')+'<h3>'+bdEsc(title)+'</h3>'+(sec.upd?'<span class="m">갱신 '+bdEsc(sec.upd)+'</span>':'')+'<span class="c">'+cnt+'</span><span class="tg">▼</span></div><div class="b">'+(body||'<div class="bd-empty">항목 없음</div>')+'</div></div>';
+  });
+  document.getElementById('bdBoard').innerHTML=html||'<div class="bd-empty">보드 내용이 없습니다.</div>';
+  document.getElementById('bdVBoss').textContent=boss.length; document.getElementById('bdKBoss').classList.toggle('hot',boss.length>0);
+  document.getElementById('bdVNext').textContent=nNext; document.getElementById('bdVReq').textContent=nReq;
+  var badge=document.getElementById('boardBadge'); if(badge){ badge.textContent=boss.length; badge.style.display=boss.length?'inline-block':'none'; }
+  document.getElementById('bdAttn').style.display=boss.length?'block':'none';
+  document.getElementById('bdAttnList').innerHTML=boss.slice(0,12).map(function(b){return '<li><span class="a">'+bdEsc(b.a)+'</span>'+bdInline(bdBossSentences(b.t))+'</li>'}).join('');
+  document.getElementById('bdRaw').textContent=BD.content;
+  bdStat();
+}
+function bdToggle(h){ var s=h.parentNode,k=s.getAttribute('data-key'); s.classList.toggle('closed'); BD.closed[k]=s.classList.contains('closed'); try{localStorage.setItem('az_board_closed',JSON.stringify(BD.closed))}catch(_){} }
+function bdOpenAll(){ BD.closed={}; try{localStorage.setItem('az_board_closed','{}')}catch(_){} bdRender(); }
+function bdCloseAll(){ document.querySelectorAll('.bd-sec').forEach(function(s){BD.closed[s.getAttribute('data-key')]=true}); try{localStorage.setItem('az_board_closed',JSON.stringify(BD.closed))}catch(_){} bdRender(); }
+function bdToggleView(){ BD.raw=!BD.raw; document.getElementById('bdRaw').style.display=BD.raw?'block':'none'; document.getElementById('bdBoard').style.display=BD.raw?'none':'block'; document.getElementById('bdViewBtn').textContent=BD.raw?'보드':'원문'; }
+async function bdLoad(force){
+  try{
+    var r=await sb.from('board_docs').select('content,updated_at,file_mtime').eq('id','main').maybeSingle();
+    if(r.error){ document.getElementById('bdBoard').innerHTML='<div class="bd-empty">읽기 실패: '+bdEsc(r.error.message)+'</div>'; return; }
+    if(!r.data){ document.getElementById('bdBoard').innerHTML='<div class="bd-empty">아직 동기화된 보드가 없습니다 (맥의 board-sync 확인).</div>'; return; }
+    if(!force && r.data.updated_at===BD.last){ bdStat(); return; }
+    BD.last=r.data.updated_at; BD.content=r.data.content||''; BD.updated=r.data.updated_at; BD.mtime=r.data.file_mtime; bdRender();
+  }catch(ex){ document.getElementById('bdBoard').innerHTML='<div class="bd-empty">오류: '+bdEsc(ex&&ex.message||ex)+'</div>'; }
+}
+document.getElementById('bdQ').addEventListener('input',function(){ BD.q=this.value.trim().toLowerCase(); bdRender(); });
+setInterval(function(){ var pg=document.getElementById('p-board'); if(pg&&pg.classList.contains('on')&&document.visibilityState==='visible') bdLoad(false); },30000);
+setInterval(bdStat,60000);
+window.azBoardPreview=function(md){ BD.content=md; BD.updated=new Date().toISOString(); BD.mtime=BD.updated; bdRender(); };
 </script>
 </body>
 </html>
