@@ -152,57 +152,40 @@ tr:last-child td{border-bottom:0}
 .bd-empty{color:var(--dim);font-size:13px;padding:30px;text-align:center}
 
 
-/* ===== 서비스·한도 ===== */
-.us-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-@media(max-width:900px){.us-sum{grid-template-columns:1fr 1fr}}
-.us-sum .k{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
-.us-sum .k .l{font-size:11px;font-weight:700;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
-.us-sum .k .v{font-family:ui-monospace,Menlo,monospace;font-size:22px;font-weight:700;margin-top:2px;color:#fff}
-.us-sum .k.red .v{color:#ff9ea3}.us-sum .k.amb .v{color:#FFD27A}.us-sum .k.grn .v{color:#5CE0A0}
-.us-attn{background:#2A1416;border:1px solid #5A2A30;border-left:3px solid var(--red);border-radius:10px;padding:12px 14px;margin-top:14px}
-.us-attn.amb{background:#2A2210;border-color:#5A4A1E;border-left-color:var(--amber)}
-.us-attn h3{font-size:12px;font-weight:800;color:#ff9ea3;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
-.us-attn.amb h3{color:#FFD27A}
-.us-attn li{list-style:none;font-size:13px;padding:5px 0;border-top:1px dashed #4A3A3E;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.us-attn li:first-child{border-top:0}
-.us-attn li b{color:#fff}
-.us-attn li a.go{margin-left:auto;font-size:12px;font-weight:800;color:#fff;background:var(--red);border-radius:6px;padding:4px 10px}
-.us-attn.amb li a.go{background:#8A5A00}
-.us-tools{display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap}
-.us-tools .st{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--dim);margin-left:auto}
-.us-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
-@media(max-width:980px){.us-grid{grid-template-columns:1fr}}
-.us-card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
-.us-card.over,.us-card.down{border-color:#5A2A30}.us-card.warn{border-color:#5A4A1E}
-.us-card .h{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--line);background:#0E1A2E}
-.us-card .h .led{width:9px;height:9px;border-radius:50%;background:#4B5B75;flex:none}
-.us-card.ok .h .led{background:var(--green);box-shadow:0 0 6px rgba(18,183,106,.7)}
-.us-card.warn .h .led{background:var(--amber);box-shadow:0 0 6px rgba(245,185,60,.7)}
-.us-card.over .h .led,.us-card.down .h .led{background:var(--red);box-shadow:0 0 6px rgba(229,72,77,.8)}
-.us-card .h h3{font-size:14.5px;font-weight:800;color:#fff;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.us-card .h h3 small{font-weight:600;color:var(--dim);font-size:11.5px;margin-left:6px}
-.us-card .h .pl{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;font-weight:700;border:1px solid var(--line);border-radius:4px;padding:1px 6px;color:#AFC6E8;white-space:nowrap}
-.us-card .h .lv{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;font-weight:800;border-radius:4px;padding:1px 7px;white-space:nowrap}
-.us-card.ok .h .lv{color:#5CE0A0;background:#0F2A1E}.us-card.warn .h .lv{color:#FFD27A;background:#2A2210}.us-card.over .h .lv,.us-card.down .h .lv{color:#fff;background:var(--red)}.us-card.manual .h .lv,.us-card.unknown .h .lv{color:var(--dim);background:#17273F}
-.us-card .b{padding:10px 14px 12px;flex:1}
-.us-card .sm{font-size:12.5px;color:#D5DEEC;line-height:1.55;margin-bottom:8px}
-.us-m{display:grid;grid-template-columns:118px 1fr auto;gap:8px 10px;align-items:center;padding:5px 0;border-top:1px solid #1B2A44;font-size:12px}
-.us-m:first-of-type{border-top:0}
-.us-m .l{color:var(--dim);font-weight:600}
-.us-m .bar{height:6px;background:#0E1A2E;border:1px solid #243350;border-radius:2px;overflow:hidden}
-.us-m .bar i{display:block;height:100%;background:var(--blue)}
-.us-m.warn .bar i{background:var(--amber)}.us-m.over .bar i{background:var(--red)}
-.us-m .tx{color:#B7C7DC;font-size:12px}
-.us-m .v{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:#fff;white-space:nowrap;text-align:right}
-.us-m .v small{color:var(--dim);margin-left:4px}
-.us-card .f{display:flex;gap:8px;align-items:center;padding:9px 14px;border-top:1px solid var(--line);background:#0B1528;flex-wrap:wrap}
-.us-card .f .cost{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--dim);flex:1;min-width:120px}
-.us-card .f a.btn{font-size:12px;font-weight:700;border:1px solid var(--line);border-radius:6px;padding:5px 10px;color:#E9EEF7;background:#0E1A2E}
-.us-card .f a.pay{border-color:var(--blue);color:#9CC2F5}
-.us-card.warn .f a.pay{background:#8A5A00;border-color:#8A5A00;color:#fff}
-.us-card.over .f a.pay,.us-card.down .f a.pay{background:var(--red);border-color:var(--red);color:#fff}
-.us-card .f .date{display:flex;gap:6px;align-items:center;font-size:11.5px;color:var(--dim)}
-.us-card .f .date input{background:#0E1A2E;color:#E9EEF7;border:1px solid #243350;border-radius:6px;padding:4px 6px;font-family:inherit;font-size:12px}
+/* ===== 서비스·한도 (런치패드 타일) ===== */
+.us-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.us-bar .chip{font-size:12px;font-weight:700;color:var(--dim);border:1px solid var(--line);border-radius:6px;padding:5px 10px;background:var(--card)}
+.us-bar .chip b{font-family:ui-monospace,Menlo,monospace;margin-left:4px;color:#fff}
+.us-bar .chip.red.on{border-color:var(--red);color:#ff9ea3}.us-bar .chip.amb.on{border-color:var(--amber);color:#FFD27A}.us-bar .chip.grn{color:#5CE0A0}
+.us-bar .sp{flex:1}.us-bar .at{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--dim)}
+.us-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.us-t{position:relative;display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 14px 12px;color:inherit;min-height:150px;transition:.12s}
+.us-t:hover{border-color:var(--blue);background:#132140}
+.us-t.warn{border-color:#6A5522}.us-t.over,.us-t.down{border-color:#7A2E33;background:#1C1418}
+.us-t .top{display:flex;align-items:center;gap:8px}
+.us-t .led{width:9px;height:9px;border-radius:50%;background:#4B5B75;flex:none}
+.us-t.ok .led{background:var(--green);box-shadow:0 0 6px rgba(18,183,106,.7)}
+.us-t.warn .led{background:var(--amber);box-shadow:0 0 6px rgba(245,185,60,.7)}
+.us-t.over .led,.us-t.down .led{background:var(--red);box-shadow:0 0 7px rgba(229,72,77,.9)}
+.us-t .nm{font-weight:800;font-size:14px;color:#fff;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.us-t .tag{font-family:ui-monospace,Menlo,monospace;font-size:10px;font-weight:800;border-radius:4px;padding:1px 6px;white-space:nowrap}
+.us-t.ok .tag{color:#5CE0A0;background:#0F2A1E}.us-t.warn .tag{color:#FFD27A;background:#2A2210}.us-t.over .tag,.us-t.down .tag{color:#fff;background:var(--red)}.us-t.manual .tag,.us-t.unknown .tag{color:var(--dim);background:#17273F}
+.us-t .big{font-family:ui-monospace,Menlo,monospace;font-size:30px;font-weight:700;color:#fff;margin:12px 0 2px;line-height:1.1;letter-spacing:-.02em}
+.us-t .big small{font-size:12px;font-weight:600;color:var(--dim);margin-left:6px;letter-spacing:0}
+.us-t.warn .big{color:#FFD27A}.us-t.over .big,.us-t.down .big{color:#ff9ea3}
+.us-t .sub{font-size:12px;color:#B7C7DC;line-height:1.5}
+.us-t .sub b{color:#fff;font-weight:700}
+.us-t .bar{height:4px;background:#0E1A2E;border:1px solid #243350;border-radius:2px;overflow:hidden;margin:10px 0 8px}
+.us-t .bar i{display:block;height:100%;background:var(--blue)}
+.us-t.warn .bar i{background:var(--amber)}.us-t.over .bar i,.us-t.down .bar i{background:var(--red)}
+.us-t .ft{display:flex;align-items:center;gap:8px;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--dim);margin-top:6px}
+.us-t .ft .go{margin-left:auto;font-weight:800;color:#9CC2F5}
+.us-t.warn .ft .go{color:#FFD27A}.us-t.over .ft .go,.us-t.down .ft .go{color:#ff9ea3}
+.us-t .dt{position:absolute;right:12px;bottom:36px;display:none;gap:6px;align-items:center}
+.us-t .dt input{background:#0E1A2E;color:#E9EEF7;border:1px solid #243350;border-radius:6px;padding:3px 6px;font-family:inherit;font-size:12px}
+.us-t.edit .dt{display:flex}
+.us-t .pen{font-size:11px;color:var(--dim);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.us-t .pen:hover{color:#fff}
 
 /* ===== 다크 대비 보정 (라이트 테마 잔재 제거) ===== */
 .mono{color:#AFC6E8}
@@ -405,21 +388,19 @@ td{color:var(--text)}
         <p class="n" style="margin-top:10px;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--dim)" id="bdFoot">맥의 ~/Projects/AudioAZ/00_작업현황.md 가 바뀌면 launchd(board-sync)가 올리고, 이 화면은 30초마다 확인합니다.</p>
       </section>
 
-      <!-- 서비스·한도 (services + service_status, usage-collector 30분) -->
+      <!-- 서비스·한도 — 런치패드식 타일 (services + service_status, usage-collector 30분) -->
       <section id="p-usage" class="page">
-        <div class="us-sum">
-          <div class="k" id="usKBad"><div class="l">초과 · 장애</div><div class="v" id="usVBad">—</div></div>
-          <div class="k" id="usKWarn"><div class="l">경고 (70% 이상 · 30일 내 갱신)</div><div class="v" id="usVWarn">—</div></div>
-          <div class="k" id="usKOk"><div class="l">정상</div><div class="v" id="usVOk">—</div></div>
-          <div class="k"><div class="l">마지막 점검</div><div class="v" id="usVAt" style="font-size:15px;line-height:30px">—</div></div>
-        </div>
-        <div class="us-attn" id="usAttn" style="display:none"><h3 id="usAttnT">지금 조치 필요</h3><ul id="usAttnList"></ul></div>
-        <div class="us-tools">
+        <div class="us-bar">
+          <span class="chip red" id="usCBad">초과·장애 <b>0</b></span>
+          <span class="chip amb" id="usCWarn">경고 <b>0</b></span>
+          <span class="chip grn" id="usCOk">정상 <b>0</b></span>
+          <span class="chip dim" id="usCMan">날짜 입력 필요 <b>0</b></span>
+          <span class="sp"></span>
+          <span class="at" id="usVAt">—</span>
           <button class="tbtn" onclick="usCheckNow()" id="usCheckBtn">지금 점검</button>
-          <button class="tbtn" onclick="usLoad()">새로고침</button>
-          <span class="st" id="usFoot">30분마다 자동 수집 · 사용량 70% 경고 · 90% 초과 · 갱신 30일 전 경고 · 7일 전 초과</span>
         </div>
-        <div class="us-grid" id="usGrid"><div class="n" style="padding:20px">불러오는 중…</div></div>
+        <div class="us-tiles" id="usGrid"><div class="n" style="padding:20px">불러오는 중…</div></div>
+        <p class="n" style="margin-top:12px;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--dim)">타일을 누르면 그 서비스의 결제·요금제 화면이 열립니다 · 30분마다 자동 점검 · 사용량 70% 경고 · 90% 초과 · 결제일 30일 전 경고 · 7일 전 초과</p>
       </section>
 
       <!-- 결재 (승인 워크플로) -->
@@ -1633,29 +1614,39 @@ function usMetric(x){
 }
 function usRender(){
   var list=US.svcs.slice().sort(function(a,b){var la=(US.st[a.id]||{}).level||'unknown',lb=(US.st[b.id]||{}).level||'unknown';return (US_ORDER[la]-US_ORDER[lb])||(a.sort-b.sort)});
-  var bad=0,warn=0,ok=0,attn=[],html='';
+  var bad=0,warn=0,ok=0,man=0,html='';
   list.forEach(function(sv){
-    var st=US.st[sv.id]||{level:'unknown',summary:'아직 점검 전',metrics:[]}, lv=st.level||'unknown';
-    if(lv==='over'||lv==='down')bad++; else if(lv==='warn')warn++; else if(lv==='ok')ok++;
-    if(lv==='over'||lv==='down'||lv==='warn') attn.push({sv:sv,st:st,lv:lv});
+    var st=US.st[sv.id]||{level:'unknown',summary:'아직 점검 전',metrics:[]}, lv=st.level||'unknown', ms=st.metrics||[];
+    if(lv==='over'||lv==='down')bad++; else if(lv==='warn')warn++; else if(lv==='ok')ok++; else man++;
+    // 핵심 숫자 하나: 사용량이 있으면 "남은 %", 날짜만 있으면 "D-N"
+    var pcts=ms.filter(function(x){return x.pct!=null}), days=ms.filter(function(x){return x.unit==='일'&&x.used!=null})[0];
+    var big='', bigSub='', barPct=null;
+    if(pcts.length){ var worst=pcts.reduce(function(a,x){return x.pct>a.pct?x:a}); var left=Math.max(0,Math.round(100-worst.pct)); big='남은 '+left+'%'; bigSub=worst.label+' '+usNum(worst.used,worst.unit)+' / '+usNum(worst.limit,worst.unit); barPct=Math.min(100,worst.pct); }
+    else if(days){ big=days.used<0?'만료 +'+(-days.used)+'일':'D-'+days.used; bigSub='결제·갱신일 '+(sv.renew_at||''); barPct=Math.min(100,Math.max(0,100-Math.round(days.used/365*100))); }
+    else if(lv==='down'){ big='장애'; bigSub=st.summary||''; }
+    else if(lv==='manual'){ big='날짜 입력'; bigSub='결제·갱신일을 넣으면 D-day로 표시'; }
+    else if(lv==='warn'){ big='주의'; bigSub=st.summary||''; }
+    else { big='정상'; bigSub=st.summary||''; }
+    var pay=sv.renew_at?('결제일 '+sv.renew_at):(/free/i.test(sv.plan||'')?'무료 · 결제 없음':(sv.cost_note||''));
     var manualDate=['apple','google','inicis','paddle'].indexOf(sv.id)>=0;
-    html+='<div class="us-card '+lv+'"><div class="h"><i class="led"></i><h3>'+usEsc(sv.name)+'<small>'+usEsc(sv.category||'')+'</small></h3><span class="pl">'+usEsc(sv.plan||'')+'</span><span class="lv">'+(US_LV[lv]||lv)+'</span></div>'
-      +'<div class="b"><div class="sm">'+usEsc(st.summary||'')+(st.error?' <span style="color:#ff9ea3">'+usEsc(st.error).slice(0,120)+'</span>':'')+'</div>'+(st.metrics||[]).map(usMetric).join('')+(sv.note?'<div class="us-m" style="border-top:1px solid #1B2A44;margin-top:4px"><span class="l">한도·메모</span><span class="tx" style="grid-column:2/4">'+usEsc(sv.note)+'</span></div>':'')+'</div>'
-      +'<div class="f"><span class="cost">'+usEsc(sv.cost_note||'')+'</span>'
-      +(manualDate?'<span class="date">갱신·결제일 <input type="date" value="'+usEsc(sv.renew_at||'')+'" onchange="usSaveDate(\''+sv.id+'\',this.value)"></span>':'')
-      +(sv.site_url?'<a class="btn" href="'+usEsc(sv.site_url)+'" target="_blank" rel="noopener">사이트</a>':'')
-      +(sv.billing_url?'<a class="btn pay" href="'+usEsc(sv.billing_url)+'" target="_blank" rel="noopener">'+(lv==='over'||lv==='down'?'지금 결제·업그레이드 →':lv==='warn'?'결제·요금제 확인 →':'요금제')+'</a>':'')
-      +'</div></div>';
+    var go=lv==='over'||lv==='down'?'지금 결제 →':lv==='warn'?'결제 확인 →':'요금제 →';
+    html+='<a class="us-t '+lv+'" data-id="'+usEsc(sv.id)+'" href="'+usEsc(sv.billing_url||sv.site_url||'#')+'" target="_blank" rel="noopener">'
+      +'<div class="top"><i class="led"></i><span class="nm">'+usEsc(sv.name)+'</span><span class="tag">'+(US_LV[lv]||lv)+'</span></div>'
+      +'<div class="big">'+usEsc(big)+'</div>'
+      +'<div class="sub">'+usEsc(bigSub)+'</div>'
+      +(barPct!=null?'<div class="bar"><i style="width:'+barPct+'%"></i></div>':'<div class="bar" style="opacity:.35"><i style="width:0"></i></div>')
+      +'<div class="sub"><b>'+usEsc(pay)+'</b>'+(sv.plan?' · '+usEsc(sv.plan):'')+'</div>'
+      +'<div class="ft">'+(manualDate?'<span class="pen" onclick="event.preventDefault();event.stopPropagation();usEdit(\''+sv.id+'\')">'+(sv.renew_at?'날짜 수정':'결제일 입력')+'</span>':'<span>'+usEsc(sv.category||'')+'</span>')+'<span class="go">'+go+'</span></div>'
+      +(manualDate?'<span class="dt" onclick="event.preventDefault();event.stopPropagation()"><input type="date" value="'+usEsc(sv.renew_at||'')+'" onchange="usSaveDate(\''+sv.id+'\',this.value)"></span>':'')
+      +'</a>';
   });
   document.getElementById('usGrid').innerHTML=html||'<div class="n" style="padding:20px">서비스 목록이 없습니다.</div>';
-  document.getElementById('usVBad').textContent=bad; document.getElementById('usVWarn').textContent=warn; document.getElementById('usVOk').textContent=ok;
-  document.getElementById('usKBad').className='k'+(bad?' red':''); document.getElementById('usKWarn').className='k'+(warn?' amb':''); document.getElementById('usKOk').className='k grn';
-  document.getElementById('usVAt').textContent=US.at?bdFmt(US.at):'—';
+  var set=function(id,n,on){var el=document.getElementById(id); el.querySelector('b').textContent=n; el.classList.toggle('on',!!on)};
+  set('usCBad',bad,bad); set('usCWarn',warn,warn); set('usCOk',ok,true); set('usCMan',man,false);
+  document.getElementById('usVAt').textContent=US.at?'점검 '+bdFmt(US.at):'—';
   var badge=document.getElementById('usageBadge'); if(badge){ var n=bad+warn; badge.textContent=n; badge.style.display=n?'inline-block':'none'; badge.style.background=bad?'#E5484D':'#E7B252'; badge.style.color=bad?'#fff':'#2E2410'; }
-  var box=document.getElementById('usAttn'); box.style.display=attn.length?'block':'none'; box.className='us-attn'+(bad?'':' amb');
-  document.getElementById('usAttnT').textContent=bad?'지금 조치 필요 — 한도 초과 또는 장애':'미리 준비 — 한도 접근 또는 갱신 임박';
-  document.getElementById('usAttnList').innerHTML=attn.map(function(a){return '<li><b>'+usEsc(a.sv.name)+'</b><span>'+usEsc(a.st.summary||'')+'</span>'+(a.sv.billing_url?'<a class="go" href="'+usEsc(a.sv.billing_url)+'" target="_blank" rel="noopener">'+(a.lv==='warn'?'결제·요금제 확인 →':'지금 결제·업그레이드 →')+'</a>':'')+'</li>'}).join('');
 }
+function usEdit(id){ var t=document.querySelector('.us-t[data-id="'+id+'"]'); if(t){ t.classList.toggle('edit'); var i=t.querySelector('input'); if(i&&t.classList.contains('edit')) i.focus(); } }
 async function usLoad(){
   try{
     var r1=await sb.from('services').select('*').order('sort'); var r2=await sb.from('service_status').select('*');
