@@ -44,7 +44,7 @@
   .wrap{max-width:1240px;margin:0 auto;padding:26px 20px 68px}
   .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
   header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px;position:relative}
-  #topCtl{position:absolute;top:0;right:0;display:inline-flex;gap:6px;align-items:center;z-index:50}
+  #topCtl{position:absolute;top:0;right:192px;display:inline-flex;gap:6px;align-items:center;z-index:50}   /* 종단면 카드 우측 끝 정렬 = 씬박스 176px + gap 16px 만큼 안쪽 */
   @media(max-width:900px){#topCtl{position:static;display:inline-flex}}
   .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
   h1{font-size:26px;font-weight:600;margin:5px 0 4px;letter-spacing:-.01em}
@@ -324,7 +324,7 @@
 </svg>
       <div>
       <div class="eyebrow" style="letter-spacing:.24em"><b style="color:var(--brand)">AudioAZ</b> · AUDIO PRODUCTION COMPANY</div>
-      <h1>AudioAZ System Designer <span style="font-size:11px;font-family:var(--mono);letter-spacing:.12em;vertical-align:middle;color:#fff;background:var(--brand);border-radius:999px;padding:3px 9px;position:relative;top:-3px">BETA</span> <span style="font-size:11px;font-family:var(--mono);color:var(--ink-3);vertical-align:middle;position:relative;top:-3px">for d&amp;b</span> <span style="font-size:12px;font-family:var(--mono);font-weight:700;letter-spacing:.04em;vertical-align:middle;color:var(--brand);border:1.5px solid var(--brand);border-radius:999px;padding:2px 10px;position:relative;top:-3px">v1.2.2</span></h1>
+      <h1>AudioAZ System Designer <span style="font-size:11px;font-family:var(--mono);letter-spacing:.12em;vertical-align:middle;color:#fff;background:var(--brand);border-radius:999px;padding:3px 9px;position:relative;top:-3px">BETA</span> <span style="font-size:11px;font-family:var(--mono);color:var(--ink-3);vertical-align:middle;position:relative;top:-3px">for d&amp;b</span> <span style="font-size:12px;font-family:var(--mono);font-weight:700;letter-spacing:.04em;vertical-align:middle;color:var(--brand);border:1.5px solid var(--brand);border-radius:999px;padding:2px 10px;position:relative;top:-3px">v1.2.3</span></h1>
       <div class="sub">모델과 앰프를 고르면 — 목표 SPL·베뉴 크기로 통수를, 통수로 스플레이 각을 추천하고, 링크로 앰프를 절약해 ArrayCalc/R1 물량을 산출합니다.<br><span data-t="sub2" style="font-size:11px;color:var(--ink-3)">AudioAZ가 만든 <b>독립·비공식</b> 도구입니다. d&amp;b audiotechnik과 무관하며 공식 승인·제휴가 아닙니다. <button type="button" id="legalBtn" style="background:none;border:none;color:var(--brand);cursor:pointer;text-decoration:underline;font-size:11px;padding:0">고지·라이선스</button></span></div>
       </div>
     </div>
@@ -744,7 +744,7 @@
     </div>
   </div>
 </div>
-<div id="verbadge" data-t="foot"><b style="color:#1877F2">AudioAZ</b> <b>AudioAZ System Designer BETA v1.2.2</b> · 2026-08 · <span style="opacity:.85">Made in Korea 🇰🇷</span><br>비공식·독립 도구 — d&amp;b audiotechnik과 무관 · 결과 무보증 · 리깅/하중은 공식 ArrayCalc·전문가 검증 필수</div>
+<div id="verbadge" data-t="foot"><b style="color:#1877F2">AudioAZ</b> <b>AudioAZ System Designer BETA v1.2.3</b> · 2026-08 · <span style="opacity:.85">Made in Korea 🇰🇷</span><br>비공식·독립 도구 — d&amp;b audiotechnik과 무관 · 결과 무보증 · 리깅/하중은 공식 ArrayCalc·전문가 검증 필수</div>
 <script>
   (function(){
     if(!document.querySelector('meta[name=viewport]')){
