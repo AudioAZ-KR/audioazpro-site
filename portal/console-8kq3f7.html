@@ -1177,7 +1177,7 @@ async function loadOrders(){
   var ST={pending:['대기','p-trial'],paid:['결제완료','p-paid'],refunded:['환불','p-refund']};
   tb.innerHTML=ORDERS.map(function(o){
     var p=EMAILS[o.user_id]||{}; var s=ST[o.status]||[o.status,'p-trial'];
-    var amt=(o.currency==='KRW'?'₩':o.currency+' ')+Number(o.amount||0).toLocaleString();
+    var amt=(o.paid_currency&&o.paid_currency!=='KRW') ? (o.paid_currency+' '+Number(o.paid_amount||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})) : ((o.currency==='KRW'?'₩':(o.currency||'')+' ')+Number(o.amount||0).toLocaleString());
     return '<tr><td class="mono" title="'+esc(o.id)+'">'+esc(String(o.id).slice(0,8))+'</td><td>'+esc(PRODNAME[o.product_id]||o.product_id)+'</td><td>'+esc(p.email||o.user_id)+'</td><td>'+esc(o.provider||'—')+'</td><td class="mono">'+amt+'</td><td><span class="pill '+s[1]+'">'+s[0]+'</span></td><td class="mono">'+fmtDate(o.created_at)+'</td>'+
       '<td>'+(o.status==='paid'?'<button class="tbtn danger" onclick="refundOrder(\''+o.id+'\')">환불</button>':'')+' <button class="tbtn" onclick="copyText(\''+o.id+'\',this)">ID복사</button></td></tr>';
   }).join('');
