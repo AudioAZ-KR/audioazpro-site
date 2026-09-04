@@ -326,7 +326,8 @@ function licMenu(ev, idx){
     '<button onclick="licMenuAct('+idx+',\'copy\',this)"><span class="mi">⧉</span>키 복사</button>'+
     '<button onclick="licMenuAct('+idx+',\'dl\')"><span class="mi">↓</span>다운로드</button>'+
     '<button onclick="licMenuAct('+idx+',\'act\')"><span class="mi">◎</span>'+(b?'활성화 변경':'활성화')+'</button>'+
-    '<button onclick="licMenuAct('+idx+',\'note\')"><span class="mi">✎</span>메모 수정</button>';
+    '<button onclick="licMenuAct('+idx+',\'note\')"><span class="mi">✎</span>메모 수정</button>'+
+    ((l.status==='revoked'||l.status==='expired'||(l.expires&&new Date(l.expires)<new Date())) ? '<button onclick="licMenuAct('+idx+',\'del\')" style="color:#F0727C"><span class="mi">✕</span>목록에서 삭제</button>' : '');
   licMenuEl.addEventListener('click',function(e){e.stopPropagation();});
   document.body.appendChild(licMenuEl);
   var r=ev.currentTarget.getBoundingClientRect(), mw=licMenuEl.offsetWidth, mh=licMenuEl.offsetHeight;
@@ -344,6 +345,16 @@ function licMenuAct(idx, act, btn){
   }
   else if(act==='dl'){ location.href='/downloads.html'; return; }
   else if(act==='act'){ location.href='activate.html?id='+encodeURIComponent(l.id); return; }
+  else if(act==='del'){
+    closeLicMenu();
+    if(!confirm('만료되었거나 더 이상 쓸 수 없는 라이선스입니다. 목록에서 삭제할까요?\n(삭제하면 되돌릴 수 없습니다)')) return;
+    (async function(){
+      var r=await sbA.from('licenses').delete().eq('id', l.id);
+      if(r.error){ alert('삭제 실패: '+r.error.message); return; }
+      await loadLicenses();
+    })();
+    return;
+  }
   else if(act==='note'){
     closeLicMenu();
     var cell=document.querySelector('.notecell[data-i="'+idx+'"]');
