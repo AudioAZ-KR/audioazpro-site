@@ -38,7 +38,7 @@
   // 상단 메뉴 스위치 (KR · EN) — nav 우측, 이모지 없음
   function mountSwitch(){
     if(document.getElementById('az-lang-switch')) return;
-    var host=document.querySelector('nav .menu, nav .nav-in, nav .wrap, header nav, nav'); if(!host) return;
+    var host=null; ['nav .menu','nav .nav-in','nav .wrap','header nav','nav'].some(function(q){ host=document.querySelector(q); return !!host; }); if(!host) return;
     var box=document.createElement('div'); box.id='az-lang-switch'; box.setAttribute('aria-label','Language');
     box.style.cssText='display:inline-flex;align-items:center;gap:6px;margin-left:14px;font:600 11.5px ui-monospace,Menlo,monospace;letter-spacing:.08em;color:var(--dim,#96A6BF);white-space:nowrap;vertical-align:middle';
     var cur=lang();
