@@ -55,7 +55,9 @@
       a.style.cssText='color:'+(cur===code?'var(--text,#E9EEF7)':'inherit')+';text-decoration:none;padding:3px 6px;border:1px solid '+(cur===code?'var(--blue,#1877F2)':'transparent')+';border-radius:2px';
       a.onclick=function(e){ e.preventDefault(); if(cur!==code) setLang(code); }; return a; }
     box.appendChild(b('kr','KR')); var sep=document.createElement('span'); sep.textContent='·'; sep.style.opacity='.5'; box.appendChild(sep); box.appendChild(b('en','EN'));
-    host.appendChild(box);
+    // 메뉴 맨 앞(제품 왼쪽)에 배치
+    if(host.classList&&host.classList.contains('menu')&&host.firstElementChild){ box.style.marginLeft='0'; box.style.marginRight='14px'; host.insertBefore(box, host.firstElementChild); }
+    else host.appendChild(box);
   }
   // 법적 문서 EN 안내
   function legalNote(){
