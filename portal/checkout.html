@@ -134,6 +134,13 @@ var APPLIED=null;              // 적용된 코드 (사용횟수 차감용)
 function priceNow(){ return AZ.priceOf(CURPROD).now; }
 function renderPrice(){
   var pr=AZ.priceOf(CURPROD);
+  if(payMode()==='intl'){
+    var usd=usdOf(CURPROD);
+    var txt = (usd!=null) ? ('$'+usd.toLocaleString('en-US',{minimumFractionDigits:2})) : 'USD — TBA';
+    document.getElementById('pPrice').innerHTML=txt; document.getElementById('sBase').textContent=txt;
+    document.getElementById('sSaleLine').style.display='none'; document.getElementById('sTotal').textContent=txt+' + tax';
+    return;
+  }
   document.getElementById('pPrice').innerHTML = pr.sale!==null
     ? '<span class="strike">'+W(pr.base)+'</span> '+W(pr.sale)
     : W(pr.base);
@@ -203,6 +210,8 @@ async function grantCode(){
 // 결제사 설정(pay-config.js)이 비어 있으면 구매 문의로 안내 (무료 발급 없음)
 async function pay(ch){
   var provider = (ch==='Paddle') ? 'paddle' : 'portone';
+  if(payMode()==='intl' && provider==='portone'){ setPayMode('intl'); return; }
+  if(payMode()==='kr' && provider==='paddle'){ setPayMode('kr'); return; }
   if(!payReady(provider)){
     alert('온라인 카드 결제는 결제사 연동 승인 후 열립니다.\n\n지금 구매를 원하시면 문의하기로 요청해 주세요 — 계좌이체 안내 후 라이선스를 발급해 드립니다.\n(프로모션/라이선스 코드가 있으면 위에서 입력해 바로 발급받을 수 있습니다)');
     location.href='/contact.html?subject='+encodeURIComponent(PROD[CURPROD]+' 구매 문의'); return;
@@ -232,11 +241,27 @@ async function pay(ch){
   }catch(ex){ alert('결제를 진행하지 못했습니다: '+ex.message); }
   finally{ btns.forEach(function(b){b.disabled=false;}); }
 }
-// 결제 버튼 라벨·표시 (pay-config.js 기준)
+// 결제 모드: 한국어 브라우저 = 국내 결제(원화, 국내 발급 카드) / 그 외 = 해외 결제(달러, Paddle). 아래 전환 링크로 수동 변경 가능.
+function payMode(){
+  try{ var o=localStorage.getItem('az_pay_mode'); if(o==='kr'||o==='intl') return o; }catch(_){}
+  var lang=(navigator.language||'').toLowerCase();
+  return lang.indexOf('ko')===0 ? 'kr' : 'intl';
+}
+function setPayMode(m){ try{ localStorage.setItem('az_pay_mode',m); }catch(_){} renderPrice(); renderPayButtons(); }
+function usdOf(pid){ var u=(window.AZ_PAY&&window.AZ_PAY.paddle&&window.AZ_PAY.paddle.usd)||{}; return (u[pid]!=null)?u[pid]:null; }
 function renderPayButtons(){
   var kr=document.getElementById('btnKr'), intl=document.getElementById('btnIntl'); if(!kr) return;
-  kr.textContent = payReady('portone') ? '카드·간편결제로 구매' : '구매 문의하기';
-  if(intl) intl.style.display = payReady('paddle') ? '' : 'none';
+  var mode=payMode(); var sw=document.getElementById('paySwitch');
+  if(!sw){ sw=document.createElement('div'); sw.id='paySwitch'; sw.style.cssText='margin-top:10px;font-size:12px;color:var(--dim);text-align:center'; kr.parentNode.appendChild(sw); }
+  if(mode==='kr'){
+    kr.style.display=''; kr.textContent = payReady('portone') ? '카드·간편결제로 구매 (국내 발급 카드)' : '구매 문의하기';
+    if(intl) intl.style.display='none';
+    sw.innerHTML='해외 발급 카드 · PayPal은 <a href="#" onclick="setPayMode(\'intl\');return false" style="color:var(--blue)">달러 결제(International checkout)</a>';
+  } else {
+    kr.style.display='none';
+    if(intl){ intl.style.display=''; intl.textContent = payReady('paddle') ? 'Pay with card / PayPal (USD)' : 'International checkout — coming soon'; intl.disabled=!payReady('paddle'); }
+    sw.innerHTML='Prices in USD, tax added at checkout. 국내 발급 카드는 <a href="#" onclick="setPayMode(\'kr\');return false" style="color:var(--blue)">원화 결제</a>';
+  }
 }
 // ?p=제품 로 구매 대상 설정, ?code= 로 코드 자동 적용
 (function(){
