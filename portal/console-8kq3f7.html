@@ -84,7 +84,7 @@ tr:last-child td{border-bottom:0}
 .rowflex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .search{flex:1;min-width:180px}
 .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
-:root{--page:#0B1220;--card:#121D33;--navbg:rgba(11,18,32,.9);--text:#E9EEF7;--dim:#96A6BF;--line:#243350;--bg:#0C1424;--sky:#17273F;--wordmark:#fff}body{background:var(--bg)}.logo{width:auto !important}.field input,.field select,.field textarea,.key{background:#0E1A2E;color:#E9EEF7;border-color:#243350}.field input::placeholder{color:#6B7C96}.notice{color:#9CC2F5}.demobar{position:fixed;top:0;left:0;right:0;z-index:300;background:#8a5a00;color:#ffe0ad;text-align:center;font-size:12px;font-weight:600;padding:7px 12px}body{padding-top:32px}.topbar{top:32px}nav{top:32px}.side{top:32px}
+:root{--page:#0B1220;--card:#121D33;--navbg:rgba(11,18,32,.9);--text:#E9EEF7;--dim:#96A6BF;--line:#243350;--bg:#0C1424;--sky:#17273F;--wordmark:#fff}body{background:var(--bg)}.logo{width:auto !important}.field input,.field select,.field textarea,.key{background:#0E1A2E;color:#E9EEF7;border-color:#243350}.field input::placeholder{color:#6B7C96}.notice{color:#9CC2F5}.demobar{position:fixed;top:0;left:0;right:0;z-index:300;background:#8a5a00;color:#ffe0ad;text-align:center;font-size:12px;font-weight:600;padding:7px 12px}
 /* 관리자 로그인 게이트 */
 .layout{display:none}
 .gate{position:fixed;inset:0;z-index:400;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
@@ -167,7 +167,6 @@ td{color:var(--text)}
 }</style>
 </head>
 <body>
-<div class="demobar" role="note">결제 연동(포트원·Paddle) 준비 중 · 인증·라이선스·결재·문의는 실데이터로 운영 중</div>
 
 <!-- 관리자 로그인 게이트 -->
 <div class="gate" id="gate">
@@ -330,7 +329,7 @@ td{color:var(--text)}
           <form onsubmit="return issue(event)">
             <div class="grid2">
               <div class="field"><label>제품</label><select name="product" required><option value="">선택</option><option>Klera Voice</option><option>Klera Instrument</option><option>Flare Tally</option><option>Latency Meter AZ</option></select></div>
-              <div class="field"><label>유형</label><select name="type"><option>영구 (2대)</option><option>영구 (1대)</option><option>체험 (14일)</option><option>NFR/리뷰용</option></select></div>
+              <div class="field"><label>유형</label><select name="type"><option>영구</option><option>체험 (14일)</option><option>NFR/리뷰용</option></select><div class="note" style="margin-top:6px">허용 기기 수는 제품 설정(제품·버전 탭)을 따릅니다 — 탈리 1대, 플러그인 2대</div></div>
               <div class="field"><label>구매자 이름</label><input name="name" placeholder="홍길동" required></div>
               <div class="field"><label>이메일</label><input type="email" name="email" placeholder="buyer@example.com" required></div>
             </div>
@@ -372,7 +371,7 @@ td{color:var(--text)}
         </div>
 
         <!-- 프로모션 코드 발행 -->
-        <div class="card"><h2>프로모션 코드 발행</h2><div class="sub">라이선스 코드(데모·무료)와 할인 코드를 발행합니다. <b>코드 텍스트는 직접 정해서</b> 입력하세요. 고객이 결제 시 코드를 입력하면 발행 DB와 대조해 라이선스를 발급하거나 가격을 할인합니다.</div>
+        <div class="card"><h2>프로모션 코드 발행</h2><div class="sub">라이선스 코드(체험·무료)와 할인 코드를 발행합니다. <b>코드 텍스트는 직접 정해서</b> 입력하세요. 고객이 결제 시 코드를 입력하면 발행 DB와 대조해 라이선스를 발급하거나 가격을 할인합니다.</div>
           <form onsubmit="return genPromo(event)">
             <div class="field"><label>코드 유형</label>
               <div class="rowflex" style="gap:18px">
@@ -392,9 +391,9 @@ td{color:var(--text)}
 
               <!-- 라이선스용 -->
               <div class="field lic-f"><label>라이선스 종류</label><select name="kind">
-                <option value="D7">데모 · 7일</option>
-                <option value="D14">데모 · 14일</option>
-                <option value="D30">데모 · 30일(한달)</option>
+                <option value="D7">체험 · 7일</option>
+                <option value="D14">체험 · 14일</option>
+                <option value="D30">체험 · 30일</option>
                 <option value="FREE">무료 라이선스 (영구)</option>
               </select></div>
 
@@ -446,7 +445,7 @@ td{color:var(--text)}
       <!-- 제품 -->
       <section id="p-products" class="page">
         <div class="card"><h2>제품 · 버전</h2><div class="sub"><b>정가</b>와 버전은 products DB에 저장되어 <b>홈페이지·결제·할인 탭의 모든 고객에게 즉시 반영</b>됩니다. 정가를 비워두면 "미정(출시 예정)"으로 표시됩니다.</div>
-          <table><thead><tr><th>제품</th><th>최신버전</th><th>정가</th><th>세일가</th><th>상태</th><th></th></tr></thead>
+          <table><thead><tr><th>제품</th><th>최신버전</th><th>정가</th><th>세일가</th><th>기기 수</th><th>상태</th><th></th></tr></thead>
           <tbody id="prodRows"></tbody></table>
         </div>
       </section>
@@ -933,7 +932,7 @@ document.querySelectorAll('.side a[data-p]').forEach(a=>{
 });
 // ===== 프로모션 코드 · 세일 (AZ 데모 저장소 공유 — 정식 전환 시 promo_codes/products DB) =====
 var PRODNAME={ALL:'전 제품',KV:'Klera Voice',KI:'Klera Instrument',TALLY:'Flare Tally',LMAZ:'Latency Meter AZ'};
-var KINDLABEL={D7:'데모 7일',D14:'데모 14일',D30:'데모 30일',FREE:'무료(영구)'};
+var KINDLABEL={D7:'체험 7일',D14:'체험 14일',D30:'체험 30일',FREE:'무료(영구)'};
 var W=function(v){return '₩'+Number(v||0).toLocaleString();};
 
 function promoType(){
@@ -1254,7 +1253,7 @@ async function custDetail(id){
 // ===== 제품 · 버전 (가격·버전 편집 → 홈페이지·결제 즉시 반영) =====
 var PRODUCTS={};  // DB products 캐시 {id:{name,version,price_krw,active}}
 async function loadProducts(){
-  var r=await sb.from('products').select('id,name,version,price_krw,active,sale_price,sale_from,sale_to').order('id');
+  var r=await sb.from('products').select('id,name,version,price_krw,active,sale_price,sale_from,sale_to,max_devices').order('id');
   if(r.error){ var tb=document.getElementById('prodRows'); if(tb) tb.innerHTML='<tr><td colspan="6" style="color:#ff9ea3">불러오기 실패: '+esc(r.error.message)+'</td></tr>'; return; }
   PRODUCTS={}; var sl={};
   (r.data||[]).forEach(function(x){ PRODUCTS[x.id]=x; if(x.price_krw!=null) AZ.setBasePrice(x.id,x.price_krw); if(x.version) AZ.setVersion(x.id,x.version); if(x.sale_price!=null) sl[x.id]={price:x.sale_price,start:x.sale_from||null,end:x.sale_to||null}; });
@@ -1269,10 +1268,11 @@ function renderProducts(){
     var status = price==null ? '<span class="pill p-trial">정가 미정</span>' : (price===0 ? '<span class="pill p-active">무료</span>' : '<span class="pill p-active">판매중</span>');
     return '<tr><td>'+esc(db.name||m.name)+'</td>'+
       '<td class="mono">'+esc(db.version||AZ.versionOf(p))+'</td>'+
-      '<td>'+(price==null?'<span style="color:var(--dim)">미정</span><div style="font-size:11px;color:var(--dim)">현재 데모가 '+W(AZ.basePrice(p))+' 적용 중</div>':(price?W(price):'무료'))+'</td>'+
+      '<td>'+(price==null?'<span style="color:var(--dim)">미정</span>':(price?W(price):'무료'))+'</td>'+
       '<td>'+(sale?('<b>'+W(sale.price)+'</b>'):'—')+'</td>'+
+      '<td><b>'+(db.max_devices!=null?db.max_devices:2)+'대</b></td>'+
       '<td>'+status+'</td>'+
-      '<td style="white-space:nowrap"><button class="tbtn pri" onclick="editProduct(\''+p+'\')">정가 설정</button> <button class="tbtn" onclick="bumpVersion(\''+p+'\')">버전</button></td>'+
+      '<td style="white-space:nowrap"><button class="tbtn pri" onclick="editProduct(\''+p+'\')">정가 설정</button> <button class="tbtn" onclick="bumpVersion(\''+p+'\')">버전</button> <button class="tbtn" onclick="editDevices(\''+p+'\')">기기 수</button></td>'+
     '</tr>';
   }).join('');
 }
@@ -1286,6 +1286,14 @@ async function editProduct(p){
   if(r.error){ alert('저장 실패: '+r.error.message+'\n(관리자 update 정책이 적용됐는지 확인)'); return; }
   if(v==null){ var o={}; try{o=JSON.parse(localStorage.getItem('az_prices')||'{}');}catch(_){ } delete o[p]; localStorage.setItem('az_prices',JSON.stringify(o)); } else AZ.setBasePrice(p,v);
   await loadProducts(); try{renderSales();}catch(_){}
+}
+async function editDevices(p){
+  var m=AZ.PRODMETA[p], db=PRODUCTS[p]||{};
+  var v=prompt(m.name+' — 라이선스 1개당 허용 기기 수를 입력하세요.\n현재: '+(db.max_devices!=null?db.max_devices:2)+'대\n(이후 발급되는 라이선스에 자동 적용, 기존 라이선스는 DB 트리거 기준)', db.max_devices!=null?db.max_devices:2);
+  if(v===null) return; v=parseInt(v,10); if(isNaN(v)||v<1||v>10){ alert('1~10 사이 숫자를 입력하세요.'); return; }
+  var r=await sb.from('products').update({max_devices:v}).eq('id',p);
+  if(r.error){ alert('저장 실패: '+r.error.message); return; }
+  await loadProducts();
 }
 async function bumpVersion(p){
   var m=AZ.PRODMETA[p], db=PRODUCTS[p]||{};

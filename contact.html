@@ -108,6 +108,7 @@ footer .wrap{max-width:1040px;display:flex;gap:14px;flex-wrap:wrap}footer .right
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 var sbC=window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co','sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_');
+(function(){var sj=new URLSearchParams(location.search).get('subject');if(sj){var si=document.getElementById('c-subject');if(si&&!si.value)si.value=sj;}})();
 (function(){var t=new URLSearchParams(location.search).get('type');if(t){var s=document.getElementById('c-type');for(var i=0;i<s.options.length;i++){if(s.options[i].value===t||s.options[i].value.indexOf(t)>-1){s.selectedIndex=i;break;}}var p=new URLSearchParams(location.search).get('p');if(p&&t.indexOf('출시')>-1){document.getElementById('c-subject').value='['+p+'] 출시 알림 신청';}}})();
 function showFiles(inp){
   var allow=/\.(pdf|png|jpe?g)$/i, el=document.getElementById('filelist'), err=document.getElementById('err');

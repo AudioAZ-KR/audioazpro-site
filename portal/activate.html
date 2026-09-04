@@ -48,10 +48,9 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:4px 0 2px}
 .go:hover{background:var(--blue-deep)}
 .note{font-size:11.5px;color:var(--dim);margin-top:14px;line-height:1.6;text-align:center}
 .demo{display:inline-block;font-size:10px;font-weight:800;color:#B26A00;background:#F5B93C;border-radius:6px;padding:2px 7px;vertical-align:middle;margin-left:6px}
-.demobar{position:fixed;top:0;left:0;right:0;z-index:300;background:#8a5a00;color:#ffe0ad;text-align:center;font-size:12px;font-weight:600;padding:7px 12px}body{padding-top:32px}.topbar{top:32px}nav{top:32px}.side{top:32px}</style>
+.demobar{position:fixed;top:0;left:0;right:0;z-index:300;background:#8a5a00;color:#ffe0ad;text-align:center;font-size:12px;font-weight:600;padding:7px 12px}</style>
 </head>
 <body>
-<div class="demobar" role="note">데모 환경 · 실제 인증·결제·라이선스는 준비 중입니다</div>
 <div class="win">
   <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="t" id="winTitle">Klera Voice — 활성화</span></div>
   <div class="body">
@@ -73,7 +72,7 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:4px 0 2px}
         <input type="radio" name="loc" value="machine" checked>
         <div class="num">01</div>
         <h3>이 컴퓨터</h3>
-        <p>이 기기에 저장. USB 없이 바로 사용. (기본 2대까지)</p>
+        <p id="optMachineDesc">이 기기에 저장. USB 없이 바로 사용.</p>
       </label>
       <label class="opt" id="optUsb" onclick="pick('usb')">
         <input type="radio" name="loc" value="usb">
@@ -82,7 +81,7 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:4px 0 2px}
         <p>USB에 저장. 꽂은 어느 컴퓨터에서든 사용.</p>
       </label>
     </div>
-    <div class="usbrow" id="usbrow">활성화할 USB: <b id="usbName">감지된 USB 없음 (테스트에서는 자동 지정)</b><br>이 USB의 볼륨 ID에 묶여, 다른 USB로 복사해도 동작하지 않습니다.</div>
+    <div class="usbrow" id="usbrow">활성화할 USB: <b id="usbName">감지된 USB 없음 — 플러그인/앱 안에서 활성화하면 실제 USB 볼륨 ID가 사용됩니다</b><br>이 USB의 볼륨 ID에 묶여, 다른 USB로 복사해도 동작하지 않습니다.</div>
 
     <button class="go" id="goBtn" onclick="activate()">이 컴퓨터에 활성화</button>
     <p class="note">활성화 방식은 나중에 <a href="account.html" style="color:var(--blue-soft);font-weight:700">내 계정</a>에서 변경할 수 있습니다.</p>
@@ -110,6 +109,7 @@ function machineId(){ try{ var v=localStorage.getItem('az_machine'); if(!v){ v='
   document.getElementById('pName').textContent=m.name;
   document.getElementById('winTitle').textContent=m.name+' — 활성화';
   document.getElementById('key').value = LIC ? LIC.license_key : '라이선스가 없습니다 — 결제 페이지에서 발급';
+  try{ var mx=LIC?(LIC.max_devices||1):AZ.maxDevices(CUR); document.getElementById('optMachineDesc').textContent='이 기기에 저장. USB 없이 바로 사용. (이 제품은 최대 '+mx+'대)'; }catch(_){}
   if(LIC && LIC.activations && LIC.activations.length){
     var note=document.querySelector('.note');
     note.innerHTML='현재 활성화된 기기 '+LIC.activations.length+'/'+(LIC.max_devices||1)+': '+LIC.activations.map(function(a){ return '<b>'+(a.label||(a.binding_type==='usb'?'USB 드라이브':'이 컴퓨터'))+'</b> <span style="font-family:ui-monospace,Menlo,monospace">'+a.binding_id+'</span> <a href="#" onclick="deact(\''+a.id+'\');return false" style="color:#ff9ea3;font-weight:700">해제</a>'; }).join(' · ')+'<br>활성화 방식은 <a href="account.html" style="color:var(--blue-soft);font-weight:700">내 계정</a>에서도 관리할 수 있습니다.';

@@ -114,10 +114,9 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
 .licmenu button:hover{background:var(--sky)}
 .licmenu button .mi{width:16px;text-align:center;color:var(--dim)}
 .stub{display:inline-block;font-size:10.5px;font-weight:800;color:#B26A00;background:#FFF3E0;border-radius:6px;padding:2px 7px;margin-left:6px;vertical-align:middle}
-:root{--page:#0B1220;--card:#121D33;--navbg:rgba(11,18,32,.9);--text:#E9EEF7;--dim:#96A6BF;--line:#243350;--bg:#0C1424;--sky:#17273F;--wordmark:#fff}body{background:var(--bg)}.logo{width:auto !important}.field input,.field select,.field textarea,.key{background:#0E1A2E;color:#E9EEF7;border-color:#243350}.field input::placeholder{color:#6B7C96}.notice{color:#9CC2F5}.demobar{position:fixed;top:0;left:0;right:0;z-index:300;background:#8a5a00;color:#ffe0ad;text-align:center;font-size:12px;font-weight:600;padding:7px 12px}body{padding-top:32px}.topbar{top:32px}nav{top:32px}.side{top:32px}.nav-in .who span,.nav-in .who a{white-space:nowrap}@media(max-width:560px){.nav-in>span{display:none}.nav-in .who{gap:8px;font-size:12.5px}}</style>
+:root{--page:#0B1220;--card:#121D33;--navbg:rgba(11,18,32,.9);--text:#E9EEF7;--dim:#96A6BF;--line:#243350;--bg:#0C1424;--sky:#17273F;--wordmark:#fff}body{background:var(--bg)}.logo{width:auto !important}.field input,.field select,.field textarea,.key{background:#0E1A2E;color:#E9EEF7;border-color:#243350}.field input::placeholder{color:#6B7C96}.notice{color:#9CC2F5}.demobar{position:fixed;top:0;left:0;right:0;z-index:300;background:#8a5a00;color:#ffe0ad;text-align:center;font-size:12px;font-weight:600;padding:7px 12px}.nav-in .who span,.nav-in .who a{white-space:nowrap}@media(max-width:560px){.nav-in>span{display:none}.nav-in .who{gap:8px;font-size:12.5px}}</style>
 </head>
 <body>
-<div class="demobar" role="note">결제 연동 준비 중 · 계정·인증은 실운영 (테스트 기간)</div>
 
 <!-- 가입 축하 (이메일 인증 완료 직후 1회) -->
 <div id="welcomeModal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(4,8,16,.72);align-items:center;justify-content:center;padding:24px">
@@ -140,7 +139,7 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
 
 <div class="wrap" style="padding-top:30px;padding-bottom:60px">
 
-  <h2>내 라이선스 <span class="stub">테스트 모드</span></h2>
+  <h2>내 라이선스</h2>
   <p class="muted">보유한 라이선스가 제품별로 정리됩니다. 키를 구분하기 어려우면 <b>메모</b>를 눌러 용도를 적어두세요 (예: 사무실 맥, 공연용 USB).</p>
   <div class="licfilter" id="licFilterBox" style="display:none"><input id="licFilter" placeholder="키 · 메모 · 기기 검색" oninput="renderLicenses()"></div>
   <div id="licenses"></div>
@@ -318,7 +317,7 @@ function licMenuAct(idx, act, btn){
     navigator.clipboard&&navigator.clipboard.writeText(l.key);
     if(btn){ btn.innerHTML='<span class="mi" style="color:var(--green)">✓</span>복사됨'; setTimeout(closeLicMenu,700); return; }
   }
-  else if(act==='dl') AZ.download(l.product);
+  else if(act==='dl'){ location.href='/downloads.html'; return; }
   else if(act==='act'){ location.href='activate.html?id='+encodeURIComponent(l.id); return; }
   else if(act==='note'){
     closeLicMenu();

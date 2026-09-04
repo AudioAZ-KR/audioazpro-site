@@ -18,7 +18,7 @@
     LMAZ:  { name: 'Latency Meter AZ',    tag: 'LMAZ', ver: 'v1.0.0',  file: 'LatencyMeterAZ',    desc: '왕복 레이턴시 측정', price: 0 }
   };
   var TYPELABEL = {
-    FULL: '정식 · 영구', D7: '데모 · 7일', D14: '데모 · 14일', D30: '데모 · 30일', FREE: '무료 · 영구'
+    FULL: '정식 · 영구', D7: '체험 · 7일', D14: '체험 · 14일', D30: '체험 · 30일', FREE: '무료 · 영구'
   };
 
   function read(k, dflt) { try { return JSON.parse(localStorage.getItem(k)) || dflt; } catch (e) { return dflt; } }
@@ -77,24 +77,26 @@
     syncCatalog: function (cb) {
       var done = function () { try { cb && cb(); } catch (e) {} };
       try {
-        fetch('https://lkbbenyvchddsjsihofv.supabase.co/rest/v1/products?select=id,price_krw,version,sale_price,sale_from,sale_to&active=is.true',
+        fetch('https://lkbbenyvchddsjsihofv.supabase.co/rest/v1/products?select=id,price_krw,version,sale_price,sale_from,sale_to,max_devices&active=is.true',
           { headers: { apikey: 'sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_' } })
         .then(function (r) { return r.ok ? r.json() : []; })
         .then(function (rows) {
-          var pr = read('az_prices', {}), vs = read('az_vers', {}), sl = {};
+          var pr = read('az_prices', {}), vs = read('az_vers', {}), sl = {}, md = read('az_maxdev', {});
           (rows || []).forEach(function (row) {
             if (!PRODMETA[row.id]) return;
             if (row.price_krw != null) pr[row.id] = row.price_krw; else delete pr[row.id];
             if (row.version) vs[row.id] = row.version;
             if (row.sale_price != null) sl[row.id] = { price: row.sale_price, start: row.sale_from || null, end: row.sale_to || null };
+            if (row.max_devices != null) md[row.id] = row.max_devices;
           });
-          write('az_prices', pr); write('az_vers', vs);
+          write('az_prices', pr); write('az_vers', vs); write('az_maxdev', md);
           if (rows && rows.length) write('az_sales', sl); // 세일은 DB가 단일 진실 — 로컬 잔재 제거
         })
         .catch(function () {})
         .then(done);
       } catch (e) { done(); }
     },
+    maxDevices: function (prod) { var o = read('az_maxdev', {}); return o[prod] != null ? o[prod] : (prod === 'TALLY' ? 1 : 2); }, // 제품별 허용 기기 수 (DB products.max_devices)
     versionOf: function (prod) { var o = read('az_vers', {}); if (o[prod]) return o[prod]; var m = PRODMETA[prod]; return m ? m.ver : ''; },
     setVersion: function (prod, ver) { var o = read('az_vers', {}); o[prod] = ver; write('az_vers', o); },
     notices: function () { return read('az_notices', []); },
