@@ -1270,7 +1270,7 @@ function renderProducts(){
       '<td class="mono">'+esc(db.version||AZ.versionOf(p))+'</td>'+
       '<td>'+(price==null?'<span style="color:var(--dim)">미정</span>':(price?W(price):'무료'))+'</td>'+
       '<td>'+(sale?('<b>'+W(sale.price)+'</b>'):'—')+'</td>'+
-      '<td><b>'+(db.max_devices!=null?db.max_devices:2)+'대</b></td>'+
+      '<td><b>'+(db.max_devices!=null?db.max_devices:1)+'대</b></td>'+
       '<td>'+status+'</td>'+
       '<td style="white-space:nowrap"><button class="tbtn pri" onclick="editProduct(\''+p+'\')">정가 설정</button> <button class="tbtn" onclick="bumpVersion(\''+p+'\')">버전</button> <button class="tbtn" onclick="editDevices(\''+p+'\')">기기 수</button></td>'+
     '</tr>';
