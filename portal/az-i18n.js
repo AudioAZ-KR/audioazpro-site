@@ -20,6 +20,9 @@
     if(!KEYS) KEYS=Object.keys(DICT).filter(function(k){return k.length>=2 && KO.test(k);}).sort(function(a,b){return b.length-a.length;});
     var out=t, hit=false;
     for(var i=0;i<KEYS.length;i++){ var k=KEYS[i]; if(out.indexOf(k)>=0){ out=out.split(k).join(DICT[k]); hit=true; if(!KO.test(out)) break; } }
+    // 조사·단위 조각: '3개' → '3', '이름님' → '이름'
+    var out2=out.replace(/(\d+)\s*개/g,'$1').replace(/님\s*$/,'');
+    if(out2!==out){ out=out2; hit=true; }
     return hit ? lead+out+tail : null; }
   var ATTRS=['placeholder','title','alt','aria-label'];
   function walk(root){
@@ -66,7 +69,7 @@
   function apply(){
     if(lang()!=='en'){ mountSwitch(); return; }
     document.documentElement.setAttribute('lang','en');
-    fetch('/i18n/en.json',{cache:'force-cache'}).then(function(r){return r.json();}).then(function(d){
+    fetch('/i18n/en.json',{cache:'no-cache'}).then(function(r){return r.json();}).then(function(d){
       DICT=d; patchAlerts(); walk(document.body); mountSwitch(); legalNote();
       new MutationObserver(function(ms){ ms.forEach(function(m){ m.addedNodes.forEach(function(n){ if(n.nodeType===1) walk(n); else if(n.nodeType===3&&KO.test(n.nodeValue)){ var v=tr(n.nodeValue); if(v!=null) n.nodeValue=v; } }); }); }).observe(document.body,{childList:true,subtree:true});
     }).catch(function(){ mountSwitch(); });
