@@ -69,6 +69,11 @@ footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px;m
     <a class="qcard" href="/contact.html" style="display:block"><div class="ic">03</div><h3>문의하기</h3><p>문의 폼으로 바로 접수 — 첨부파일 지원</p></a>
   </div>
 
+  <div id="azNotices" hidden>
+    <h2>공지사항</h2>
+    <div id="azNoticeList" class="faq" data-i18n-skip></div>
+  </div>
+
   <h2>제품별 가이드</h2>
   <div class="cards">
     <a class="qcard" href="support-klera.html" style="display:block"><div class="ic">KV</div><h3>Klera Voice 설치·문제해결</h3><p>DAW 설치·재스캔, 시스템 요구사항, 라이선스 활성화</p></a>
@@ -98,5 +103,22 @@ footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px;m
 <script>(function(){var t=document.querySelector(".navtoggle"),m=document.querySelector(".nav-in .menu");if(!t||!m)return;t.addEventListener("click",function(){var o=m.classList.toggle("open");t.setAttribute("aria-expanded",o?"true":"false")});m.addEventListener("click",function(e){if(e.target.closest("a")){m.classList.remove("open");t.setAttribute("aria-expanded","false")}});document.addEventListener("keydown",function(e){if(e.key==="Escape"){m.classList.remove("open");t.setAttribute("aria-expanded","false")}});})();</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/portal/az-nav.js"></script>
+<script>
+(function(){
+  var esc=function(x){return String(x==null?'':x).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
+  if(!window.sbNav) return; // az-nav.js가 만든 공용 클라이언트 재사용
+  window.sbNav.from('notices').select('title,body,created_at').eq('active',true).order('created_at',{ascending:false}).limit(10)
+  .then(function(r){return r.error?[]:(r.data||[]);})
+  .then(function(list){
+    if(!list||!list.length) return;
+    var box=document.getElementById('azNoticeList');
+    box.innerHTML=list.map(function(n){
+      var d=String(n.created_at||'').slice(0,10);
+      return '<details><summary>'+esc(n.title)+' <span style="font-weight:400;font-size:12px;color:var(--dim);margin-left:8px">'+d+'</span></summary><p style="white-space:pre-wrap">'+esc(n.body||'')+'</p></details>';
+    }).join('');
+    document.getElementById('azNotices').hidden=false;
+  }).catch(function(){});
+})();
+</script>
 </body>
 </html>

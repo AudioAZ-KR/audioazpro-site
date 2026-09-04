@@ -27,8 +27,10 @@
   var ATTRS=['placeholder','title','alt','aria-label'];
   function walk(root){
     if(!DICT||!root) return;
+    if(root.nodeType===1&&root.closest&&root.closest('[data-i18n-skip]')) return; // 관리자 작성 원문 등 번역 제외 영역
+
     var w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT, { acceptNode:function(n){
-      if(n.nodeType===1){ var tg=n.tagName; if(tg==='SCRIPT'||tg==='STYLE'||tg==='NOSCRIPT') return NodeFilter.FILTER_REJECT; return NodeFilter.FILTER_ACCEPT; }
+      if(n.nodeType===1){ var tg=n.tagName; if(tg==='SCRIPT'||tg==='STYLE'||tg==='NOSCRIPT') return NodeFilter.FILTER_REJECT; if(n.hasAttribute&&n.hasAttribute('data-i18n-skip')) return NodeFilter.FILTER_REJECT; return NodeFilter.FILTER_ACCEPT; }
       return NodeFilter.FILTER_ACCEPT; } });
     var n; var texts=[];
     while((n=w.nextNode())){
@@ -73,7 +75,7 @@
     document.documentElement.setAttribute('lang','en');
     fetch('/i18n/en.json',{cache:'no-cache'}).then(function(r){return r.json();}).then(function(d){
       DICT=d; patchAlerts(); walk(document.body); mountSwitch(); legalNote();
-      new MutationObserver(function(ms){ ms.forEach(function(m){ m.addedNodes.forEach(function(n){ if(n.nodeType===1) walk(n); else if(n.nodeType===3&&KO.test(n.nodeValue)){ var v=tr(n.nodeValue); if(v!=null) n.nodeValue=v; } }); }); }).observe(document.body,{childList:true,subtree:true});
+      new MutationObserver(function(ms){ ms.forEach(function(m){ m.addedNodes.forEach(function(n){ if(n.nodeType===1) walk(n); else if(n.nodeType===3&&KO.test(n.nodeValue)&&!(n.parentElement&&n.parentElement.closest('[data-i18n-skip]'))){ var v=tr(n.nodeValue); if(v!=null) n.nodeValue=v; } }); }); }).observe(document.body,{childList:true,subtree:true});
     }).catch(function(){ mountSwitch(); });
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',apply); else apply();
