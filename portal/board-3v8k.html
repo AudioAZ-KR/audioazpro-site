@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="/favicon.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<title>작업현황 보드 — AudioAZ</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--blue:#1877F2;--blue-deep:#0E5FCC;--navy:#0C2244;--navy-deep:#081729;--sky:#E8F1FE;--line:#D9E2EE;--bg:#F1F4F9;--text:#14213A;--dim:#5B6B85;--mute:#8B9AB3;--green:#12B76A;--amber:#F5B93C;--red:#E5484D;--card:#fff;--mono:'SF Mono',Menlo,Consolas,monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',system-ui,sans-serif;color:var(--text);background:var(--bg);line-height:1.55;font-size:14px}
+a{color:var(--blue-deep);text-decoration:none}a:hover{text-decoration:underline}
+code{font-family:var(--mono);font-size:.9em;background:#EEF2F8;border:1px solid var(--line);border-radius:3px;padding:0 4px}
+b,strong{font-weight:700;color:var(--navy)}
+button{font:inherit;cursor:pointer}
+.led{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--mute);box-shadow:0 0 0 2px rgba(0,0,0,.05) inset;vertical-align:middle}
+.led.ok{background:var(--green);box-shadow:0 0 6px rgba(18,183,106,.7)}
+.led.warn{background:var(--amber);box-shadow:0 0 6px rgba(245,185,60,.7)}
+.led.bad{background:var(--red);box-shadow:0 0 6px rgba(229,72,77,.7)}
+
+/* 상단 바 */
+.top{background:var(--navy-deep);color:#cfdcec;position:sticky;top:0;z-index:10;border-bottom:1px solid rgba(255,255,255,.08)}
+.top .in{max-width:1080px;margin:0 auto;padding:0 18px;height:54px;display:flex;align-items:center;gap:12px}
+.top img{height:22px;display:block}
+.top .ttl{color:#fff;font-weight:800;font-size:15px;letter-spacing:-.01em}
+.top .ttl small{font-family:var(--mono);font-weight:500;font-size:10.5px;color:#7f96b4;margin-left:8px;letter-spacing:.06em}
+.top .sp{flex:1}
+.top .stat{font-family:var(--mono);font-size:11.5px;color:#9db3cf;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.top button{background:transparent;color:#b7c7dc;border:1px solid rgba(255,255,255,.18);border-radius:4px;padding:5px 10px;font-size:12px;font-weight:600}
+.top button:hover{background:rgba(255,255,255,.08);color:#fff}
+@media(max-width:640px){.top .stat span.t{display:none}.top .ttl small{display:none}}
+
+.wrap{max-width:1080px;margin:0 auto;padding:18px}
+
+/* 로그인 */
+.login{max-width:380px;margin:60px auto;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:26px}
+.login h1{font-size:17px;font-weight:800;margin-bottom:4px}
+.login p{font-size:12.5px;color:var(--dim);margin-bottom:16px}
+.login label{display:block;font-size:11px;font-weight:700;color:var(--dim);letter-spacing:.06em;text-transform:uppercase;margin:10px 0 4px}
+.login input{width:100%;border:1px solid var(--line);border-radius:4px;padding:10px 12px;font:inherit;font-size:14px;background:#FBFCFE}
+.login input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,119,242,.15)}
+.login button{width:100%;margin-top:16px;background:var(--blue);color:#fff;border:0;border-radius:4px;padding:11px;font-weight:800;font-size:14px}
+.login .err{margin-top:10px;font-size:12.5px;color:var(--red);min-height:18px}
+
+/* 요약 */
+.sum{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:760px){.sum{grid-template-columns:1fr 1fr}}
+.sum .k{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:12px 14px}
+.sum .k .l{font-size:11px;font-weight:700;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+.sum .k .v{font-family:var(--mono);font-size:22px;font-weight:700;margin-top:2px;color:var(--navy)}
+.sum .k .v small{font-size:11px;color:var(--mute);font-weight:500;margin-left:4px}
+.sum .k.hot .v{color:var(--red)}
+
+/* 도구줄 */
+.tools{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.tools input{flex:1;min-width:180px;border:1px solid var(--line);border-radius:4px;padding:8px 11px;font:inherit;font-size:13.5px;background:var(--card)}
+.tools input:focus{outline:none;border-color:var(--blue)}
+.tools .sw{display:inline-flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--card)}
+.tools .sw button{background:transparent;border:0;padding:7px 11px;font-size:12px;font-weight:700;color:var(--dim);border-right:1px solid var(--line)}
+.tools .sw button:last-child{border-right:0}
+.tools .sw button.on{background:var(--navy);color:#fff}
+
+/* 사장님 확인 */
+.attn{background:#FFF8EA;border:1px solid #F2DDA8;border-left:3px solid var(--amber);border-radius:6px;padding:12px 14px;margin-bottom:14px}
+.attn h2{font-size:12px;font-weight:800;color:#8A5A00;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.attn ul{list-style:none}
+.attn li{font-size:13px;padding:4px 0;border-top:1px dashed #F2DDA8}
+.attn li:first-child{border-top:0}
+.attn li .a{font-family:var(--mono);font-size:10.5px;color:#8A5A00;margin-right:6px}
+
+/* 섹션 카드 */
+.sec{background:var(--card);border:1px solid var(--line);border-radius:6px;margin-bottom:12px;overflow:hidden}
+.sec .h{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none;background:#FAFBFD}
+.sec .h .n{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--blue-deep);background:var(--sky);border-radius:3px;padding:1px 6px}
+.sec .h h2{font-size:14.5px;font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sec .h .m{font-family:var(--mono);font-size:11px;color:var(--mute);white-space:nowrap}
+.sec .h .c{font-family:var(--mono);font-size:11px;color:var(--mute)}
+.sec .h .tg{width:18px;text-align:center;color:var(--mute);font-size:11px}
+.sec.closed .b{display:none}
+.sec.closed .h .tg{transform:rotate(-90deg)}
+.sec .b{padding:6px 14px 10px}
+.sec .note{font-size:12.5px;color:var(--dim);background:#F7F9FC;border-left:2px solid var(--line);padding:6px 10px;margin:8px 0}
+.it{display:flex;gap:10px;padding:7px 0;border-top:1px solid #EEF2F7;font-size:13.5px;line-height:1.6}
+.it:first-child{border-top:0}
+.it .mk{flex:none;width:6px;height:6px;border-radius:1px;background:#C5D0DF;margin-top:9px}
+.it.next .mk{background:var(--blue)}
+.it.req .mk{background:var(--amber)}
+.it.boss .mk{background:var(--red)}
+.it .tx{flex:1;min-width:0;word-break:break-word}
+.it .chip{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.04em;border:1px solid var(--line);border-radius:3px;padding:0 5px;margin-right:6px;vertical-align:1px;color:var(--dim)}
+.it.next .chip{color:var(--blue-deep);border-color:#BFD6F8;background:var(--sky)}
+.it.req .chip{color:#8A5A00;border-color:#F2DDA8;background:#FFF8EA}
+.it.boss .chip{color:var(--red);border-color:#F5C2C4;background:#FFF1F1}
+.it .ts{font-family:var(--mono);font-size:10.5px;color:var(--mute);margin-right:6px}
+.it .sub{margin:4px 0 0 0;padding-left:14px;border-left:1px solid #E3E9F2}
+.it .sub .it{padding:3px 0;border:0;font-size:13px}
+.it.hide{display:none}
+.raw{font-family:var(--mono);font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-word;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:14px}
+.empty{color:var(--mute);font-size:13px;padding:30px;text-align:center}
+.foot{font-family:var(--mono);font-size:11px;color:var(--mute);text-align:center;padding:20px 0 30px}
+</style>
+<script src="/portal/az-i18n.js" defer></script>
+</head>
+<body>
+<div class="top"><div class="in">
+  <img src="/assets/logo-lockup-white.png" alt="AudioAZ">
+  <div class="ttl">작업현황 보드<small>00_작업현황.md</small></div>
+  <div class="sp"></div>
+  <div class="stat" id="stat" hidden><i class="led" id="led"></i><span id="ago">—</span><span class="t" id="src"></span></div>
+  <button id="btnRefresh" hidden>새로고침</button>
+  <button id="btnOut" hidden>로그아웃</button>
+</div></div>
+
+<div class="wrap">
+  <div class="login" id="login">
+    <h1>관리자 로그인</h1>
+    <p>작업현황 보드는 AudioAZ 관리자 계정에서만 볼 수 있습니다.</p>
+    <form id="f">
+      <label>이메일</label><input type="email" id="email" autocomplete="username" required>
+      <label>비밀번호</label><input type="password" id="pw" autocomplete="current-password" required>
+      <button type="submit">로그인</button>
+      <div class="err" id="err"></div>
+    </form>
+  </div>
+
+  <div id="app" hidden>
+    <div class="sum">
+      <div class="k" id="kBoss"><div class="l">사장님 확인</div><div class="v" id="vBoss">0</div></div>
+      <div class="k"><div class="l">다음 할 일</div><div class="v" id="vNext">0</div></div>
+      <div class="k"><div class="l">채팅 요청</div><div class="v" id="vReq">0</div></div>
+      <div class="k"><div class="l">마지막 갱신</div><div class="v" id="vUpd" style="font-size:15px;line-height:30px">—</div></div>
+    </div>
+    <div class="attn" id="attn" hidden><h2>사장님 확인 필요</h2><ul id="attnList"></ul></div>
+    <div class="tools">
+      <input type="search" id="q" placeholder="검색 (예: 이니시스, 정부24, 탈리)">
+      <div class="sw"><button class="on" id="vwBoard">보드</button><button id="vwRaw">원문</button></div>
+      <div class="sw"><button id="openAll">모두 펼침</button><button id="closeAll">모두 접기</button></div>
+    </div>
+    <div id="board"></div>
+    <pre class="raw" id="raw" hidden></pre>
+    <div class="foot" id="foot"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var SB_URL='https://lkbbenyvchddsjsihofv.supabase.co', SB_KEY='sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_';
+  var sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+  var $=function(id){return document.getElementById(id)};
+  var state={content:'',updated:null,mtime:null,source:'',view:'board',q:'',closed:{}};
+  try{state.closed=JSON.parse(localStorage.getItem('az_board_closed')||'{}')}catch(e){}
+
+  /* ---------- 인라인 마크다운 ---------- */
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+  function inline(s){
+    s=esc(s);
+    s=s.replace(/`([^`]+)`/g,function(_,c){return '<code>'+c+'</code>'});
+    s=s.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
+    s=s.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+    s=s.replace(/(^|[\s(（])((https?:\/\/)[^\s<)）]+)/g,function(_,p,u){return p+'<a href="'+u+'" target="_blank" rel="noopener">'+u+'</a>'});
+    return s;
+  }
+  /* ---------- 파서: ## 섹션 / - 항목 / 들여쓴 하위 항목 / > 인용 ---------- */
+  function parse(md){
+    var lines=md.split(/\r?\n/), secs=[], cur=null, intro=[];
+    lines.forEach(function(ln){
+      var m;
+      if((m=ln.match(/^##\s+(.*)$/))){ cur={title:m[1].trim(),items:[],notes:[]}; var t=cur.title.split(/\s+[—-]+\s*갱신\s*/); if(t.length>1){cur.title=t[0].trim();cur.upd=t[1].trim()} secs.push(cur); return; }
+      if(/^#\s/.test(ln)) return;
+      if((m=ln.match(/^>\s?(.*)$/))){ (cur?cur.notes:intro).push(m[1]); return; }
+      if((m=ln.match(/^(\s*)[-*]\s+(.*)$/))){
+        var depth=Math.floor(m[1].replace(/\t/g,'  ').length/2), it={text:m[2],sub:[]};
+        if(!cur){cur={title:'일반',items:[],notes:[]};secs.push(cur)}
+        if(depth>0 && cur.items.length){cur.items[cur.items.length-1].sub.push(it)} else cur.items.push(it);
+        return;
+      }
+      if(ln.trim() && cur && cur.items.length){ var last=cur.items[cur.items.length-1]; var tgt=last.sub.length?last.sub[last.sub.length-1]:last; tgt.text+=' '+ln.trim(); }
+    });
+    return {intro:intro,secs:secs};
+  }
+  var BOSS=/대기\s*\(사장님?\)|남은\s*것\s*\(사장님?\)|사장님\s*(할\s*일|확인\s*필요|결정\s*필요|승인\s*필요)|사장님[^.。]{0,18}(입력|로그인|결정|확인|승인|서명|납부)\s*대기|(입력|결정|확인|승인|서명|납부)\s*대기\s*\(사장님?\)|\(사장님이?\s*(직접\s*)?(해야|하실|누르)/;
+  function bossSentences(t){
+    var s=t.replace(/\*\*/g,'').replace(/^\(?\d{1,2}-\d{1,2}[^)]*\)?\s*/,'');
+    var parts=s.split(/(?<=[.。])\s+|\s+·\s+|\s+—\s+|\s+\/\s+/), hit=parts.filter(function(x){return BOSS.test(x)});
+    var out=(hit.length?hit:[s]).join(' · ');
+    return out.length>170?out.slice(0,168)+'…':out;
+  }
+  function classify(t){
+    var s=t.replace(/\*\*/g,'');
+    if(BOSS.test(s)) return 'boss';
+    if(/^\s*다음\s*[:：]|^\s*다음\s*할|^\s*다음\s*:/.test(s)) return 'next';
+    if(/^\s*요청함|^\s*요청\s*[:：]|요청\(|→\s*[①②③④⑤]|[①②③④⑤]\s*(에게|에)\s*요청/.test(s)) return 'req';
+    return '';
+  }
+  function chipLabel(k){return k==='boss'?'사장님':k==='next'?'다음':k==='req'?'요청':''}
+  function renderItem(it,depth){
+    var k=classify(it.text), t=it.text, ts='';
+    var m=t.match(/^\**\(?(\d{1,2}-\d{1,2}(?:\s+\d{1,2}:\d{2})?)\)?\**\s*[:：]?\s*/);
+    if(m){ts=m[1];t=t.slice(m[0].length)}
+    var hit=!state.q||(it.text+' '+it.sub.map(function(s){return s.text}).join(' ')).toLowerCase().indexOf(state.q)>=0;
+    var h='<div class="it '+k+(hit?'':' hide')+'"><div class="mk"></div><div class="tx">'+(k?'<span class="chip">'+chipLabel(k)+'</span>':'')+(ts?'<span class="ts">'+esc(ts)+'</span>':'')+inline(t);
+    if(it.sub.length){h+='<div class="sub">'+it.sub.map(function(s){return renderItem(s,depth+1)}).join('')+'</div>'}
+    return h+'</div></div>';
+  }
+  function render(){
+    var p=parse(state.content), boss=[], nNext=0, nReq=0, html='';
+    p.secs.forEach(function(sec,i){
+      var num=(sec.title.match(/^[①②③④⑤⑥⑦⑧⑨⑩]/)||[''])[0];
+      var title=num?sec.title.slice(1).trim():sec.title;
+      var cnt=0, body='';
+      sec.notes.forEach(function(n){body+='<div class="note">'+inline(n)+'</div>'});
+      sec.items.forEach(function(it){
+        var k=classify(it.text); if(k==='boss')boss.push({a:num||title,t:it.text}); if(k==='next')nNext++; if(k==='req')nReq++;
+        it.sub.forEach(function(s){var kk=classify(s.text); if(kk==='boss')boss.push({a:num||title,t:s.text})});
+        body+=renderItem(it,0); cnt++;
+      });
+      var key=num||title, closed=!!state.closed[key];
+      if(state.q){closed=false}
+      html+='<div class="sec'+(closed?' closed':'')+'" data-key="'+esc(key)+'"><div class="h">'+(num?'<span class="n">'+num+'</span>':'')+'<h2>'+esc(title)+'</h2>'+(sec.upd?'<span class="m">갱신 '+esc(sec.upd)+'</span>':'')+'<span class="c">'+cnt+'</span><span class="tg">▼</span></div><div class="b">'+(body||'<div class="empty">항목 없음</div>')+'</div></div>';
+    });
+    $('board').innerHTML=html||'<div class="empty">보드 내용이 없습니다. 맥에서 board-sync 가 아직 안 돌았을 수 있습니다.</div>';
+    $('vBoss').textContent=boss.length; $('kBoss').classList.toggle('hot',boss.length>0);
+    $('vNext').textContent=nNext; $('vReq').textContent=nReq;
+    $('attn').hidden=!boss.length;
+    $('attnList').innerHTML=boss.slice(0,12).map(function(b){return '<li><span class="a">'+esc(b.a)+'</span>'+inline(bossSentences(b.t))+'</li>'}).join('');
+    $('raw').textContent=state.content;
+    Array.prototype.forEach.call(document.querySelectorAll('.sec .h'),function(h){h.addEventListener('click',function(){var s=h.parentNode,k=s.getAttribute('data-key');s.classList.toggle('closed');state.closed[k]=s.classList.contains('closed');try{localStorage.setItem('az_board_closed',JSON.stringify(state.closed))}catch(e){}})});
+    updStat();
+  }
+  function fmt(d){ if(!d)return '—'; var x=new Date(d); return (x.getMonth()+1)+'/'+x.getDate()+' '+String(x.getHours()).padStart(2,'0')+':'+String(x.getMinutes()).padStart(2,'0'); }
+  function updStat(){
+    var ref=state.mtime||state.updated; if(!ref)return;
+    var min=Math.floor((Date.now()-new Date(ref).getTime())/60000), s= min<1?'방금':min<60?min+'분 전':min<1440?Math.floor(min/60)+'시간 전':Math.floor(min/1440)+'일 전';
+    $('ago').textContent='파일 갱신 '+s; $('src').textContent='· '+(state.source||''); $('vUpd').textContent=fmt(ref);
+    var led=$('led'); led.className='led '+(min<180?'ok':min<1440?'warn':'bad');
+    $('foot').textContent='board_docs.main · 파일 '+fmt(state.mtime)+' · 동기화 '+fmt(state.updated)+' · 30초마다 자동 확인';
+  }
+  var lastUpd=null;
+  function load(force){
+    return sb.from('board_docs').select('content,updated_at,file_mtime,source').eq('id','main').maybeSingle().then(function(r){
+      if(r.error){ $('board').innerHTML='<div class="empty">읽기 실패: '+esc(r.error.message)+'</div>'; return; }
+      if(!r.data){ $('board').innerHTML='<div class="empty">권한이 없거나(관리자 계정 아님) 아직 동기화된 보드가 없습니다.</div>'; return; }
+      if(!force && r.data.updated_at===lastUpd){ updStat(); return; }
+      lastUpd=r.data.updated_at; state.content=r.data.content||''; state.updated=r.data.updated_at; state.mtime=r.data.file_mtime; state.source=r.data.source||'';
+      render();
+    });
+  }
+  function show(on){ $('login').hidden=on; $('app').hidden=!on; $('stat').hidden=!on; $('btnRefresh').hidden=!on; $('btnOut').hidden=!on; }
+  var timer=null;
+  function start(){ show(true); load(true); clearInterval(timer); timer=setInterval(function(){ if(document.visibilityState==='visible') load(false); },30000); }
+  document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible' && !$('app').hidden) load(false); });
+
+  $('f').addEventListener('submit',function(e){
+    e.preventDefault(); $('err').textContent='';
+    sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('pw').value}).then(function(r){
+      if(r.error){ $('err').textContent='로그인 실패: '+(r.error.message==='Invalid login credentials'?'이메일 또는 비밀번호가 맞지 않습니다':r.error.message); return; }
+      $('pw').value=''; start();
+    });
+  });
+  $('btnOut').addEventListener('click',function(){ sb.auth.signOut().then(function(){ clearInterval(timer); show(false); }); });
+  $('btnRefresh').addEventListener('click',function(){ load(true); });
+  $('q').addEventListener('input',function(){ state.q=this.value.trim().toLowerCase(); render(); });
+  $('vwBoard').addEventListener('click',function(){ state.view='board'; $('raw').hidden=true; $('board').hidden=false; this.classList.add('on'); $('vwRaw').classList.remove('on'); });
+  $('vwRaw').addEventListener('click',function(){ state.view='raw'; $('raw').hidden=false; $('board').hidden=true; this.classList.add('on'); $('vwBoard').classList.remove('on'); });
+  $('openAll').addEventListener('click',function(){ state.closed={}; try{localStorage.setItem('az_board_closed','{}')}catch(e){} render(); });
+  $('closeAll').addEventListener('click',function(){ Array.prototype.forEach.call(document.querySelectorAll('.sec'),function(s){state.closed[s.getAttribute('data-key')]=true}); try{localStorage.setItem('az_board_closed',JSON.stringify(state.closed))}catch(e){} render(); });
+  setInterval(updStat,60000);
+
+  window.AZBOARD={preview:function(md){ show(true); clearInterval(timer); state.content=md; state.updated=new Date().toISOString(); state.mtime=state.updated; state.source='preview'; render(); }};
+  sb.auth.getSession().then(function(r){ if(r.data && r.data.session) start(); else show(false); });
+})();
+</script>
+</body>
+</html>
