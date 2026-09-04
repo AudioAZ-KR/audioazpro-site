@@ -95,7 +95,7 @@ h1{font-size:24px;font-weight:800;margin-bottom:4px}.lead{color:var(--dim);font-
       <div class="pay">
         <button class="pbtn kr" id="btnKr" onclick="pay('포트원')">구매 문의하기</button>
         <button class="pbtn" id="btnIntl" onclick="pay('Paddle')" style="display:none">해외 카드 / PayPal (Paddle)</button>
-        <p class="note" style="margin-top:4px">온라인 카드 결제는 결제사 연동 승인 후 제공됩니다. 그동안은 문의 주시면 계좌이체 안내 후 라이선스를 발급해 드립니다.</p>
+        <p class="note" id="payNote" style="margin-top:4px">온라인 카드 결제는 결제사 연동 승인 후 제공됩니다. 그동안은 문의 주시면 계좌이체 안내 후 라이선스를 발급해 드립니다.</p>
       </div>
       <p class="note">발급된 라이선스는 <a href="account.html" style="color:var(--blue);font-weight:600">내 계정</a>에서 확인·활성화할 수 있습니다.</p>
     </div>
@@ -253,6 +253,7 @@ function usdOf(pid){ var u=(window.AZ_PAY&&window.AZ_PAY.paddle&&window.AZ_PAY.p
 function renderPayButtons(){
   var kr=document.getElementById('btnKr'), intl=document.getElementById('btnIntl'); if(!kr) return;
   var mode=payMode(); var sw=document.getElementById('paySwitch');
+  var pn=document.getElementById('payNote'); if(pn) pn.style.display = payReady(payMode()==='kr'?'portone':'paddle') ? 'none' : '';
   if(!sw){ sw=document.createElement('div'); sw.id='paySwitch'; sw.style.cssText='margin-top:10px;font-size:12px;color:var(--dim);text-align:center'; kr.parentNode.appendChild(sw); }
   if(mode==='kr'){
     kr.style.display=''; kr.textContent = payReady('portone') ? '카드·간편결제로 구매 (국내 발급 카드)' : '구매 문의하기';
@@ -261,7 +262,7 @@ function renderPayButtons(){
   } else {
     kr.style.display='none';
     if(intl){ intl.style.display=''; intl.textContent = payReady('paddle') ? 'Pay with card / PayPal (USD)' : 'International checkout — coming soon'; intl.disabled=!payReady('paddle'); }
-    sw.innerHTML='Prices in USD, tax added at checkout. 국내 발급 카드는 <a href="#" onclick="setPayMode(\'kr\');return false" style="color:var(--blue)">원화 결제</a>';
+    sw.innerHTML='Prices in USD; tax is added at checkout. Korean-issued cards: <a href="#" onclick="setPayMode(\'kr\');return false" style="color:var(--blue)">pay in KRW</a>';
   }
 }
 // ?p=제품 로 구매 대상 설정, ?code= 로 코드 자동 적용

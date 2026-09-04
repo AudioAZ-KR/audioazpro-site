@@ -12,9 +12,15 @@
   try{ if(!localStorage.getItem('az_pay_mode')) localStorage.setItem('az_pay_mode', lang()==='en'?'intl':'kr'); }catch(_){}
 
   var DICT=null;
-  function tr(s){ if(!DICT) return null; var t=s.replace(/\s+/g,' ').trim(); if(!t||!KO.test(t)) return null; var v=DICT[t]; if(v==null) return null;
-    // 원문 앞뒤 공백 보존
-    var lead=s.match(/^\s*/)[0], tail=s.match(/\s*$/)[0]; return lead+v+tail; }
+  var KEYS=null;
+  function tr(s){ if(!DICT) return null; var t=s.replace(/\s+/g,' ').trim(); if(!t||!KO.test(t)) return null;
+    var lead=s.match(/^\s*/)[0], tail=s.match(/\s*$/)[0];
+    var v=DICT[t]; if(v!=null) return lead+v+tail;
+    // 부분 일치: 긴 키부터 치환 (동적으로 조립된 문구용)
+    if(!KEYS) KEYS=Object.keys(DICT).filter(function(k){return k.length>=2 && KO.test(k);}).sort(function(a,b){return b.length-a.length;});
+    var out=t, hit=false;
+    for(var i=0;i<KEYS.length;i++){ var k=KEYS[i]; if(out.indexOf(k)>=0){ out=out.split(k).join(DICT[k]); hit=true; if(!KO.test(out)) break; } }
+    return hit ? lead+out+tail : null; }
   var ATTRS=['placeholder','title','alt','aria-label'];
   function walk(root){
     if(!DICT||!root) return;
@@ -38,7 +44,7 @@
   // 상단 메뉴 스위치 (KR · EN) — nav 우측, 이모지 없음
   function mountSwitch(){
     if(document.getElementById('az-lang-switch')) return;
-    var host=document.querySelector('nav .menu, nav .nav-in, nav .wrap, header nav, nav'); if(!host) return;
+    var host=null; ['nav .menu','nav .nav-in','nav .wrap','header nav','nav'].some(function(q){ host=document.querySelector(q); return !!host; }); if(!host) return;
     var box=document.createElement('div'); box.id='az-lang-switch'; box.setAttribute('aria-label','Language');
     box.style.cssText='display:inline-flex;align-items:center;gap:6px;margin-left:14px;font:600 11.5px ui-monospace,Menlo,monospace;letter-spacing:.08em;color:var(--dim,#96A6BF);white-space:nowrap;vertical-align:middle';
     var cur=lang();
