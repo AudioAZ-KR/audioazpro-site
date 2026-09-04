@@ -320,7 +320,7 @@ fill('g-other', [
     list.forEach(function(sv){
       var s=st[sv.id]||{level:'unknown',summary:'아직 점검 전',metrics:[]}, lv=s.level||'unknown', ms=s.metrics||[];
       if(lv==='over'||lv==='down')bad++; else if(lv==='warn')warn++; else if(lv==='ok')ok++; else man++;
-      var pcts=ms.filter(function(x){return x.pct!=null}), days=ms.filter(function(x){return x.unit==='일'&&x.used!=null})[0], big='',sub='',bar=null;
+      var pcts=ms.filter(function(x){return x.pct!=null&&x.unit!=='일'}), days=ms.filter(function(x){return x.unit==='일'&&x.used!=null})[0], big='',sub='',bar=null;
       if(pcts.length){ var w=pcts.reduce(function(a,x){return x.pct>a.pct?x:a}); big='남은 '+Math.max(0,Math.round(100-w.pct))+'%'; sub=w.label+' '+num(w.used,w.unit)+' / '+num(w.limit,w.unit); bar=Math.max(0,Math.min(100,100-w.pct)); }
       else if(days){ big=days.used<0?'만료 +'+(-days.used)+'일':'D-'+days.used; sub='결제·갱신일 '+(sv.renew_at||''); bar=Math.min(100,Math.max(0,Math.round(days.used/365*100))); }
       else if(lv==='down'){ big='장애'; sub=s.summary||''; }
