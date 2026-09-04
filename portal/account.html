@@ -189,6 +189,30 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
     </div>
   </div>
 
+  <div class="sec" id="security">
+    <h2>계정 설정</h2>
+    <p class="muted">로그인 비밀번호를 변경합니다.</p>
+    <div class="panel">
+      <form onsubmit="return changePw(event)" style="max-width:420px">
+        <div class="field">
+          <label for="pw-cur">현재 비밀번호</label>
+          <input id="pw-cur" type="password" name="cur" placeholder="현재 비밀번호" autocomplete="current-password" required>
+        </div>
+        <div class="field">
+          <label for="pw-new">새 비밀번호</label>
+          <input id="pw-new" type="password" name="pw" placeholder="영문+숫자 포함 8자 이상" minlength="8" maxlength="72" autocomplete="new-password" required pattern="(?=.*[A-Za-z])(?=.*\d).{8,}" title="영문과 숫자를 모두 포함해 8자 이상 입력하세요">
+        </div>
+        <div class="field">
+          <label for="pw-new2">새 비밀번호 확인</label>
+          <input id="pw-new2" type="password" name="pw2" placeholder="비밀번호 다시 입력" minlength="8" autocomplete="new-password" required>
+        </div>
+        <button class="btn pri" type="submit" id="pwBtn" style="height:44px;padding:0 22px">비밀번호 변경</button>
+        <span id="pwMsg" style="display:none;margin-left:10px;font-size:13px;font-weight:600"></span>
+      </form>
+      <p class="note">변경 후에도 현재 로그인은 유지됩니다. 비밀번호를 잊으셨다면 로그아웃 후 <a href="forgot.html" style="color:var(--blue-soft);font-weight:600">비밀번호 찾기</a>를 이용하세요.</p>
+    </div>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -357,6 +381,36 @@ function copyKey(btn){
 function goCheckout(){
   var c=(document.getElementById('quickcode').value||'').trim();
   location.href='checkout.html'+(c?('?code='+encodeURIComponent(c)):'');
+}
+// 비밀번호 변경 — 현재 비밀번호 재확인 후 updateUser
+function pwMsg(t, ok){
+  var el=document.getElementById('pwMsg');
+  el.textContent=t; el.style.color=ok?'var(--green)':'#ff9ea3'; el.style.display='inline';
+}
+async function changePw(e){
+  e.preventDefault();
+  var f=e.target, cur=f.cur.value, pw=f.pw.value, pw2=f.pw2.value;
+  var btn=document.getElementById('pwBtn');
+  if(!/^(?=.*[A-Za-z])(?=.*\d).{8,72}$/.test(pw)){ pwMsg('영문과 숫자를 모두 포함해 8자 이상이어야 합니다.'); return false; }
+  if(pw!==pw2){ pwMsg('새 비밀번호가 일치하지 않습니다.'); return false; }
+  if(pw===cur){ pwMsg('현재 비밀번호와 다른 비밀번호를 입력하세요.'); return false; }
+  btn.disabled=true; btn.textContent='변경 중…';
+  try{
+    var u=(await sbA.auth.getUser()).data.user;
+    if(!u) throw new Error('세션이 만료되었습니다. 다시 로그인해 주세요.');
+    var chk=await sbA.auth.signInWithPassword({email:u.email, password:cur});
+    if(chk.error) throw new Error('현재 비밀번호가 올바르지 않습니다.');
+    var r=await sbA.auth.updateUser({password:pw});
+    if(r.error){
+      var m=r.error.message||'';
+      if(/different from the old/i.test(m)) m='현재 비밀번호와 다른 비밀번호를 입력하세요.';
+      throw new Error(m);
+    }
+    f.reset();
+    pwMsg('비밀번호가 변경되었습니다.', true);
+  }catch(err){ pwMsg(err.message||String(err)); }
+  btn.disabled=false; btn.textContent='비밀번호 변경';
+  return false;
 }
 function lookupLicense(e){
   e.preventDefault();
