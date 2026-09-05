@@ -160,10 +160,10 @@ tr:last-child td{border-bottom:0}
 .us-bar .chip b{font-family:ui-monospace,Menlo,monospace;margin-left:4px;color:#fff}
 .us-bar .chip.red.on{border-color:var(--red);color:#ff9ea3}.us-bar .chip.amb.on{border-color:#F4801F;color:#F4801F}.us-bar .chip.grn{color:#5CE0A0}
 .us-bar .sp{flex:1}.us-bar .at{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--dim)}
-.us-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
-.us-grp{margin-top:16px}.us-grp:first-child{margin-top:0}
-.us-grp-h{font-family:ui-monospace,Menlo,monospace;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);padding:0 2px 7px;border-bottom:1px solid var(--line);margin-bottom:10px}
-.us-t{position:relative;display:block;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 14px 12px;color:inherit;min-height:150px}
+.us-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:9px}
+.us-grp{margin-top:10px}.us-grp:first-child{margin-top:0}
+.us-grp-h{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);padding:0 2px 4px;border-bottom:1px solid var(--line);margin-bottom:7px}
+.us-t{position:relative;display:block;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:9px 12px 8px;color:inherit;min-height:0}
 .us-t:hover{border-color:var(--blue);background:#132140}
 .us-t.warn{border-color:#8A4A12}.us-t.over,.us-t.down{border-color:#7A2E33;background:#1C1418}
 .us-t .top{display:flex;align-items:center;gap:8px}
@@ -171,22 +171,23 @@ tr:last-child td{border-bottom:0}
 .us-t.ok .led{background:var(--green);box-shadow:0 0 6px rgba(18,183,106,.7)}
 .us-t.warn .led{background:#F4801F;box-shadow:0 0 6px rgba(244,128,31,.8)}
 .us-t.over .led,.us-t.down .led{background:var(--red);box-shadow:0 0 7px rgba(229,72,77,.9)}
-.us-t .nm{font-weight:800;font-size:14px;color:#fff;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.us-t .nm{font-weight:800;font-size:13.5px;color:#fff;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .us-t .tag{font-family:ui-monospace,Menlo,monospace;font-size:10px;font-weight:800;border-radius:4px;padding:1px 6px;white-space:nowrap}
 .us-t.ok .tag{color:#5CE0A0;background:#0F2A1E}.us-t.warn .tag{color:#fff;background:#F4801F}.us-t.over .tag,.us-t.down .tag{color:#fff;background:var(--red)}.us-t.manual .tag,.us-t.unknown .tag{color:var(--dim);background:#17273F}
-.us-t .role{font-size:11.5px;color:var(--dim);line-height:1.45;margin-top:5px;height:33px;overflow:hidden}
-.us-t .big{font-family:ui-monospace,Menlo,monospace;font-size:30px;font-weight:700;color:#fff;margin:6px 0 2px;line-height:1.1;letter-spacing:-.02em}
-.us-t .big small{font-size:12px;font-weight:600;color:var(--dim);margin-left:6px;letter-spacing:0}
+.us-t .head{display:flex;align-items:baseline;gap:7px;margin:5px 0 0;min-width:0}
+.us-t .big{font-family:ui-monospace,Menlo,monospace;font-size:15px;font-weight:700;color:#fff;line-height:1.15;letter-spacing:-.01em;white-space:nowrap;flex:none}
 .us-t.warn .big{color:#F4801F}.us-t.over .big,.us-t.down .big{color:#ff9ea3}
-.us-t .sub{font-size:12px;color:#B7C7DC;line-height:1.5}
+.us-t .bigsub{font-size:11px;color:var(--dim);line-height:1.35;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.us-t .sub{font-size:11.5px;color:#B7C7DC;line-height:1.4}
 .us-t .sub b{color:#fff;font-weight:700}
-.us-t .bar{height:4px;background:#0E1A2E;border:1px solid #243350;border-radius:2px;overflow:hidden;margin:10px 0 8px}
+.us-t .bar{height:4px;background:#0E1A2E;border:1px solid #243350;border-radius:2px;overflow:hidden;margin:6px 0 5px}
 .us-t .bar i{display:block;height:100%;background:var(--green)}
 .us-t.warn .bar i{background:#F4801F}.us-t.over .bar i,.us-t.down .bar i{background:var(--red)}
-.us-t .ft{display:flex;align-items:center;gap:8px;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--dim);margin-top:6px}
+.us-t .ft{display:flex;align-items:center;gap:8px;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--dim);margin-top:3px}
+.us-t .ft .pay{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.us-t .ft .pay b{color:#cdd8ea;font-weight:700}
 .us-t .ft .go{margin-left:auto;font-weight:800;color:#9CC2F5}
 .us-t.warn .ft .go{color:#F4801F}.us-t.over .ft .go,.us-t.down .ft .go{color:#ff9ea3}
-.us-t .dt{position:absolute;right:12px;bottom:36px;display:none;gap:6px;align-items:center}
+.us-t .dt{position:absolute;right:12px;bottom:9px;display:none;gap:6px;align-items:center}
 .us-t .dt input{background:#0E1A2E;color:#E9EEF7;border:1px solid #243350;border-radius:6px;padding:3px 6px;font-family:inherit;font-size:12px}
 .us-t.edit .dt{display:flex}
 .us-t .pen{font-size:11px;color:var(--dim);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
@@ -405,7 +406,7 @@ td{color:var(--text)}
           <button class="tbtn" onclick="usCheckNow()" id="usCheckBtn">지금 점검</button>
         </div>
         <div id="usGrid"><div class="n" style="padding:20px">불러오는 중…</div></div>
-        <p class="n" style="margin-top:12px;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--dim)">타일을 누르면 그 서비스의 결제·요금제 화면이 열립니다 · 30분마다 자동 점검 · 사용량 70% 경고 · 90% 초과 · 결제일 30일 전 경고 · 7일 전 초과</p>
+        <p class="n" style="margin-top:8px;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--faint,var(--dim))">타일 클릭 = 요금제 화면 · 30분 자동 점검 · 70% 경고 / 90% 초과 · 결제일 D-30 경고 / D-7 초과</p>
       </section>
 
       <!-- 결재 (승인 워크플로) -->
@@ -1797,14 +1798,11 @@ function usRender(){
     var manualDate=['apple','google','inicis','paddle'].indexOf(sv.id)>=0;
     var go=lv==='over'||lv==='down'?'지금 결제 →':lv==='warn'?'결제 확인 →':'요금제 →';
     var g=GRP[sv.id]||'기타'; if(!groups[g])groups[g]='';
-    groups[g]+='<a class="us-t '+lv+'" data-id="'+usEsc(sv.id)+'" href="'+usEsc(sv.billing_url||sv.site_url||'#')+'" target="_blank" rel="noopener">'
+    groups[g]+='<a class="us-t '+lv+'" data-id="'+usEsc(sv.id)+'" href="'+usEsc(sv.billing_url||sv.site_url||'#')+'" target="_blank" rel="noopener" title="'+usEsc((sv.role||sv.category||'')+(bigSub?' · '+bigSub:''))+'">'
       +'<div class="top"><i class="led"></i><span class="nm">'+usEsc(sv.name)+'</span><span class="tag">'+(US_LV[lv]||lv)+'</span></div>'
-      +'<div class="role">'+usEsc(sv.role||sv.category||'')+'</div>'
-      +'<div class="big">'+usEsc(big)+'</div>'
-      +'<div class="sub">'+usEsc(bigSub)+'</div>'
+      +'<div class="head"><span class="big">'+usEsc(big)+'</span>'+(bigSub?'<span class="bigsub">'+usEsc(bigSub)+'</span>':'')+'</div>'
       +(barPct!=null?'<div class="bar"><i style="width:'+barPct+'%"></i></div>':'<div class="bar" style="opacity:.35"><i style="width:0"></i></div>')
-      +'<div class="sub"><b>'+usEsc(pay)+'</b>'+(sv.plan?' · '+usEsc(sv.plan):'')+'</div>'
-      +'<div class="ft">'+(manualDate?'<span class="pen" onclick="event.preventDefault();event.stopPropagation();usEdit(\''+sv.id+'\')">'+(sv.renew_at?'날짜 수정':'결제일 입력')+'</span>':'<span>'+usEsc(sv.category||'')+'</span>')+'<span class="go">'+go+'</span></div>'
+      +'<div class="ft"><span class="pay">'+(pay?'<b>'+usEsc(pay)+'</b>'+(sv.plan?' · '+usEsc(sv.plan):''):usEsc(sv.category||''))+'</span>'+(manualDate?'<span class="pen" onclick="event.preventDefault();event.stopPropagation();usEdit(\''+sv.id+'\')">'+(sv.renew_at?'수정':'입력')+'</span>':'')+'<span class="go">'+go+'</span></div>'
       +(manualDate?'<span class="dt" onclick="event.preventDefault();event.stopPropagation()"><input type="date" value="'+usEsc(sv.renew_at||'')+'" onchange="usSaveDate(\''+sv.id+'\',this.value)"></span>':'')
       +'</a>';
   });
