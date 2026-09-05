@@ -131,6 +131,7 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
 .btn.danger{background:#3A1B1B;color:#FF9EA3;border-color:#5A2A2A}.btn.danger:hover{background:#4A2222}.btn:disabled{opacity:.5;cursor:not-allowed}
 .dellist{margin:0 0 18px;padding-left:18px;font-size:13.5px;color:var(--dim);line-height:1.75}.dellist li{margin-bottom:4px}.delwarn{background:#2E2410;border:1px solid #6B5A2A;color:#FFD27A;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;margin-bottom:16px}
 .msg{display:none;margin-left:10px;font-size:13px;font-weight:600}
+.rp{padding:14px 0;border-top:1px solid var(--line)}.rp:first-child{border-top:0;padding-top:0}.rp .t{font-size:15px;font-weight:800;color:var(--text)}.rp .m{font-size:12px;color:var(--dim);margin-top:3px}.rp .m .st{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.06em;border:1px solid var(--line);padding:1px 6px;margin-left:6px;color:var(--dim)}.rp .m .st.ans{color:#39D48C;border-color:#1E4D35}.rp .b{font-size:13.5px;color:var(--text);margin-top:8px;white-space:pre-wrap;line-height:1.65}.rp .imgs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.rp .imgs a img{height:96px;border:1px solid var(--line);border-radius:8px;display:block;object-fit:cover}.rp .note{margin-top:10px;padding:10px 12px;background:#0E2B1E;border:1px solid #1E4D35;border-radius:9px;font-size:13px;color:#9BE3BE;white-space:pre-wrap}.rp .note b{display:block;font-size:11px;letter-spacing:.06em;margin-bottom:3px}
 </style>
 <script src="/portal/az-i18n.js" defer></script>
 </head>
@@ -162,6 +163,7 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
     <div class="sh">마이페이지</div>
     <a href="#home" data-view="home" class="on">내 라이선스</a>
     <a href="#orders" data-view="orders">주문 내역</a>
+    <a href="#reports" data-view="reports" id="navReports" hidden>테스트 보고</a>
     <a href="#issue" data-view="issue">라이선스 관리</a>
     <a href="#security" data-view="security">계정 설정</a>
     <div class="side-foot"><a href="#danger" data-view="danger">회원 탈퇴</a></div>
@@ -260,6 +262,23 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
     </div>
   </div>
 
+  <div class="sec view" id="reports">
+    <h2>테스트 보고</h2>
+    <p class="muted">베타 테스트 중 발견한 문제, 사용 소감, 개선 의견을 남겨 주세요. 화면 캡처를 함께 올리면 큰 도움이 됩니다.</p>
+    <div class="panel">
+      <form id="rpForm" onsubmit="return reportSubmit(event)" style="max-width:640px">
+        <div class="field"><label for="rp-camp">베타 프로그램</label><select id="rp-camp" name="campaign" required></select></div>
+        <div class="field"><label for="rp-title">제목</label><input id="rp-title" name="title" type="text" maxlength="120" required placeholder="예: 스위처 연결이 3분 뒤 끊김"></div>
+        <div class="field"><label for="rp-body">내용</label><textarea id="rp-body" name="body" maxlength="5000" rows="6" required placeholder="재현 순서, 기대한 동작, 실제 동작, 사용 환경(컴퓨터·OS·장비)"></textarea></div>
+        <div class="field"><label for="rp-files">이미지 첨부 (선택 · 최대 5장, 장당 8MB)</label><input id="rp-files" name="files" type="file" accept="image/*" multiple></div>
+        <button class="btn pri" type="submit" id="rpBtn" style="height:44px;padding:0 22px">보고 올리기</button>
+        <span id="rpMsg" class="msg"></span>
+      </form>
+    </div>
+    <h3 style="margin:26px 0 10px;font-size:16px;font-weight:800">내가 올린 보고</h3>
+    <div class="panel" id="rpList"><p class="muted" style="margin:0">불러오는 중…</p></div>
+  </div>
+
   <div class="sec view" id="danger">
     <h2>회원 탈퇴</h2>
     <p class="muted">계정을 삭제합니다. 삭제 후에는 되돌릴 수 없습니다.</p>
@@ -301,7 +320,7 @@ var sbA=window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co',
   document.getElementById('avatar').textContent=(name[0]||'·');
   var pe=document.getElementById('pf-email'), pn=document.getElementById('pf-name'); if(pe) pe.value=u.email; if(pn) pn.value=(u.user_metadata&&u.user_metadata.name)||'';
   await loadLicenses();   // 내 라이선스는 DB(licenses + activations)에서 — 어느 기기에서 로그인해도 동일
-  loadOrders();
+  loadOrders(); loadTesters();
   // 이메일 인증 완료 직후(?welcome=1) 가입 축하
   if(new URLSearchParams(location.search).get('welcome')){
     document.getElementById('welcomeName').textContent=name;
@@ -311,7 +330,7 @@ var sbA=window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co',
 })();
 function closeWelcome(){ document.getElementById('welcomeModal').style.display='none'; }
 // 마이페이지 좌측 메뉴 — 한 번에 한 화면만 (해시 #home/#orders/#issue/#security/#danger)
-var VIEWS=['home','orders','issue','security','danger'];
+var VIEWS=['home','orders','issue','security','danger','reports'];
 function showView(v){
   if(VIEWS.indexOf(v)<0) v='home';
   document.querySelectorAll('.mymain .view').forEach(function(s){ s.classList.toggle('on', s.id===v); });
@@ -544,6 +563,44 @@ async function refundOrder(oid){
   if(err){ alert('환불하지 못했습니다.\n\n'+err); return; }
   alert('환불이 접수되었습니다.'+((r.data&&r.data.note)?('\n('+r.data.note+')'):'')+'\n\n환급은 결제 수단으로 처리되며 카드사·결제사 정책에 따라 수일이 걸릴 수 있습니다.');
   await loadLicenses(); loadOrders();
+}
+// 베타 테스터: 활성 테스터면 '테스트 보고' 메뉴 표시 (beta_testers self read)
+var TESTERS=[], RP_ST={new:'접수',read:'확인함',answered:'답변 완료'};
+async function loadTesters(){
+  var r=await sbA.from('beta_testers').select('id,campaign_id,status,is_top,joined_at,beta_campaigns(title,product_id,slug)').eq('status','active').order('joined_at',{ascending:false});
+  TESTERS=r.error?[]:(r.data||[]);
+  var nav=document.getElementById('navReports'); if(nav) nav.hidden=!TESTERS.length;
+  var sel=document.getElementById('rp-camp'); if(sel) sel.innerHTML=TESTERS.map(function(t){ var c=t.beta_campaigns||{}; return '<option value="'+escH(t.campaign_id)+'">'+escH(c.title||'베타 프로그램')+(t.is_top?' · 우수 테스터':'')+'</option>'; }).join('');
+  if(TESTERS.length) loadReports(); else if(location.hash==='#reports') showView('home');
+}
+async function reportSubmit(e){
+  e.preventDefault();
+  var f=e.target, btn=document.getElementById('rpBtn'); var camp=f.campaign.value, title=f.title.value.trim(), body=f.body.value.trim(); var files=Array.prototype.slice.call(f.files.files||[]);
+  if(!camp){ showMsg('rpMsg','베타 프로그램을 선택하세요.'); return false; }
+  if(files.length>5){ showMsg('rpMsg','이미지는 최대 5장까지 올릴 수 있습니다.'); return false; }
+  if(files.some(function(x){ return x.size>8*1024*1024 || !/^image\//.test(x.type); })){ showMsg('rpMsg','이미지 파일만, 장당 8MB 이하로 올려 주세요.'); return false; }
+  var u=(await sbA.auth.getUser()).data.user; if(!u){ location.replace('index.html'); return false; }
+  btn.disabled=true; btn.textContent=files.length?'이미지 올리는 중…':'저장 중…';
+  try{
+    var paths=[];
+    for(var i=0;i<files.length;i++){ var ext=(files[i].name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5)||'jpg'; var path=u.id+'/'+Date.now()+'_'+i+'.'+ext; var up=await sbA.storage.from('beta-reports').upload(path, files[i], {contentType:files[i].type, upsert:false}); if(up.error) throw new Error('이미지 업로드 실패: '+up.error.message); paths.push(path); }
+    var ins=await sbA.from('beta_reports').insert({campaign_id:camp, user_id:u.id, title:title, body:body, images:paths}); if(ins.error) throw new Error(ins.error.message);
+    f.reset(); showMsg('rpMsg','보고가 등록되었습니다. 감사합니다.',true); loadReports();
+  }catch(err){ showMsg('rpMsg', (err.message||String(err))); }
+  btn.disabled=false; btn.textContent='보고 올리기'; return false;
+}
+async function loadReports(){
+  var box=document.getElementById('rpList'); if(!box) return;
+  var r=await sbA.from('beta_reports').select('id,campaign_id,title,body,images,status,admin_note,created_at').order('created_at',{ascending:false}).limit(100);
+  if(r.error){ box.innerHTML='<p class="muted" style="margin:0;color:#ff9ea3">불러오지 못했습니다: '+escH(r.error.message)+'</p>'; return; }
+  var L=r.data||[]; if(!L.length){ box.innerHTML='<p class="muted" style="margin:0">아직 올린 보고가 없습니다.</p>'; return; }
+  var allPaths=[]; L.forEach(function(x){ (x.images||[]).forEach(function(p){ allPaths.push(p); }); });
+  var urls={}; if(allPaths.length){ var su=await sbA.storage.from('beta-reports').createSignedUrls(allPaths, 3600); (su.data||[]).forEach(function(o){ if(o&&o.signedUrl) urls[o.path]=o.signedUrl; }); }
+  var cmap={}; TESTERS.forEach(function(t){ cmap[t.campaign_id]=(t.beta_campaigns&&t.beta_campaigns.title)||''; });
+  box.innerHTML=L.map(function(x){
+    var imgs=(x.images||[]).map(function(p){ var url=urls[p]; return url?'<a href="'+escH(url)+'" target="_blank" rel="noopener"><img src="'+escH(url)+'" alt=""></a>':''; }).join('');
+    return '<div class="rp"><div class="t">'+escH(x.title)+'</div><div class="m">'+escH(cmap[x.campaign_id]||'')+' · '+fmtDate(x.created_at)+'<span class="st'+(x.status==='answered'?' ans':'')+'">'+escH(RP_ST[x.status]||x.status)+'</span></div><div class="b">'+escH(x.body)+'</div>'+(imgs?'<div class="imgs">'+imgs+'</div>':'')+(x.admin_note?'<div class="note"><b>AudioAZ 답변</b>'+escH(x.admin_note)+'</div>':'')+'</div>';
+  }).join('');
 }
 // 프로필(이름) 저장 — auth 메타데이터 + profiles
 function showMsg(id,t,ok){ var el=document.getElementById(id); if(!el) return; el.textContent=t; el.style.color=ok?'var(--green)':'#ff9ea3'; el.style.display='inline'; }

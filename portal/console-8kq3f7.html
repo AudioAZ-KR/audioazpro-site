@@ -675,6 +675,19 @@ td{color:var(--text)}
             <button class="btn btn-pri" type="button" id="biBtn" onclick="betaIssue()" style="margin-top:12px">코드 발송 실행</button>
             <div class="result" id="biRes"><div class="k" id="biOut"></div></div>
           </div>
+
+          <div style="margin-top:18px;padding:18px;border:1px solid var(--line);border-radius:12px;background:#0E1A2E" id="betaTesterBox">
+            <h2 style="font-size:15px;margin-bottom:4px">베타 테스터 <span class="n" id="betaTesterCount"></span></h2>
+            <div class="sub">프로모션 코드를 등록해 테스터가 된 계정입니다. 마이페이지에 '테스트 보고' 메뉴가 열립니다. 보고 수는 아래 게시판 기준이며, 우수 테스터는 자동 선정(N건 이상) 또는 행에서 직접 지정합니다.</div>
+            <div class="toolbar" style="margin-top:10px"><span class="n">우수 자동 선정 · 보고</span><input type="number" id="betaTopN" value="3" min="1" max="999" style="width:70px;border:1px solid #243350;border-radius:9px;padding:8px 10px;font-family:inherit;font-size:13.5px;background:#121D33;color:#E9EEF7"><span class="n">건 이상</span><button class="tbtn" type="button" onclick="betaAutoTop()">자동 선정</button><button class="tbtn danger" type="button" onclick="betaCloseTesters()">테스터 마감 (일반 사용자로 전환)</button></div>
+            <table><thead><tr><th>이메일</th><th>참여일</th><th>보고</th><th>우수</th><th>상태</th><th></th></tr></thead><tbody id="betaTesterRows"><tr><td colspan="6" class="n">—</td></tr></tbody></table>
+          </div>
+
+          <div style="margin-top:18px" id="betaReportBox">
+            <h2 style="font-size:15px;margin-bottom:4px">테스트 보고 게시판 <span class="n" id="betaReportCount"></span></h2>
+            <div class="toolbar" style="margin-top:8px"><select id="betaRpStatus" onchange="renderBetaReports()" style="border:1px solid #243350;border-radius:9px;padding:9px 12px;font-family:inherit;font-size:13.5px;background:#0E1A2E;color:#E9EEF7"><option value="">전체</option><option value="new">새 보고</option><option value="read">확인함</option><option value="answered">답변 완료</option></select><input class="field search" style="margin:0" id="betaRpSearch" placeholder="제목·내용·이메일 검색" oninput="renderBetaReports()"></div>
+            <div id="betaReportList" class="n">—</div>
+          </div>
         </div>
       </section>
 
@@ -799,7 +812,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.17.0', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.18.0', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1478,7 +1491,7 @@ async function betaOpen(i){
   document.getElementById('betaSignTitle').textContent='신청자 — '+BETA_CUR.title;
   var bp=document.getElementById('biProd'), bt=document.getElementById('biType'); if(BETA_CUR.product_id) bp.value=BETA_CUR.product_id; if(BETA_CUR.license_type) bt.value=BETA_CUR.license_type;
   document.getElementById('biRes').classList.remove('on');
-  await betaLoadSignups(); card.scrollIntoView({behavior:'smooth',block:'start'});
+  await betaLoadSignups(); betaLoadTesters(); betaLoadReports(); card.scrollIntoView({behavior:'smooth',block:'start'});
 }
 async function betaLoadSignups(){
   if(!BETA_CUR) return;
@@ -1528,6 +1541,71 @@ async function betaIssue(){
   btn.disabled=false; btn.textContent='코드 발송 실행';
   betaLoadSignups(); betaLoad();
 }
+
+// ===== 베타 테스터 · 테스트 보고 게시판 =====
+var BETA_TESTERS=[], BETA_REPORTS=[], BETA_RP_URLS={};
+var RP_ST={new:['새 보고','p-trial'],read:['확인함','p-refund'],answered:['답변 완료','p-active']};
+async function betaLoadTesters(){
+  if(!BETA_CUR) return;
+  var r=await sb.from('beta_testers').select('*').eq('campaign_id',BETA_CUR.id).order('joined_at',{ascending:false});
+  BETA_TESTERS=r.error?[]:(r.data||[]); renderBetaTesters();
+}
+function betaReportCount(uid){ return BETA_REPORTS.filter(function(x){return x.user_id===uid;}).length; }
+function renderBetaTesters(){
+  var tb=document.getElementById('betaTesterRows'); if(!tb) return;
+  var cnt=document.getElementById('betaTesterCount'); if(cnt) cnt.textContent=BETA_TESTERS.length?('활성 '+BETA_TESTERS.filter(function(t){return t.status==='active';}).length+' / 전체 '+BETA_TESTERS.length):'';
+  if(!BETA_TESTERS.length){ tb.innerHTML='<tr><td colspan="6" class="n">아직 코드를 등록한 테스터가 없습니다.</td></tr>'; return; }
+  tb.innerHTML=BETA_TESTERS.map(function(t,i){
+    var n=betaReportCount(t.user_id);
+    return '<tr'+(t.status==='active'?'':' style="opacity:.55"')+'><td class="mono">'+esc(t.email||t.user_id)+'</td><td class="mono">'+fmtDate(t.joined_at)+'</td><td class="mono">'+n+'</td><td>'+(t.is_top?'<span class="pill p-active">우수</span>':'<span class="n">—</span>')+'</td><td>'+(t.status==='active'?'<span class="pill p-trial">테스터</span>':'<span class="pill p-revoked">마감</span>')+'</td>'+
+      '<td style="white-space:nowrap"><button class="tbtn" onclick="betaToggleTop('+i+')">'+(t.is_top?'우수 해제':'우수 지정')+'</button> '+(t.status==='active'?'<button class="tbtn danger" onclick="betaCloseOne('+i+')">마감</button>':'<button class="tbtn" onclick="betaReopenOne('+i+')">재개</button>')+'</td></tr>';
+  }).join('');
+}
+async function betaToggleTop(i){ var t=BETA_TESTERS[i]; if(!t) return; var r=await sb.from('beta_testers').update({is_top:!t.is_top}).eq('id',t.id); if(r.error){ alert('실패: '+r.error.message); return; } betaLoadTesters(); }
+async function betaCloseOne(i){ var t=BETA_TESTERS[i]; if(!t) return; if(!confirm(t.email+' 테스터를 마감합니다. 마이페이지의 테스트 보고 메뉴가 닫히고 일반 사용자로 돌아갑니다.')) return; var r=await sb.from('beta_testers').update({status:'closed',closed_at:new Date().toISOString()}).eq('id',t.id); if(r.error){ alert('실패: '+r.error.message); return; } betaLoadTesters(); }
+async function betaReopenOne(i){ var t=BETA_TESTERS[i]; if(!t) return; var r=await sb.from('beta_testers').update({status:'active',closed_at:null}).eq('id',t.id); if(r.error){ alert('실패: '+r.error.message); return; } betaLoadTesters(); }
+async function betaAutoTop(){
+  if(!BETA_CUR) return; var n=Math.max(1,parseInt(document.getElementById('betaTopN').value||'3')||3);
+  var ids=BETA_TESTERS.filter(function(t){ return betaReportCount(t.user_id)>=n; }).map(function(t){return t.id;});
+  if(!ids.length){ alert('보고 '+n+'건 이상인 테스터가 없습니다.'); return; }
+  if(!confirm('보고 '+n+'건 이상 테스터 '+ids.length+'명을 우수 테스터로 지정합니다. (기존 지정은 유지)')) return;
+  var r=await sb.from('beta_testers').update({is_top:true}).in('id',ids); if(r.error){ alert('실패: '+r.error.message); return; } betaLoadTesters();
+}
+async function betaCloseTesters(){
+  if(!BETA_CUR) return; var act=BETA_TESTERS.filter(function(t){return t.status==='active';}).length;
+  if(!act){ alert('활성 테스터가 없습니다.'); return; }
+  if(!confirm('이 모집의 테스터 '+act+'명을 모두 마감합니다.\n마이페이지의 테스트 보고 메뉴가 닫히고 일반 사용자로 전환됩니다. 우수 테스터 표시는 남습니다. 진행할까요?')) return;
+  var r=await sb.from('beta_testers').update({status:'closed',closed_at:new Date().toISOString()}).eq('campaign_id',BETA_CUR.id).eq('status','active');
+  if(r.error){ alert('실패: '+r.error.message); return; } betaLoadTesters();
+}
+async function betaLoadReports(){
+  if(!BETA_CUR) return;
+  var r=await sb.from('beta_reports').select('*').eq('campaign_id',BETA_CUR.id).order('created_at',{ascending:false}).limit(500);
+  BETA_REPORTS=r.error?[]:(r.data||[]);
+  var paths=[]; BETA_REPORTS.forEach(function(x){ (x.images||[]).forEach(function(p){ if(!BETA_RP_URLS[p]) paths.push(p); }); });
+  if(paths.length){ try{ var su=await sb.storage.from('beta-reports').createSignedUrls(paths, 3600); (su.data||[]).forEach(function(o){ if(o&&o.signedUrl) BETA_RP_URLS[o.path]=o.signedUrl; }); }catch(_){} }
+  renderBetaReports(); renderBetaTesters();
+}
+function renderBetaReports(){
+  var box=document.getElementById('betaReportList'); if(!box) return;
+  var st=(document.getElementById('betaRpStatus')||{}).value||'', q=((document.getElementById('betaRpSearch')||{}).value||'').trim().toLowerCase();
+  var emailOf={}; BETA_TESTERS.forEach(function(t){ emailOf[t.user_id]=t.email; });
+  var L=BETA_REPORTS.filter(function(x){ var em=emailOf[x.user_id]||''; return (!st||x.status===st) && (!q || (x.title+' '+x.body+' '+em).toLowerCase().indexOf(q)>=0); });
+  var cnt=document.getElementById('betaReportCount'); if(cnt) cnt.textContent=BETA_REPORTS.length?('전체 '+BETA_REPORTS.length+' · 새 보고 '+BETA_REPORTS.filter(function(x){return x.status==='new';}).length):'';
+  if(!L.length){ box.className='n'; box.textContent=BETA_REPORTS.length?'조건에 맞는 보고가 없습니다.':'아직 올라온 테스트 보고가 없습니다.'; return; }
+  box.className='';
+  box.innerHTML=L.map(function(x){
+    var s=RP_ST[x.status]||[x.status,'p-trial']; var em=emailOf[x.user_id]||x.user_id; var top=BETA_TESTERS.some(function(t){return t.user_id===x.user_id&&t.is_top;});
+    var imgs=(x.images||[]).map(function(p){ var u=BETA_RP_URLS[p]; return u?'<a href="'+esc(u)+'" target="_blank" rel="noopener" style="display:inline-block;margin:6px 6px 0 0"><img src="'+esc(u)+'" alt="" style="height:110px;border:1px solid var(--line);border-radius:8px;display:block;object-fit:cover"></a>':''; }).join('');
+    return '<div style="padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#0E1A2E;margin-top:10px" data-rp="'+esc(x.id)+'">'+
+      '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b style="font-size:15px;color:#E9EEF7">'+esc(x.title)+'</b><span class="pill '+s[1]+'">'+s[0]+'</span>'+(top?'<span class="pill p-active">우수 테스터</span>':'')+'<span class="n" style="margin-left:auto">'+esc(em)+' · '+fmtDateTime(x.created_at)+'</span></div>'+
+      '<div style="white-space:pre-wrap;font-size:13.5px;color:#E9EEF7;line-height:1.65;margin-top:8px">'+esc(x.body)+'</div>'+(imgs?'<div>'+imgs+'</div>':'')+
+      '<div style="margin-top:12px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start"><textarea class="rp-note" rows="2" placeholder="답변·메모 (테스터의 마이페이지에 AudioAZ 답변으로 표시됩니다)" style="width:100%;border:1px solid #243350;border-radius:9px;padding:9px 12px;font-family:inherit;font-size:13px;background:#121D33;color:#E9EEF7;resize:vertical">'+esc(x.admin_note||'')+'</textarea><div style="display:flex;flex-direction:column;gap:6px"><button class="tbtn" type="button" onclick="betaRpNote(\''+esc(x.id)+'\',this)">답변 저장</button>'+(x.status==='new'?'<button class="tbtn" type="button" onclick="betaRpStatus(\''+esc(x.id)+'\',\'read\')">확인함</button>':'')+'</div></div>'+
+    '</div>';
+  }).join('');
+}
+async function betaRpNote(id,btn){ var card=btn.closest('[data-rp]'); var note=(card.querySelector('.rp-note').value||'').trim(); var r=await sb.from('beta_reports').update({admin_note:note||null, status:(note?'answered':'read'), updated_at:new Date().toISOString()}).eq('id',id); if(r.error){ alert('실패: '+r.error.message); return; } var t=btn.textContent; btn.textContent='저장됨'; setTimeout(function(){btn.textContent=t;},1200); betaLoadReports(); }
+async function betaRpStatus(id,st){ var r=await sb.from('beta_reports').update({status:st, updated_at:new Date().toISOString()}).eq('id',id); if(r.error){ alert('실패: '+r.error.message); return; } betaLoadReports(); }
 
 // 모바일 표 라벨: thead의 열 이름을 각 td에 data-label로 붙인다 (CSS가 세로 카드형으로 표시)
 function azLabelTables(root){
