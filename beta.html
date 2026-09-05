@@ -184,7 +184,8 @@ function fmtDesc(t){
     if(mb||mn){ var ty=mb?'ul':'ol'; if(list&&ltype!==ty) flushL(); flushP(); if(!list){ list=[]; ltype=ty; } list.push((mb||mn)[1]); continue; }
     flushL();
     var next=(lines[i+1]||'').trim(), nextIsList=/^([-•*]|\d+[.)])\s+/.test(next);
-    var isHead=/^\*\*.+\*\*$/.test(tr) || (nextIsList && tr.length<=30 && !/[.。]$/.test(tr));
+    var nextIsText=next!=='' && !nextIsList && next.length>=30;
+    var isHead=/^\*\*.+\*\*$/.test(tr) || ((nextIsList||nextIsText) && tr.length<=20 && !/[.。,!?)]$/.test(tr) && para.length===0);
     if(isHead){ flushP(); out.push('<h3>'+inline(tr.replace(/^\*\*|\*\*$/g,''))+'</h3>'); continue; }
     para.push(tr);
   }
