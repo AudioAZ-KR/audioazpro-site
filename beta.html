@@ -89,6 +89,7 @@ footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center}footer .rig
 .done{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:44px 26px;margin-top:22px;text-align:center;color:var(--dim)}
 .done b{display:block;font-size:18px;color:var(--text);margin-bottom:6px}
 #bDesc{white-space:normal}#bDesc p{margin:0 0 12px}#bDesc h3{font-size:15px;margin:18px 0 6px;color:var(--text)}#bDesc ul,#bDesc ol{margin:0 0 12px;padding-left:20px}#bDesc li{margin:4px 0}#bDesc b{color:var(--text)}
+#bTitle{display:flex;align-items:center;gap:12px}#bTitle .ticon{width:44px;height:44px;border-radius:10px;flex:none}
 </style>
 <script src="/portal/az-i18n.js" defer></script>
 </head>
@@ -171,16 +172,23 @@ var TYPE={D7:'7일 체험',D14:'14일 체험',D30:'30일 체험',FREE:'무료 (�
 var SLUG=(new URLSearchParams(location.search).get('c')||'').trim().toLowerCase();
 var CAMP=null;
 function fmtDesc(t){
-  // 안내문 서식: 빈 줄=문단, **굵게**, "- " 글머리, "1. " 번호 목록. HTML은 모두 이스케이프.
-  var blocks=String(t).replace(/\r/g,'').split(/\n{2,}/), out=[];
+  // 안내문 서식: 줄 단위 — "- / * / •" 글머리, "1." 번호, **굵게**, 짧은 한 줄 뒤에 목록이 오면 소제목, 빈 줄은 문단. HTML은 모두 이스케이프.
   function inline(x){ return escB(x).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>'); }
-  blocks.forEach(function(b){
-    var lines=b.split('\n').filter(function(l){return l.trim()!=='';}); if(!lines.length) return;
-    if(lines.every(function(l){return /^\s*[-•*]\s+/.test(l);})){ out.push('<ul>'+lines.map(function(l){return '<li>'+inline(l.replace(/^\s*[-•*]\s+/,''))+'</li>';}).join('')+'</ul>'); return; }
-    if(lines.every(function(l){return /^\s*\d+[.)]\s+/.test(l);})){ out.push('<ol>'+lines.map(function(l){return '<li>'+inline(l.replace(/^\s*\d+[.)]\s+/,''))+'</li>';}).join('')+'</ol>'); return; }
-    var first=lines[0].trim(); if(lines.length===1 && /^\*\*.+\*\*$/.test(first)){ out.push('<h3>'+inline(first.replace(/^\*\*|\*\*$/g,''))+'</h3>'); return; }
-    out.push('<p>'+lines.map(inline).join('<br>')+'</p>');
-  });
+  var lines=String(t).replace(/\r/g,'').split('\n'), out=[], para=[], list=null, ltype='';
+  function flushP(){ if(para.length){ out.push('<p>'+para.map(inline).join('<br>')+'</p>'); para=[]; } }
+  function flushL(){ if(list){ out.push('<'+ltype+'>'+list.map(function(x){return '<li>'+inline(x)+'</li>';}).join('')+'</'+ltype+'>'); list=null; } }
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i], tr=l.trim();
+    if(tr===''){ flushP(); flushL(); continue; }
+    var mb=tr.match(/^[-•*]\s+(.*)$/), mn=tr.match(/^\d+[.)]\s+(.*)$/);
+    if(mb||mn){ var ty=mb?'ul':'ol'; if(list&&ltype!==ty) flushL(); flushP(); if(!list){ list=[]; ltype=ty; } list.push((mb||mn)[1]); continue; }
+    flushL();
+    var next=(lines[i+1]||'').trim(), nextIsList=/^([-•*]|\d+[.)])\s+/.test(next);
+    var isHead=/^\*\*.+\*\*$/.test(tr) || (nextIsList && tr.length<=30 && !/[.。]$/.test(tr));
+    if(isHead){ flushP(); out.push('<h3>'+inline(tr.replace(/^\*\*|\*\*$/g,''))+'</h3>'); continue; }
+    para.push(tr);
+  }
+  flushP(); flushL();
   return out.join('');
 }
 function escB(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
@@ -193,6 +201,7 @@ function showEmpty(title,text){ document.getElementById('bMain').hidden=true; do
   CAMP=r.data;
   document.title=CAMP.title+' — AudioAZ 베타 테스터 모집';
   document.getElementById('bTitle').textContent=CAMP.title;
+  var ICON={TALLY:'/assets/flare-tally-icon.png'}; if(ICON[CAMP.product_id]){ var im=document.createElement('img'); im.src=ICON[CAMP.product_id]; im.alt=''; im.width=44; im.height=44; im.className='ticon'; document.getElementById('bTitle').prepend(im); }
   document.getElementById('bDesc').innerHTML=fmtDesc(CAMP.description||'AudioAZ 제품 베타 테스트에 참여할 분을 모집합니다.');
   document.getElementById('bProd').textContent=PROD[CAMP.product_id]||CAMP.product_id||'—';
   document.getElementById('bType').textContent=TYPE[CAMP.license_type]||CAMP.license_type||'—';
