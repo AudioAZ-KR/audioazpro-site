@@ -132,10 +132,10 @@ footer .mono{color:var(--dim)}
 .tile .nm{font-weight:600;font-size:14px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile .tag{font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:600;border-radius:999px;padding:2px 7px;white-space:nowrap;color:var(--faint);background:var(--line-soft)}
 .tile.ok .tag{color:var(--green);background:var(--green-bg)}.tile.warn .tag{color:#fff;background:#F4801F}.tile.over .tag,.tile.down .tag{color:#fff;background:#E5484D}
-.tile .role{font-size:11.5px;color:var(--dim);line-height:1.45;margin-top:5px;height:33px;overflow:hidden}
+.tile .role{font-size:11.5px;color:var(--dim);line-height:1.45;margin-top:5px;min-height:33px;word-break:keep-all}
 .tile .big{font-family:"IBM Plex Mono",monospace;font-size:28px;font-weight:600;letter-spacing:-.02em;line-height:1.1;margin:6px 0 3px}
 .tile.warn .big{color:#F4801F}.tile.over .big,.tile.down .big{color:#E5484D}
-.tile .sub{font-size:12px;color:var(--dim);line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .sub{font-size:12px;color:var(--dim);line-height:1.5;white-space:normal;word-break:keep-all;overflow-wrap:anywhere}
 .tile .sub b{color:var(--text);font-weight:600}
 .tile .bar{height:4px;background:var(--line-soft);border-radius:2px;overflow:hidden;margin:9px 0 7px}
 .tile .bar i{display:block;height:100%;background:var(--green)}
