@@ -80,8 +80,9 @@ footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px}f
   <div class="eyebrow">Camera Tally · macOS Host + iPhone App + Web</div>
   <div style="display:flex;align-items:center;gap:18px;margin:6px 0 2px"><img src="/assets/flare-tally-icon.png" alt="Flare Tally 앱 아이콘" width="88" height="88" style="width:88px;height:88px;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.45);flex:none"><h1 style="margin:0">Flare Tally</h1></div>
   <p class="lead">ATEM 또는 Roland 스위처에 연결하면 카메라맨의 <b style="color:#fff">아이폰·아이패드가 곧 탈리 라이트</b>가 됩니다. 앱은 <b style="color:#fff">다이나믹 아일랜드에 ON AIR / PREVIEW</b>를 띄워 다른 앱을 쓰는 중에도 보이고, 앱이 없어도 QR 한 번이면 브라우저로 바로 씁니다. 자막·PIP로 <b style="color:#fff">키어 온에어된 카메라까지</b> 정확히 빨강. 같은 Wi-Fi면 오프라인, 아니면 온라인으로 <b style="color:#fff">앱이 알아서</b> 붙습니다.<span class="soon">호스트 v1.0 (33) · macOS · 7일 무료 데모</span></p>
+  <div class="price" style="margin-top:16px;font-size:15px;color:#C7D6E8">라이선스 <b id="heroPrice" style="color:#fff;font-size:20px">—</b> <span style="color:#8fa5c2">· 7일 무료 데모 (호스트 다운로드는 무료)</span></div>
   <div class="salebar" id="saleBar" hidden></div>
-  <div class="cta"><a class="btn btn-primary" href="https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b18/Flare-Tally-1.0-b35.pkg" download>macOS 호스트 다운로드 · v1.0 (35)</a><a class="btn btn-ghost" href="#ios">iPhone 앱</a><a class="btn btn-ghost" href="#how">작동 방식</a></div>
+  <div class="cta"><a class="btn btn-primary" href="/portal/checkout.html?p=TALLY">라이선스 구매</a><a class="btn btn-ghost" href="https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b18/Flare-Tally-1.0-b35.pkg" download>macOS 호스트 다운로드 · v1.0 (35)</a><a class="btn btn-ghost" href="#how">작동 방식</a></div>
   <div class="meta"><span>macOS 호스트 앱</span><span>iPhone · iPad 앱</span><span>웹 탈리 (iOS · Android)</span><span>온라인(LTE) · 오프라인(Wi-Fi) 자동</span><span>ATEM · Roland</span></div>
 </div></header>
 
@@ -147,10 +148,15 @@ footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px}f
 <script src="/portal/az-demo.js"></script>
 <script>
 AZ.syncCatalog(function(){
+  var W=function(v){return '₩'+Number(v||0).toLocaleString();};
+  try{
+    var pr=AZ.priceOf('TALLY');
+    var hp=document.getElementById('heroPrice');
+    if(hp) hp.innerHTML=(pr.now==null)?'출시 시 공개':(pr.sale!==null?'<span style="text-decoration:line-through;opacity:.55;font-weight:600;font-size:.7em">'+W(pr.base)+'</span> '+W(pr.sale):W(pr.base));
+  }catch(_){}
   var s=AZ.saleFor('TALLY'); if(!s) return;
   var base=AZ.basePrice('TALLY')||0; if(!base||!s.price) return;
   var pct=Math.round((base-s.price)/base*100);
-  var W=function(v){return '₩'+Number(v||0).toLocaleString();};
   var el=document.getElementById('saleBar'); if(!el) return;
   el.innerHTML='<span class="off">'+pct+'% OFF</span><s>'+W(base)+'</s><span class="now">'+W(s.price)+'</span>'+
     '<span class="period">'+(s.end?('~ '+s.end+'까지'):'상시 진행 중')+'</span>'+

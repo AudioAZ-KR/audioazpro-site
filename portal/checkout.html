@@ -220,7 +220,7 @@ async function applyCode(){
 // 라이선스 코드 → 서버가 검증·발급 (결제 없음)
 async function grantCode(){
   if(!APPLIED) return;
-  var u=(await sbC.auth.getUser()).data.user; if(!u){ alert('로그인 후 코드를 사용할 수 있습니다.'); location.href='index.html'; return; }
+  var u=(await sbC.auth.getUser()).data.user; if(!u){ alert('로그인 후 코드를 사용할 수 있습니다.'); location.href='index.html?next='+encodeURIComponent('checkout.html'+location.search); return; }
   var target = (APPLIED.product==='ALL') ? CURPROD : APPLIED.product;
   try{
     var d=await callFn('checkout-create',{product_id:target, promo_code:APPLIED.code, provider:'portone'});
@@ -239,7 +239,7 @@ async function pay(ch){
     alert('온라인 카드 결제는 결제사 연동 승인 후 열립니다.\n\n지금 구매를 원하시면 문의하기로 요청해 주세요 — 계좌이체 안내 후 라이선스를 발급해 드립니다.\n(프로모션/라이선스 코드가 있으면 위에서 입력해 바로 발급받을 수 있습니다)');
     location.href='/contact.html?subject='+encodeURIComponent(PROD[CURPROD]+' 구매 문의'); return;
   }
-  var u=(await sbC.auth.getUser()).data.user; if(!u){ if(confirm('로그인이 필요합니다. 로그인 페이지로 이동할까요?')) location.href='index.html'; return; }
+  var u=(await sbC.auth.getUser()).data.user; if(!u){ location.href='index.html?next='+encodeURIComponent('checkout.html'+location.search); return; }
   var cfg=window.AZ_PAY[provider];
   var btns=document.querySelectorAll('.pbtn'); btns.forEach(function(b){b.disabled=true;});
   try{
@@ -298,6 +298,8 @@ function setProduct(p){
   try{ var u=new URL(location.href); u.searchParams.set('p',p); history.replaceState(null,'',u.pathname+u.search+u.hash); }catch(_){}
   renderPrice();
 }
+// 로그인 필요 — 미로그인 시 로그인 페이지로 보내고, 로그인 후 이 결제 페이지로 복귀
+(async function(){ try{ var u=(await sbC.auth.getUser()).data.user; if(!u){ location.replace('index.html?next='+encodeURIComponent('checkout.html'+location.search)); } }catch(_){} })();
 // ?p=제품 로 구매 대상 설정, ?code= 로 코드 자동 적용
 (function(){
   var qp=new URLSearchParams(location.search);
