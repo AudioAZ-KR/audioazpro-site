@@ -152,7 +152,10 @@ function renderPrice(){
   else sl.style.display='none';
   document.getElementById('sTotal').textContent=W(pr.now);
 }
-function showGrantButton(on){ var pay=document.querySelector('.pay'); if(!pay) return; Array.prototype.forEach.call(pay.children,function(c){ if(c.id!=='grantBtn') c.style.display=on?'none':''; }); var g=document.getElementById('grantBtn'); if(on){ if(!g){ g=document.createElement('button'); g.id='grantBtn'; g.className='pbtn kr'; g.type='button'; g.textContent='라이선스 발급받기 (무료)'; g.addEventListener('click',function(){grantCode()}); pay.appendChild(g);} g.style.display=''; } else if(g){ g.style.display='none'; } }
+function showGrantButton(on){ var pay=document.querySelector('.pay'); if(!pay) return; var g=document.getElementById('grantBtn');
+  if(on){ Array.prototype.forEach.call(pay.children,function(c){ if(c.id!=='grantBtn') c.style.display='none'; }); if(!g){ g=document.createElement('button'); g.id='grantBtn'; g.className='pbtn kr'; g.type='button'; g.textContent='라이선스 발급받기 (무료)'; g.addEventListener('click',function(){grantCode()}); pay.appendChild(g);} g.style.display=''; }
+  else { if(g) g.style.display='none'; var tn=document.getElementById('testNote'); if(tn) tn.style.display=''; renderPayButtons(); }   // 결제 버튼은 모드(원화/달러)에 맞는 것만 다시 표시 — 예전엔 전부 켜져 두 버튼이 동시에 보였음
+}
 function reset(){APPLIED=null;showGrantButton(false);document.getElementById('sDiscLine').style.display='none';document.getElementById('licBox').style.display='none';
   document.getElementById('totLabel').textContent='합계';renderPrice();}
 
