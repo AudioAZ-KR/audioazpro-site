@@ -670,7 +670,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.10.0', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.11.0', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1255,7 +1255,8 @@ try{ loadProducts(); }catch(_){}
 try{ loadCustomers(); }catch(_){}
 // ===== 실데이터 공통: 모든 변경은 결재(approvals)를 거침 — 최고관리자는 즉시 자동 승인(감사 기록 남음) =====
 var PRODID={'Klera Voice':'KV','Klera Instrument':'KI','Flare Tally':'TALLY','Latency Meter AZ':'LMAZ'};
-var TYPELABEL={FULL:'정식',D7:'체험 7일',D14:'체험 14일',D30:'체험 30일',FREE:'무료(영구)'};
+var TYPELABEL={FULL:'정식',D7:'체험 7일',D14:'체험 14일',D30:'체험 30일',FREE:'무료(영구)',TEST:'테스트 (3일)'};
+function testTag(){ return ' <span class="mono" title="테스트 사이트의 테스트 결제 — 실돈 아님" style="font-size:10.5px;letter-spacing:.06em;color:#FFD27A;border:1px solid #6B5A2A;padding:1px 5px">TEST</span>'; }
 var EMAILS={};   // user_id → email/name 캐시
 async function azSuperDo(type,title,reason,payload){
   var me=window.__ADMIN_PROFILE||{};
@@ -1309,7 +1310,7 @@ function renderIssued(){
       '<td class="mono">'+esc(l.license_key)+'</td>'+
       '<td>'+esc(PRODNAME[l.product_id]||l.product_id)+'</td>'+
       '<td>'+esc(p.name||'—')+'<br><span style="color:var(--dim);font-size:11px">'+esc(p.email||l.user_id)+'</span></td>'+
-      '<td style="font-size:12px">'+esc(TYPELABEL[l.type]||l.type)+(l.expires_at?'<br><span class="n">~'+fmtDate(l.expires_at)+'</span>':'')+'</td>'+
+      '<td style="font-size:12px">'+esc(TYPELABEL[l.type]||l.type)+(l.type==='TEST'?testTag():'')+(l.expires_at?'<br><span class="n">~'+fmtDate(l.expires_at)+'</span>':'')+'</td>'+
       '<td>'+(revoked?'<span class="pill p-revoked">'+(l.status==='revoked'?'회수':l.status)+'</span>':'<span class="pill p-active">활성</span>')+'</td>'+
       '<td class="mono">'+fmtDate(l.issued_at)+'</td>'+
       '<td style="white-space:nowrap"><button class="tbtn" onclick="copyText(\''+esc(l.license_key)+'\',this)">복사</button> '+
@@ -1372,7 +1373,7 @@ async function cancelOrder(id){
 }
 async function loadOrders(){
   var tb=document.getElementById('orderRows'); if(!tb) return;
-  var r=await sb.from('orders').select('id,user_id,product_id,provider,provider_ref,amount,currency,paid_amount,paid_currency,status,created_at,promo_code,promo_reserved,promo_note').order('created_at',{ascending:false}).limit(1000);
+  var r=await sb.from('orders').select('id,user_id,product_id,provider,provider_ref,amount,currency,paid_amount,paid_currency,status,created_at,promo_code,promo_reserved,promo_note,is_test').order('created_at',{ascending:false}).limit(1000);
   if(r.error){ tb.innerHTML='<tr><td colspan="8" style="color:#ff9ea3">불러오기 실패: '+esc(r.error.message)+'</td></tr>'; return; }
   ORDERS=r.data||[];
   await loadEmails(ORDERS.map(function(o){return o.user_id;}));
@@ -1394,7 +1395,7 @@ function renderOrders(){
   tb.innerHTML=L.map(function(o){
     var p=EMAILS[o.user_id]||{}; var stale=ordStale(o);
     var cls=stale?'p-refund':(PCLS[o.status]||'p-trial');
-    return '<tr'+(stale||o.status==='refunded'?' style="opacity:.55"':'')+'><td class="mono" title="'+esc(o.id)+'">'+esc(String(o.id).slice(0,8))+'</td><td>'+esc(PRODNAME[o.product_id]||o.product_id)+'</td><td>'+esc(p.email||o.user_id)+'</td><td>'+esc(chanLabel(o.provider))+'</td><td class="mono">'+fmtOrderAmt(o)+'</td><td><span class="pill '+cls+'">'+esc(ordStatusLabel(o))+'</span></td><td class="mono">'+fmtDate(o.created_at)+'</td>'+
+    return '<tr'+(stale||o.status==='refunded'?' style="opacity:.55"':'')+'><td class="mono" title="'+esc(o.id)+'">'+esc(String(o.id).slice(0,8))+'</td><td>'+esc(PRODNAME[o.product_id]||o.product_id)+'</td><td>'+esc(p.email||o.user_id)+'</td><td>'+esc(chanLabel(o.provider))+'</td><td class="mono">'+fmtOrderAmt(o)+'</td><td><span class="pill '+cls+'">'+esc(ordStatusLabel(o))+'</span>'+(o.is_test?testTag():'')+'</td><td class="mono">'+fmtDate(o.created_at)+'</td>'+
       '<td>'+(o.status==='paid'?'<button class="tbtn danger" onclick="refundOrder(\''+o.id+'\')">환불</button>':'')+(o.status==='pending'?'<button class="tbtn" title="미결제 주문 취소'+(o.promo_reserved?' · 할인코드 선점 반환':'')+'" onclick="cancelOrder(\''+o.id+'\')">취소'+(o.promo_reserved?'(코드반환)':'')+'</button>':'')+(o.promo_note?' <span class="n" title="'+esc(o.promo_note)+'" style="color:#FFD27A">코드 초과</span>':'')+' <button class="tbtn" onclick="copyText(\''+o.id+'\',this)">ID복사</button></td></tr>';
   }).join('');
 }
@@ -1402,7 +1403,7 @@ function renderOrdMonths(){
   var tb=document.getElementById('ordMonthRows'); if(!tb) return;
   var M={};
   ORDERS.forEach(function(o){
-    if(o.status!=='paid') return;
+    if(o.status!=='paid'||o.is_test) return;
     var d=new Date(o.created_at); if(isNaN(d)) return;
     var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
     (M[k]=M[k]||[]).push(o);
@@ -1417,11 +1418,11 @@ function renderOrdMonths(){
 function ordCsv(){
   var L=ordFiltered();
   if(!L.length){ alert('내보낼 주문이 없습니다.'); return; }
-  var head=['주문ID','일시','제품','고객','채널','상태','통화','금액','결제통화','결제금액','결제참조'];
+  var head=['주문ID','일시','제품','고객','채널','상태','테스트','통화','금액','결제통화','결제금액','결제참조'];
   var rows=L.map(function(o){
     var p=EMAILS[o.user_id]||{};
     return [o.id, fmtDateTime(o.created_at), (PRODNAME[o.product_id]||o.product_id), (p.email||o.user_id),
-      chanLabel(o.provider), ordStatusLabel(o),
+      chanLabel(o.provider), ordStatusLabel(o), (o.is_test?'테스트':''),
       (o.currency||'KRW'), (o.amount!=null?o.amount:''), (o.paid_currency||''), (o.paid_amount!=null?o.paid_amount:''), (o.provider_ref||'')];
   });
   var cell=function(c){ c=String(c==null?'':c); if(/^[=+\-@\t\r]/.test(c)) c="'"+c; return /[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c; };
@@ -1454,7 +1455,7 @@ function revBucket(o){ if(o.provider==='paddle') return 'abroad'; if(o.provider=
 function revSplit(rows){
   var r={dom:{},abroad:{},domN:0,abroadN:0};
   (rows||[]).forEach(function(o){
-    if(o.status!=='paid') return;
+    if(o.status!=='paid'||o.is_test) return;
     var b=revBucket(o);
     var cur=o.paid_currency||o.currency||'KRW';
     var amt=Number((o.paid_currency?o.paid_amount:o.amount)||0);
@@ -1479,7 +1480,7 @@ function fmtMoney(byCur){
 async function loadDash(){
   try{
     var q=await Promise.all([
-      sb.from('orders').select('product_id,created_at,amount,currency,status,provider,paid_amount,paid_currency').order('created_at',{ascending:false}),
+      sb.from('orders').select('product_id,created_at,amount,currency,status,provider,paid_amount,paid_currency,is_test').order('created_at',{ascending:false}),
       sb.from('licenses').select('status,issued_at'),
       sb.from('profiles').select('id',{count:'exact',head:true}).eq('is_admin',false),
       sb.from('licenses').select('license_key,product_id,issued_at,status').order('issued_at',{ascending:false}).limit(4),
@@ -1537,7 +1538,7 @@ async function custDetail(id){
   var licHtml='<div class="n">조회 실패</div>', ordHtml='<div class="n">조회 실패</div>';
   var both=await Promise.all([
     sb.from('licenses').select('license_key,product_id,type,status,issued_at,activations(binding_type,binding_id,label)').eq('user_id',id).order('issued_at',{ascending:false}),
-    sb.from('orders').select('product_id,status,created_at,amount,currency,paid_amount,paid_currency,provider').eq('user_id',id).order('created_at',{ascending:false}).limit(20)
+    sb.from('orders').select('product_id,status,created_at,amount,currency,paid_amount,paid_currency,provider,is_test').eq('user_id',id).order('created_at',{ascending:false}).limit(20)
   ]);
   try{
     var r=both[0];
@@ -1545,7 +1546,7 @@ async function custDetail(id){
       var ls=r.data||[];
       licHtml=ls.length? '<table style="min-width:0"><thead><tr><th>키</th><th>제품</th><th>유형</th><th>상태</th><th>기기</th></tr></thead><tbody>'+ls.map(function(l){
         var acts=(l.activations||[]).map(function(a){return esc(a.label||(a.binding_type==='usb'?'USB':'컴퓨터'));}).join(', ')||'—';
-        return '<tr><td class="mono" style="font-size:11px">'+esc(l.license_key)+'</td><td>'+esc(PRODNAME[l.product_id]||l.product_id)+'</td><td>'+esc(TYPELABEL[l.type]||l.type)+'</td><td>'+(l.status==='active'?'<span class="pill p-active">활성</span>':'<span class="pill p-revoked">'+esc(l.status)+'</span>')+'</td><td style="font-size:12px">'+acts+'</td></tr>';
+        return '<tr><td class="mono" style="font-size:11px">'+esc(l.license_key)+'</td><td>'+esc(PRODNAME[l.product_id]||l.product_id)+'</td><td>'+esc(TYPELABEL[l.type]||l.type)+(l.type==='TEST'?testTag():'')+'</td><td>'+(l.status==='active'?'<span class="pill p-active">활성</span>':'<span class="pill p-revoked">'+esc(l.status)+'</span>')+'</td><td style="font-size:12px">'+acts+'</td></tr>';
       }).join('')+'</tbody></table>' : '<div class="n">라이선스 없음</div>';
     }
   }catch(_){}
@@ -1554,7 +1555,7 @@ async function custDetail(id){
     if(!ro.error){
       var os=ro.data||[];
       ordHtml=os.length? '<table style="min-width:0"><thead><tr><th>제품</th><th>금액</th><th>채널</th><th>상태</th><th>일시</th></tr></thead><tbody>'+os.map(function(o){
-        return '<tr><td>'+esc(PRODNAME[o.product_id]||o.product_id)+'</td><td class="mono">'+fmtOrderAmt(o)+'</td><td>'+esc(chanLabel(o.provider))+'</td><td>'+esc(o.status)+'</td><td class="mono">'+fmtDate(o.created_at)+'</td></tr>';
+        return '<tr><td>'+esc(PRODNAME[o.product_id]||o.product_id)+'</td><td class="mono">'+fmtOrderAmt(o)+'</td><td>'+esc(chanLabel(o.provider))+'</td><td>'+esc(o.status)+(o.is_test?testTag():'')+'</td><td class="mono">'+fmtDate(o.created_at)+'</td></tr>';
       }).join('')+'</tbody></table>' : '<div class="n">주문 없음</div>';
     }
   }catch(_){}

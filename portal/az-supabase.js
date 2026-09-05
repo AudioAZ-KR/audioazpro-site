@@ -23,7 +23,7 @@ const PRODMETA = {
   TALLY:{ name: 'Flare Tally',      tag: 'FT'  },
   LMAZ: { name: 'Latency Meter AZ', tag: 'LM'  }
 };
-const TYPELABEL = { FULL:'정식', D7:'7일 체험', D14:'14일 체험', D30:'30일 체험', FREE:'무료' };
+const TYPELABEL = { FULL:'정식', D7:'7일 체험', D14:'14일 체험', D30:'30일 체험', FREE:'무료', TEST:'테스트 (3일)' };
 
 // ── 세션/인증 ────────────────────────────────────────────────────────────
 async function session()   { const { data } = await sb.auth.getSession(); return data.session; }
