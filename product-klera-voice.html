@@ -270,11 +270,14 @@ footer .right{margin-left:auto}footer a:hover{color:#fff}
 <script>
 AZ.syncCatalog(function(){
   var W=function(v){return '₩'+Number(v||0).toLocaleString();};
-  // 가격 표시 (DB 정가/세일가 반영)
+  // 가격 표시 — 영어(EN)면 달러, 그 외 원화 (DB 정가/세일가)
   try{
-    var pr=AZ.priceOf('KV');
-    var priceHtml = (pr.now==null) ? '출시 시 공개'
-      : (pr.sale!==null ? '<span style="text-decoration:line-through;opacity:.55;font-weight:600;font-size:.7em">'+W(pr.base)+'</span> '+W(pr.sale) : W(pr.base));
+    function isEN(){ try{ var l=localStorage.getItem('az_lang'); if(l==='en')return true; if(l==='kr')return false; }catch(_){}; return !/^ko/i.test(navigator.language||navigator.userLanguage||''); }
+    var en=isEN(), U=function(v){return '$'+Number(v||0).toLocaleString('en-US');};
+    var pr=(en&&AZ.usdOf)?AZ.usdOf('KV'):AZ.priceOf('KV'), f=(en&&AZ.usdOf)?U:W;
+    if(en && (!pr||pr.now==null)){ pr=AZ.priceOf('KV'); f=W; }   // USD 미설정 시 원화 폴백
+    var priceHtml = (!pr||pr.now==null) ? '출시 시 공개'
+      : (pr.sale!=null ? '<span style="text-decoration:line-through;opacity:.55;font-weight:600;font-size:.7em">'+f(pr.base)+'</span> '+f(pr.sale) : f(pr.base));
     var hp=document.getElementById('heroPrice'); if(hp) hp.innerHTML=priceHtml;
     var ep=document.getElementById('edPrice'); if(ep) ep.innerHTML=priceHtml;
   }catch(_){}

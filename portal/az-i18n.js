@@ -70,13 +70,28 @@
     d.textContent='This English version is provided for reference. In case of any discrepancy, the Korean original prevails.';
     main.insertBefore(d, main.firstChild);
   }
+  // 푸터(하단) 언어 전환 — 전 페이지 footer에 KR/EN
+  function mountFooterSwitch(){
+    if(document.getElementById('az-lang-switch-foot')) return;
+    var f=document.querySelector('footer'); if(!f) return;
+    var cur=lang();
+    var wrap=document.createElement('div'); wrap.className='wrap'; wrap.id='az-lang-switch-foot';
+    wrap.style.cssText='display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08);font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.06em';
+    var lbl=document.createElement('span'); lbl.textContent='Language'; lbl.style.cssText='opacity:.6;color:var(--dim,#8FA5C2);margin-right:4px';
+    wrap.appendChild(lbl);
+    function b(code,label){ var a=document.createElement('a'); a.href='#'; a.textContent=label; a.setAttribute('role','button');
+      a.style.cssText='color:'+(cur===code?'#fff':'var(--dim,#8FA5C2)')+';text-decoration:none;padding:4px 11px;border:1px solid '+(cur===code?'var(--blue,#1877F2)':'rgba(255,255,255,.16)')+';border-radius:4px';
+      a.onclick=function(e){ e.preventDefault(); if(cur!==code) setLang(code); }; return a; }
+    wrap.appendChild(b('kr','한국어')); wrap.appendChild(b('en','English'));
+    f.appendChild(wrap);
+  }
   function apply(){
-    if(lang()!=='en'){ mountSwitch(); return; }
+    if(lang()!=='en'){ mountSwitch(); mountFooterSwitch(); return; }
     document.documentElement.setAttribute('lang','en');
     fetch('/i18n/en.json',{cache:'no-cache'}).then(function(r){return r.json();}).then(function(d){
-      DICT=d; patchAlerts(); walk(document.body); mountSwitch(); legalNote();
+      DICT=d; patchAlerts(); walk(document.body); mountSwitch(); mountFooterSwitch(); legalNote();
       new MutationObserver(function(ms){ ms.forEach(function(m){ m.addedNodes.forEach(function(n){ if(n.nodeType===1) walk(n); else if(n.nodeType===3&&KO.test(n.nodeValue)&&!(n.parentElement&&n.parentElement.closest('[data-i18n-skip]'))){ var v=tr(n.nodeValue); if(v!=null) n.nodeValue=v; } }); }); }).observe(document.body,{childList:true,subtree:true});
-    }).catch(function(){ mountSwitch(); });
+    }).catch(function(){ mountSwitch(); mountFooterSwitch(); });
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',apply); else apply();
 })();

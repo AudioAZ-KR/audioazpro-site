@@ -150,9 +150,12 @@ footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px}f
 AZ.syncCatalog(function(){
   var W=function(v){return '₩'+Number(v||0).toLocaleString();};
   try{
-    var pr=AZ.priceOf('TALLY');
+    function isEN(){ try{ var l=localStorage.getItem('az_lang'); if(l==='en')return true; if(l==='kr')return false; }catch(_){}; return !/^ko/i.test(navigator.language||navigator.userLanguage||''); }
+    var en=isEN(), U=function(v){return '$'+Number(v||0).toLocaleString('en-US');};
+    var pr=(en&&AZ.usdOf)?AZ.usdOf('TALLY'):AZ.priceOf('TALLY'), f=(en&&AZ.usdOf)?U:W;
+    if(en && (!pr||pr.now==null)){ pr=AZ.priceOf('TALLY'); f=W; }
     var hp=document.getElementById('heroPrice');
-    if(hp) hp.innerHTML=(pr.now==null)?'출시 시 공개':(pr.sale!==null?'<span style="text-decoration:line-through;opacity:.55;font-weight:600;font-size:.7em">'+W(pr.base)+'</span> '+W(pr.sale):W(pr.base));
+    if(hp) hp.innerHTML=(!pr||pr.now==null)?'출시 시 공개':(pr.sale!=null?'<span style="text-decoration:line-through;opacity:.55;font-weight:600;font-size:.7em">'+f(pr.base)+'</span> '+f(pr.sale):f(pr.base));
   }catch(_){}
   var s=AZ.saleFor('TALLY'); if(!s) return;
   var base=AZ.basePrice('TALLY')||0; if(!base||!s.price) return;
