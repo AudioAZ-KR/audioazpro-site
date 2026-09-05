@@ -48,6 +48,7 @@
 
   // 상단 메뉴 스위치 (KR · EN) — nav 우측, 이모지 없음
   function mountSwitch(){
+    return; // 2026-09-05 사장님 지시: 상단 메뉴 언어 버튼 제거 — 하단(footer) 스위치만 사용
     if(document.getElementById('az-lang-switch')) return;
     var host=null; ['nav .menu','nav .nav-in','nav .wrap','header nav','nav'].some(function(q){ host=document.querySelector(q); return !!host; }); if(!host) return;
     var box=document.createElement('div'); box.id='az-lang-switch'; box.setAttribute('aria-label','Language');
