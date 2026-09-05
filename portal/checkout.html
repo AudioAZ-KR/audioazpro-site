@@ -49,7 +49,10 @@ h1{font-size:24px;font-weight:800;margin-bottom:4px}.lead{color:var(--dim);font-
 .note{font-size:11.5px;color:var(--dim);margin-top:12px;line-height:1.6}
 .demo{display:inline-block;font-size:10px;font-weight:800;color:#B26A00;background:#FFF3E0;border-radius:6px;padding:2px 7px;margin-left:6px;vertical-align:middle}
 .strike{text-decoration:line-through;color:var(--dim);font-weight:600;font-size:13px}
-:root{--page:#0B1220;--card:#121D33;--navbg:rgba(11,18,32,.9);--text:#E9EEF7;--dim:#96A6BF;--line:#243350;--bg:#0C1424;--sky:#17273F;--wordmark:#fff}body{background:var(--bg)}.logo{width:auto !important}.field input,.field select,.field textarea,.key{background:#0E1A2E;color:#E9EEF7;border-color:#243350}.field input::placeholder{color:#6B7C96}.notice{color:#9CC2F5}.demobar{position:fixed;top:0;left:0;right:0;z-index:300;background:#8a5a00;color:#ffe0ad;text-align:center;font-size:12px;font-weight:600;padding:7px 12px}</style>
+:root{--page:#0B1220;--card:#121D33;--navbg:rgba(11,18,32,.9);--text:#E9EEF7;--dim:#96A6BF;--line:#243350;--bg:#0C1424;--sky:#17273F;--wordmark:#fff}body{background:var(--bg)}.logo{width:auto !important}.field input,.field select,.field textarea,.key{background:#0E1A2E;color:#E9EEF7;border-color:#243350}.field input::placeholder{color:#6B7C96}.notice{color:#9CC2F5}.demobar{position:fixed;top:0;left:0;right:0;z-index:300;background:#8a5a00;color:#ffe0ad;text-align:center;font-size:12px;font-weight:600;padding:7px 12px}.pbtn .pbtn-in{display:inline-flex;align-items:center;justify-content:center;gap:12px}
+.pbtn .paylogos{display:inline-flex;align-items:center;gap:8px;background:#fff;border-radius:4px;padding:2px 7px;color:#14213A}
+.pbtn .paylogos .card{color:#14213A}
+</style>
 <script src="/portal/az-i18n.js" defer></script>
 </head>
 <body>
@@ -259,7 +262,7 @@ async function pay(ch){
     } else {
       if(!window.Paddle) throw new Error('Paddle 모듈을 불러오지 못했습니다.');
       window.__azPendingOrder=d.order_id; window.Paddle.Checkout.open({ items:[{priceId:cfg.priceIds[CURPROD], quantity:1}], discountId: d.discount_id||undefined, customer:{ email:d.email||u.email }, customData:{ order_id:d.order_id, product:CURPROD },
-        settings:{ successUrl: location.origin+'/portal/account.html?order='+d.order_id+'&paid=1' } });
+        settings:{ successUrl: location.origin+'/portal/account.html?order='+d.order_id+'&paid=1', showAddDiscounts:false, allowDiscountRemoval:false, allowLogout:false } });
     }
   }catch(ex){ alert('결제를 진행하지 못했습니다: '+ex.message); }
   finally{ btns.forEach(function(b){b.disabled=false;}); }
@@ -273,6 +276,7 @@ function payMode(){
 function setPayMode(m){ try{ localStorage.setItem('az_pay_mode',m); }catch(_){} renderPrice(); renderPayButtons(); }
 function usdOf(pid){ var d=AZ.usdOf?AZ.usdOf(pid):{now:null}; if(d.now!=null) return d.now; var u=(window.AZ_PAY&&window.AZ_PAY.paddle&&window.AZ_PAY.paddle.usd)||{}; return (u[pid]!=null)?u[pid]:null; }
 function U(v){ return '$'+Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+var PAYLOGOS='<span class="paylogos" aria-hidden="true"><svg class="pp" viewBox="0 0 84 20" width="64" height="16"><text x="0" y="16" font-family="Verdana,Arial,sans-serif" font-weight="700" font-style="italic" font-size="18" fill="#003087">Pay</text><text x="36" y="16" font-family="Verdana,Arial,sans-serif" font-weight="700" font-style="italic" font-size="18" fill="#009CDE">Pal</text></svg><svg class="card" viewBox="0 0 32 20" width="26" height="16"><rect x="1" y="1" width="30" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="1" y="5" width="30" height="4" fill="currentColor"/><rect x="5" y="13" width="9" height="2.4" rx="1" fill="currentColor"/></svg></span>';
 function renderPayButtons(){
   var kr=document.getElementById('btnKr'), intl=document.getElementById('btnIntl'); if(!kr) return;
   var mode=payMode(); var sw=document.getElementById('paySwitch');
@@ -285,7 +289,7 @@ function renderPayButtons(){
     sw.innerHTML='해외 발급 카드 · PayPal은 <a href="#" onclick="setPayMode(\'intl\');return false" style="color:var(--blue)">달러 결제(International checkout)</a>';
   } else {
     kr.style.display='none';
-    if(intl){ intl.style.display=''; intl.textContent = payReady('paddle') ? 'Pay with card / PayPal (USD)' : 'International checkout — coming soon'; intl.disabled=!payReady('paddle'); }
+    if(intl){ intl.style.display=''; intl.innerHTML = payReady('paddle') ? ('<span class="pbtn-in"><span>Pay with card / PayPal (USD)</span>' + PAYLOGOS + '</span>') : 'International checkout — coming soon'; intl.disabled=!payReady('paddle'); }
     sw.innerHTML='Prices in USD; tax is added at checkout. Korean-issued cards: <a href="#" onclick="setPayMode(\'kr\');return false" style="color:var(--blue)">pay in KRW</a>';
   }
 }
