@@ -662,7 +662,7 @@ td{color:var(--text)}
               <div class="field"><label>라이선스 종류</label><select id="biType" style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"><option value="D7">체험 · 7일</option><option value="D14">체험 · 14일</option><option value="D30">체험 · 30일</option><option value="FREE">무료 (영구)</option><option value="FULL">정식 (영구)</option></select></div>
               <div class="field"><label>범위</label><select id="biScope" style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"><option value="pending">미발송 신청자 전체</option><option value="selected">체크한 신청자만 (재발송 포함)</option></select></div>
             </div>
-            <div class="note">신청자마다 1회용 프로모션 코드(BETA-…)를 만들어 메일로 보냅니다. 계정 유무와 상관없이 받은 사람이 직접 회원가입(또는 로그인)한 뒤 코드를 등록하면 위에서 고른 제품·종류의 라이선스가 발급됩니다. 코드 등록 기한은 발송일로부터 7일이며(메일에 날짜 표시), 결과는 위 표의 상태·발급 내역에 표시됩니다.</div>
+            <div class="note">신청자마다 1회용 프로모션 코드(BETA-…)를 만들어 메일로 보냅니다. 계정 유무와 상관없이 받은 사람이 직접 회원가입(또는 로그인)한 뒤 코드를 등록하면 위에서 고른 제품·종류의 라이선스가 발급됩니다. 코드 등록 기한은 모집 마감일 + 7일이며(마감일이 없으면 발송일 + 7일, 메일에 날짜 표시), 결과는 위 표의 상태·발급 내역에 표시됩니다.</div>
             <button class="btn btn-pri" type="button" id="biBtn" onclick="betaIssue()" style="margin-top:12px">코드 발송 실행</button>
             <div class="result" id="biRes"><div class="k" id="biOut"></div></div>
           </div>
