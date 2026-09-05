@@ -622,7 +622,11 @@ td{color:var(--text)}
               <div class="field"><label>정원 (선택)</label><input type="number" name="max" min="1" max="10000" placeholder="비우면 제한 없음"></div>
               <div class="field"><label>안내문 (페이지 상단)</label><textarea name="description" maxlength="600" rows="3" placeholder="어떤 제품의 어떤 기능을 테스트하는지, 테스트 기간, 원하는 피드백" style="width:100%;border:1px solid #243350;border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;resize:vertical"></textarea></div>
             </div>
-            <div class="field" style="margin-top:4px"><label>추가 입력 항목 (기본 이메일·이름·한 줄 소개 외에 신청자에게 물어볼 것)</label>
+            <div class="grid2">
+              <div class="field"><label>기본 항목 — 이름 또는 활동명</label><select name="basic_name" id="betaBasicName" style="border:1px solid #243350;border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7"><option value="required">필수</option><option value="optional">선택</option></select></div>
+              <div class="field"><label>기본 항목 — 한 줄 소개</label><select name="basic_note" id="betaBasicNote" style="border:1px solid #243350;border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7"><option value="optional">선택</option><option value="required">필수</option><option value="hidden">숨김</option></select><div class="note" style="margin-top:6px">이메일은 항상 필수입니다</div></div>
+            </div>
+            <div class="field" style="margin-top:4px"><label>추가 입력 항목 (기본 항목 외에 신청자에게 물어볼 것 — 항목마다 필수/선택 지정)</label>
               <div id="betaFieldRows"></div>
               <div class="codeacts" style="margin-top:8px"><button class="tbtn" type="button" onclick="betaFieldAdd()">항목 추가</button><span class="n" style="align-self:center">빠른 추가:</span><button class="tbtn" type="button" onclick="betaFieldAdd({label:'컴퓨터 (기종·연식)',type:'text',required:true})">컴퓨터</button><button class="tbtn" type="button" onclick="betaFieldAdd({label:'OS 버전',type:'text',required:true})">OS</button><button class="tbtn" type="button" onclick="betaFieldAdd({label:'테스트 디바이스 목록 (스위처·카메라·인터페이스 등)',type:'textarea',required:false})">테스트 디바이스 목록</button><button class="tbtn" type="button" onclick="betaFieldAdd({label:'주 사용 DAW·소프트웨어',type:'text',required:false})">DAW·소프트웨어</button></div>
             </div>
@@ -776,7 +780,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.15.0', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.16.0', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1380,7 +1384,7 @@ async function betaCreate(e){
   var fields=betaFieldsRead();
   out.innerHTML=d.edit_id?'저장 중…':'만드는 중…';
   var me=(await sb.auth.getUser()).data.user;
-  var row={slug:slug, title:String(d.title||'').trim(), description:String(d.description||'').trim()||null, product_id:d.product, license_type:d.license_type, starts_at:st, ends_at:en, max_signups:(d.max?parseInt(d.max):null), fields:fields};
+  var row={slug:slug, title:String(d.title||'').trim(), description:String(d.description||'').trim()||null, product_id:d.product, license_type:d.license_type, starts_at:st, ends_at:en, max_signups:(d.max?parseInt(d.max):null), fields:fields, basic:{name:(d.basic_name==='optional'?'optional':'required'), note:(['required','hidden'].indexOf(d.basic_note)>=0?d.basic_note:'optional')}};
   var r = d.edit_id ? await sb.from('beta_campaigns').update(row).eq('id',d.edit_id).select('id,slug').single()
                     : await sb.from('beta_campaigns').insert(Object.assign(row,{created_by:me?me.id:null})).select('id,slug').single();
   if(r.error){ out.innerHTML='<b style="color:#ff9ea3">실패: '+esc(/duplicate|unique/i.test(r.error.message)?'이미 같은 링크 코드가 있습니다':r.error.message)+'</b>'; return false; }
@@ -1395,7 +1399,7 @@ function betaFieldAdd(f){
   var box=document.getElementById('betaFieldRows'); var row=document.createElement('div'); row.className='rowflex bfrow'; row.style.cssText='gap:8px;margin-bottom:8px;align-items:center;flex-wrap:wrap';
   row.innerHTML='<input class="bf-label" placeholder="항목 이름 (예: OS 버전)" maxlength="60" value="'+esc(f.label||'')+'" style="flex:2;min-width:180px;border:1px solid #243350;border-radius:9px;padding:9px 12px;font-family:inherit;font-size:13.5px;background:#0E1A2E;color:#E9EEF7">'+
     '<select class="bf-type" style="border:1px solid #243350;border-radius:9px;padding:9px 10px;font-family:inherit;font-size:13px;background:#0E1A2E;color:#E9EEF7"><option value="text"'+(f.type==='textarea'?'':' selected')+'>한 줄</option><option value="textarea"'+(f.type==='textarea'?' selected':'')+'>여러 줄</option></select>'+
-    '<label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);font-weight:600"><input type="checkbox" class="bf-req"'+(f.required?' checked':'')+' style="width:16px;height:16px"> 필수</label>'+
+    '<select class="bf-req" style="border:1px solid #243350;border-radius:9px;padding:9px 10px;font-family:inherit;font-size:13px;background:#0E1A2E;color:#E9EEF7"><option value="1"'+(f.required?' selected':'')+'>필수</option><option value="0"'+(f.required?'':' selected')+'>선택</option></select>'+
     '<button type="button" class="tbtn danger" onclick="this.parentNode.remove()">삭제</button>';
   row.dataset.key=f.key||''; box.appendChild(row);
 }
@@ -1403,7 +1407,7 @@ function betaFieldsRead(){
   var out=[], n=0;
   document.querySelectorAll('#betaFieldRows .bfrow').forEach(function(r){
     var label=(r.querySelector('.bf-label').value||'').trim(); if(!label) return; n++;
-    out.push({key:(r.dataset.key||('f'+n+'_'+Math.random().toString(36).slice(2,6))), label:label, type:r.querySelector('.bf-type').value==='textarea'?'textarea':'text', required:r.querySelector('.bf-req').checked});
+    out.push({key:(r.dataset.key||('f'+n+'_'+Math.random().toString(36).slice(2,6))), label:label, type:r.querySelector('.bf-type').value==='textarea'?'textarea':'text', required:r.querySelector('.bf-req').value==='1'});
   });
   return out;
 }
@@ -1414,6 +1418,7 @@ function betaEdit(i){
   f.title.value=c.title||''; f.slug.value=c.slug; f.slug.dataset.touched='1'; document.getElementById('betaSlugPrev').textContent=c.slug;
   f.product.value=c.product_id||''; f.license_type.value=c.license_type||''; f.starts.value=betaLocalFromIso(c.starts_at); f.ends.value=betaLocalFromIso(c.ends_at); f.max.value=c.max_signups||''; f.description.value=c.description||'';
   document.getElementById('betaFieldRows').innerHTML=''; (Array.isArray(c.fields)?c.fields:[]).forEach(function(x){ betaFieldAdd(x); });
+  var b=c.basic||{}; document.getElementById('betaBasicName').value=b.name||'required'; document.getElementById('betaBasicNote').value=b.note||'optional';
   document.getElementById('betaEditId').value=c.id; document.getElementById('betaSubmitBtn').textContent='수정 저장'; document.getElementById('betaCancelEdit').style.display='';
   f.scrollIntoView({behavior:'smooth',block:'start'});
 }
