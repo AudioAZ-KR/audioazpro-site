@@ -32,7 +32,7 @@ nav{position:sticky;top:0;z-index:50;background:var(--navbg);backdrop-filter:blu
 .menu .login{border:1px solid var(--line);border-radius:9px;padding:7px 15px;color:var(--navy)}
 .menu .login:hover{background:var(--sky)}
 @media(max-width:760px){.menu{gap:13px;font-size:12.5px}.menu .hide-sm{display:none}}
-.head{padding-top:46px;padding-bottom:8px}.head p{color:var(--dim);max-width:620px;font-size:16px}
+.head{padding-top:46px;padding-bottom:8px}.head p,.head .desc{color:var(--dim);max-width:620px;font-size:16px;line-height:1.7}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px}
 @media(max-width:720px){.grid{grid-template-columns:1fr}}
 .scard{display:block;position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px;transition:box-shadow .2s,transform .2s,border-color .2s;overflow:hidden}
@@ -88,6 +88,7 @@ footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center}footer .rig
 .legal ul{padding-left:18px}
 .done{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:44px 26px;margin-top:22px;text-align:center;color:var(--dim)}
 .done b{display:block;font-size:18px;color:var(--text);margin-bottom:6px}
+#bDesc{white-space:normal}#bDesc p{margin:0 0 12px}#bDesc h3{font-size:15px;margin:18px 0 6px;color:var(--text)}#bDesc ul,#bDesc ol{margin:0 0 12px;padding-left:20px}#bDesc li{margin:4px 0}#bDesc b{color:var(--text)}
 </style>
 <script src="/portal/az-i18n.js" defer></script>
 </head>
@@ -106,7 +107,7 @@ footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center}footer .rig
 <div class="wrap head">
   <div class="eyebrow">Beta Program</div>
   <h1 id="bTitle" data-i18n-skip>베타 테스터 모집</h1>
-  <p id="bDesc" data-i18n-skip>모집 정보를 불러오는 중입니다…</p>
+  <div id="bDesc" class="desc" data-i18n-skip>모집 정보를 불러오는 중입니다…</div>
   <div class="meta" id="bMeta" hidden>
     <span>제품 <b id="bProd">—</b></span>
     <span>제공 라이선스 <b id="bType">—</b></span>
@@ -169,6 +170,19 @@ var PROD={KV:'Klera Voice',KI:'Klera Instrument',TALLY:'Flare Tally',LMAZ:'Laten
 var TYPE={D7:'7일 체험',D14:'14일 체험',D30:'30일 체험',FREE:'무료 (영구)',FULL:'정식 (영구)'};
 var SLUG=(new URLSearchParams(location.search).get('c')||'').trim().toLowerCase();
 var CAMP=null;
+function fmtDesc(t){
+  // 안내문 서식: 빈 줄=문단, **굵게**, "- " 글머리, "1. " 번호 목록. HTML은 모두 이스케이프.
+  var blocks=String(t).replace(/\r/g,'').split(/\n{2,}/), out=[];
+  function inline(x){ return escB(x).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>'); }
+  blocks.forEach(function(b){
+    var lines=b.split('\n').filter(function(l){return l.trim()!=='';}); if(!lines.length) return;
+    if(lines.every(function(l){return /^\s*[-•*]\s+/.test(l);})){ out.push('<ul>'+lines.map(function(l){return '<li>'+inline(l.replace(/^\s*[-•*]\s+/,''))+'</li>';}).join('')+'</ul>'); return; }
+    if(lines.every(function(l){return /^\s*\d+[.)]\s+/.test(l);})){ out.push('<ol>'+lines.map(function(l){return '<li>'+inline(l.replace(/^\s*\d+[.)]\s+/,''))+'</li>';}).join('')+'</ol>'); return; }
+    var first=lines[0].trim(); if(lines.length===1 && /^\*\*.+\*\*$/.test(first)){ out.push('<h3>'+inline(first.replace(/^\*\*|\*\*$/g,''))+'</h3>'); return; }
+    out.push('<p>'+lines.map(inline).join('<br>')+'</p>');
+  });
+  return out.join('');
+}
 function escB(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
 function fmtD(t){ if(!t) return null; var d=new Date(t); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function showEmpty(title,text){ document.getElementById('bMain').hidden=true; document.getElementById('bEmpty').hidden=false; document.getElementById('bEmptyTitle').textContent=title; document.getElementById('bEmptyText').textContent=text; document.getElementById('bDesc').textContent=''; }
@@ -179,7 +193,7 @@ function showEmpty(title,text){ document.getElementById('bMain').hidden=true; do
   CAMP=r.data;
   document.title=CAMP.title+' — AudioAZ 베타 테스터 모집';
   document.getElementById('bTitle').textContent=CAMP.title;
-  document.getElementById('bDesc').textContent=CAMP.description||'AudioAZ 제품 베타 테스트에 참여할 분을 모집합니다.';
+  document.getElementById('bDesc').innerHTML=fmtDesc(CAMP.description||'AudioAZ 제품 베타 테스트에 참여할 분을 모집합니다.');
   document.getElementById('bProd').textContent=PROD[CAMP.product_id]||CAMP.product_id||'—';
   document.getElementById('bType').textContent=TYPE[CAMP.license_type]||CAMP.license_type||'—';
   document.getElementById('bPeriod').textContent=(fmtD(CAMP.starts_at)||'즉시')+' ~ '+(fmtD(CAMP.ends_at)||'별도 공지 시까지');
