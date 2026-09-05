@@ -113,6 +113,37 @@ tr:last-child td{border-bottom:0}
 .side .foot a{cursor:pointer}
 
 
+/* ===== 진단 (telemetry) ===== */
+.dg-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:2px}
+.dg-tools select,.dg-tools input{border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-family:inherit;font-size:13px;background:#0E1A2E;color:#E9EEF7}
+.dg-tools input{flex:1;min-width:160px}.dg-tools input:focus,.dg-tools select:focus{outline:none;border-color:var(--blue)}
+.dg-apps{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.dg-apps .chip{font-size:12.5px;font-weight:700;color:var(--dim);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer;background:#0E1A2E;user-select:none}
+.dg-apps .chip b{font-family:ui-monospace,Menlo,monospace;margin-left:5px;color:#fff}
+.dg-apps .chip.on{border-color:var(--blue);color:#fff;background:#17273F}
+.dg-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
+@media(max-width:900px){.dg-sum{grid-template-columns:1fr 1fr}}
+.dg-sum .k{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.dg-sum .k .l{font-size:11px;font-weight:700;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+.dg-sum .k .v{font-family:ui-monospace,Menlo,monospace;font-size:22px;font-weight:700;margin-top:2px;color:#fff}
+.dg-sum .k.hot .v{color:#ff9ea3}
+.dg-app{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-top:12px;overflow:hidden}
+.dg-app .h{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line);background:#0E1A2E}
+.dg-app .h .nm{font-weight:800;font-size:14px;color:#fff;flex:1}
+.dg-app .h .c{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--dim)}
+.dg-grid{display:grid;grid-template-columns:repeat(3,1fr)}
+@media(max-width:900px){.dg-grid{grid-template-columns:1fr}}
+.dg-grid>div{padding:10px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.dg-grid>div:last-child{border-right:0}
+.dg-grid h4{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+.dg-grid ul{list-style:none}.dg-grid li{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;padding:3px 0;border-top:1px dashed var(--line)}
+.dg-grid li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dg-grid li:first-child{border-top:0}.dg-grid li b{font-family:ui-monospace,Menlo,monospace;color:#fff;flex:none}
+.dg-grid li.err span{color:#ff9ea3}
+.dg-rows{overflow-x:auto}.dg-rows table{font-size:12px}.dg-rows td{padding:7px 10px;white-space:nowrap}.dg-rows td.err{color:#ff9ea3;font-weight:700}
+.dg-empty{padding:22px;text-align:center;color:var(--dim);font-size:13px}
+.dg-out{width:100%;min-height:260px;margin-top:12px;border:1px solid var(--line);border-radius:8px;background:#0E1A2E;color:#E9EEF7;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;padding:10px;white-space:pre;display:none;resize:vertical}
+
 /* ===== 작업현황 보드 ===== */
 .bd-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:2px}
 @media(max-width:900px){.bd-sum{grid-template-columns:1fr 1fr}}
@@ -331,6 +362,7 @@ td{color:var(--text)}
       <a class="on" data-p="dash">대시보드</a>
       <a data-p="board">작업현황 <span id="boardBadge" style="display:none;background:#E7B252;color:#2E2410;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;margin-left:6px"></span></a>
       <a data-p="usage">서비스·한도 <span id="usageBadge" style="display:none;background:#E5484D;color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;margin-left:6px"></span></a>
+      <a data-p="diag">진단</a>
       <a data-p="appr">결재 <span id="apprBadge" style="display:none;background:#E7B252;color:#2E2410;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;margin-left:6px"></span></a>
       <a data-p="inq">문의 <span id="inqBadge" style="display:none;background:#4D96F5;color:#081729;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;margin-left:6px"></span></a>
       <div class="grp">판매 관리</div>
@@ -407,6 +439,28 @@ td{color:var(--text)}
         </div>
         <div id="usGrid"><div class="n" style="padding:20px">불러오는 중…</div></div>
         <p class="n" style="margin-top:8px;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--faint,var(--dim))">타일 클릭 = 요금제 화면 · 30분 자동 점검 · 70% 경고 / 90% 초과 · 결제일 D-30 경고 / D-7 초과</p>
+      </section>
+
+      <!-- 진단 (앱·호스트가 보내는 익명 진단 정보 telemetry) -->
+      <section id="p-diag" class="page">
+        <div class="dg-tools">
+          <select id="dgHours"><option value="24">최근 24시간</option><option value="168" selected>최근 7일</option><option value="720">최근 30일</option><option value="2160">최근 90일</option></select>
+          <select id="dgEvent"><option value="">모든 이벤트</option><option value="err">오류만</option></select>
+          <input type="search" id="dgQ" placeholder="검색 (이벤트, 기종, 버전, 내용)">
+          <button class="tbtn" onclick="dgLoad()">새로고침</button>
+          <button class="tbtn" id="dgExportBtn" onclick="dgExport()">추출하기</button>
+          <span class="mono" id="dgAt" style="font-size:11.5px;color:var(--dim);white-space:nowrap">—</span>
+        </div>
+        <div class="dg-apps" id="dgApps"></div>
+        <div class="dg-sum">
+          <div class="k"><div class="l">기록</div><div class="v" id="dgVAll">—</div></div>
+          <div class="k" id="dgKErr"><div class="l">오류</div><div class="v" id="dgVErr">—</div></div>
+          <div class="k"><div class="l">기기</div><div class="v" id="dgVDev">—</div></div>
+          <div class="k"><div class="l">앱</div><div class="v" id="dgVApp">—</div></div>
+        </div>
+        <div id="dgBody"><div class="dg-empty">불러오는 중…</div></div>
+        <textarea class="dg-out" id="dgOut" readonly spellcheck="false"></textarea>
+        <p class="note">앱·호스트가 보내는 익명 진단 정보(기기 모델·OS·버전·접속 방식·이벤트)입니다. 이름·계정·방 코드·IP는 없고 90일 뒤 자동 삭제됩니다. <b>추출하기</b>는 현재 앱·기간·필터 범위를 클로드에게 그대로 붙여 넣을 수 있는 마크다운으로 만들어 클립보드에 복사하고 .md 파일로도 저장합니다.</p>
       </section>
 
       <!-- 결재 (승인 워크플로) -->
@@ -669,7 +723,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.11.1', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.12.0', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1070,7 +1124,7 @@ function extendSession(){
   showStep('stepPk');
 })();
 
-var titles={dash:'대시보드',board:'작업현황',usage:'서비스·한도',appr:'결재',inq:'문의',lic:'라이선스',promo:'프로모션 · 할인',orders:'주문·결제',customers:'고객',products:'제품·버전',notice:'공지',settings:'설정',admins:'관리자 계정'};
+var titles={dash:'대시보드',board:'작업현황',usage:'서비스·한도',diag:'진단',appr:'결재',inq:'문의',lic:'라이선스',promo:'프로모션 · 할인',orders:'주문·결제',customers:'고객',products:'제품·버전',notice:'공지',settings:'설정',admins:'관리자 계정'};
 function toggleMenu(){
   var s=document.querySelector('.side'), b=document.getElementById('burger');
   var open=s.classList.toggle('open');
@@ -1090,6 +1144,7 @@ document.querySelectorAll('.side a[data-p]').forEach(a=>{
     if(p==='dash'){ try{loadDash();}catch(_){} }
     if(p==='board'){ try{bdLoad(true);}catch(_){} }
     if(p==='usage'){ try{usLoad();}catch(_){} }
+    if(p==='diag'){ try{dgLoad();}catch(_){} }
     if(p==='customers'){ try{loadCustomers();}catch(_){} }
     if(p==='admins'){ try{renderAdmins();}catch(_){} }
     document.querySelector('.side').classList.remove('open');   // 메뉴 선택 시 자동 닫힘
@@ -1776,6 +1831,119 @@ document.getElementById('bdQ').addEventListener('input',function(){ BD.q=this.va
 setInterval(function(){ var pg=document.getElementById('p-board'); if(pg&&pg.classList.contains('on')&&document.visibilityState==='visible') bdLoad(false); },30000);
 setInterval(bdStat,60000);
 window.azBoardPreview=function(md){ BD.content=md; BD.updated=new Date().toISOString(); BD.mtime=BD.updated; bdRender(); };
+
+// ===== 진단 (telemetry: 앱·호스트가 보내는 익명 진단 정보. 읽기는 RLS is_admin_uid, 90일 보관) =====
+var DG={rows:[],app:'all',at:null,q:'',ev:''};
+var DG_APP={ios:{name:'Flare Tally iOS',order:0},host:{name:'Flare Tally 호스트 (macOS)',order:1},web:{name:'웹',order:2}};
+var DG_ERR=/fail|drop|dead|error|crash|_off|timeout|denied|expired|no_response|unreachable/i;
+function dgEsc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function dgIsErr(r){return DG_ERR.test(r.event||'')}
+function dgAppKey(r){return r.kind||'etc'}
+function dgAppName(k){return (DG_APP[k]||{}).name||k}
+function dgOrder(k){var o=(DG_APP[k]||{}).order;return o==null?9:o}
+function dgCount(rows,f){var m={};rows.forEach(function(r){var k=f(r);if(k==null||k==='')k='—';m[k]=(m[k]||0)+1});return Object.keys(m).map(function(k){return [k,m[k]]}).sort(function(a,b){return b[1]-a[1]})}
+function dgFiltered(){
+  var q=DG.q, ev=DG.ev;
+  return DG.rows.filter(function(r){
+    if(DG.app!=='all'&&dgAppKey(r)!==DG.app) return false;
+    if(ev==='err'&&!dgIsErr(r)) return false;
+    if(ev&&ev!=='err'&&r.event!==ev) return false;
+    if(q){var s=[r.event,r.detail,r.model,r.os,r.app,r.mode,r.dev].join(' ').toLowerCase(); if(s.indexOf(q)<0) return false;}
+    return true;
+  });
+}
+async function dgLoad(){
+  var hours=parseInt(document.getElementById('dgHours').value,10)||168;
+  var since=new Date(Date.now()-hours*3600e3).toISOString();
+  document.getElementById('dgBody').innerHTML='<div class="dg-empty">불러오는 중…</div>';
+  try{
+    var r=await sb.from('telemetry').select('*').gte('at',since).order('at',{ascending:false}).limit(2000);
+    if(r.error){document.getElementById('dgBody').innerHTML='<div class="dg-empty">읽기 실패: '+dgEsc(r.error.message)+'</div>';return;}
+    DG.rows=r.data||[]; DG.at=new Date();
+    var evSel=document.getElementById('dgEvent'), cur=evSel.value;
+    var evs=dgCount(DG.rows,function(x){return x.event});
+    evSel.innerHTML='<option value="">모든 이벤트</option><option value="err">오류만</option>'+evs.map(function(e){return '<option value="'+dgEsc(e[0])+'">'+dgEsc(e[0])+' ('+e[1]+')</option>'}).join('');
+    evSel.value=cur; if(evSel.value!==cur) evSel.value=''; DG.ev=evSel.value;
+    dgRender();
+  }catch(ex){document.getElementById('dgBody').innerHTML='<div class="dg-empty">오류: '+dgEsc(ex&&ex.message||ex)+'</div>';}
+}
+function dgTime(t){try{return new Date(t).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})}catch(_){return t}}
+function dgApp(k){DG.app=k;dgRender()}
+function dgRender(){
+  var all=DG.rows, rows=dgFiltered();
+  var apps=dgCount(all,dgAppKey).sort(function(a,b){return dgOrder(a[0])-dgOrder(b[0])});
+  var chips='<span class="chip'+(DG.app==='all'?' on':'')+'" onclick="dgApp(\'all\')">전체<b>'+all.length+'</b></span>';
+  apps.forEach(function(a){chips+='<span class="chip'+(DG.app===a[0]?' on':'')+'" onclick="dgApp(\''+dgEsc(a[0])+'\')">'+dgEsc(dgAppName(a[0]))+'<b>'+a[1]+'</b></span>'});
+  document.getElementById('dgApps').innerHTML=chips;
+  var errs=rows.filter(dgIsErr).length, devs={}; rows.forEach(function(r){if(r.dev)devs[r.kind+':'+r.dev]=1});
+  document.getElementById('dgVAll').textContent=rows.length; document.getElementById('dgVErr').textContent=errs;
+  document.getElementById('dgKErr').classList.toggle('hot',errs>0);
+  document.getElementById('dgVDev').textContent=Object.keys(devs).length; document.getElementById('dgVApp').textContent=dgCount(rows,dgAppKey).length;
+  document.getElementById('dgAt').textContent=DG.at?('조회 '+DG.at.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})):'—';
+  if(!rows.length){document.getElementById('dgBody').innerHTML='<div class="dg-empty">해당 범위에 기록이 없습니다.</div>';return;}
+  var groups={}; rows.forEach(function(r){var k=dgAppKey(r);(groups[k]=groups[k]||[]).push(r)});
+  var html='';
+  Object.keys(groups).sort(function(a,b){return dgOrder(a)-dgOrder(b)}).forEach(function(k){
+    var g=groups[k], ge=g.filter(dgIsErr).length;
+    html+='<div class="dg-app"><div class="h"><span class="nm">'+dgEsc(dgAppName(k))+'</span><span class="c">'+g.length+'건 · 오류 '+ge+'</span></div>';
+    html+='<div class="dg-grid">';
+    html+='<div><h4>이벤트</h4><ul>'+dgCount(g,function(r){return r.event}).slice(0,12).map(function(e){return '<li'+(DG_ERR.test(e[0])?' class="err"':'')+'><span>'+dgEsc(e[0])+'</span><b>'+e[1]+'</b></li>'}).join('')+'</ul></div>';
+    html+='<div><h4>버전</h4><ul>'+dgCount(g,function(r){return r.app}).slice(0,8).map(function(e){return '<li><span>'+dgEsc(e[0])+'</span><b>'+e[1]+'</b></li>'}).join('')+'</ul></div>';
+    html+='<div><h4>기종 · OS</h4><ul>'+dgCount(g,function(r){return (r.model||'—')+' / '+(r.os||'—')}).slice(0,8).map(function(e){return '<li><span>'+dgEsc(e[0])+'</span><b>'+e[1]+'</b></li>'}).join('')+'</ul></div>';
+    html+='</div><div class="dg-rows"><table><thead><tr><th>시각</th><th>이벤트</th><th>내용</th><th>버전</th><th>기종</th><th>OS</th><th>방식</th><th>기기</th></tr></thead><tbody>';
+    g.slice(0,60).forEach(function(r){html+='<tr><td class="mono">'+dgEsc(dgTime(r.at))+'</td><td'+(dgIsErr(r)?' class="err"':'')+'>'+dgEsc(r.event)+'</td><td style="white-space:normal;max-width:360px">'+dgEsc(r.detail)+'</td><td>'+dgEsc(r.app)+'</td><td>'+dgEsc(r.model)+'</td><td>'+dgEsc(r.os)+'</td><td>'+dgEsc(r.mode)+'</td><td class="mono">'+dgEsc((r.dev||'').slice(0,6))+'</td></tr>'});
+    html+='</tbody></table>'+(g.length>60?'<div class="dg-empty">…'+(g.length-60)+'건 더 (추출하기로 전체 확인)</div>':'')+'</div></div>';
+  });
+  document.getElementById('dgBody').innerHTML=html;
+}
+function dgCell(v){return String(v==null?'':v).replace(/\|/g,'／').replace(/\r?\n/g,' ')}
+function dgMd(){
+  var rows=dgFiltered(), hours=document.getElementById('dgHours').value, now=new Date();
+  var L=[]; L.push('# Flare Tally 진단 정보 추출');
+  L.push('- 추출 시각: '+now.toISOString()+' (KST '+now.toLocaleString('ko-KR',{hour12:false})+')');
+  L.push('- 범위: 최근 '+hours+'시간 · 앱: '+(DG.app==='all'?'전체':dgAppName(DG.app))+' · 이벤트: '+(DG.ev||'전체')+(DG.q?' · 검색: '+DG.q:''));
+  L.push('- 총 '+rows.length+'건, 오류(이벤트명에 fail/drop/dead/off 등) '+rows.filter(dgIsErr).length+'건');
+  L.push('- 익명 데이터: dev는 기기 식별자 해시 앞자리. 이름·계정·방 코드·IP 없음.');
+  L.push(''); L.push('## 클로드에게');
+  L.push('아래 데이터를 앱별로 분석해 (1) 가장 많은 오류와 발생 조건(버전·기종·OS·접속 방식) (2) 원인 추정 (3) 고칠 코드 위치와 수정안을 제시하고, 지시가 있으면 바로 고칠 것. iOS 소스: ~/Projects/AudioAZ/flare-tally-ios (TallyModel.swift). 호스트·서버 소스: 클로드 폴더/19_카메라 탈리 (host-app/host_app.py, server.py). 이벤트 뜻: join_fail=접속 실패(lan_unreachable/cloud_unreachable), room_off=호스트가 꺼진 방에 접속 시도, ws_drop=연결 끊김, bridge_dead=호스트 브리지 종료, no_response=스위처 무응답, start/tally_start/joined/demo=정상 동작.');
+  var groups={}; rows.forEach(function(r){var k=dgAppKey(r);(groups[k]=groups[k]||[]).push(r)});
+  Object.keys(groups).sort(function(a,b){return dgOrder(a)-dgOrder(b)}).forEach(function(k){
+    var g=groups[k];
+    L.push(''); L.push('## '+dgAppName(k)+' (kind='+k+') — '+g.length+'건, 오류 '+g.filter(dgIsErr).length+'건');
+    L.push(''); L.push('### 이벤트별'); L.push('| 이벤트 | 건수 | 오류 |'); L.push('|---|---:|:---:|');
+    dgCount(g,function(r){return r.event}).forEach(function(e){L.push('| '+dgCell(e[0])+' | '+e[1]+' | '+(DG_ERR.test(e[0])?'●':'')+' |')});
+    L.push(''); L.push('### 버전별'); L.push('| 버전 | 건수 | 오류 |'); L.push('|---|---:|---:|');
+    dgCount(g,function(r){return r.app}).forEach(function(e){var er=g.filter(function(r){return (r.app||'—')===e[0]&&dgIsErr(r)}).length;L.push('| '+dgCell(e[0])+' | '+e[1]+' | '+er+' |')});
+    L.push(''); L.push('### 기종 · OS'); L.push('| 기종 | OS | 건수 |'); L.push('|---|---|---:|');
+    dgCount(g,function(r){return (r.model||'—')+'\t'+(r.os||'—')}).forEach(function(e){var p=e[0].split('\t');L.push('| '+dgCell(p[0])+' | '+dgCell(p[1])+' | '+e[1]+' |')});
+    L.push(''); L.push('### 오류 조건별 (이벤트 | 버전 | 기종 | OS | 방식)');
+    var errRows=g.filter(dgIsErr);
+    if(!errRows.length) L.push('없음');
+    else dgCount(errRows,function(r){return [r.event,r.app,r.model,r.os,r.mode].map(dgCell).join(' | ')}).forEach(function(e){L.push('- '+e[1]+'건: '+e[0])});
+    L.push(''); L.push('### 기록 (최신순, 최대 300건)'); L.push('| 시각(UTC) | 이벤트 | 내용 | 버전 | 기종 | OS | 방식 | 기기 |'); L.push('|---|---|---|---|---|---|---|---|');
+    g.slice(0,300).forEach(function(r){L.push('| '+[String(r.at||'').replace('T',' ').slice(0,19),r.event,r.detail,r.app,r.model,r.os,r.mode,(r.dev||'').slice(0,6)].map(dgCell).join(' | ')+' |')});
+  });
+  L.push(''); L.push('```json');
+  L.push(JSON.stringify({exported:now.toISOString(),hours:+hours,app:DG.app,count:rows.length,rows:rows.slice(0,1000).map(function(r){return {at:r.at,kind:r.kind,app:r.app,os:r.os,model:r.model,mode:r.mode,event:r.event,detail:r.detail,dev:(r.dev||'').slice(0,6)}})}));
+  L.push('```');
+  return L.join('\n');
+}
+async function dgExport(){
+  var md=dgMd(), btn=document.getElementById('dgExportBtn'), out=document.getElementById('dgOut');
+  out.value=md; out.style.display='block';
+  var copied=false;
+  try{await navigator.clipboard.writeText(md);copied=true;}catch(_){ try{out.focus();out.select();copied=document.execCommand('copy');}catch(__){} }
+  var saved=false;
+  try{
+    var name='flare-tally-diag_'+new Date().toISOString().slice(0,16).replace(/[-:T]/g,'')+'.md';
+    var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown;charset=utf-8'})); a.download=name; document.body.appendChild(a); a.click(); saved=true;
+    setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},2000);
+  }catch(_){}
+  var t='추출하기'; btn.textContent=(copied?'클립보드 복사됨':'복사 실패')+(saved?' · .md 저장됨':''); setTimeout(function(){btn.textContent=t},2600);
+}
+document.getElementById('dgEvent').addEventListener('change',function(){DG.ev=this.value;dgRender()});
+document.getElementById('dgQ').addEventListener('input',function(){DG.q=this.value.trim().toLowerCase();dgRender()});
+document.getElementById('dgHours').addEventListener('change',dgLoad);
 
 // ===== 서비스·한도 (services / service_status · Edge Function usage-collector) =====
 var US={svcs:[],st:{},at:null};
