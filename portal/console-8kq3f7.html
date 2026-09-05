@@ -812,7 +812,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.18.1', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.18.2', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1565,25 +1565,22 @@ function renderBetaTesters(){
       '<td style="white-space:nowrap"><button class="tbtn" onclick="betaToggleTop('+i+')">'+(t.is_top?'우수 해제':'우수 지정')+'</button> '+(t.status==='active'?'<button class="tbtn danger" onclick="betaCloseOne('+i+')">마감</button>':'<button class="tbtn" onclick="betaReopenOne('+i+')">재개</button>')+'</td></tr>';
   }).join('');
 }
-// 우수 테스터 보상 라이선스 — 관리자가 제품·종류를 골라 발급(결재 license_issue 경유). 데모 종류는 이 경로에서 만료일이 없어 영구형(FULL/FREE)만 제공
+// 우수 테스터 보상 — 관리자가 제품을 골라 영구(FULL) 라이선스를 발급(Edge beta-issue action=reward: 라이선스 직접 발급 + 선정 안내 메일)
 async function betaReward(i){
   var t=BETA_TESTERS[i]; if(!t||!t.email) return;
   var prod=(BETA_CUR&&BETA_CUR.product_id)||'TALLY';
-  window.__blSel={prod:prod,type:'FULL'};
+  window.__blSel={prod:prod};
   var selS='style="width:100%;border:1px solid #243350;border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;margin-top:6px"';
   var body='<div style="color:#E9EEF7;font-weight:700">'+esc(t.email)+'</div><div class="n">보고 '+betaReportCount(t.user_id)+'건 · 우수 테스터</div>'
-    +'<div style="margin-top:12px;text-align:left"><label class="n">제품</label><select '+selS+' onchange="window.__blSel.prod=this.value">'+['KV','KI','TALLY','LMAZ'].map(function(p){return '<option value="'+p+'"'+(p===prod?' selected':'')+'>'+esc(PRODNAME[p])+'</option>';}).join('')+'</select></div>'
-    +'<div style="margin-top:10px;text-align:left"><label class="n">라이선스 종류</label><select '+selS+' onchange="window.__blSel.type=this.value"><option value="FULL">정식 (영구)</option><option value="FREE">무료 (영구 · NFR)</option></select></div>'
-    +'<div class="n" style="margin-top:10px">발급되면 테스터의 계정에 바로 들어가고 마이페이지 내 라이선스에 표시됩니다. 결재 기록이 남습니다.</div>';
-  var v=await azModal({title:'우수 테스터 라이선스 발급', body:body, okText:'발급', width:460});
+    +'<div style="margin-top:12px;text-align:left"><label class="n">제품 (정식 영구 라이선스)</label><select '+selS+' onchange="window.__blSel.prod=this.value">'+['KV','KI','TALLY','LMAZ'].map(function(p){return '<option value="'+p+'"'+(p===prod?' selected':'')+'>'+esc(PRODNAME[p])+'</option>';}).join('')+'</select></div>'
+    +'<div class="n" style="margin-top:10px">발급되면 테스터 계정에 영구 라이선스가 바로 들어가고, "우수 베타 테스터로 선정되어 영구 라이선스를 드립니다" 안내 메일이 발송됩니다.</div>';
+  var v=await azModal({title:'우수 테스터 영구 라이선스 발급', body:body, okText:'발급 · 메일 발송', width:460});
   if(v===null) return;
-  var pid=window.__blSel.prod, lt=window.__blSel.type;
   try{
-    var r=await azSuperDo('license_issue', (PRODNAME[pid]||pid)+' 라이선스 발급 — '+t.email+' (우수 베타 테스터)', '베타 '+(BETA_CUR?BETA_CUR.slug:'')+' 우수 테스터 보상 · '+(lt==='FREE'?'무료(영구)':'정식'), {email:t.email, product_id:pid, license_type:lt});
-    var key=(String(r.text||'').match(/AZ-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/)||[''])[0];
-    if(!r.pending){ await sb.from('beta_testers').update({reward_license_key:key||'발급됨', rewarded_at:new Date().toISOString()}).eq('id',t.id); }
-    alert((r.pending?'결재가 올라갔습니다 (최고관리자 승인 후 발급).':'발급 완료: '+(key||r.text)));
-  }catch(ex){ alert('발급 실패: '+(ex.message||ex)+'\n(가입된 회원 이메일이어야 발급됩니다)'); }
+    var r=await sb.functions.invoke('beta-issue',{body:{action:'reward', campaign_id:BETA_CUR.id, tester_id:t.id, product_id:window.__blSel.prod}});
+    var d=r.data||{}; var errMsg=d.error||(r.error&&r.error.message); if(errMsg&&!d.ok) throw new Error(errMsg);
+    alert('발급 완료: '+d.key+'\n'+(d.mail?'선정 안내 메일을 보냈습니다 ('+d.email+').':'메일 발송에 실패했습니다. 키를 직접 전달해 주세요.'));
+  }catch(ex){ alert('발급 실패: '+(ex.message||ex)); }
   betaLoadTesters(); try{ loadLicenses(); }catch(_){}
 }
 async function betaToggleTop(i){ var t=BETA_TESTERS[i]; if(!t) return; var r=await sb.from('beta_testers').update({is_top:!t.is_top}).eq('id',t.id); if(r.error){ alert('실패: '+r.error.message); return; } betaLoadTesters(); }
