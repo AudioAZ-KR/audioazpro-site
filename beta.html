@@ -130,7 +130,7 @@ footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center}footer .rig
       <div class="sub" id="bSub">신청하면 입력하신 이메일로 베타 테스트용 라이선스 코드를 보내 드립니다. 라이선스는 AudioAZ 계정(같은 이메일)에서 관리됩니다.</div>
       <form id="bForm" onsubmit="return betaSubmit(event)">
         <div class="field"><label for="bEmail">이메일</label><input id="bEmail" name="email" type="email" placeholder="you@example.com" required autocomplete="email" maxlength="120"></div>
-        <div class="field" id="bNameWrap"><label for="bName">이름 또는 활동명 <span class="optmark" style="color:var(--dim);font-weight:600" hidden>(선택)</span></label><input id="bName" name="name" type="text" placeholder="예: 홍길동, 홍길동 스튜디오" required maxlength="60" autocomplete="name"></div>
+        <div class="field" id="bNameWrap"><label for="bName">이름 또는 활동명 <span class="optmark" style="color:var(--dim);font-weight:600" hidden>(선택)</span></label><input id="bName" autocomplete="off" data-1p-ignore name="name" type="text" placeholder="예: 홍길동, 홍길동 스튜디오" required maxlength="60"></div>
         <div class="field" id="bNoteWrap"><label for="bNote">한 줄 소개 <span class="optmark" style="color:var(--dim);font-weight:600">(선택)</span></label><textarea id="bNote" name="note" maxlength="500" placeholder="예: 라이브 방송 현장에서 사용 예정"></textarea></div>
         <div id="bExtra"></div>
         <label class="chk"><input type="checkbox" name="consent_privacy" required> <span><span class="req">[필수]</span> 아래 <a href="#legal">개인정보 수집·이용 안내</a>를 읽었으며 동의합니다.</span></label>
