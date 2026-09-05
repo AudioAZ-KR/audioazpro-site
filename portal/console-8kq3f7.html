@@ -564,13 +564,15 @@ td{color:var(--text)}
             <div class="grid2">
               <div class="field"><label>코드 텍스트 (직접 입력)</label><input name="codetext" id="promoCode" placeholder="예: CHUSEOK2026 · 비우면 무작위 코드" maxlength="32" style="text-transform:uppercase" pattern="[A-Za-z0-9\-]{0,32}" title="영문·숫자·하이픈 4~32자 (비우면 무작위)"><div class="note" style="margin-top:6px">영문·숫자·하이픈 4~32자 · 고객이 입력할 코드 그대로. <b>비우면</b> AZ-XXXX-XXXX 무작위 코드가 만들어집니다</div></div>
               <div class="field"><label>적용 제품</label><select name="product" id="promoProd" required onchange="promoPrice()">
+                <option value="" selected disabled>제품을 선택하세요</option>
                 <option value="ALL" id="promoAllOpt">전 제품 (ALL)</option>
                 <option value="KV">Klera Voice</option>
                 <option value="KI">Klera Instrument</option>
                 <option value="TALLY">Flare Tally</option>
                 <option value="LMAZ">Latency Meter AZ</option>
               </select></div>
-              <div class="field lic-f"><label>라이선스 종류</label><select name="kind">
+              <div class="field lic-f"><label>라이선스 종류</label><select name="kind" id="promoKind" required>
+                <option value="" selected disabled>종류를 선택하세요</option>
                 <option value="D7">체험 · 7일</option>
                 <option value="D14">체험 · 14일</option>
                 <option value="D30">체험 · 30일</option>
@@ -1166,7 +1168,7 @@ function promoType(){
   document.querySelectorAll('.disc-f').forEach(f=>f.style.display=isDisc?'':'none');
   // 할인 코드는 전 제품 선택 불가
   var all=document.getElementById('promoAllOpt'), sel=document.getElementById('promoProd');
-  if(all){ all.disabled=isDisc; all.hidden=isDisc; if(isDisc&&sel.value==='ALL'){ sel.value='KV'; } }
+  if(all){ all.disabled=isDisc; all.hidden=isDisc; if(isDisc&&sel.value==='ALL'){ sel.value=''; } }   // 기본값은 항상 '선택하세요' — 전 제품이 기본이 되지 않게
   promoPrice();
 }
 // 적용 제품 선택 → 현재 판매가 표시 (세일 반영가)
@@ -1202,6 +1204,8 @@ async function genPromo(e){
   var res=document.getElementById('promoRes'), out=document.getElementById('promoCodes');
   function fail(m){ out.innerHTML='<b style="color:#ff9ea3">'+m+'</b>'; res.classList.add('on'); return false; }
   if(code && !/^[A-Z0-9\-]{4,32}$/.test(code)) return fail('코드는 영문·숫자·하이픈 4~32자로 입력하세요.');
+  if(!d.product) return fail('적용 제품을 선택하세요.');
+  if(d.ctype!=='discount' && !d.kind) return fail('라이선스 종류를 선택하세요.');
   var qty=Math.max(1,Math.min(50,parseInt(d.qty||'1')||1));
   var codes=[];
   var ALPH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', seen={}; PROMOS.forEach(function(p){seen[p.code]=1;});
