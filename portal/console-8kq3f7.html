@@ -678,9 +678,9 @@ td{color:var(--text)}
 
           <div style="margin-top:18px;padding:18px;border:1px solid var(--line);border-radius:12px;background:#0E1A2E" id="betaTesterBox">
             <h2 style="font-size:15px;margin-bottom:4px">베타 테스터 <span class="n" id="betaTesterCount"></span></h2>
-            <div class="sub">프로모션 코드를 등록해 테스터가 된 계정입니다. 마이페이지에 '테스트 보고' 메뉴가 열립니다. 보고 수는 아래 게시판 기준이며, 우수 테스터는 자동 선정(N건 이상) 또는 행에서 직접 지정합니다.</div>
-            <div class="toolbar" style="margin-top:10px"><span class="n">우수 자동 선정 · 보고</span><input type="number" id="betaTopN" value="3" min="1" max="999" style="width:70px;border:1px solid #243350;border-radius:9px;padding:8px 10px;font-family:inherit;font-size:13.5px;background:#121D33;color:#E9EEF7"><span class="n">건 이상</span><button class="tbtn" type="button" onclick="betaAutoTop()">자동 선정</button><button class="tbtn danger" type="button" onclick="betaCloseTesters()">테스터 마감 (일반 사용자로 전환)</button></div>
-            <table><thead><tr><th>이메일</th><th>참여일</th><th>보고</th><th>우수</th><th>상태</th><th></th></tr></thead><tbody id="betaTesterRows"><tr><td colspan="6" class="n">—</td></tr></tbody></table>
+            <div class="sub">프로모션 코드를 등록해 테스터가 된 계정입니다. 마이페이지에 '테스트 보고' 메뉴가 열립니다. 보고 수 기준으로 시스템이 <b>추천</b>을 표시하고, 우수 지정과 라이선스 발급은 관리자가 결정합니다. 우수 테스터 행에 '라이선스 발급' 버튼이 나옵니다.</div>
+            <div class="toolbar" style="margin-top:10px"><span class="n">추천 기준 · 보고</span><input type="number" id="betaTopN" value="3" min="1" max="999" oninput="renderBetaTesters()" style="width:70px;border:1px solid #243350;border-radius:9px;padding:8px 10px;font-family:inherit;font-size:13.5px;background:#121D33;color:#E9EEF7"><span class="n">건 이상</span><button class="tbtn" type="button" onclick="betaAutoTop()">추천 전원 우수 지정</button><button class="tbtn danger" type="button" onclick="betaCloseTesters()">테스터 마감 (일반 사용자로 전환)</button></div>
+            <table><thead><tr><th>이메일</th><th>참여일</th><th>보고</th><th>추천 · 우수</th><th>보상 라이선스</th><th>상태</th><th></th></tr></thead><tbody id="betaTesterRows"><tr><td colspan="6" class="n">—</td></tr></tbody></table>
           </div>
 
           <div style="margin-top:18px" id="betaReportBox">
@@ -812,7 +812,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.18.0', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.18.1', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1554,12 +1554,37 @@ function betaReportCount(uid){ return BETA_REPORTS.filter(function(x){return x.u
 function renderBetaTesters(){
   var tb=document.getElementById('betaTesterRows'); if(!tb) return;
   var cnt=document.getElementById('betaTesterCount'); if(cnt) cnt.textContent=BETA_TESTERS.length?('활성 '+BETA_TESTERS.filter(function(t){return t.status==='active';}).length+' / 전체 '+BETA_TESTERS.length):'';
-  if(!BETA_TESTERS.length){ tb.innerHTML='<tr><td colspan="6" class="n">아직 코드를 등록한 테스터가 없습니다.</td></tr>'; return; }
-  tb.innerHTML=BETA_TESTERS.map(function(t,i){
-    var n=betaReportCount(t.user_id);
-    return '<tr'+(t.status==='active'?'':' style="opacity:.55"')+'><td class="mono">'+esc(t.email||t.user_id)+'</td><td class="mono">'+fmtDate(t.joined_at)+'</td><td class="mono">'+n+'</td><td>'+(t.is_top?'<span class="pill p-active">우수</span>':'<span class="n">—</span>')+'</td><td>'+(t.status==='active'?'<span class="pill p-trial">테스터</span>':'<span class="pill p-revoked">마감</span>')+'</td>'+
+  if(!BETA_TESTERS.length){ tb.innerHTML='<tr><td colspan="7" class="n">아직 코드를 등록한 테스터가 없습니다.</td></tr>'; return; }
+  var thr=Math.max(1,parseInt((document.getElementById('betaTopN')||{}).value||'3')||3);
+  var order=BETA_TESTERS.map(function(t,i){ return {i:i, n:betaReportCount(t.user_id)}; }).sort(function(a,b){ return b.n-a.n; });   // 보고 많은 순
+  tb.innerHTML=order.map(function(o){
+    var t=BETA_TESTERS[o.i], i=o.i, n=o.n, rec=(n>=thr);
+    var mark=(t.is_top?'<span class="pill p-active">우수</span>':'')+(rec&&!t.is_top?' <span class="pill p-refund" title="보고 '+n+'건 — 기준 '+thr+'건 이상">추천</span>':'')||'<span class="n">—</span>';
+    var reward=t.reward_license_key?('<span class="mono" style="font-size:11.5px">'+esc(t.reward_license_key)+'</span><div class="n">'+fmtDate(t.rewarded_at)+'</div>'):(t.is_top?'<button class="tbtn pri" onclick="betaReward('+i+')">라이선스 발급</button>':'<span class="n">우수 지정 후 발급</span>');
+    return '<tr'+(t.status==='active'?'':' style="opacity:.55"')+'><td class="mono">'+esc(t.email||t.user_id)+'</td><td class="mono">'+fmtDate(t.joined_at)+'</td><td class="mono">'+n+'</td><td>'+mark+'</td><td>'+reward+'</td><td>'+(t.status==='active'?'<span class="pill p-trial">테스터</span>':'<span class="pill p-revoked">마감</span>')+'</td>'+
       '<td style="white-space:nowrap"><button class="tbtn" onclick="betaToggleTop('+i+')">'+(t.is_top?'우수 해제':'우수 지정')+'</button> '+(t.status==='active'?'<button class="tbtn danger" onclick="betaCloseOne('+i+')">마감</button>':'<button class="tbtn" onclick="betaReopenOne('+i+')">재개</button>')+'</td></tr>';
   }).join('');
+}
+// 우수 테스터 보상 라이선스 — 관리자가 제품·종류를 골라 발급(결재 license_issue 경유). 데모 종류는 이 경로에서 만료일이 없어 영구형(FULL/FREE)만 제공
+async function betaReward(i){
+  var t=BETA_TESTERS[i]; if(!t||!t.email) return;
+  var prod=(BETA_CUR&&BETA_CUR.product_id)||'TALLY';
+  window.__blSel={prod:prod,type:'FULL'};
+  var selS='style="width:100%;border:1px solid #243350;border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;margin-top:6px"';
+  var body='<div style="color:#E9EEF7;font-weight:700">'+esc(t.email)+'</div><div class="n">보고 '+betaReportCount(t.user_id)+'건 · 우수 테스터</div>'
+    +'<div style="margin-top:12px;text-align:left"><label class="n">제품</label><select '+selS+' onchange="window.__blSel.prod=this.value">'+['KV','KI','TALLY','LMAZ'].map(function(p){return '<option value="'+p+'"'+(p===prod?' selected':'')+'>'+esc(PRODNAME[p])+'</option>';}).join('')+'</select></div>'
+    +'<div style="margin-top:10px;text-align:left"><label class="n">라이선스 종류</label><select '+selS+' onchange="window.__blSel.type=this.value"><option value="FULL">정식 (영구)</option><option value="FREE">무료 (영구 · NFR)</option></select></div>'
+    +'<div class="n" style="margin-top:10px">발급되면 테스터의 계정에 바로 들어가고 마이페이지 내 라이선스에 표시됩니다. 결재 기록이 남습니다.</div>';
+  var v=await azModal({title:'우수 테스터 라이선스 발급', body:body, okText:'발급', width:460});
+  if(v===null) return;
+  var pid=window.__blSel.prod, lt=window.__blSel.type;
+  try{
+    var r=await azSuperDo('license_issue', (PRODNAME[pid]||pid)+' 라이선스 발급 — '+t.email+' (우수 베타 테스터)', '베타 '+(BETA_CUR?BETA_CUR.slug:'')+' 우수 테스터 보상 · '+(lt==='FREE'?'무료(영구)':'정식'), {email:t.email, product_id:pid, license_type:lt});
+    var key=(String(r.text||'').match(/AZ-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/)||[''])[0];
+    if(!r.pending){ await sb.from('beta_testers').update({reward_license_key:key||'발급됨', rewarded_at:new Date().toISOString()}).eq('id',t.id); }
+    alert((r.pending?'결재가 올라갔습니다 (최고관리자 승인 후 발급).':'발급 완료: '+(key||r.text)));
+  }catch(ex){ alert('발급 실패: '+(ex.message||ex)+'\n(가입된 회원 이메일이어야 발급됩니다)'); }
+  betaLoadTesters(); try{ loadLicenses(); }catch(_){}
 }
 async function betaToggleTop(i){ var t=BETA_TESTERS[i]; if(!t) return; var r=await sb.from('beta_testers').update({is_top:!t.is_top}).eq('id',t.id); if(r.error){ alert('실패: '+r.error.message); return; } betaLoadTesters(); }
 async function betaCloseOne(i){ var t=BETA_TESTERS[i]; if(!t) return; if(!confirm(t.email+' 테스터를 마감합니다. 마이페이지의 테스트 보고 메뉴가 닫히고 일반 사용자로 돌아갑니다.')) return; var r=await sb.from('beta_testers').update({status:'closed',closed_at:new Date().toISOString()}).eq('id',t.id); if(r.error){ alert('실패: '+r.error.message); return; } betaLoadTesters(); }
@@ -1567,8 +1592,8 @@ async function betaReopenOne(i){ var t=BETA_TESTERS[i]; if(!t) return; var r=awa
 async function betaAutoTop(){
   if(!BETA_CUR) return; var n=Math.max(1,parseInt(document.getElementById('betaTopN').value||'3')||3);
   var ids=BETA_TESTERS.filter(function(t){ return betaReportCount(t.user_id)>=n; }).map(function(t){return t.id;});
-  if(!ids.length){ alert('보고 '+n+'건 이상인 테스터가 없습니다.'); return; }
-  if(!confirm('보고 '+n+'건 이상 테스터 '+ids.length+'명을 우수 테스터로 지정합니다. (기존 지정은 유지)')) return;
+  if(!ids.length){ alert('보고 '+n+'건 이상인 추천 테스터가 없습니다.'); return; }
+  if(!confirm('추천된 테스터 '+ids.length+'명(보고 '+n+'건 이상)을 우수 테스터로 지정합니다. 라이선스는 따로 발급합니다. (기존 지정은 유지)')) return;
   var r=await sb.from('beta_testers').update({is_top:true}).in('id',ids); if(r.error){ alert('실패: '+r.error.message); return; } betaLoadTesters();
 }
 async function betaCloseTesters(){
