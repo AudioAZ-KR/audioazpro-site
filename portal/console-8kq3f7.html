@@ -370,6 +370,7 @@ td{color:var(--text)}
       <div class="grp">판매 관리</div>
       <a data-p="lic">라이선스</a>
       <a data-p="promo">프로모션 · 할인</a>
+      <a data-p="beta">베타 모집</a>
       <a data-p="orders">주문·결제</a>
       <a data-p="customers">고객</a>
       <div class="grp">콘텐츠</div>
@@ -607,6 +608,48 @@ td{color:var(--text)}
       </section>
 
       <!-- 주문 -->
+      <!-- 베타 모집 -->
+      <section id="p-beta" class="page">
+        <div class="card"><h2>모집 페이지 만들기</h2><div class="sub">저장하면 공개 신청 페이지 링크가 생깁니다. 링크를 카톡·SNS·메일로 배포하면 신청자가 이메일·이름을 남기고 개인정보·참여 조건에 동의합니다. 모집 기간과 정원은 페이지에서 자동으로 확인됩니다.</div>
+          <form onsubmit="return betaCreate(event)">
+            <div class="grid2">
+              <div class="field"><label>모집 제목</label><input name="title" required maxlength="80" placeholder="예: Flare Tally 1.0 베타 테스터 모집" oninput="betaSlugAuto(this.value)"></div>
+              <div class="field"><label>링크 코드 (영문 소문자·숫자·하이픈)</label><input name="slug" id="betaSlug" required maxlength="40" pattern="[a-z0-9\-]{3,40}" placeholder="예: tally-beta-1" style="font-family:ui-monospace,Menlo,monospace"><div class="note" style="margin-top:6px">페이지 주소: audioazpro.com/beta.html?c=<b id="betaSlugPrev">…</b></div></div>
+              <div class="field"><label>대상 제품</label><select name="product" required><option value="" selected disabled>제품을 선택하세요</option><option value="KV">Klera Voice</option><option value="KI">Klera Instrument</option><option value="TALLY">Flare Tally</option><option value="LMAZ">Latency Meter AZ</option></select></div>
+              <div class="field"><label>제공 라이선스 (기본값 · 발급 때 변경 가능)</label><select name="license_type" required><option value="" selected disabled>종류를 선택하세요</option><option value="D7">체험 · 7일</option><option value="D14">체험 · 14일</option><option value="D30">체험 · 30일</option><option value="FREE">무료 (영구)</option><option value="FULL">정식 (영구)</option></select></div>
+              <div class="field"><label>모집 시작</label><input type="datetime-local" name="starts" style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"><div class="note" style="margin-top:6px">비우면 즉시</div></div>
+              <div class="field"><label>모집 종료</label><input type="datetime-local" name="ends" style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"><div class="note" style="margin-top:6px">비우면 수동 마감할 때까지</div></div>
+              <div class="field"><label>정원 (선택)</label><input type="number" name="max" min="1" max="10000" placeholder="비우면 제한 없음"></div>
+              <div class="field"><label>안내문 (페이지 상단)</label><textarea name="description" maxlength="600" rows="3" placeholder="어떤 제품의 어떤 기능을 테스트하는지, 테스트 기간, 원하는 피드백" style="width:100%;border:1px solid #243350;border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;resize:vertical"></textarea></div>
+            </div>
+            <button class="btn btn-pri" type="submit">모집 페이지 만들기</button>
+          </form>
+          <div class="result" id="betaRes"><div style="font-size:11px;color:#8fa5c2;letter-spacing:.05em;text-transform:uppercase">모집 페이지 링크</div><div class="k" id="betaLink">—</div></div>
+        </div>
+
+        <div class="card"><h2>모집 목록</h2>
+          <table><thead><tr><th>제목</th><th>제품 · 라이선스</th><th>기간 · 정원</th><th>신청</th><th>상태</th><th></th></tr></thead>
+          <tbody id="betaRows"><tr><td colspan="6" class="n">불러오는 중…</td></tr></tbody></table>
+        </div>
+
+        <div class="card" id="betaSignCard" style="display:none"><h2 id="betaSignTitle">신청자</h2>
+          <div class="toolbar"><input class="field search" style="margin:0" id="betaSearch" placeholder="이메일·이름 검색" oninput="renderBetaSignups()"><select id="betaStatus" onchange="renderBetaSignups()" style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"><option value="">전체 상태</option><option value="pending">미발급</option><option value="issued">발급됨</option><option value="failed">실패</option></select><button class="tbtn" type="button" onclick="betaCopyEmails(this)">이메일 복사</button><button class="tbtn" type="button" onclick="betaCsv()">CSV 내보내기</button></div>
+          <table><thead><tr><th><input type="checkbox" id="betaAll" onchange="betaToggleAll(this)" title="표시된 항목 전체 선택"></th><th>이메일</th><th>이름</th><th>소개</th><th>동의</th><th>상태</th><th>발급 내역</th><th>신청일</th></tr></thead>
+          <tbody id="betaSignRows"></tbody></table>
+          <div style="margin-top:18px;padding:18px;border:1px solid var(--line);border-radius:12px;background:#0E1A2E">
+            <h2 style="font-size:15px;margin-bottom:10px">일괄 라이선스 발급 · 메일 발송</h2>
+            <div class="grid2">
+              <div class="field"><label>제품</label><select id="biProd" style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"><option value="KV">Klera Voice</option><option value="KI">Klera Instrument</option><option value="TALLY">Flare Tally</option><option value="LMAZ">Latency Meter AZ</option></select></div>
+              <div class="field"><label>라이선스 종류</label><select id="biType" style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"><option value="D7">체험 · 7일</option><option value="D14">체험 · 14일</option><option value="D30">체험 · 30일</option><option value="FREE">무료 (영구)</option><option value="FULL">정식 (영구)</option></select></div>
+              <div class="field"><label>범위</label><select id="biScope" style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"><option value="pending">미발급 신청자 전체</option><option value="selected">체크한 신청자만 (재발급 포함)</option></select></div>
+            </div>
+            <div class="note">계정이 있는 이메일에는 라이선스를 바로 발급해 키를 메일로 보내고, 계정이 없는 이메일에는 1회용 등록 코드(BETA-…)를 만들어 가입·등록 방법과 함께 메일로 보냅니다. 결과는 위 표의 상태·발급 내역에 표시됩니다.</div>
+            <button class="btn btn-pri" type="button" id="biBtn" onclick="betaIssue()" style="margin-top:12px">발급 · 발송 실행</button>
+            <div class="result" id="biRes"><div class="k" id="biOut"></div></div>
+          </div>
+        </div>
+      </section>
+
       <section id="p-orders" class="page">
         <div class="card"><h2>주문·결제 <button class="tbtn" style="margin-left:10px" onclick="loadOrders()">새로고침</button></h2><div class="sub">실제 주문 데이터(orders)입니다. 결제 연동(포트원·Paddle) 후 웹훅으로 자동 기록되며, 환불은 결재 기록을 남기고 연결 라이선스를 함께 회수합니다.</div>
         <div class="toolbar" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -728,7 +771,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.13.0', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.14.0', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -923,11 +966,9 @@ async function azApprDecide(id, dec){
     try{
       var a=await sb.from('approvals').select('type,payload').eq('id',id).single();
       if(!a.error && a.data && a.data.type==='refund' && a.data.payload && a.data.payload.order_id){
-        var sess=(await sb.auth.getSession()).data.session;
-        var rr=await fetch('https://lkbbenyvchddsjsihofv.supabase.co/functions/v1/admin-refund',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(sess?sess.access_token:''),'apikey':'sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_'},body:JSON.stringify({order_id:a.data.payload.order_id, audit:false})});
-        var jj=await rr.json().catch(function(){return {};});
-        if(!rr.ok){ alert('✓ '+r.data+'\n\n⚠ 단, 결제사 실환불은 실패했습니다: '+(jj.error||('HTTP '+rr.status))+'\n결제사 콘솔에서 수동 취소가 필요할 수 있습니다.'); azApprLoad(); return; }
-        alert('✓ '+r.data+' · 결제사: '+(jj.note||'완료')); azApprLoad(); return;
+        var money=await adminRefundMoney(a.data.payload.order_id);
+        if(!money.ok){ alert('✓ '+r.data+'\n\n⚠ 단, 결제사 실환불은 실패했습니다: '+money.error+'\n결제사 콘솔에서 수동 취소가 필요할 수 있습니다.'); azApprLoad(); return; }
+        alert('✓ '+r.data+' · 결제사: '+(money.note||'완료')); azApprLoad(); return;
       }
     }catch(ex){ alert('✓ '+r.data+'\n\n⚠ 결제사 실환불 호출 오류: '+ex.message); azApprLoad(); return; }
   }
@@ -1142,7 +1183,7 @@ function extendSession(){
   showStep('stepPk');
 })();
 
-var titles={dash:'대시보드',board:'작업현황',usage:'서비스·한도',diag:'진단',appr:'결재',inq:'문의',lic:'라이선스',promo:'프로모션 · 할인',orders:'주문·결제',customers:'고객',products:'제품·버전',notice:'공지',settings:'설정',admins:'관리자 계정'};
+var titles={dash:'대시보드',board:'작업현황',usage:'서비스·한도',diag:'진단',appr:'결재',inq:'문의',lic:'라이선스',promo:'프로모션 · 할인',beta:'베타 모집',orders:'주문·결제',customers:'고객',products:'제품·버전',notice:'공지',settings:'설정',admins:'관리자 계정'};
 function toggleMenu(){
   var s=document.querySelector('.side'), b=document.getElementById('burger');
   var open=s.classList.toggle('open');
@@ -1158,6 +1199,7 @@ document.querySelectorAll('.side a[data-p]').forEach(a=>{
     if(p==='inq'){ try{azInqLoad();}catch(_){} }
     if(p==='lic'){ try{loadLicenses();}catch(_){} }
     if(p==='promo'){ try{renderPromos();}catch(_){} }
+    if(p==='beta'){ try{betaLoad();}catch(_){} }
     if(p==='orders'){ try{loadOrders();}catch(_){} }
     if(p==='dash'){ try{loadDash();}catch(_){} }
     if(p==='board'){ try{bdLoad(true);}catch(_){} }
@@ -1311,6 +1353,109 @@ async function disablePromo(code){
   if(!confirm('코드 중지: '+code+'\n더 이상 사용할 수 없게 됩니다. (기록은 남습니다)')) return;
   try{ var r=await azSuperDo('promo_disable','프로모션 중지 — '+code,'콘솔에서 중지',{code:code}); alert('✓ '+r.text); }catch(ex){ alert('실패: '+ex.message); }
   renderPromos();
+}
+
+
+// ===== 베타 모집 (beta_campaigns / beta_signups — 공개 페이지 beta.html?c=slug, 일괄 발급은 Edge beta-issue) =====
+var BETA=[], BETA_SIGN=[], BETA_CUR=null;
+var BETA_TYPE={D7:'체험 7일',D14:'체험 14일',D30:'체험 30일',FREE:'무료(영구)',FULL:'정식(영구)'};
+function betaUrl(slug){ return 'https://audioazpro.com/beta.html?c='+encodeURIComponent(slug); }
+function betaSlugAuto(t){ var s=document.getElementById('betaSlug'); if(!s||s.dataset.touched) return; var v=String(t||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40); s.value=v; document.getElementById('betaSlugPrev').textContent=v||'…'; }
+(function(){ var s=document.getElementById('betaSlug'); if(s) s.addEventListener('input',function(){ this.dataset.touched='1'; document.getElementById('betaSlugPrev').textContent=this.value||'…'; }); })();
+function betaLocalToIso(v){ if(!v) return null; var d=new Date(v); return isNaN(d)?null:d.toISOString(); }
+async function betaCreate(e){
+  e.preventDefault(); var d={}; new FormData(e.target).forEach(function(v,k){d[k]=v;});
+  var res=document.getElementById('betaRes'), out=document.getElementById('betaLink'); res.classList.add('on');
+  var slug=String(d.slug||'').trim().toLowerCase();
+  if(!/^[a-z0-9\-]{3,40}$/.test(slug)){ out.innerHTML='<b style="color:#ff9ea3">링크 코드는 영문 소문자·숫자·하이픈 3~40자</b>'; return false; }
+  if(!d.product||!d.license_type){ out.innerHTML='<b style="color:#ff9ea3">제품과 라이선스 종류를 선택하세요.</b>'; return false; }
+  var st=betaLocalToIso(d.starts), en=betaLocalToIso(d.ends);
+  if(st&&en&&en<=st){ out.innerHTML='<b style="color:#ff9ea3">모집 종료가 시작보다 앞섭니다.</b>'; return false; }
+  out.innerHTML='만드는 중…';
+  var me=(await sb.auth.getUser()).data.user;
+  var r=await sb.from('beta_campaigns').insert({slug:slug, title:String(d.title||'').trim(), description:String(d.description||'').trim()||null, product_id:d.product, license_type:d.license_type, starts_at:st, ends_at:en, max_signups:(d.max?parseInt(d.max):null), created_by:me?me.id:null}).select('id,slug').single();
+  if(r.error){ out.innerHTML='<b style="color:#ff9ea3">실패: '+esc(/duplicate|unique/i.test(r.error.message)?'이미 같은 링크 코드가 있습니다':r.error.message)+'</b>'; return false; }
+  var url=betaUrl(r.data.slug);
+  out.innerHTML='<a href="'+esc(url)+'" target="_blank" rel="noopener" style="color:#9CC2F5;font-weight:700;word-break:break-all">'+esc(url)+'</a> <button class="tbtn" type="button" onclick="copyText(\''+esc(url)+'\',this)">복사</button>'+(navigator.share?' <button class="tbtn" type="button" onclick="navigator.share({title:\'AudioAZ 베타 테스터 모집\',url:\''+esc(url)+'\'}).catch(function(){})">공유</button>':'')+'<div class="n" style="margin-top:6px">테스트 사이트에서 확인하려면 주소의 audioazpro.com 을 테스트 사이트 주소로 바꾸면 됩니다.</div>';
+  e.target.reset(); var sl=document.getElementById('betaSlug'); if(sl){ delete sl.dataset.touched; } document.getElementById('betaSlugPrev').textContent='…';
+  betaLoad(); return false;
+}
+function betaState(c){ var now=new Date(); if(!c.active) return ['비활성','p-revoked']; if(c.starts_at&&new Date(c.starts_at)>now) return ['시작 전','p-trial']; if(c.ends_at&&new Date(c.ends_at)<now) return ['기간 종료','p-refund']; if(c.max_signups&&(c.cnt||0)>=c.max_signups) return ['정원 마감','p-refund']; return ['모집 중','p-active']; }
+async function betaLoad(){
+  var tb=document.getElementById('betaRows'); if(!tb) return;
+  var r=await sb.from('beta_campaigns').select('*,beta_signups(count)').order('created_at',{ascending:false}).limit(100);
+  if(r.error){ tb.innerHTML='<tr><td colspan="6" style="color:#ff9ea3">불러오기 실패: '+esc(r.error.message)+'</td></tr>'; return; }
+  BETA=(r.data||[]).map(function(c){ c.cnt=(c.beta_signups&&c.beta_signups[0]&&c.beta_signups[0].count)||0; return c; });
+  if(!BETA.length){ tb.innerHTML='<tr><td colspan="6" class="n">아직 모집이 없습니다. 위에서 모집 페이지를 만드세요.</td></tr>'; return; }
+  tb.innerHTML=BETA.map(function(c,i){
+    var st=betaState(c);
+    return '<tr'+(c.active?'':' style="opacity:.55"')+'><td><b>'+esc(c.title)+'</b><div class="mono" style="font-size:11px;color:#8fa5c2">'+esc(c.slug)+'</div></td>'+
+      '<td>'+esc(PRODNAME[c.product_id]||c.product_id||'—')+'<div class="n">'+esc(BETA_TYPE[c.license_type]||c.license_type)+'</div></td>'+
+      '<td class="mono" style="font-size:12px">'+(c.starts_at?fmtDate(c.starts_at):'즉시')+' ~ '+(c.ends_at?fmtDate(c.ends_at):'수동 마감')+'<div class="n">정원 '+(c.max_signups||'제한 없음')+'</div></td>'+
+      '<td class="mono">'+c.cnt+'</td><td><span class="pill '+st[1]+'">'+st[0]+'</span></td>'+
+      '<td style="white-space:nowrap"><button class="tbtn" onclick="copyText(betaUrl(BETA['+i+'].slug),this)">링크 복사</button> <button class="tbtn" onclick="betaOpen('+i+')">신청자</button> <button class="tbtn'+(c.active?' danger':'')+'" onclick="betaToggle('+i+')">'+(c.active?'마감':'재개')+'</button></td></tr>';
+  }).join('');
+  if(BETA_CUR){ var cur=BETA.find(function(c){return c.id===BETA_CUR.id;}); if(cur) BETA_CUR=cur; }
+}
+async function betaToggle(i){
+  var c=BETA[i]; if(!c) return;
+  if(!confirm((c.active?'모집을 마감(비활성)합니다. 페이지에서 신청을 받지 않습니다.':'모집을 다시 엽니다.')+'\n'+c.title)) return;
+  var r=await sb.from('beta_campaigns').update({active:!c.active}).eq('id',c.id); if(r.error){ alert('실패: '+r.error.message); return; }
+  betaLoad();
+}
+async function betaOpen(i){
+  BETA_CUR=BETA[i]; if(!BETA_CUR) return;
+  var card=document.getElementById('betaSignCard'); card.style.display='';
+  document.getElementById('betaSignTitle').textContent='신청자 — '+BETA_CUR.title;
+  var bp=document.getElementById('biProd'), bt=document.getElementById('biType'); if(BETA_CUR.product_id) bp.value=BETA_CUR.product_id; if(BETA_CUR.license_type) bt.value=BETA_CUR.license_type;
+  document.getElementById('biRes').classList.remove('on');
+  await betaLoadSignups(); card.scrollIntoView({behavior:'smooth',block:'start'});
+}
+async function betaLoadSignups(){
+  if(!BETA_CUR) return;
+  var r=await sb.from('beta_signups').select('*').eq('campaign_id',BETA_CUR.id).order('created_at',{ascending:false}).limit(1000);
+  BETA_SIGN=r.error?[]:(r.data||[]); renderBetaSignups();
+}
+function betaFiltered(){ var q=((document.getElementById('betaSearch')||{}).value||'').trim().toLowerCase(), st=(document.getElementById('betaStatus')||{}).value||''; return BETA_SIGN.filter(function(s){ return (!st||s.status===st) && (!q || (s.email+' '+(s.name||'')).toLowerCase().indexOf(q)>=0); }); }
+function renderBetaSignups(){
+  var tb=document.getElementById('betaSignRows'); if(!tb) return;
+  var L=betaFiltered();
+  if(!L.length){ tb.innerHTML='<tr><td colspan="8" class="n">'+(BETA_SIGN.length?'조건에 맞는 신청자가 없습니다.':'아직 신청자가 없습니다.')+'</td></tr>'; return; }
+  var STL={pending:['미발급','p-trial'],issued:['발급됨','p-active'],failed:['실패','p-revoked']};
+  tb.innerHTML=L.map(function(s){
+    var st=STL[s.status]||[s.status,'p-trial'];
+    var issued=s.license_key?('키 <span class="mono">'+esc(s.license_key)+'</span>'):(s.promo_code?('코드 <span class="mono">'+esc(s.promo_code)+'</span>'):(s.error?'<span style="color:#ff9ea3">'+esc(s.error)+'</span>':'—'));
+    return '<tr><td><input type="checkbox" class="betaChk" value="'+esc(s.id)+'"></td><td class="mono" style="cursor:pointer" title="누르면 복사" onclick="copyText(\''+esc(s.email)+'\',this.querySelector(\'.cpm\'))">'+esc(s.email)+' <span class="cpm" style="font-size:10.5px;color:#8fa5c2"></span></td><td>'+esc(s.name||'')+'</td><td style="max-width:260px;font-size:12px;color:var(--dim)">'+esc(s.note||'')+'</td><td class="n">'+(s.consent_privacy?'개인정보':'')+(s.consent_marketing?' · 마케팅':'')+'</td><td><span class="pill '+st[1]+'">'+st[0]+'</span></td><td style="font-size:12px">'+issued+(s.issued_at?'<div class="n">'+fmtDateTime(s.issued_at)+'</div>':'')+'</td><td class="mono">'+fmtDateTime(s.created_at)+'</td></tr>';
+  }).join('');
+  var all=document.getElementById('betaAll'); if(all) all.checked=false;
+}
+function betaToggleAll(cb){ document.querySelectorAll('.betaChk').forEach(function(c){ c.checked=cb.checked; }); }
+function betaCopyEmails(btn){ var L=betaFiltered(); if(!L.length){ alert('복사할 이메일이 없습니다.'); return; } navigator.clipboard&&navigator.clipboard.writeText(L.map(function(s){return s.email;}).join('\n')); var t=btn.textContent; btn.textContent='복사됨 ('+L.length+')'; setTimeout(function(){btn.textContent=t;},1500); }
+function betaCsv(){
+  var L=betaFiltered(); if(!L.length){ alert('내보낼 신청자가 없습니다.'); return; }
+  var head=['이메일','이름','소개','개인정보동의','마케팅동의','상태','라이선스키','코드','발급일','신청일'];
+  var cell=function(c){ c=String(c==null?'':c); if(/^[=+\-@\t\r]/.test(c)) c="'"+c; return /[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c; };
+  var rows=L.map(function(s){ return [s.email,s.name||'',s.note||'',s.consent_privacy?'Y':'',s.consent_marketing?'Y':'',s.status,s.license_key||'',s.promo_code||'',s.issued_at?fmtDateTime(s.issued_at):'',fmtDateTime(s.created_at)]; });
+  var csv='\uFEFF'+[head].concat(rows).map(function(r){ return r.map(cell).join(','); }).join('\n');
+  var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); a.download='audioaz_beta_'+(BETA_CUR?BETA_CUR.slug:'signups')+'.csv'; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500);
+}
+async function betaIssue(){
+  if(!BETA_CUR) return;
+  var prod=document.getElementById('biProd').value, type=document.getElementById('biType').value, scope=document.getElementById('biScope').value;
+  var ids=Array.prototype.map.call(document.querySelectorAll('.betaChk:checked'),function(c){return c.value;});
+  var n = scope==='selected' ? ids.length : BETA_SIGN.filter(function(s){return s.status==='pending';}).length;
+  if(!n){ alert(scope==='selected'?'체크한 신청자가 없습니다.':'미발급 신청자가 없습니다.'); return; }
+  if(!confirm(n+'명에게 '+(PRODNAME[prod]||prod)+' · '+(BETA_TYPE[type]||type)+' 라이선스를 발급하고 메일을 보냅니다.\n계정이 없는 이메일에는 1회용 등록 코드를 보냅니다. 진행할까요?')) return;
+  var btn=document.getElementById('biBtn'), res=document.getElementById('biRes'), out=document.getElementById('biOut');
+  btn.disabled=true; btn.textContent='발급 중… (최대 몇 분)'; res.classList.add('on'); out.textContent='서버에서 발급·메일 발송 중입니다…';
+  try{
+    var r=await sb.functions.invoke('beta-issue',{body:{campaign_id:BETA_CUR.id, product_id:prod, license_type:type, scope:scope, signup_ids:ids}});
+    var d=r.data||{}; var errMsg=(r.error&&r.error.message)||d.error;
+    if(errMsg&&!d.ok) throw new Error(errMsg);
+    out.innerHTML='<b>완료</b> · 대상 '+d.total+'명 — 라이선스 직접 발급 '+d.issued+' · 등록 코드 발송 '+d.coded+' · 실패 '+d.failed+(d.results&&d.results.some(function(x){return x.mail===false;})?'<div style="color:#FFD27A;margin-top:4px">일부 메일 발송 실패 — 표의 키·코드를 직접 전달하세요.</div>':'');
+  }catch(ex){ out.innerHTML='<b style="color:#ff9ea3">실패: '+esc(ex.message||String(ex))+'</b>'+(/beta-issue|Failed to send|404|not found/i.test(String(ex.message))?'<div class="n">서버 함수 beta-issue 가 아직 배포되지 않았을 수 있습니다 (작업현황 참고).</div>':''); }
+  btn.disabled=false; btn.textContent='발급 · 발송 실행';
+  betaLoadSignups(); betaLoad();
 }
 
 // ===== 제품 세일 관리 =====
@@ -1579,18 +1724,25 @@ async function refundOrder(id){
     body:'<b style="color:#E9EEF7">'+esc(PRODNAME[o.product_id]||o.product_id||'')+'</b> · '+esc(p.email||'')+' · <span class="mono">'+fmtOrderAmt(o)+'</span>'+refInfo+notice});
   if(v0===null) return;
   try{
-    if(isSuper){
-      var sess=(await sb.auth.getSession()).data.session;
-      var r=await fetch('https://lkbbenyvchddsjsihofv.supabase.co/functions/v1/admin-refund',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(sess?sess.access_token:''),'apikey':'sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_'},body:JSON.stringify({order_id:id})});
-      var j=await r.json().catch(function(){return {};});
-      if(!r.ok) throw new Error(j.error||('HTTP '+r.status));
-      alert('✓ 환불 완료 · '+(j.note||''));
-    } else {
-      var rr=await azSuperDo('refund','주문 환불 — '+id.slice(0,8),'콘솔에서 환불 요청',{order_id:id});
-      alert('✓ '+rr.text);
-    }
+    // 1) 결재(approvals) 상신 + (super면 즉시 승인) → decide_approval 이 DB 환불·라이선스 회수·감사이력
+    var rr=await azSuperDo('refund','주문 환불 — '+id.slice(0,8),'콘솔에서 환불 처리',{order_id:id});
+    if(rr.pending){ alert('✓ '+rr.text); loadOrders(); loadLicenses(); return; } // 비-super: 승인 대기
+    // 2) super: DB 환불 완료됨 → 결제사 실환불 + refunded_at + 메일
+    var money=await adminRefundMoney(id);
+    if(money.ok) alert('✓ DB 환불·라이선스 회수 완료 · 결제사: '+(money.note||'완료'));
+    else alert('✓ DB 환불·라이선스 회수 완료.\n\n⚠ 결제사 실환불은 실패했습니다: '+money.error+'\n결제사 콘솔에서 수동 취소가 필요할 수 있습니다.');
   }catch(ex){ alert('실패: '+ex.message); }
   loadOrders(); loadLicenses();
+}
+// admin-refund 엣지 함수 호출(결제사 실환불 + refunded_at + 메일). DB 환불은 이미 decide_approval 이 처리한 뒤 호출.
+async function adminRefundMoney(orderId){
+  try{
+    var sess=(await sb.auth.getSession()).data.session;
+    var r=await fetch('https://lkbbenyvchddsjsihofv.supabase.co/functions/v1/admin-refund',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(sess?sess.access_token:''),'apikey':'sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_'},body:JSON.stringify({order_id:orderId})});
+    var j=await r.json().catch(function(){return {};});
+    if(!r.ok) return {ok:false, error:(j.error||('HTTP '+r.status))};
+    return {ok:true, note:j.note};
+  }catch(ex){ return {ok:false, error:ex.message}; }
 }
 
 // ===== 매출 국내/해외 분리 집계 =====
