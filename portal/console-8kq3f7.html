@@ -1208,6 +1208,8 @@ function toggleMenu(){
   var open=s.classList.toggle('open');
   if(b) b.setAttribute('aria-expanded', open?'true':'false');
 }
+function statusLoad(){ var f=document.getElementById('statusFrame'); if(f && !f.src && f.dataset.src){ f.src=f.dataset.src; } }   // 탭 처음 열 때만 로드(콜드스타트 방지)
+function statusReload(){ var f=document.getElementById('statusFrame'); if(f && f.dataset.src){ f.src=f.dataset.src+'&_='+Date.now(); } }
 document.querySelectorAll('.side a[data-p]').forEach(a=>{
   a.addEventListener('click',()=>{
     var p=a.dataset.p;
