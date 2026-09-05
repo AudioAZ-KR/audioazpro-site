@@ -84,8 +84,9 @@ h1{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:4px 0 2px}
     </div>
     <div class="usbrow" id="usbrow">활성화할 USB: <b id="usbName">감지된 USB 없음 — 플러그인/앱 안에서 활성화하면 실제 USB 볼륨 ID가 사용됩니다</b><br>이 USB의 볼륨 ID에 묶여, 다른 USB로 복사해도 동작하지 않습니다.</div>
 
+    <div class="note" style="text-align:left;color:#E7B252;background:rgba(231,178,82,.1);border:1px solid rgba(231,178,82,.35);border-radius:10px;padding:10px 12px;margin-top:14px">⚠ 활성화(등록)하면 <b>이 라이선스는 환불이 불가</b>합니다. 구매 후 환불은 <b>활성화 전, 결제일로부터 14일 이내</b>에만 가능합니다. (기기 이동을 위해 나중에 해제해도, 한 번이라도 활성화하면 환불 대상이 아닙니다.)</div>
     <button class="go" id="goBtn" onclick="activate()">이 컴퓨터에 활성화</button>
-    <p class="note">활성화 방식은 나중에 <a href="account.html" style="color:var(--blue-soft);font-weight:700">내 계정</a>에서 변경할 수 있습니다.</p>
+    <p class="note">활성화 방식(기기·USB)은 나중에 <a href="account.html" style="color:var(--blue-soft);font-weight:700">내 계정</a>에서 변경할 수 있습니다.</p>
   </div>
 </div>
 
@@ -131,6 +132,7 @@ async function activate(){
   var bid = LOC==='usb' ? ('USB-'+seg()+'-'+seg()) : machineId();
   var label = LOC==='usb' ? 'USB 드라이브' : '이 컴퓨터';
   if(acts.some(function(a){return a.binding_id===bid;})){ alert('이 기기는 이미 활성화되어 있습니다.'); location.href='account.html'; return; }
+  if(acts.length===0 && !confirm('활성화하면 이 라이선스는 환불이 불가합니다.\n(환불은 활성화 전, 결제일로부터 14일 이내에만 가능)\n\n계속 활성화할까요?')) return;
   var r=await sbX.from('activations').insert({license_id:LIC.id, binding_type:LOC, binding_id:bid, label:label});
   if(r.error){ alert('활성화 실패: '+r.error.message); return; }
   alert('활성화 완료\n\n'+(AZ.PRODMETA[CUR]||{name:CUR}).name+'\n저장 위치: '+label+' ('+bid+')\n\n'+(LOC==='usb'?'USB를 꽂은 어느 컴퓨터에서든 사용할 수 있습니다.':'이 기기에서만 사용할 수 있습니다.')+'\n(정식 전환 시: 플러그인이 실제 기기 UUID / USB 볼륨ID를 읽어 서버가 서명)');
