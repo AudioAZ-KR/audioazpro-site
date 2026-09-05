@@ -562,7 +562,7 @@ td{color:var(--text)}
               </div>
             </div>
             <div class="grid2">
-              <div class="field"><label>코드 텍스트 (직접 입력)</label><input name="codetext" id="promoCode" placeholder="예: CHUSEOK2026, YOUTUBE-KIM" required maxlength="32" style="text-transform:uppercase" pattern="[A-Za-z0-9\-]{4,32}" title="영문·숫자·하이픈 4~32자"><div class="note" style="margin-top:6px">영문·숫자·하이픈 4~32자 · 고객이 입력할 코드 그대로</div></div>
+              <div class="field"><label>코드 텍스트 (직접 입력)</label><input name="codetext" id="promoCode" placeholder="예: CHUSEOK2026 · 비우면 무작위 코드" maxlength="32" style="text-transform:uppercase" pattern="[A-Za-z0-9\-]{0,32}" title="영문·숫자·하이픈 4~32자 (비우면 무작위)"><div class="note" style="margin-top:6px">영문·숫자·하이픈 4~32자 · 고객이 입력할 코드 그대로. <b>비우면</b> AZ-XXXX-XXXX 무작위 코드가 만들어집니다</div></div>
               <div class="field"><label>적용 제품</label><select name="product" id="promoProd" required onchange="promoPrice()">
                 <option value="ALL" id="promoAllOpt">전 제품 (ALL)</option>
                 <option value="KV">Klera Voice</option>
@@ -1201,13 +1201,17 @@ async function genPromo(e){
   var code=String(d.codetext||'').trim().toUpperCase();
   var res=document.getElementById('promoRes'), out=document.getElementById('promoCodes');
   function fail(m){ out.innerHTML='<b style="color:#ff9ea3">'+m+'</b>'; res.classList.add('on'); return false; }
-  if(!/^[A-Z0-9\-]{4,32}$/.test(code)) return fail('코드는 영문·숫자·하이픈 4~32자로 입력하세요.');
+  if(code && !/^[A-Z0-9\-]{4,32}$/.test(code)) return fail('코드는 영문·숫자·하이픈 4~32자로 입력하세요.');
   var qty=Math.max(1,Math.min(50,parseInt(d.qty||'1')||1));
   var codes=[];
-  if(qty>1){
+  var ALPH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', seen={}; PROMOS.forEach(function(p){seen[p.code]=1;});
+  function rnd(n){ var a=new Uint32Array(n); crypto.getRandomValues(a); var o=''; for(var i=0;i<n;i++) o+=ALPH[a[i]%ALPH.length]; return o; }
+  if(!code){   // 코드 텍스트 비움 → 서로 다른 무작위 코드 AZ-XXXX-XXXX
+    while(codes.length<qty){ var c0='AZ-'+rnd(4)+'-'+rnd(4); if(!seen[c0]){ seen[c0]=1; codes.push(c0); } }
+    code=codes[0];
+  } else if(qty>1){   // 접두어-XXXX — 수량만큼 전부 다른 코드
     if(code.length>27) return fail('여러 개 발행 시 접두어는 27자 이하여야 합니다.');
-    var ALPH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', seen={}; PROMOS.forEach(function(p){seen[p.code]=1;});
-    while(codes.length<qty){ var a=new Uint32Array(4); crypto.getRandomValues(a); var sfx=''; for(var i=0;i<4;i++) sfx+=ALPH[a[i]%ALPH.length]; var c=code+'-'+sfx; if(!seen[c]){ seen[c]=1; codes.push(c); } }
+    while(codes.length<qty){ var c=code+'-'+rnd(4); if(!seen[c]){ seen[c]=1; codes.push(c); } }
   } else {
     if(PROMOS.some(function(p){return p.code===code;})) return fail('이미 발행된 코드입니다: '+code);
     codes=[code];
