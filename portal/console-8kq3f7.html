@@ -365,7 +365,8 @@ td{color:var(--text)}
       <a data-p="board">작업현황 <span id="boardBadge" style="display:none;background:#E7B252;color:#2E2410;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;margin-left:6px"></span></a>
       <a data-p="usage">서비스·한도 <span id="usageBadge" style="display:none;background:#E5484D;color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;margin-left:6px"></span></a>
       <a data-p="diag">진단</a>
-      <a data-p="appr">결재 <span id="apprBadge" style="display:none;background:#E7B252;color:#2E2410;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;margin-left:6px"></span></a>
+      <a data-p="status">접속자 현황</a>
+      <a data-p="appr">결재<span id="apprBadge" style="display:none;background:#E7B252;color:#2E2410;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;margin-left:6px"></span></a>
       <a data-p="inq">문의 <span id="inqBadge" style="display:none;background:#4D96F5;color:#081729;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;margin-left:6px"></span></a>
       <div class="grp">판매 관리</div>
       <a data-p="lic">라이선스</a>
@@ -464,6 +465,15 @@ td{color:var(--text)}
         <div id="dgBody"><div class="dg-empty">불러오는 중…</div></div>
         <textarea class="dg-out" id="dgOut" readonly spellcheck="false"></textarea>
         <p class="note">앱·호스트가 보내는 익명 진단 정보(기기 모델·OS·버전·접속 방식·이벤트)입니다. 이름·계정·방 코드·IP는 없고 90일 뒤 자동 삭제됩니다. <b>추출하기</b>는 현재 앱·기간·필터 범위를 클로드에게 그대로 붙여 넣을 수 있는 마크다운으로 만들어 클립보드에 복사하고 .md 파일로도 저장합니다.</p>
+      </section>
+
+      <!-- 접속자 현황 (탈리 서버 실시간) -->
+      <section id="p-status" class="page">
+        <div class="card">
+          <h2>접속자 현황 <button class="tbtn" style="margin-left:10px" onclick="statusReload()">새로고침</button> <a class="tbtn" href="https://camera-tally.onrender.com/status.html?key=ft-tb972il3run7pioolr8dfnev" target="_blank" rel="noopener" style="margin-left:6px">새 창으로 열기 ↗</a></h2>
+          <div class="sub">탈리 서버에 지금 접속 중인 방·호스트·카메라·큐입니다. 3초마다 자동 갱신됩니다. (무료 인스턴스라 처음 열 때 최대 50초 콜드스타트가 있을 수 있습니다.)</div>
+          <iframe id="statusFrame" title="접속자 현황" data-src="https://camera-tally.onrender.com/status.html?key=ft-tb972il3run7pioolr8dfnev" style="width:100%;height:72vh;border:1px solid var(--line);border-radius:12px;background:#0B0B0C;margin-top:12px;display:block"></iframe>
+        </div>
       </section>
 
       <!-- 결재 (승인 워크플로) -->
@@ -646,14 +656,14 @@ td{color:var(--text)}
           <table><thead><tr><th><input type="checkbox" id="betaAll" onchange="betaToggleAll(this)" title="표시된 항목 전체 선택"></th><th>이메일</th><th>이름</th><th>소개 · 응답</th><th>상태</th><th>발급 내역</th><th>신청일</th></tr></thead>
           <tbody id="betaSignRows"></tbody></table>
           <div style="margin-top:18px;padding:18px;border:1px solid var(--line);border-radius:12px;background:#0E1A2E">
-            <h2 style="font-size:15px;margin-bottom:10px">일괄 라이선스 발급 · 메일 발송</h2>
+            <h2 style="font-size:15px;margin-bottom:10px">일괄 프로모션 코드 발송</h2>
             <div class="grid2">
               <div class="field"><label>제품</label><select id="biProd" style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"><option value="KV">Klera Voice</option><option value="KI">Klera Instrument</option><option value="TALLY">Flare Tally</option><option value="LMAZ">Latency Meter AZ</option></select></div>
               <div class="field"><label>라이선스 종류</label><select id="biType" style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"><option value="D7">체험 · 7일</option><option value="D14">체험 · 14일</option><option value="D30">체험 · 30일</option><option value="FREE">무료 (영구)</option><option value="FULL">정식 (영구)</option></select></div>
-              <div class="field"><label>범위</label><select id="biScope" style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"><option value="pending">미발급 신청자 전체</option><option value="selected">체크한 신청자만 (재발급 포함)</option></select></div>
+              <div class="field"><label>범위</label><select id="biScope" style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"><option value="pending">미발송 신청자 전체</option><option value="selected">체크한 신청자만 (재발송 포함)</option></select></div>
             </div>
-            <div class="note">계정이 있는 이메일에는 라이선스를 바로 발급해 키를 메일로 보내고, 계정이 없는 이메일에는 1회용 등록 코드(BETA-…)를 만들어 가입·등록 방법과 함께 메일로 보냅니다. 결과는 위 표의 상태·발급 내역에 표시됩니다.</div>
-            <button class="btn btn-pri" type="button" id="biBtn" onclick="betaIssue()" style="margin-top:12px">발급 · 발송 실행</button>
+            <div class="note">신청자마다 1회용 프로모션 코드(BETA-…)를 만들어 메일로 보냅니다. 계정 유무와 상관없이 받은 사람이 직접 회원가입(또는 로그인)한 뒤 코드를 등록하면 위에서 고른 제품·종류의 라이선스가 발급됩니다. 코드 등록 기한은 60일이며, 결과는 위 표의 상태·발급 내역에 표시됩니다.</div>
+            <button class="btn btn-pri" type="button" id="biBtn" onclick="betaIssue()" style="margin-top:12px">코드 발송 실행</button>
             <div class="result" id="biRes"><div class="k" id="biOut"></div></div>
           </div>
         </div>
@@ -1192,7 +1202,7 @@ function extendSession(){
   showStep('stepPk');
 })();
 
-var titles={dash:'대시보드',board:'작업현황',usage:'서비스·한도',diag:'진단',appr:'결재',inq:'문의',lic:'라이선스',promo:'프로모션 · 할인',beta:'베타 모집',orders:'주문·결제',customers:'고객',products:'제품·버전',notice:'공지',settings:'설정',admins:'관리자 계정'};
+var titles={dash:'대시보드',board:'작업현황',usage:'서비스·한도',diag:'진단',status:'접속자 현황',appr:'결재',inq:'문의',lic:'라이선스',promo:'프로모션 · 할인',beta:'베타 모집',orders:'주문·결제',customers:'고객',products:'제품·버전',notice:'공지',settings:'설정',admins:'관리자 계정'};
 function toggleMenu(){
   var s=document.querySelector('.side'), b=document.getElementById('burger');
   var open=s.classList.toggle('open');
@@ -1214,6 +1224,7 @@ document.querySelectorAll('.side a[data-p]').forEach(a=>{
     if(p==='board'){ try{bdLoad(true);}catch(_){} }
     if(p==='usage'){ try{usLoad();}catch(_){} }
     if(p==='diag'){ try{dgLoad();}catch(_){} }
+    if(p==='status'){ try{statusLoad();}catch(_){} }
     if(p==='customers'){ try{loadCustomers();}catch(_){} }
     if(p==='admins'){ try{renderAdmins();}catch(_){} }
     document.querySelector('.side').classList.remove('open');   // 메뉴 선택 시 자동 닫힘
@@ -1494,16 +1505,16 @@ async function betaIssue(){
   var ids=Array.prototype.map.call(document.querySelectorAll('.betaChk:checked'),function(c){return c.value;});
   var n = scope==='selected' ? ids.length : BETA_SIGN.filter(function(s){return s.status==='pending';}).length;
   if(!n){ alert(scope==='selected'?'체크한 신청자가 없습니다.':'미발급 신청자가 없습니다.'); return; }
-  if(!confirm(n+'명에게 '+(PRODNAME[prod]||prod)+' · '+(BETA_TYPE[type]||type)+' 라이선스를 발급하고 메일을 보냅니다.\n계정이 없는 이메일에는 1회용 등록 코드를 보냅니다. 진행할까요?')) return;
+  if(!confirm(n+'명에게 '+(PRODNAME[prod]||prod)+' · '+(BETA_TYPE[type]||type)+' 프로모션 코드를 만들어 메일로 보냅니다.\n받은 사람이 직접 회원가입 후 코드를 등록합니다. 진행할까요?')) return;
   var btn=document.getElementById('biBtn'), res=document.getElementById('biRes'), out=document.getElementById('biOut');
-  btn.disabled=true; btn.textContent='발급 중… (최대 몇 분)'; res.classList.add('on'); out.textContent='서버에서 발급·메일 발송 중입니다…';
+  btn.disabled=true; btn.textContent='발송 중… (최대 몇 분)'; res.classList.add('on'); out.textContent='서버에서 코드 발행·메일 발송 중입니다…';
   try{
     var r=await sb.functions.invoke('beta-issue',{body:{campaign_id:BETA_CUR.id, product_id:prod, license_type:type, scope:scope, signup_ids:ids}});
     var d=r.data||{}; var errMsg=(r.error&&r.error.message)||d.error;
     if(errMsg&&!d.ok) throw new Error(errMsg);
-    out.innerHTML='<b>완료</b> · 대상 '+d.total+'명 — 라이선스 직접 발급 '+d.issued+' · 등록 코드 발송 '+d.coded+' · 실패 '+d.failed+(d.results&&d.results.some(function(x){return x.mail===false;})?'<div style="color:#FFD27A;margin-top:4px">일부 메일 발송 실패 — 표의 키·코드를 직접 전달하세요.</div>':'');
+    out.innerHTML='<b>완료</b> · 대상 '+d.total+'명 — 코드 발송 '+d.coded+' · 실패 '+d.failed+(d.results&&d.results.some(function(x){return x.mail===false;})?'<div style="color:#FFD27A;margin-top:4px">일부 메일 발송 실패 — 표의 키·코드를 직접 전달하세요.</div>':'');
   }catch(ex){ out.innerHTML='<b style="color:#ff9ea3">실패: '+esc(ex.message||String(ex))+'</b>'+(/beta-issue|Failed to send|404|not found/i.test(String(ex.message))?'<div class="n">서버 함수 beta-issue 가 아직 배포되지 않았을 수 있습니다 (작업현황 참고).</div>':''); }
-  btn.disabled=false; btn.textContent='발급 · 발송 실행';
+  btn.disabled=false; btn.textContent='코드 발송 실행';
   betaLoadSignups(); betaLoad();
 }
 
