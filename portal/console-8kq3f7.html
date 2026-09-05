@@ -638,6 +638,7 @@ td{color:var(--text)}
               <div class="field"><label>모집 시작</label><input type="datetime-local" name="starts" style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"><div class="note" style="margin-top:6px">비우면 즉시</div></div>
               <div class="field"><label>모집 종료</label><input type="datetime-local" name="ends" style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"><div class="note" style="margin-top:6px">비우면 수동 마감할 때까지</div></div>
               <div class="field"><label>정원 (선택)</label><input type="number" name="max" min="1" max="10000" placeholder="비우면 제한 없음"></div>
+              <div class="field"><label>코드 발송 방식</label><select name="auto_issue" id="betaAutoIssue" style="border:1px solid #243350;border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7"><option value="1">신청 즉시 자동 발송</option><option value="0">관리자가 선별해 수동 발송</option></select><div class="note" style="margin-top:6px">즉시 발송이면 신청 완료와 동시에 1회용 코드가 신청 이메일로 갑니다</div></div>
               <div class="field"><label>안내문 (페이지 상단)</label><textarea name="description" maxlength="600" rows="3" placeholder="어떤 제품의 어떤 기능을 테스트하는지, 테스트 기간, 원하는 피드백" style="width:100%;border:1px solid #243350;border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;resize:vertical"></textarea></div>
             </div>
             <div class="grid2">
@@ -664,13 +665,13 @@ td{color:var(--text)}
           <table><thead><tr><th><input type="checkbox" id="betaAll" onchange="betaToggleAll(this)" title="표시된 항목 전체 선택"></th><th>이메일</th><th>이름</th><th>소개 · 응답</th><th>상태</th><th>발급 내역</th><th>신청일</th></tr></thead>
           <tbody id="betaSignRows"></tbody></table>
           <div style="margin-top:18px;padding:18px;border:1px solid var(--line);border-radius:12px;background:#0E1A2E">
-            <h2 style="font-size:15px;margin-bottom:10px">일괄 프로모션 코드 발송</h2>
+            <h2 style="font-size:15px;margin-bottom:10px">프로모션 코드 발송 (수동·재발송)</h2>
             <div class="grid2">
               <div class="field"><label>제품</label><select id="biProd" style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"><option value="KV">Klera Voice</option><option value="KI">Klera Instrument</option><option value="TALLY">Flare Tally</option><option value="LMAZ">Latency Meter AZ</option></select></div>
               <div class="field"><label>라이선스 종류</label><select id="biType" style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"><option value="D7">체험 · 7일</option><option value="D14">체험 · 14일</option><option value="D30">체험 · 30일</option><option value="FREE">무료 (영구)</option><option value="FULL">정식 (영구)</option></select></div>
               <div class="field"><label>범위</label><select id="biScope" style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"><option value="pending">미발송 신청자 전체</option><option value="selected">체크한 신청자만 (재발송 포함)</option></select></div>
             </div>
-            <div class="note">신청자마다 1회용 프로모션 코드(BETA-…)를 만들어 메일로 보냅니다. 계정 유무와 상관없이 받은 사람이 직접 회원가입(또는 로그인)한 뒤 코드를 등록하면 위에서 고른 제품·종류의 라이선스가 발급됩니다. 코드 등록 기한은 모집 마감일 + 7일이며(마감일이 없으면 발송일 + 7일, 메일에 날짜 표시), 결과는 위 표의 상태·발급 내역에 표시됩니다.</div>
+            <div class="note">"신청 즉시 자동 발송" 모집은 신청과 동시에 코드가 나가므로 여기서는 실패 건 재발송이나 수동 발송 모집에 씁니다. 신청자마다 1회용 프로모션 코드(BETA-…)를 만들어 메일로 보냅니다. 계정 유무와 상관없이 받은 사람이 직접 회원가입(또는 로그인)한 뒤 코드를 등록하면 위에서 고른 제품·종류의 라이선스가 발급됩니다. 코드 등록 기한은 모집 마감일 + 7일이며(마감일이 없으면 발송일 + 7일, 메일에 날짜 표시), 결과는 위 표의 상태·발급 내역에 표시됩니다.</div>
             <button class="btn btn-pri" type="button" id="biBtn" onclick="betaIssue()" style="margin-top:12px">코드 발송 실행</button>
             <div class="result" id="biRes"><div class="k" id="biOut"></div></div>
           </div>
@@ -798,7 +799,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.16.1', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.17.0', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1405,7 +1406,7 @@ async function betaCreate(e){
   var fields=betaFieldsRead();
   out.innerHTML=d.edit_id?'저장 중…':'만드는 중…';
   var me=(await sb.auth.getUser()).data.user;
-  var row={slug:slug, title:String(d.title||'').trim(), description:String(d.description||'').trim()||null, product_id:d.product, license_type:d.license_type, starts_at:st, ends_at:en, max_signups:(d.max?parseInt(d.max):null), fields:fields, basic:{name:(d.basic_name==='optional'?'optional':'required'), note:(['required','hidden'].indexOf(d.basic_note)>=0?d.basic_note:'optional')}};
+  var row={slug:slug, title:String(d.title||'').trim(), description:String(d.description||'').trim()||null, product_id:d.product, license_type:d.license_type, starts_at:st, ends_at:en, max_signups:(d.max?parseInt(d.max):null), fields:fields, basic:{name:(d.basic_name==='optional'?'optional':'required'), note:(['required','hidden'].indexOf(d.basic_note)>=0?d.basic_note:'optional')}, auto_issue:(d.auto_issue!=='0')};
   var r = d.edit_id ? await sb.from('beta_campaigns').update(row).eq('id',d.edit_id).select('id,slug').single()
                     : await sb.from('beta_campaigns').insert(Object.assign(row,{created_by:me?me.id:null})).select('id,slug').single();
   if(r.error){ out.innerHTML='<b style="color:#ff9ea3">실패: '+esc(/duplicate|unique/i.test(r.error.message)?'이미 같은 링크 코드가 있습니다':r.error.message)+'</b>'; return false; }
@@ -1439,7 +1440,7 @@ function betaEdit(i){
   f.title.value=c.title||''; f.slug.value=c.slug; f.slug.dataset.touched='1'; document.getElementById('betaSlugPrev').textContent=c.slug;
   f.product.value=c.product_id||''; f.license_type.value=c.license_type||''; f.starts.value=betaLocalFromIso(c.starts_at); f.ends.value=betaLocalFromIso(c.ends_at); f.max.value=c.max_signups||''; f.description.value=c.description||'';
   document.getElementById('betaFieldRows').innerHTML=''; (Array.isArray(c.fields)?c.fields:[]).forEach(function(x){ betaFieldAdd(x); });
-  var b=c.basic||{}; document.getElementById('betaBasicName').value=b.name||'required'; document.getElementById('betaBasicNote').value=b.note||'optional';
+  var b=c.basic||{}; document.getElementById('betaBasicName').value=b.name||'required'; document.getElementById('betaBasicNote').value=b.note||'optional'; document.getElementById('betaAutoIssue').value=(c.auto_issue===false?'0':'1');
   document.getElementById('betaEditId').value=c.id; document.getElementById('betaSubmitBtn').textContent='수정 저장'; document.getElementById('betaCancelEdit').style.display='';
   f.scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -1458,7 +1459,7 @@ async function betaLoad(){
   tb.innerHTML=BETA.map(function(c,i){
     var st=betaState(c);
     return '<tr'+(c.active?'':' style="opacity:.55"')+'><td><b>'+esc(c.title)+'</b><div class="mono" style="font-size:11px;color:#8fa5c2">'+esc(c.slug)+'</div></td>'+
-      '<td>'+esc(PRODNAME[c.product_id]||c.product_id||'—')+'<div class="n">'+esc(BETA_TYPE[c.license_type]||c.license_type)+'</div></td>'+
+      '<td>'+esc(PRODNAME[c.product_id]||c.product_id||'—')+'<div class="n">'+esc(BETA_TYPE[c.license_type]||c.license_type)+(c.auto_issue===false?' · 수동 발송':' · 즉시 발송')+'</div></td>'+
       '<td class="mono" style="font-size:12px">'+(c.starts_at?fmtDate(c.starts_at):'즉시')+' ~ '+(c.ends_at?fmtDate(c.ends_at):'수동 마감')+'<div class="n">정원 '+(c.max_signups||'제한 없음')+'</div></td>'+
       '<td class="mono">'+c.cnt+'</td><td><span class="pill '+st[1]+'">'+st[0]+'</span></td>'+
       '<td style="white-space:nowrap"><button class="tbtn" onclick="copyText(betaUrl(BETA['+i+'].slug),this)">링크 복사</button> <button class="tbtn" onclick="betaOpen('+i+')">신청자</button> <button class="tbtn" onclick="betaEdit('+i+')">편집</button> <button class="tbtn'+(c.active?' danger':'')+'" onclick="betaToggle('+i+')">'+(c.active?'마감':'재개')+'</button></td></tr>';

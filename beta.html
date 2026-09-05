@@ -119,7 +119,7 @@ footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center}footer .rig
   <div class="bgrid">
     <div class="bcard">
       <h2>참여 신청<span class="st" id="bState"></span></h2>
-      <div class="sub">선정되면 입력하신 이메일로 베타 테스트용 라이선스 또는 등록 코드를 보내 드립니다. 라이선스는 AudioAZ 계정(같은 이메일)에서 관리됩니다.</div>
+      <div class="sub" id="bSub">신청하면 입력하신 이메일로 베타 테스트용 라이선스 코드를 보내 드립니다. 라이선스는 AudioAZ 계정(같은 이메일)에서 관리됩니다.</div>
       <form id="bForm" onsubmit="return betaSubmit(event)">
         <div class="field"><label for="bEmail">이메일</label><input id="bEmail" name="email" type="email" placeholder="you@example.com" required autocomplete="email" maxlength="120"></div>
         <div class="field" id="bNameWrap"><label for="bName">이름 또는 활동명 <span class="optmark" style="color:var(--dim);font-weight:600" hidden>(선택)</span></label><input id="bName" name="name" type="text" placeholder="예: 김형준, 홍길동 스튜디오" required maxlength="60" autocomplete="name"></div>
@@ -195,6 +195,7 @@ function showEmpty(title,text){ document.getElementById('bMain').hidden=true; do
     var input = f.type==='textarea' ? '<textarea id="'+id+'" data-key="'+escB(f.key)+'" maxlength="500"'+(req?' required':'')+ph+'></textarea>' : '<input id="'+id+'" data-key="'+escB(f.key)+'" type="text" maxlength="500"'+(req?' required':'')+ph+'>';
     return '<div class="field"><label for="'+id+'">'+escB(f.label||f.key)+(req?'':' <span style="color:var(--dim);font-weight:600">(선택)</span>')+'</label>'+input+'</div>';
   }).join('');
+  if(CAMP.auto_issue===false){ document.getElementById('bSub').textContent='선정되면 입력하신 이메일로 베타 테스트용 라이선스 코드를 보내 드립니다. 라이선스는 AudioAZ 계정(같은 이메일)에서 관리됩니다.'; }
   document.getElementById('bMeta').hidden=false; document.getElementById('bMain').hidden=false;
   var st=document.getElementById('bState');
   if(CAMP.open){ st.textContent='모집 중'; st.className='st open'; }
@@ -211,11 +212,15 @@ async function betaSubmit(e){
   if(!f.consent_privacy.checked||!f.consent_terms.checked){ m.className='msg err'; m.textContent='필수 동의 항목에 체크해 주세요.'; return false; }
   btn.disabled=true; btn.textContent='신청 중…'; m.className='msg'; m.textContent='';
   var answers={}; document.querySelectorAll('#bExtra [data-key]').forEach(function(el){ var v=(el.value||'').trim(); if(v) answers[el.getAttribute('data-key')]=v; });
-  var r=await sbB.rpc('beta_signup',{p_slug:SLUG, p_email:f.email.value.trim(), p_name:f.name.value.trim(), p_note:f.note.value.trim(), p_consent_privacy:true, p_answers:answers});
-  if(r.error){ m.className='msg err'; m.textContent=(r.error.message||'신청에 실패했습니다.').replace(/^.*?: /,''); btn.disabled=false; btn.textContent='베타 테스터 신청'; return false; }
+  // 서버 함수: DB 검증·저장 후 (모집 설정이 즉시 발송이면) 프로모션 코드를 바로 메일로 보냄
+  var r=await sbB.functions.invoke('beta-signup',{body:{slug:SLUG, email:f.email.value.trim(), name:f.name.value.trim(), note:f.note.value.trim(), consent_privacy:true, answers:answers}});
+  var d=r.data||{}; var errMsg=d.error||(r.error&&r.error.message);
+  if(errMsg&&!d.ok){ m.className='msg err'; m.textContent=String(errMsg).replace(/^.*?: /,''); btn.disabled=false; btn.textContent='베타 테스터 신청'; return false; }
   f.querySelectorAll('input,textarea').forEach(function(el){ el.disabled=true; });
   btn.textContent='신청 완료';
-  m.className='msg ok'; m.textContent='신청이 접수되었습니다. 선정되면 라이선스 안내 메일을 보내 드립니다'+' ('+f.email.value.trim()+'). '+'같은 이메일로 audioazpro.com 계정을 만들어 두시면 바로 활성화할 수 있습니다.';
+  m.className='msg ok';
+  if(d.sent){ m.textContent='신청이 접수되었고 라이선스 코드를 메일로 보냈습니다'+' ('+f.email.value.trim()+'). '+'메일함(스팸함 포함)을 확인해 주세요. 코드는 '+(d.valid_to||'')+'까지 등록할 수 있습니다.'; }
+  else { m.textContent='신청이 접수되었습니다. 선정되면 라이선스 안내 메일을 보내 드립니다'+' ('+f.email.value.trim()+'). '+'같은 이메일로 audioazpro.com 계정을 만들어 두시면 바로 활성화할 수 있습니다.'; }
   return false;
 }
 </script>
