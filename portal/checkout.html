@@ -228,7 +228,8 @@ async function grantCode(){
   try{
     var d=await callFn('checkout-create',{product_id:target, promo_code:APPLIED.code, provider:'portone'});
     if(!d.free) throw new Error('이 코드는 무료 발급 코드가 아닙니다');
-    alert('라이선스가 발급됐습니다.\n\n'+(d.product_name||PROD[target])+' · '+(KIND[d.type]||d.type)+'\n키: '+d.license_key+'\n\n내 계정에서 확인하세요.');
+    if(d.extended){ alert('기존 데모 라이선스 기간이 '+d.added_days+'일 연장됐습니다.\n\n'+(d.product_name||PROD[target])+' · 만료 '+String(d.expires_at||'').slice(0,10)+'\n키: '+d.license_key+' (기존 키 그대로)\n\n내 계정에서 확인하세요.'); }
+    else alert('라이선스가 발급됐습니다.\n\n'+(d.product_name||PROD[target])+' · '+(KIND[d.type]||d.type)+'\n키: '+d.license_key+'\n\n내 계정에서 확인하세요.');
     location.href='account.html';
   }catch(ex){ alert('발급 실패: '+ex.message); }
 }
