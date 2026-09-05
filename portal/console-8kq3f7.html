@@ -670,7 +670,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.9.1', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.10.0', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1361,9 +1361,18 @@ function ordFiltered(){
     return true;
   });
 }
+async function cancelOrder(id){
+  if(!confirm('이 미결제 주문을 취소할까요? 할인코드가 선점돼 있으면 사용 횟수를 돌려줍니다.')) return;
+  try{
+    var sess=(await sb.auth.getSession()).data.session;
+    var r=await fetch('https://lkbbenyvchddsjsihofv.supabase.co/functions/v1/checkout-create',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(sess?sess.access_token:''),'apikey':'sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_'},body:JSON.stringify({action:'cancel',order_id:id})});
+    var j=await r.json(); if(!r.ok) throw new Error(j.error||r.status);
+    loadOrders();
+  }catch(e){ alert('취소 실패: '+(e&&e.message||e)); }
+}
 async function loadOrders(){
   var tb=document.getElementById('orderRows'); if(!tb) return;
-  var r=await sb.from('orders').select('id,user_id,product_id,provider,provider_ref,amount,currency,paid_amount,paid_currency,status,created_at').order('created_at',{ascending:false}).limit(1000);
+  var r=await sb.from('orders').select('id,user_id,product_id,provider,provider_ref,amount,currency,paid_amount,paid_currency,status,created_at,promo_code,promo_reserved,promo_note').order('created_at',{ascending:false}).limit(1000);
   if(r.error){ tb.innerHTML='<tr><td colspan="8" style="color:#ff9ea3">불러오기 실패: '+esc(r.error.message)+'</td></tr>'; return; }
   ORDERS=r.data||[];
   await loadEmails(ORDERS.map(function(o){return o.user_id;}));
@@ -1381,12 +1390,12 @@ function renderOrders(){
   }
   if(!ORDERS.length){ tb.innerHTML='<tr><td colspan="8" style="color:var(--dim)">주문이 아직 없습니다. (결제 연동 후 자동 기록)</td></tr>'; return; }
   if(!L.length){ tb.innerHTML='<tr><td colspan="8" style="color:var(--dim)">조건에 맞는 주문이 없습니다.</td></tr>'; return; }
-  var PCLS={pending:'p-trial',paid:'p-paid',refunded:'p-refund'};
+  var PCLS={pending:'p-trial',paid:'p-paid',refunded:'p-refund',canceled:'p-revoked'};
   tb.innerHTML=L.map(function(o){
     var p=EMAILS[o.user_id]||{}; var stale=ordStale(o);
     var cls=stale?'p-refund':(PCLS[o.status]||'p-trial');
     return '<tr'+(stale||o.status==='refunded'?' style="opacity:.55"':'')+'><td class="mono" title="'+esc(o.id)+'">'+esc(String(o.id).slice(0,8))+'</td><td>'+esc(PRODNAME[o.product_id]||o.product_id)+'</td><td>'+esc(p.email||o.user_id)+'</td><td>'+esc(chanLabel(o.provider))+'</td><td class="mono">'+fmtOrderAmt(o)+'</td><td><span class="pill '+cls+'">'+esc(ordStatusLabel(o))+'</span></td><td class="mono">'+fmtDate(o.created_at)+'</td>'+
-      '<td>'+(o.status==='paid'?'<button class="tbtn danger" onclick="refundOrder(\''+o.id+'\')">환불</button>':'')+' <button class="tbtn" onclick="copyText(\''+o.id+'\',this)">ID복사</button></td></tr>';
+      '<td>'+(o.status==='paid'?'<button class="tbtn danger" onclick="refundOrder(\''+o.id+'\')">환불</button>':'')+(o.status==='pending'?'<button class="tbtn" title="미결제 주문 취소'+(o.promo_reserved?' · 할인코드 선점 반환':'')+'" onclick="cancelOrder(\''+o.id+'\')">취소'+(o.promo_reserved?'(코드반환)':'')+'</button>':'')+(o.promo_note?' <span class="n" title="'+esc(o.promo_note)+'" style="color:#FFD27A">코드 초과</span>':'')+' <button class="tbtn" onclick="copyText(\''+o.id+'\',this)">ID복사</button></td></tr>';
   }).join('');
 }
 function renderOrdMonths(){
