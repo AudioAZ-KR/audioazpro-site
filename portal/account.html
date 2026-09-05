@@ -330,10 +330,11 @@ function doLogout(){ try{AZ.logout();}catch(_){}; sbA.auth.signOut().finally(fun
 var LICS=[];   // {id, product, type, key, at, status, expires, max, acts:[{id,type,bid,label,at}], note}
 async function loadLicenses(){
   var box=document.getElementById('licenses');
-  var r=await sbA.from('licenses').select('id,product_id,type,license_key,status,issued_at,expires_at,max_devices,user_note,activations(id,binding_type,binding_id,label,activated_at)').order('issued_at',{ascending:false});
+  var r=await sbA.from('licenses').select('id,product_id,type,license_key,status,issued_at,expires_at,max_devices,user_note,order_id,first_activated_at,activations(id,binding_type,binding_id,label,activated_at)').order('issued_at',{ascending:false});
   if(r.error){ box.innerHTML='<p class="muted" style="color:#ff9ea3">라이선스를 불러오지 못했습니다: '+escH(r.error.message)+'</p>'; return; }
   LICS=(r.data||[]).map(function(x){
     return { id:x.id, product:x.product_id, type:x.type, key:x.license_key, at:x.issued_at, status:x.status, expires:x.expires_at, max:x.max_devices||1,
+      orderId:x.order_id, firstAct:x.first_activated_at,
       acts:(x.activations||[]).map(function(a){ return {id:a.id, type:a.binding_type, bid:a.binding_id, label:a.label, at:a.activated_at}; }), note:x.user_note||'' };
   });
   renderLicenses();
@@ -525,10 +526,24 @@ async function loadOrders(){
   box.innerHTML=L.map(function(o){
     var nm=(window.AZ&&AZ.PRODMETA&&AZ.PRODMETA[o.product_id]&&AZ.PRODMETA[o.product_id].name)||o.product_id;
     var st=ORD_ST[o.status]||o.status, cls=o.status==='paid'?'paid':(o.status==='pending'?'wait':'dim');
+    // 환불 신청 버튼: 결제완료 · 14일 이내 · 이 주문의 라이선스가 한 번도 활성화 안 됨
+    var within14 = (Date.now()-new Date(o.paid_at||o.created_at).getTime())<=14*86400000;
+    var lc=(LICS||[]).filter(function(l){return l.orderId===o.id;})[0];
+    var canRefund = o.status==='paid' && within14 && lc && !lc.firstAct && lc.status==='active';
+    var refundBtn = canRefund ? '<button type="button" onclick="refundOrder(\''+o.id+'\')" style="margin-top:8px;background:transparent;border:1px solid #5A2A30;color:#ff9ea3;border-radius:8px;padding:6px 12px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer">환불 신청</button>' : '';
     return '<div class="ordrow"><div class="or-main"><div class="or-title">'+escH(nm)+'<span class="amt">'+escH(fmtAmt(o))+'</span></div>'+
-      '<div class="or-meta">'+fmtDate(o.paid_at||o.created_at)+' · '+(o.provider==='paddle'?'해외 카드 (USD)':'국내 카드')+' · 주문번호 <span class="mono" title="'+escH(o.id)+'">'+escH(String(o.id).slice(0,8))+'</span></div></div>'+
+      '<div class="or-meta">'+fmtDate(o.paid_at||o.created_at)+' · '+(o.provider==='paddle'?'해외 카드 (USD)':'국내 카드')+' · 주문번호 <span class="mono" title="'+escH(o.id)+'">'+escH(String(o.id).slice(0,8))+'</span></div>'+refundBtn+'</div>'+
       '<div class="or-st '+cls+'">'+escH(st)+(o.is_test?'<span class="ttag" title="테스트 사이트의 테스트 결제">TEST</span>':'')+'</div></div>';
   }).join('');
+}
+async function refundOrder(oid){
+  if(!confirm('이 주문을 환불하시겠어요?\n\n· 라이선스를 활성화(등록)하기 전, 결제 후 14일 이내에만 환불됩니다.\n· 환불되면 이 라이선스는 사용할 수 없게 됩니다.\n· 환급은 결제 수단으로 처리되며 카드사·결제사 정책에 따라 수일이 걸릴 수 있습니다.')) return;
+  var r=await sbA.functions.invoke('customer-refund',{body:{order_id:oid}});
+  var err = (r.data&&r.data.error)||null;
+  if(r.error){ err=r.error.message||'요청 실패'; try{ var ctx=await r.error.context.json(); if(ctx&&ctx.error) err=ctx.error; }catch(_){} }
+  if(err){ alert('환불하지 못했습니다.\n\n'+err); return; }
+  alert('환불이 접수되었습니다.'+((r.data&&r.data.note)?('\n('+r.data.note+')'):'')+'\n\n환급은 결제 수단으로 처리되며 카드사·결제사 정책에 따라 수일이 걸릴 수 있습니다.');
+  await loadLicenses(); loadOrders();
 }
 // 프로필(이름) 저장 — auth 메타데이터 + profiles
 function showMsg(id,t,ok){ var el=document.getElementById(id); if(!el) return; el.textContent=t; el.style.color=ok?'var(--green)':'#ff9ea3'; el.style.display='inline'; }
