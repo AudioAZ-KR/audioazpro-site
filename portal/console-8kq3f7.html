@@ -918,6 +918,19 @@ async function azApprDecide(id, dec){
   var note=(v0.note||'').trim()||null;
   var r=await sb.rpc('decide_approval',{p_id:id,p_decision:dec,p_note:note});
   if(r.error){ alert('실패: '+r.error.message); return; }
+  // 환불 결재 승인 시 결제사 실환불 자동 실행 (DB는 decide_approval이 이미 처리, 여기선 돈 환급 + refunded_at + 메일)
+  if(dec==='approved'){
+    try{
+      var a=await sb.from('approvals').select('type,payload').eq('id',id).single();
+      if(!a.error && a.data && a.data.type==='refund' && a.data.payload && a.data.payload.order_id){
+        var sess=(await sb.auth.getSession()).data.session;
+        var rr=await fetch('https://lkbbenyvchddsjsihofv.supabase.co/functions/v1/admin-refund',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(sess?sess.access_token:''),'apikey':'sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_'},body:JSON.stringify({order_id:a.data.payload.order_id, audit:false})});
+        var jj=await rr.json().catch(function(){return {};});
+        if(!rr.ok){ alert('✓ '+r.data+'\n\n⚠ 단, 결제사 실환불은 실패했습니다: '+(jj.error||('HTTP '+rr.status))+'\n결제사 콘솔에서 수동 취소가 필요할 수 있습니다.'); azApprLoad(); return; }
+        alert('✓ '+r.data+' · 결제사: '+(jj.note||'완료')); azApprLoad(); return;
+      }
+    }catch(ex){ alert('✓ '+r.data+'\n\n⚠ 결제사 실환불 호출 오류: '+ex.message); azApprLoad(); return; }
+  }
   alert('✓ '+r.data);
   azApprLoad();
 }
@@ -1553,17 +1566,30 @@ function ordCsv(){
 async function refundOrder(id){
   var o=ORDERS.find(function(x){return x.id===id;})||{};
   var p=EMAILS[o.user_id]||{};
-  var payLink=o.provider==='paddle'
-    ? '<a href="https://sandbox-vendors.paddle.com/transactions-v2" target="_blank" rel="noopener" style="color:#9CC2F5;font-weight:700">Paddle 콘솔 열기 →</a> <span class="n">(Live 전환 후엔 vendors.paddle.com)</span>'
-    : '<a href="https://admin.portone.io/payments" target="_blank" rel="noopener" style="color:#9CC2F5;font-weight:700">포트원 콘솔 열기 →</a>';
-  var v0=await azModal({title:'주문 환불', danger:true, okText:'2) DB 환불 + 라이선스 회수 실행', width:480,
-    body:'<b style="color:#E9EEF7">'+esc(PRODNAME[o.product_id]||o.product_id||'')+'</b> · '+esc(p.email||'')+' · <span class="mono">'+fmtOrderAmt(o)+'</span>'
-      +(o.provider_ref?'<div class="mono" style="font-size:11px;margin-top:4px">결제 참조: '+esc(o.provider_ref)+'</div>':'')
-      +'<div style="margin-top:12px;padding:10px 12px;background:#2E2410;border-radius:10px;color:#E7B252;font-weight:700">환불은 2단계입니다</div>'
-      +'<div style="margin-top:8px">1) <b style="color:#E9EEF7">실제 돈 환급</b> — 결제사에서 이 건을 취소하세요: '+payLink+'</div>'
-      +'<div style="margin-top:6px">2) 아래 버튼 — <b style="color:#E9EEF7">주문을 환불로 기록하고 라이선스를 회수</b>합니다.</div>'});
+  var isSuper=(window.__ADMIN_PROFILE||{}).role==='super';
+  var provLabel=o.provider==='paddle'?'Paddle':(o.provider==='portone'?'포트원':(o.provider||'—'));
+  var refInfo=o.provider_ref
+    ? '<div class="mono" style="font-size:11px;margin-top:4px">결제사: '+esc(provLabel)+' · '+esc(o.provider_ref)+'</div>'
+    : '<div class="n" style="margin-top:4px">결제사 참조 없음 — DB만 환불 처리됩니다(관리자 수동 환급 필요)</div>';
+  var notice=isSuper
+    ? '<div style="margin-top:12px;padding:10px 12px;background:#3a1a1e;border:1px solid #5A2A30;border-radius:10px;color:#ff9ea3;font-weight:700">결제사('+esc(provLabel)+') 실환불 + 라이선스 회수를 한 번에 자동 실행합니다. 되돌릴 수 없습니다.</div>'
+    : '<div style="margin-top:12px;padding:10px 12px;background:#2E2410;border-radius:10px;color:#E7B252;font-weight:700">환불 결재를 올립니다. 최고관리자 승인 시 결제사 실환불까지 자동 처리됩니다.</div>';
+  var v0=await azModal({title:'주문 환불', danger:true, width:480,
+    okText:isSuper?'환불 실행 (결제사 환불 + 회수)':'환불 결재 올리기',
+    body:'<b style="color:#E9EEF7">'+esc(PRODNAME[o.product_id]||o.product_id||'')+'</b> · '+esc(p.email||'')+' · <span class="mono">'+fmtOrderAmt(o)+'</span>'+refInfo+notice});
   if(v0===null) return;
-  try{ var r=await azSuperDo('refund','주문 환불 — '+id.slice(0,8),'콘솔에서 환불 처리',{order_id:id}); alert('✓ '+r.text); }catch(ex){ alert('실패: '+ex.message); }
+  try{
+    if(isSuper){
+      var sess=(await sb.auth.getSession()).data.session;
+      var r=await fetch('https://lkbbenyvchddsjsihofv.supabase.co/functions/v1/admin-refund',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(sess?sess.access_token:''),'apikey':'sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_'},body:JSON.stringify({order_id:id})});
+      var j=await r.json().catch(function(){return {};});
+      if(!r.ok) throw new Error(j.error||('HTTP '+r.status));
+      alert('✓ 환불 완료 · '+(j.note||''));
+    } else {
+      var rr=await azSuperDo('refund','주문 환불 — '+id.slice(0,8),'콘솔에서 환불 요청',{order_id:id});
+      alert('✓ '+rr.text);
+    }
+  }catch(ex){ alert('실패: '+ex.message); }
   loadOrders(); loadLicenses();
 }
 
