@@ -266,10 +266,10 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
     <h2>테스트 보고</h2>
     <p class="muted">베타 테스트 중 발견한 문제, 사용 소감, 개선 의견을 남겨 주세요. 화면 캡처를 함께 올리면 큰 도움이 됩니다.</p>
     <div class="panel">
-      <form id="rpForm" onsubmit="return reportSubmit(event)" style="max-width:640px">
+      <form id="rpForm" onsubmit="return reportSubmit(event)">
         <div class="field"><label for="rp-camp">베타 프로그램</label><select id="rp-camp" name="campaign" required></select></div>
         <div class="field"><label for="rp-title">제목</label><input id="rp-title" name="title" type="text" maxlength="120" required placeholder="예: 스위처 연결이 3분 뒤 끊김"></div>
-        <div class="field"><label for="rp-body">내용</label><textarea id="rp-body" name="body" maxlength="5000" rows="6" required placeholder="재현 순서, 기대한 동작, 실제 동작, 사용 환경(컴퓨터·OS·장비)"></textarea></div>
+        <div class="field"><label for="rp-body">내용</label><textarea id="rp-body" name="body" maxlength="5000" rows="14" required placeholder="재현 순서, 기대한 동작, 실제 동작, 사용 환경(컴퓨터·OS·장비)" style="min-height:320px;font-size:15px;line-height:1.7"></textarea></div>
         <div class="field"><label for="rp-files">이미지 첨부 (선택 · 최대 5장, 장당 8MB)</label><input id="rp-files" name="files" type="file" accept="image/*" multiple></div>
         <button class="btn pri" type="submit" id="rpBtn" style="height:44px;padding:0 22px">보고 올리기</button>
         <span id="rpMsg" class="msg"></span>
