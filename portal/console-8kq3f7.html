@@ -82,6 +82,8 @@ tr:last-child td{border-bottom:0}
 .btn-out{background:#fff;border:1px solid var(--line);color:var(--navy)}
 .result{margin-top:14px;background:var(--navy-deep);border-radius:11px;padding:15px 17px;color:#dfe8f5;display:none}.result.on{display:block}
 .result .k{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:#fff;word-break:break-all;margin-top:6px}
+.codelist{display:flex;flex-direction:column;gap:6px;margin:10px 0 12px}.codelist button{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:44px;padding:0 14px;border:1px solid #2A3B5A;border-radius:9px;background:#0E1A2E;color:#fff;font-family:ui-monospace,Menlo,monospace;font-size:14px;letter-spacing:.04em;cursor:pointer;text-align:left}.codelist button:hover{background:#17273F}.codelist button .cp{font-family:inherit;font-size:11px;color:#8fa5c2}.codelist button.done{border-color:#2E6B4A}.codelist button.done .cp{color:#39D48C}
+.codeacts{display:flex;gap:8px;flex-wrap:wrap}.codeacts .tbtn{min-height:40px;padding:0 14px;font-size:13px}
 .note{font-size:12px;color:var(--dim);margin-top:12px;line-height:1.6}
 .rowflex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .search{flex:1;min-width:180px}
@@ -579,6 +581,7 @@ td{color:var(--text)}
               <div class="field disc-f" style="display:none"><label>해외 현재 판매가 (USD)</label><input id="promoCurU" readonly placeholder="제품을 선택하세요" style="opacity:.85"></div>
               <div class="field disc-f" style="display:none"><label>국내 목표 금액 (할인 후, 원)</label><input type="number" name="target" id="promoTarget" min="0" step="100" placeholder="예: 29000 · 빈칸 = 국내 할인 없음" oninput="promoCalc()"><div class="note" id="promoCalcOut" style="margin-top:6px"></div></div>
               <div class="field disc-f" style="display:none"><label>해외 목표 금액 (할인 후, USD 세전)</label><input type="number" name="targetU" id="promoTargetU" min="0" step="0.01" placeholder="예: 149 · 빈칸 = 해외 할인 없음" oninput="promoCalc()"><div class="note" id="promoCalcOutU" style="margin-top:6px"></div></div>
+              <div class="field"><label>발행 수량</label><input type="number" name="qty" id="promoQty" value="1" min="1" max="50" step="1" inputmode="numeric"><div class="note" style="margin-top:6px">2개 이상이면 코드 텍스트를 접두어로 <b>접두어-XXXX</b> 코드가 수량만큼 자동 생성됩니다 (각 코드에 아래 사용 제한 적용)</div></div>
               <div class="field"><label>사용 제한</label><select name="uses">
                 <option value="1">1회용 (코드당 1명)</option>
                 <option value="5">5회</option>
@@ -595,7 +598,7 @@ td{color:var(--text)}
         </div>
 
         <div class="card"><h2>발행된 코드</h2>
-          <div class="toolbar"><input class="field search" style="margin:0" id="promoSearch" placeholder="코드·메모 검색" oninput="renderPromos()"></div>
+          <div class="toolbar"><input class="field search" style="margin:0" id="promoSearch" placeholder="코드·메모 검색" oninput="renderPromos()"><button class="tbtn" type="button" onclick="copyPromoList(false,this)" title="검색된 코드를 줄바꿈으로 복사">목록 복사</button><button class="tbtn" type="button" onclick="copyPromoList(true,this)" title="결제 링크 형태로 복사">링크 복사</button><button class="tbtn" type="button" id="promoShareBtn" onclick="sharePromoList()" style="display:none">공유</button></div>
           <table><thead><tr><th>코드</th><th>제품</th><th>종류</th><th>사용/한도</th><th>기간·만료</th><th>메모</th><th></th></tr></thead>
           <tbody id="promoRows"></tbody></table>
         </div>
@@ -723,7 +726,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.12.0', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.13.0', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1199,7 +1202,16 @@ async function genPromo(e){
   var res=document.getElementById('promoRes'), out=document.getElementById('promoCodes');
   function fail(m){ out.innerHTML='<b style="color:#ff9ea3">'+m+'</b>'; res.classList.add('on'); return false; }
   if(!/^[A-Z0-9\-]{4,32}$/.test(code)) return fail('코드는 영문·숫자·하이픈 4~32자로 입력하세요.');
-  if(PROMOS.some(function(p){return p.code===code;})) return fail('이미 발행된 코드입니다: '+code);
+  var qty=Math.max(1,Math.min(50,parseInt(d.qty||'1')||1));
+  var codes=[];
+  if(qty>1){
+    if(code.length>27) return fail('여러 개 발행 시 접두어는 27자 이하여야 합니다.');
+    var ALPH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', seen={}; PROMOS.forEach(function(p){seen[p.code]=1;});
+    while(codes.length<qty){ var a=new Uint32Array(4); crypto.getRandomValues(a); var sfx=''; for(var i=0;i<4;i++) sfx+=ALPH[a[i]%ALPH.length]; var c=code+'-'+sfx; if(!seen[c]){ seen[c]=1; codes.push(c); } }
+  } else {
+    if(PROMOS.some(function(p){return p.code===code;})) return fail('이미 발행된 코드입니다: '+code);
+    codes=[code];
+  }
   var payload={code:code, kind:d.ctype, product_id:(d.product==='ALL'?'':d.product), max_uses:String(parseInt(d.uses||'1'))};
   var desc;
   if(d.ctype==='discount'){
@@ -1220,13 +1232,36 @@ async function genPromo(e){
     desc=(PRODNAME[d.product]||'전 제품')+' · '+KINDLABEL[d.kind]+' · 만료 '+(d.expire||'없음');
   }
   res.classList.add('on'); out.innerHTML='발행 중…';
+  var done=[], lastText='', pending=false;
   try{
-    var r=await azSuperDo('promo_create','프로모션 코드 발행 — '+code, (d.memo||'')+' · '+desc, payload);
-    out.innerHTML='<b>'+esc(code)+'</b><br>'+esc(desc)+'<br><span style="color:#8fa5c2">'+esc(r.text)+'</span>';
-    e.target.reset(); promoType(); renderPromos();
-  }catch(ex){ return fail('실패: '+esc(ex.message)); }
+    for(var k=0;k<codes.length;k++){
+      var pl=Object.assign({},payload,{code:codes[k]});
+      out.innerHTML='발행 중… '+(k+1)+'/'+codes.length;
+      var r=await azSuperDo('promo_create','프로모션 코드 발행 — '+codes[k]+(codes.length>1?' ('+(k+1)+'/'+codes.length+')':''), (d.memo||'')+' · '+desc, pl);
+      done.push(codes[k]); lastText=r.text; pending=pending||!!r.pending;
+    }
+  }catch(ex){ if(!done.length) return fail('실패: '+esc(ex.message)); lastText='일부 실패: '+ex.message+' (발행됨 '+done.length+'/'+codes.length+')'; }
+  LAST_CODES={codes:done, product:d.product, desc:desc};
+  out.innerHTML='<b>'+esc(PRODNAME[d.product]||'전 제품')+'</b> · '+esc(desc)+'<br><span style="color:#8fa5c2">'+esc(pending?'결재 승인 후 사용 가능 · ':'')+esc(lastText)+'</span>'+renderCodeList(done, d.product);
+  e.target.reset(); promoType(); renderPromos();
   return false;
 }
+// 발행 결과 — 코드를 누르면 바로 복사, 전체/링크/공유 (모바일 카톡 전달용)
+var LAST_CODES=null;
+function codeLink(c){ return 'https://audioazpro.com/portal/checkout.html?code='+encodeURIComponent(c); }
+function codesText(codes, withLink){ return codes.map(function(c){ return withLink ? c+'  '+codeLink(c) : c; }).join('\n'); }
+function renderCodeList(codes, product){
+  var share=(navigator.share?'<button class="tbtn" type="button" onclick="shareCodes()">공유 (카톡 등)</button>':'');
+  return '<div class="codelist">'+codes.map(function(c){ return '<button type="button" onclick="copyCode(this,\''+esc(c)+'\')"><span>'+esc(c)+'</span><span class="cp">복사</span></button>'; }).join('')+'</div>'+
+    '<div class="codeacts"><button class="tbtn" type="button" onclick="copyAll(false,this)">전체 복사</button><button class="tbtn" type="button" onclick="copyAll(true,this)">링크 포함 복사</button>'+share+'</div>';
+}
+function copyCode(btn,c){ navigator.clipboard&&navigator.clipboard.writeText(c); btn.classList.add('done'); btn.querySelector('.cp').textContent='복사됨'; setTimeout(function(){ btn.classList.remove('done'); btn.querySelector('.cp').textContent='복사'; },1500); }
+function copyAll(withLink,btn){ if(!LAST_CODES) return; navigator.clipboard&&navigator.clipboard.writeText(codesText(LAST_CODES.codes,withLink)); var t=btn.textContent; btn.textContent='복사됨 ('+LAST_CODES.codes.length+'개)'; setTimeout(function(){btn.textContent=t;},1500); }
+function shareCodes(){ if(!LAST_CODES||!navigator.share) return; var nm=PRODNAME[LAST_CODES.product]||'AudioAZ'; navigator.share({title:'AudioAZ '+nm+' 코드', text:'[AudioAZ] '+nm+' 코드\n'+codesText(LAST_CODES.codes,false)+'\n\n사용: https://audioazpro.com/portal/checkout.html 에서 코드 입력'}).catch(function(){}); }
+function promoFiltered(){ var q=(document.getElementById('promoSearch')||{}).value||''; q=q.trim().toUpperCase(); return PROMOS.filter(function(p){ return p.active && (!q || p.code.indexOf(q)>=0 || (p.memo||'').toUpperCase().indexOf(q)>=0); }); }
+function copyPromoList(withLink,btn){ var L=promoFiltered(); if(!L.length){ alert('복사할 코드가 없습니다.'); return; } navigator.clipboard&&navigator.clipboard.writeText(codesText(L.map(function(p){return p.code;}),withLink)); var t=btn.textContent; btn.textContent='복사됨 ('+L.length+'개)'; setTimeout(function(){btn.textContent=t;},1500); }
+function sharePromoList(){ var L=promoFiltered(); if(!L.length||!navigator.share) return; navigator.share({title:'AudioAZ 코드', text:'[AudioAZ] 코드\n'+codesText(L.map(function(p){return p.code;}),false)}).catch(function(){}); }
+try{ if(navigator.share){ var sb_=document.getElementById('promoShareBtn'); if(sb_) sb_.style.display=''; } }catch(_){}
 async function renderPromos(){
   var tb=document.getElementById('promoRows'); if(!tb) return;
   var r=await sb.from('promo_codes').select('*').order('created_at',{ascending:false}).limit(200);
@@ -1241,7 +1276,7 @@ async function renderPromos(){
       : '<span class="pill '+(p.license_type==='FREE'?'p-active':'p-trial')+'">'+(KINDLABEL[p.license_type]||p.license_type||'라이선스')+'</span>';
     var period=(p.valid_from?fmtDate(p.valid_from):'—')+'~'+(p.valid_to?fmtDate(p.valid_to):'무기한');
     return '<tr'+(p.active?'':' style="opacity:.45"')+'>'+
-      '<td class="mono">'+esc(p.code)+(p.active?'':' <span class="pill p-revoked">중지</span>')+'</td>'+
+      '<td class="mono" style="cursor:pointer" title="누르면 복사" onclick="copyText(PROMOS['+PROMOS.indexOf(p)+'].code,this.querySelector(\'.cpm\'))">'+esc(p.code)+(p.active?'':' <span class="pill p-revoked">중지</span>')+' <span class="cpm" style="font-size:10.5px;color:#8fa5c2"></span></td>'+
       '<td>'+(p.product_id?(PRODNAME[p.product_id]||p.product_id):'전 제품')+'</td>'+
       '<td>'+kind+'</td>'+
       '<td>'+(p.used_count||0)+'/'+(p.max_uses?p.max_uses:'∞')+'</td>'+
