@@ -32,7 +32,9 @@ nav{position:sticky;top:0;z-index:50;background:var(--navbg);backdrop-filter:blu
 .menu .login{border:1px solid var(--line);border-radius:9px;padding:7px 15px;color:var(--navy)}
 .menu .login:hover{background:var(--sky)}
 @media(max-width:760px){.menu{gap:13px;font-size:12.5px}.menu .hide-sm{display:none}}
-.head{padding-top:46px;padding-bottom:8px}.head p,.head .desc{color:var(--dim);max-width:620px;font-size:16px;line-height:1.7}
+.head{padding-top:46px;padding-bottom:8px}.head p{color:var(--dim);max-width:620px;font-size:16px;line-height:1.7}
+.prodrow{display:flex;align-items:center;gap:18px;margin-top:6px}.picon{width:72px;height:72px;border-radius:16px;flex:none;box-shadow:0 10px 24px -12px rgba(0,0,0,.7)}.prodrow h1{margin:0}.prodrow .meta{margin-top:8px}
+.head .desc{margin-top:26px;max-width:720px;color:#C7D6E8;font-size:16px;line-height:1.85}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px}
 @media(max-width:720px){.grid{grid-template-columns:1fr}}
 .scard{display:block;position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px;transition:box-shadow .2s,transform .2s,border-color .2s;overflow:hidden}
@@ -88,8 +90,7 @@ footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center}footer .rig
 .legal ul{padding-left:18px}
 .done{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:44px 26px;margin-top:22px;text-align:center;color:var(--dim)}
 .done b{display:block;font-size:18px;color:var(--text);margin-bottom:6px}
-#bDesc{white-space:normal}#bDesc p{margin:0 0 12px}#bDesc h3{font-size:15px;margin:18px 0 6px;color:var(--text)}#bDesc ul,#bDesc ol{margin:0 0 12px;padding-left:20px}#bDesc li{margin:4px 0}#bDesc b{color:var(--text)}
-#bTitle{display:flex;align-items:center;gap:12px}#bTitle .ticon{width:44px;height:44px;border-radius:10px;flex:none}
+#bDesc{white-space:normal}#bDesc p{margin:0 0 14px}#bDesc>p:first-child{color:var(--text);font-size:17px}#bDesc h3{font-size:14px;letter-spacing:.06em;text-transform:none;margin:28px 0 10px;padding-left:10px;border-left:3px solid var(--blue);color:var(--text)}#bDesc ul,#bDesc ol{margin:0 0 14px;padding-left:22px}#bDesc li{margin:7px 0;padding-left:2px}#bDesc li::marker{color:var(--blue-soft)}#bDesc b{color:var(--text)}
 </style>
 <script src="/portal/az-i18n.js" defer></script>
 </head>
@@ -107,14 +108,19 @@ footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center}footer .rig
 
 <div class="wrap head">
   <div class="eyebrow">Beta Program</div>
-  <h1 id="bTitle" data-i18n-skip>베타 테스터 모집</h1>
-  <div id="bDesc" class="desc" data-i18n-skip>모집 정보를 불러오는 중입니다…</div>
-  <div class="meta" id="bMeta" hidden>
-    <span>제품 <b id="bProd">—</b></span>
-    <span>제공 라이선스 <b id="bType">—</b></span>
-    <span>모집 기간 <b class="mono" id="bPeriod">—</b></span>
-    <span id="bQuotaWrap" hidden>정원 <b class="mono" id="bQuota">—</b></span>
+  <div class="prodrow">
+    <img id="bIcon" class="picon" src="" alt="" width="72" height="72" hidden>
+    <div>
+      <h1 id="bTitle" data-i18n-skip>베타 테스터 모집</h1>
+      <div class="meta" id="bMeta" hidden>
+        <span>제품 <b id="bProd">—</b></span>
+        <span>제공 라이선스 <b id="bType">—</b></span>
+        <span>모집 기간 <b class="mono" id="bPeriod">—</b></span>
+        <span id="bQuotaWrap" hidden>정원 <b class="mono" id="bQuota">—</b></span>
+      </div>
+    </div>
   </div>
+  <div id="bDesc" class="desc" data-i18n-skip>모집 정보를 불러오는 중입니다…</div>
 </div>
 
 <div class="wrap" id="bMain" hidden>
@@ -202,7 +208,7 @@ function showEmpty(title,text){ document.getElementById('bMain').hidden=true; do
   CAMP=r.data;
   document.title=CAMP.title+' — AudioAZ 베타 테스터 모집';
   document.getElementById('bTitle').textContent=CAMP.title;
-  var ICON={TALLY:'/assets/flare-tally-icon.png'}; if(ICON[CAMP.product_id]){ var im=document.createElement('img'); im.src=ICON[CAMP.product_id]; im.alt=''; im.width=44; im.height=44; im.className='ticon'; document.getElementById('bTitle').prepend(im); }
+  var ICON={TALLY:'/assets/flare-tally-icon.png'}; if(ICON[CAMP.product_id]){ var ic=document.getElementById('bIcon'); ic.src=ICON[CAMP.product_id]; ic.hidden=false; }
   document.getElementById('bDesc').innerHTML=fmtDesc(CAMP.description||'AudioAZ 제품 베타 테스트에 참여할 분을 모집합니다.');
   document.getElementById('bProd').textContent=PROD[CAMP.product_id]||CAMP.product_id||'—';
   document.getElementById('bType').textContent=TYPE[CAMP.license_type]||CAMP.license_type||'—';
