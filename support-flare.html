@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="robots" content="noindex, nofollow"><meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/png" href="/favicon.png"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<title>Flare Tally 연결·문제해결 — AudioAZ</title><meta name="description" content="Flare Tally ATEM 연결·QR·네트워크 문제 해결 가이드">
+<title>Flare Tally 연결·문제해결 — AudioAZ</title><meta name="description" content="Flare Tally ATEM·Roland 연결·QR·네트워크 문제 해결 가이드">
 <link rel="canonical" href="https://audioazpro.com/support-flare.html">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
@@ -30,11 +30,11 @@ footer{border-top:1px solid var(--line);color:var(--dim);padding:26px 0;font-siz
 <div class="menu"><a href="products.html">제품</a><a href="downloads.html">다운로드</a><a href="support.html">지원</a></div></div></nav>
 <div class="wrap head"><div class="eyebrow">Support Doc</div><h1>Flare Tally 연결·문제해결</h1><div class="crumb"><a href="support.html">지원</a> › Flare Tally 연결·문제해결</div></div>
 <div class="wrap"><div class="note">제품이 <b>출시 준비 중</b>이라 일부 화면·경로는 베타에서 확정될 수 있습니다. 문제가 지속되면 support@audioazpro.com 으로 문의해 주세요.</div>
-<div class="doc"><h2>1. 구성</h2><ul><li>macOS <b>호스트 앱</b> 1대 + 카메라마다 스마트폰(브라우저) 1대.</li><li>호스트가 ATEM 스위처와 연결되어 PGM/PVW·키어 상태를 각 폰에 전송합니다.</li></ul>
-<h2>2. ATEM 연결</h2><ul><li>호스트 앱에 ATEM의 IP 주소를 입력해 연결합니다(같은 네트워크 권장).</li><li>지원: Blackmagic ATEM 시리즈(Mini · Mini Pro · Mini Extreme · Constellation 등).</li><li>키어(자막·PIP) 온에어까지 탈리에 반영됩니다.</li></ul>
-<h2>3. 폰 연결 (QR / 방 코드)</h2><ol><li>호스트 화면의 <b>방 코드</b> 또는 QR을 카메라 폰으로 스캔·입력합니다.</li><li>같은 Wi-Fi면 오프라인 연결, 인터넷·LTE면 원격 연결이 됩니다.</li><li>연결되면 해당 카메라가 PGM이면 빨강, PVW면 초록으로 표시됩니다.</li></ol>
-<h2>4. 문제 해결</h2><ul><li><b>폰이 연결 안 됨</b>: 방 코드/URL을 정확히 입력했는지, 폰과 호스트가 같은 네트워크(또는 인터넷)에 있는지 확인.</li><li><b>탈리 색이 안 바뀜</b>: 호스트-ATEM 연결 상태와 IP를 확인. 키어 반영은 해당 키어가 온에어일 때 표시됩니다.</li><li><b>원격(LTE)에서 지연/끊김</b>: 네트워크·방화벽 환경에 따라 포트 개방 등 설정이 필요할 수 있습니다.</li></ul>
-<h2>5. 지원 환경 (베타 확정 예정)</h2><ul><li>호스트: macOS 앱 (Apple 공증 서명)</li><li>카메라 단말: 스마트폰 웹브라우저(별도 설치 불필요)</li><li>네트워크: 같은 Wi-Fi 또는 인터넷·LTE</li></ul></div></div>
+<div class="doc"><h2>1. 구성</h2><ul><li>macOS <b>호스트 앱</b> 1대(Apple Silicon 맥) + 카메라마다 스마트폰·태블릿 1대(Flare Tally 앱 또는 브라우저).</li><li>호스트가 ATEM 또는 Roland 스위처와 연결되어 PGM/PVW·키어 상태를 각 폰에 전송합니다.</li><li>설치 후 7일은 무료 데모(온·오프라인 무제한). 이후에는 앱의 <b>라이선스</b> 버튼에서 계정 로그인 → 라이선스를 이 맥에 등록(라이선스당 맥 1대, 해제 후 다른 맥에 재등록 가능).</li></ul>
+<h2>2. 스위처 연결 (ATEM · Roland)</h2><ul><li><b>스캔</b>을 누르면 같은 네트워크의 ATEM과 Roland를 함께 찾습니다. 여러 대면 팝업에서 고르고, 종류는 자동으로 판별됩니다. IP를 직접 넣어도 됩니다.</li><li>ATEM: Blackmagic ATEM 시리즈(Mini · Mini Pro · Mini Extreme · SDI · Television Studio · Constellation). 키어(자막·PIP) 온에어까지 반영, 입력 수(Mini 4 · Extreme 8)에 맞춰 카메라 수 자동.</li><li>Roland: Smart Tally를 지원하는 LAN 기종(V-60HD · V-80HD · V-160HD). 스위처 LAN 설정의 IP를 입력하고, 웹 인증을 켰다면 <code>아이디:비밀번호@IP</code> 형식. 포트가 80이 아니면 <code>IP:포트</code>. 기종·펌웨어에 따라 동작이 다를 수 있습니다.</li></ul>
+<h2>3. 폰 연결 (앱 / QR / 방 코드)</h2><ol><li>Flare Tally 앱에 <b>방 코드</b>와 카메라 번호를 넣거나, 호스트 화면의 QR을 앱 또는 카메라로 찍습니다. 앱이 없으면 QR이 브라우저로 열립니다.</li><li>앱은 같은 Wi-Fi에 호스트가 있으면 <b>오프라인</b>(내장 서버), 없으면 <b>온라인</b>(인터넷 서버)으로 자동 접속하고 화면에 현재 방식을 표시합니다. 오프라인 중 Wi-Fi가 끊기면 LTE·5G로 온라인에 자동 전환됩니다.</li><li>처음 오프라인 접속 때 iOS가 "로컬 네트워크 접근" 권한을 묻습니다. 허용해야 같은 Wi-Fi 접속이 됩니다(설정 › Flare Tally › 로컬 네트워크).</li><li>연결되면 해당 카메라가 PGM이면 빨강, PVW면 초록으로 표시됩니다. 앱은 뒤로 가거나 잠겨도 다이나믹 아일랜드(아이패드는 잠금화면)와 알림으로 갱신됩니다.</li></ol>
+<h2>4. 문제 해결</h2><ul><li><b>폰이 연결 안 됨</b>: 방 코드를 정확히 입력했는지, 호스트에서 탈리를 시작했는지(켜진 방에만 접속됩니다), 폰과 호스트가 같은 네트워크(또는 인터넷)에 있는지, iOS 로컬 네트워크 권한이 켜져 있는지 확인.</li><li><b>백그라운드 알림이 안 옴</b>: 오프라인 모드는 호스트의 온라인 스위치가 켜져 있어야 알림이 옵니다(알림은 인터넷 서버가 보냄). 앱의 알림·알림 진동 스위치도 확인.</li><li><b>탈리 색이 안 바뀜</b>: 호스트-ATEM 연결 상태와 IP를 확인. 키어 반영은 해당 키어가 온에어일 때 표시됩니다.</li><li><b>원격(LTE)에서 지연/끊김</b>: 네트워크·방화벽 환경에 따라 포트 개방 등 설정이 필요할 수 있습니다.</li></ul>
+<h2>5. 지원 환경</h2><ul><li>호스트: macOS 11 이상, Apple Silicon(M1 이상) 맥 · Apple 서명·공증 pkg · 8개 언어(English · 한국어 · 日本語 · 中文 · Español · Français · Deutsch · Italiano)</li><li>카메라 단말: iPhone·iPad 앱(iOS/iPadOS 17 이상, English·한국어) 또는 스마트폰 웹브라우저(설치 불필요, 8개 언어)</li><li>네트워크: 같은 Wi-Fi(오프라인) 또는 인터넷·LTE(온라인), 앱이 자동 선택</li><li>Apple Watch 앱은 준비 중입니다.</li></ul></div></div>
 <footer><div class="wrap"><span>© AudioAZ (오디오에이지)</span><span class="right"><a href="support.html">지원</a> · <a href="privacy.html">개인정보처리방침</a> · <a href="terms.html">이용약관</a> · <a href="refund.html">환불·라이선스</a> · <a href="/contact.html">문의</a></span></div><div class="wrap" style="display:block;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;line-height:1.8;color:#6F84A3">오디오에이지(AudioAZ) · 대표 김형준 · 사업자등록번호 456-17-01966 · 경기도 남양주시 다산중앙로19번길 21, F동 419호 (다산동, 다산진건블루웨일지식산업센터1차) · 전화 010-3547-0502 · 이메일 <a href="mailto:support@audioazpro.com" style="color:#8FA5C2">support@audioazpro.com</a></div>
 </footer>
 </body></html>

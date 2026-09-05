@@ -152,7 +152,10 @@ function renderPrice(){
   else sl.style.display='none';
   document.getElementById('sTotal').textContent=W(pr.now);
 }
-function showGrantButton(on){ var pay=document.querySelector('.pay'); if(!pay) return; Array.prototype.forEach.call(pay.children,function(c){ if(c.id!=='grantBtn') c.style.display=on?'none':''; }); var g=document.getElementById('grantBtn'); if(on){ if(!g){ g=document.createElement('button'); g.id='grantBtn'; g.className='pbtn kr'; g.type='button'; g.textContent='라이선스 발급받기 (무료)'; g.addEventListener('click',function(){grantCode()}); pay.appendChild(g);} g.style.display=''; } else if(g){ g.style.display='none'; } }
+function showGrantButton(on){ var pay=document.querySelector('.pay'); if(!pay) return; var g=document.getElementById('grantBtn');
+  if(on){ Array.prototype.forEach.call(pay.children,function(c){ if(c.id!=='grantBtn') c.style.display='none'; }); if(!g){ g=document.createElement('button'); g.id='grantBtn'; g.className='pbtn kr'; g.type='button'; g.textContent='라이선스 발급받기 (무료)'; g.addEventListener('click',function(){grantCode()}); pay.appendChild(g);} g.style.display=''; }
+  else { if(g) g.style.display='none'; var tn=document.getElementById('testNote'); if(tn) tn.style.display=''; renderPayButtons(); }   // 결제 버튼은 모드(원화/달러)에 맞는 것만 다시 표시 — 예전엔 전부 켜져 두 버튼이 동시에 보였음
+}
 function reset(){APPLIED=null;showGrantButton(false);document.getElementById('sDiscLine').style.display='none';document.getElementById('licBox').style.display='none';
   document.getElementById('totLabel').textContent='합계';renderPrice();}
 
@@ -165,7 +168,8 @@ async function applyCode(){
   // 발행 DB(promo_codes)와 대조 — 정확히 일치하는 코드만 조회되는 서버 함수(promo_lookup)
   var r=await sbC.rpc('promo_lookup',{p_code:c});
   var row=(r.data&&r.data[0])||null;
-  if(r.error||!row){m.className='codemsg err';m.textContent='등록되지 않은 코드입니다.';return;}
+  if(r.error){ var lu=(await sbC.auth.getUser()).data.user; m.className='codemsg err'; m.textContent=lu?('코드를 확인하지 못했습니다: '+(r.error.message||'')):'로그인 후 코드를 적용할 수 있습니다.'; if(!lu){ var a=document.createElement('a'); a.href='index.html'; a.textContent=' 로그인 →'; a.style.cssText='color:var(--blue);font-weight:700;margin-left:6px'; m.appendChild(a); } return; }
+  if(!row){m.className='codemsg err';m.textContent='등록되지 않은 코드입니다.';return;}
   if(!row.active){m.className='codemsg err';m.textContent='사용이 중지된 코드입니다.';return;}
   if(row.max_uses && (row.used_count||0)>=row.max_uses){m.className='codemsg err';m.textContent='사용 한도가 소진된 코드입니다.';return;}
   var today=AZ.today(), from=row.valid_from?String(row.valid_from).slice(0,10):null, to=row.valid_to?String(row.valid_to).slice(0,10):null;
