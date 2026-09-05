@@ -66,10 +66,23 @@ footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px}f
 .navlogo path:first-child{fill:#1877F2}
 :root{--page:#0B1220;--card:#121D33;--navbg:rgba(11,18,32,.9);--text:#E9EEF7;--dim:#96A6BF;--line:#243350;--bg:#0C1424;--sky:#17273F;--wordmark:#ffffff}.navtoggle{display:none;margin-left:auto;background:none;border:0;color:var(--text);cursor:pointer;padding:6px;line-height:0}@media(max-width:760px){.navtoggle{display:block}.nav-in .menu{position:absolute;top:64px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:#0B1220;z-index:60;box-shadow:0 18px 44px rgba(0,0,0,.6);border-bottom:1px solid var(--line);padding:8px 24px 18px;margin-left:0;display:none}.nav-in .menu.open{display:flex}.nav-in .menu .hide-sm{display:block}.nav-in .menu a{padding:13px 2px;border-bottom:1px solid var(--line);font-size:15px}.nav-in .menu .login{background:var(--blue);color:#fff;border:1px solid var(--blue);border-radius:10px;padding:12px;text-align:center;margin-top:10px}}
 /* ===== 화면·현장 갤러리 ===== */
-.scene{display:grid;grid-template-columns:1.1fr 1fr;gap:26px;margin-top:34px;align-items:center}
-@media(max-width:820px){.scene{grid-template-columns:1fr}}
-.scene .art{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:22px;overflow:hidden}
-.scene .art svg{width:100%;height:auto;display:block}
+.uses{display:grid;grid-template-columns:1.05fr 1fr;grid-template-rows:auto auto;gap:18px;margin-top:34px}
+.use{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--card);display:flex;flex-direction:column}
+.use.big{grid-row:1/3}
+.use img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.use.big img{aspect-ratio:1/1;object-fit:cover}
+.use .ub{padding:16px 18px 18px}
+.use .k{font:11.5px/1 ui-monospace,Menlo,monospace;color:var(--red,#F04E4E);letter-spacing:.08em}
+.use h3{margin:8px 0 6px;font-size:17px}
+.use p{margin:0;color:var(--dim);font-size:14px;line-height:1.65}
+@media(max-width:820px){.uses{grid-template-columns:1fr}.use.big{grid-row:auto}.use.big img{aspect-ratio:16/9}}
+.field{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-top:34px}
+@media(max-width:900px){.field{grid-template-columns:1fr 1fr}}@media(max-width:600px){.field{grid-template-columns:1fr}}
+.field figure{margin:0;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--card)}
+.field img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.field figcaption{padding:10px 14px;font:12px/1.4 ui-monospace,Menlo,monospace;color:var(--dim);letter-spacing:.02em}
+.fieldnote{margin-top:10px;font:11.5px/1.4 ui-monospace,Menlo,monospace;color:#5B6B85}
+.scene{display:grid;grid-template-columns:1fr;justify-items:center;margin-top:30px}
 .devrow{display:flex;gap:22px;align-items:flex-end;justify-content:center}
 .dev{border-radius:26px;border:7px solid #1A2233;box-shadow:0 20px 40px -22px rgba(0,0,0,.8),0 0 0 1px #2A3650;overflow:hidden;background:#000;flex:none}
 .dev img{display:block;width:100%;height:auto}
@@ -117,37 +130,30 @@ footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px}f
 </div></section>
 
 
+<section class="sec" id="uses"><div class="wrap">
+  <div class="eyebrow">Use cases</div><h2>인터넷만 되면, 어디든 같은 탈리</h2>
+  <p style="max-width:62ch;color:var(--dim);font-size:15px;line-height:1.7">카메라가 같은 Wi-Fi에 있으면 오프라인, 아니면 온라인 서버로 — 앱이 스스로 고릅니다. 케이블도, 탈리 전용 장비도 없이 카메라맨의 폰 하나면 됩니다.</p>
+  <div class="uses">
+    <div class="use big"><img src="/assets/flare/use-globe.jpg" alt="지구본 위로 서울·도쿄·LA·뉴욕·런던·시드니를 잇는 연결선" loading="lazy">
+      <div class="ub"><span class="k">01 · 전세계 어디서든</span><h3>서울의 호스트, 해외의 카메라</h3><p>호스트 맥은 서울에, 카메라는 해외 현장에 있어도 인터넷 서버 하나로 같은 방입니다. 애플 푸시 기준 실측 왕복 약 0.2초.</p></div></div>
+    <div class="use"><img src="/assets/flare/use-marathon.jpg" alt="마라톤 코스 로드사이드의 방송 카메라와 아이폰 탈리" loading="lazy">
+      <div class="ub"><span class="k">02 · 마라톤 · 로드 레이스</span><h3>코스 42km, 케이블 0m</h3><p>출발선·반환점·결승선의 카메라가 각자 LTE·5G로 온라인 서버에 붙습니다. 오토바이 카메라도 같은 방.</p></div></div>
+    <div class="use"><img src="/assets/flare/use-dual.jpg" alt="스튜디오와 야외 현장을 잇는 이원 생중계" loading="lazy">
+      <div class="ub"><span class="k">03 · 이원 생중계</span><h3>스튜디오와 현장, 방은 하나</h3><p>본사 스위처에 원격지 카메라가 물려 있어도 탈리는 같은 방 코드로 갑니다. 현장 스태프는 QR만 찍으면 끝.</p></div></div>
+  </div>
+</div></section>
+
+
 <section class="sec" id="screens"><div class="wrap">
   <div class="eyebrow">In the field</div><h2>카메라 위 아이폰, 지미집 위 아이패드</h2>
   <p style="max-width:62ch;color:var(--dim);font-size:15px;line-height:1.7">카메라 핫슈에 거치한 아이폰이 방송 중이면 화면 전체가 빨갛게, 대기면 초록으로 바뀝니다. 멀리 있는 지미집·크레인 카메라는 아이패드 테두리 모드로 오퍼레이터가 한눈에 봅니다.</p>
+  <div class="field">
+    <figure><img src="/assets/flare/field-iphone.jpg" alt="객석 중앙 FOH의 센터 카메라 핫슈 위 아이폰이 빨간 ON AIR 탈리를 표시하는 공연 현장" loading="lazy"><figcaption>CAM 1 · FOH 센터캠 iPhone · ON AIR</figcaption></figure>
+    <figure><img src="/assets/flare/field-ipad.jpg" alt="지미집 오퍼레이터 옆 아이패드가 빨간 테두리 탈리를 표시하는 공연 현장" loading="lazy"><figcaption>CAM 2 · 지미집 iPad · 테두리 모드</figcaption></figure>
+    <figure><img src="/assets/flare/field-director.jpg" alt="FOH에서 중계감독이 스위처로 컷을 넘기고 옆 맥북에 호스트 앱이 떠 있는 장면" loading="lazy"><figcaption>FOH · 중계감독 스위칭 · 맥 호스트</figcaption></figure>
+  </div>
+  <div class="fieldnote">연출 이미지(AI 생성) — 앱 화면은 아래 실제 캡처와 같습니다</div>
   <div class="scene">
-    <div class="art"><svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="카메라 위 아이폰 탈리와 지미집 아이패드 탈리 개념도">
-  <defs><radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FF3B30" stop-opacity=".55"/><stop offset="1" stop-color="#FF3B30" stop-opacity="0"/></radialGradient></defs>
-  <rect width="560" height="300" fill="#0C1424"/>
-  <g stroke="#3A4D6E" stroke-width="2" fill="#121D33">
-    <!-- 카메라 -->
-    <rect x="70" y="150" width="150" height="80" rx="8"/>
-    <rect x="220" y="168" width="70" height="44" rx="6"/>
-    <rect x="290" y="176" width="40" height="28" rx="14"/>
-    <rect x="40" y="176" width="34" height="34" rx="4"/>
-    <rect x="130" y="232" width="18" height="46"/><rect x="100" y="276" width="80" height="6" rx="3"/>
-    <!-- 핫슈 위 아이폰 -->
-    <rect x="118" y="88" width="36" height="66" rx="8"/>
-    <rect x="130" y="150" width="12" height="8"/>
-    <!-- 지미집 -->
-    <path d="M330 280 L470 120" fill="none" stroke-width="5"/><path d="M420 280 L470 120" fill="none" stroke-width="3"/>
-    <rect x="300" y="276" width="140" height="6" rx="3"/>
-    <rect x="452" y="70" width="64" height="48" rx="6" transform="rotate(-8 484 94)"/>
-    <rect x="512" y="88" width="30" height="20" rx="4" transform="rotate(-8 527 98)"/>
-  </g>
-  <!-- 탈리 발광 -->
-  <circle cx="136" cy="121" r="60" fill="url(#glow)"/><rect x="122" y="92" width="28" height="58" rx="5" fill="#FF3B30"/>
-  <text x="136" y="126" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="16" font-weight="700" fill="#fff">1</text>
-  <circle cx="484" cy="94" r="46" fill="url(#glow)"/><rect x="456" y="74" width="56" height="40" rx="4" fill="#0A0F1A" stroke="#FF3B30" stroke-width="3" transform="rotate(-8 484 94)"/>
-  <text x="484" y="99" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="14" font-weight="700" fill="#FF3B30" transform="rotate(-8 484 94)">2</text>
-  <g font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#8FA5C2"><text x="70" y="60">CAM 1 · 핫슈 위 iPhone · ON AIR</text><text x="330" y="40">CAM 2 · 지미집 iPad · 테두리 모드</text></g>
-  <g font-family="ui-monospace,Menlo,monospace" font-size="10.5" fill="#5B6B85"><text x="70" y="296">개념도 — 실제 현장 사진은 준비 중</text></g>
-</svg></div>
     <div>
       <div class="devrow">
         <div class="dev ph"><img src="/assets/flare/iphone-01_onair.jpg" alt="Flare Tally iPhone 앱 — CAM 1 ON AIR 화면" loading="lazy"></div>
