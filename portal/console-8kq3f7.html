@@ -482,11 +482,11 @@ td{color:var(--text)}
                 <option value="KI">Klera Instrument</option>
                 <option value="TALLY">Flare Tally</option>
               </select></div>
-              <div class="field"><label>현재 정가</label><input id="saleCur" readonly placeholder="제품을 선택하세요" style="opacity:.85"></div>
-              <div class="field"><label>국내 할인 판매가 (원)</label><input type="number" name="target" id="saleTarget" min="0" step="100" placeholder="예: 39000 · 빈칸 = 국내 세일 없음" oninput="saleCalc()"><div class="note" id="saleCalcOut" style="margin-top:6px"></div></div>
-              <div class="field"><label>현재 해외 정가 (USD)</label><input id="saleCurU" readonly placeholder="제품을 선택하세요" style="opacity:.85"></div>
-              <div class="field"><label>해외 할인 판매가 (USD, 세전)</label><input type="number" name="targetU" id="saleTargetU" min="0" step="0.01" placeholder="예: 149 · 빈칸 = 해외 세일 없음" oninput="saleCalc()"><div class="note" id="saleCalcOutU" style="margin-top:6px"></div></div>
               <div class="field"><label>세일 기간</label><div class="rowflex"><input type="date" name="start" style="flex:1;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350">~<input type="date" name="end" style="flex:1;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"></div><div class="note" style="margin-top:6px">비워두면 해제할 때까지 상시 적용</div></div>
+              <div class="field"><label>국내 현재 정가 (원)</label><input id="saleCur" readonly placeholder="제품을 선택하세요" style="opacity:.85"></div>
+              <div class="field"><label>해외 현재 정가 (USD)</label><input id="saleCurU" readonly placeholder="제품을 선택하세요" style="opacity:.85"></div>
+              <div class="field"><label>국내 할인 판매가 (원)</label><input type="number" name="target" id="saleTarget" min="0" step="100" placeholder="예: 39000 · 빈칸 = 국내 세일 없음" oninput="saleCalc()"><div class="note" id="saleCalcOut" style="margin-top:6px"></div></div>
+              <div class="field"><label>해외 할인 판매가 (USD, 세전)</label><input type="number" name="targetU" id="saleTargetU" min="0" step="0.01" placeholder="예: 149 · 빈칸 = 해외 세일 없음" oninput="saleCalc()"><div class="note" id="saleCalcOutU" style="margin-top:6px"></div></div>
             </div>
             <button class="btn btn-pri" type="submit">세일 적용</button>
           </form>
@@ -514,23 +514,17 @@ td{color:var(--text)}
                 <option value="TALLY">Flare Tally</option>
                 <option value="LMAZ">Latency Meter AZ</option>
               </select></div>
-
-              <!-- 라이선스용 -->
               <div class="field lic-f"><label>라이선스 종류</label><select name="kind">
                 <option value="D7">체험 · 7일</option>
                 <option value="D14">체험 · 14일</option>
                 <option value="D30">체험 · 30일</option>
                 <option value="FREE">무료 라이선스 (영구)</option>
               </select></div>
-
-              <!-- 할인용: 현재 금액 표시 + 목표 금액 입력 -->
-              <div class="field disc-f" style="display:none"><label>현재 판매가</label><input id="promoCur" readonly placeholder="제품을 선택하세요" style="opacity:.85"></div>
+              <div class="field disc-f" style="display:none"><label>할인 적용 기간</label><div class="rowflex"><input type="date" name="dstart" style="flex:1;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350">~<input type="date" name="dend" style="flex:1;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"></div><div class="note" style="margin-top:6px">비우면 무기한</div></div>
+              <div class="field disc-f" style="display:none"><label>국내 현재 판매가 (원)</label><input id="promoCur" readonly placeholder="제품을 선택하세요" style="opacity:.85"></div>
+              <div class="field disc-f" style="display:none"><label>해외 현재 판매가 (USD)</label><input id="promoCurU" readonly placeholder="제품을 선택하세요" style="opacity:.85"></div>
               <div class="field disc-f" style="display:none"><label>국내 목표 금액 (할인 후, 원)</label><input type="number" name="target" id="promoTarget" min="0" step="100" placeholder="예: 29000 · 빈칸 = 국내 할인 없음" oninput="promoCalc()"><div class="note" id="promoCalcOut" style="margin-top:6px"></div></div>
-              <div class="field disc-f" style="display:none"><label>현재 해외 판매가 (USD)</label><input id="promoCurU" readonly placeholder="제품을 선택하세요" style="opacity:.85"></div>
               <div class="field disc-f" style="display:none"><label>해외 목표 금액 (할인 후, USD 세전)</label><input type="number" name="targetU" id="promoTargetU" min="0" step="0.01" placeholder="예: 149 · 빈칸 = 해외 할인 없음" oninput="promoCalc()"><div class="note" id="promoCalcOutU" style="margin-top:6px"></div></div>
-              <div class="field disc-f" style="display:none"><label>할인 적용 시작</label><input type="date" name="dstart"></div>
-              <div class="field disc-f" style="display:none"><label>할인 적용 종료</label><input type="date" name="dend"></div>
-
               <div class="field"><label>사용 제한</label><select name="uses">
                 <option value="1">1회용 (코드당 1명)</option>
                 <option value="5">5회</option>
@@ -675,7 +669,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.11.0', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.11.1', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
