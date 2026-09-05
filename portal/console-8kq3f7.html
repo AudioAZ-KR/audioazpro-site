@@ -207,17 +207,17 @@ tr:last-child td{border-bottom:0}
 .us-t .nm{font-weight:800;font-size:13.5px;color:#fff;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .us-t .tag{font-family:ui-monospace,Menlo,monospace;font-size:10px;font-weight:800;border-radius:4px;padding:1px 6px;white-space:nowrap}
 .us-t.ok .tag{color:#5CE0A0;background:#0F2A1E}.us-t.warn .tag{color:#fff;background:#F4801F}.us-t.over .tag,.us-t.down .tag{color:#fff;background:var(--red)}.us-t.manual .tag,.us-t.unknown .tag{color:var(--dim);background:#17273F}
-.us-t .head{display:flex;align-items:baseline;gap:7px;margin:5px 0 0;min-width:0}
+.us-t .head{display:flex;align-items:baseline;gap:7px;margin:5px 0 0;min-width:0;flex-wrap:wrap}
 .us-t .big{font-family:ui-monospace,Menlo,monospace;font-size:15px;font-weight:700;color:#fff;line-height:1.15;letter-spacing:-.01em;white-space:nowrap;flex:none}
 .us-t.warn .big{color:#F4801F}.us-t.over .big,.us-t.down .big{color:#ff9ea3}
-.us-t .bigsub{font-size:11px;color:var(--dim);line-height:1.35;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.us-t .sub{font-size:11.5px;color:#B7C7DC;line-height:1.4}
+.us-t .bigsub{font-size:11px;color:var(--dim);line-height:1.35;min-width:0;white-space:normal;word-break:keep-all;overflow-wrap:anywhere}
+.us-t .sub{font-size:11.5px;color:#B7C7DC;line-height:1.4;white-space:normal;word-break:keep-all;overflow-wrap:anywhere}
 .us-t .sub b{color:#fff;font-weight:700}
 .us-t .bar{height:4px;background:#0E1A2E;border:1px solid #243350;border-radius:2px;overflow:hidden;margin:6px 0 5px}
 .us-t .bar i{display:block;height:100%;background:var(--green)}
 .us-t.warn .bar i{background:#F4801F}.us-t.over .bar i,.us-t.down .bar i{background:var(--red)}
 .us-t .ft{display:flex;align-items:center;gap:8px;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--dim);margin-top:3px}
-.us-t .ft .pay{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.us-t .ft .pay b{color:#cdd8ea;font-weight:700}
+.us-t .ft .pay{white-space:normal;word-break:keep-all;overflow-wrap:anywhere;min-width:0}.us-t .ft .pay b{color:#cdd8ea;font-weight:700}
 .us-t .ft .go{margin-left:auto;font-weight:800;color:#9CC2F5}
 .us-t.warn .ft .go{color:#F4801F}.us-t.over .ft .go,.us-t.down .ft .go{color:#ff9ea3}
 .us-t .dt{position:absolute;right:12px;bottom:9px;display:none;gap:6px;align-items:center}
@@ -771,7 +771,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.14.0', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.14.1', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
