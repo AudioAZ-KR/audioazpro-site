@@ -483,13 +483,15 @@ td{color:var(--text)}
                 <option value="TALLY">Flare Tally</option>
               </select></div>
               <div class="field"><label>현재 정가</label><input id="saleCur" readonly placeholder="제품을 선택하세요" style="opacity:.85"></div>
-              <div class="field"><label>할인 판매가 (목표 금액)</label><input type="number" name="target" id="saleTarget" min="0" step="100" placeholder="예: 39000" oninput="saleCalc()" required><div class="note" id="saleCalcOut" style="margin-top:6px"></div></div>
+              <div class="field"><label>국내 할인 판매가 (원)</label><input type="number" name="target" id="saleTarget" min="0" step="100" placeholder="예: 39000 · 빈칸 = 국내 세일 없음" oninput="saleCalc()"><div class="note" id="saleCalcOut" style="margin-top:6px"></div></div>
+              <div class="field"><label>현재 해외 정가 (USD)</label><input id="saleCurU" readonly placeholder="제품을 선택하세요" style="opacity:.85"></div>
+              <div class="field"><label>해외 할인 판매가 (USD, 세전)</label><input type="number" name="targetU" id="saleTargetU" min="0" step="0.01" placeholder="예: 149 · 빈칸 = 해외 세일 없음" oninput="saleCalc()"><div class="note" id="saleCalcOutU" style="margin-top:6px"></div></div>
               <div class="field"><label>세일 기간</label><div class="rowflex"><input type="date" name="start" style="flex:1;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350">~<input type="date" name="end" style="flex:1;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"></div><div class="note" style="margin-top:6px">비워두면 해제할 때까지 상시 적용</div></div>
             </div>
             <button class="btn btn-pri" type="submit">세일 적용</button>
           </form>
           <div style="margin-top:18px">
-            <table><thead><tr><th>제품</th><th>정가</th><th>할인가</th><th>할인율</th><th>기간</th><th></th></tr></thead>
+            <table><thead><tr><th>제품</th><th>국내 정가 → 할인가</th><th>해외 정가 → 할인가</th><th>할인율</th><th>기간</th><th></th></tr></thead>
             <tbody id="saleRows"></tbody></table>
           </div>
         </div>
@@ -523,7 +525,9 @@ td{color:var(--text)}
 
               <!-- 할인용: 현재 금액 표시 + 목표 금액 입력 -->
               <div class="field disc-f" style="display:none"><label>현재 판매가</label><input id="promoCur" readonly placeholder="제품을 선택하세요" style="opacity:.85"></div>
-              <div class="field disc-f" style="display:none"><label>목표 금액 (할인 후 결제 금액)</label><input type="number" name="target" id="promoTarget" min="0" step="100" placeholder="예: 29000" oninput="promoCalc()"><div class="note" id="promoCalcOut" style="margin-top:6px"></div></div>
+              <div class="field disc-f" style="display:none"><label>국내 목표 금액 (할인 후, 원)</label><input type="number" name="target" id="promoTarget" min="0" step="100" placeholder="예: 29000 · 빈칸 = 국내 할인 없음" oninput="promoCalc()"><div class="note" id="promoCalcOut" style="margin-top:6px"></div></div>
+              <div class="field disc-f" style="display:none"><label>현재 해외 판매가 (USD)</label><input id="promoCurU" readonly placeholder="제품을 선택하세요" style="opacity:.85"></div>
+              <div class="field disc-f" style="display:none"><label>해외 목표 금액 (할인 후, USD 세전)</label><input type="number" name="targetU" id="promoTargetU" min="0" step="0.01" placeholder="예: 149 · 빈칸 = 해외 할인 없음" oninput="promoCalc()"><div class="note" id="promoCalcOutU" style="margin-top:6px"></div></div>
               <div class="field disc-f" style="display:none"><label>할인 적용 시작</label><input type="date" name="dstart"></div>
               <div class="field disc-f" style="display:none"><label>할인 적용 종료</label><input type="date" name="dend"></div>
 
@@ -539,7 +543,7 @@ td{color:var(--text)}
             <button class="btn btn-pri" type="submit">코드 발행</button>
           </form>
           <div class="result" id="promoRes"><div style="font-size:11px;color:#8fa5c2;letter-spacing:.05em;text-transform:uppercase">발행된 코드</div><div class="k" id="promoCodes">—</div></div>
-          <p class="note">할인 코드는 <b>제품별로만</b> 발행됩니다(전 제품 불가). 목표 금액 방식 — 예: 현재 ₩49,000 제품에 목표 ₩29,000 입력 → 고객은 코드 입력 시 ₩29,000에 결제. <b>할인 코드는 적용 기간(시작~종료) 내에서만 유효.</b> 서버가 발행 DB와 대조해 유효성·사용횟수·기간을 검증합니다.</p>
+          <p class="note">할인 코드는 <b>제품별로만</b> 발행됩니다(전 제품 불가). 목표 금액 방식 — 국내(원)와 해외(달러) 목표 금액을 각각 입력하면 국내는 포트원 결제에, 해외는 Paddle 결제에 적용됩니다(한쪽만 입력하면 그쪽만 할인). <b>할인 코드는 적용 기간(시작~종료) 내에서만 유효.</b> 서버가 발행 DB와 대조해 유효성·사용횟수·기간을 검증합니다.</p>
         </div>
 
         <div class="card"><h2>발행된 코드</h2>
@@ -1122,16 +1126,21 @@ function promoPrice(){
   var pr=AZ.priceOf(p);
   cur.value=W(pr.now)+(pr.sale!==null?' (세일가 · 정가 '+W(pr.base)+')':'');
   cur.dataset.now=pr.now;
+  var cu=document.getElementById('promoCurU'); if(cu){ var ud=AZ.usdOf?AZ.usdOf(p):{now:null}; cu.value=(ud.now!=null?'$'+Number(ud.now).toFixed(2)+(ud.sale!=null?' (세일가 · 정가 $'+Number(ud.base).toFixed(2)+')':''):'해외 정가 미정'); cu.dataset.now=(ud.now!=null?ud.now:''); }
   promoCalc();
 }
 function promoCalc(){
   var cur=document.getElementById('promoCur'), t=document.getElementById('promoTarget'), out=document.getElementById('promoCalcOut');
   if(!out) return;
   var now=parseInt(cur&&cur.dataset.now||''), target=parseInt(t&&t.value||'');
-  if(isNaN(now)||isNaN(target)){ out.textContent=''; return; }
-  if(target>=now){ out.innerHTML='<b style="color:#ff9ea3">목표 금액이 현재 판매가('+W(now)+') 이상입니다.</b>'; return; }
-  var disc=now-target, pct=Math.round(disc/now*100);
-  out.innerHTML='할인액 <b style="color:#39D48C">'+W(disc)+'</b> ('+pct+'% 할인) → 고객 결제 금액 <b>'+W(target)+'</b>';
+  if(isNaN(now)||isNaN(target)){ out.textContent=''; }
+  else if(target>=now){ out.innerHTML='<b style="color:#ff9ea3">목표 금액이 현재 판매가('+W(now)+') 이상입니다.</b>'; }
+  else { var disc=now-target, pct=Math.round(disc/now*100); out.innerHTML='할인액 <b style="color:#39D48C">'+W(disc)+'</b> ('+pct+'% 할인) → 고객 결제 금액 <b>'+W(target)+'</b>'; }
+  var cu=document.getElementById('promoCurU'), tu=document.getElementById('promoTargetU'), ou=document.getElementById('promoCalcOutU'); if(!ou) return;
+  var nu=parseFloat(cu&&cu.dataset.now||''), tgu=parseFloat(tu&&tu.value||'');
+  if(isNaN(nu)||isNaN(tgu)){ ou.textContent=''; return; }
+  if(tgu>=nu){ ou.innerHTML='<b style="color:#ff9ea3">해외 목표 금액이 현재 판매가($'+nu.toFixed(2)+') 이상입니다.</b>'; return; }
+  ou.innerHTML='할인 <b style="color:#39D48C">$'+(nu-tgu).toFixed(2)+'</b> ('+Math.round((nu-tgu)/nu*100)+'%) → 결제 <b>$'+tgu.toFixed(2)+'</b> + tax';
 }
 // ===== 프로모션 코드 (실데이터 promo_codes — 발행/중지는 결재 경유, super는 즉시 승인) =====
 var PROMOS=[];
@@ -1146,11 +1155,17 @@ async function genPromo(e){
   var desc;
   if(d.ctype==='discount'){
     if(d.product==='ALL') return fail('할인 코드는 제품별로만 발행할 수 있습니다.');
-    var now=AZ.priceOf(d.product).now, target=parseInt(d.target||'');
-    if(isNaN(target)||target<0) return fail('목표 금액을 입력하세요.');
-    if(target>=now) return fail('목표 금액이 현재 판매가('+W(now)+') 이상입니다.');
-    payload.discount_won=String(now-target); if(d.dend) payload.valid_to=d.dend;
-    desc=PRODNAME[d.product]+' · 할인 '+W(now-target)+' (→ '+W(target)+') · 기간 '+(d.dstart||'—')+'~'+(d.dend||'무기한');
+    var now=AZ.priceOf(d.product).now, target=(d.target===''||d.target==null)?null:parseInt(d.target||'');
+    var ud=AZ.usdOf?AZ.usdOf(d.product):{now:null}, nowU=ud.now, targetU=(d.targetU===''||d.targetU==null)?null:Math.round(parseFloat(d.targetU)*100)/100;
+    if(target==null && targetU==null) return fail('국내 또는 해외 목표 금액을 하나 이상 입력하세요.');
+    if(target!=null && (isNaN(target)||target<0)) return fail('국내 목표 금액이 잘못되었습니다.');
+    if(target!=null && target>=now) return fail('국내 목표 금액이 현재 판매가('+W(now)+') 이상입니다.');
+    if(targetU!=null && nowU==null) return fail('해외 정가가 먼저 설정돼야 합니다 (제품·버전 탭).');
+    if(targetU!=null && (isNaN(targetU)||targetU<0||targetU>=nowU)) return fail('해외 목표 금액이 현재 판매가($'+nowU+') 이상이거나 잘못되었습니다.');
+    if(target!=null) payload.discount_won=String(now-target);
+    if(targetU!=null) payload.discount_usd=String(Math.round((nowU-targetU)*100)/100);
+    if(d.dstart) payload.valid_from=d.dstart; if(d.dend) payload.valid_to=d.dend; if(d.memo) payload.memo=d.memo;
+    desc=PRODNAME[d.product]+(target!=null?' · 국내 할인 '+W(now-target)+' (→ '+W(target)+')':'')+(targetU!=null?' · 해외 할인 $'+(nowU-targetU).toFixed(2)+' (→ $'+targetU.toFixed(2)+')':'')+' · 기간 '+(d.dstart||'—')+'~'+(d.dend||'무기한');
   }else{
     payload.license_type=d.kind; if(d.expire) payload.valid_to=d.expire;
     desc=(PRODNAME[d.product]||'전 제품')+' · '+KINDLABEL[d.kind]+' · 만료 '+(d.expire||'없음');
@@ -1173,7 +1188,7 @@ async function renderPromos(){
   if(!L.length){ tb.innerHTML='<tr><td colspan="7" style="color:var(--dim)">'+(q?'검색 결과가 없습니다.':'발행된 코드가 없습니다.')+'</td></tr>'; return; }
   tb.innerHTML=L.map(function(p){
     var kind = p.kind==='discount'
-      ? '<span class="pill p-refund">할인 '+(p.discount_won?W(p.discount_won):(p.discount_pct+'%'))+'</span>'
+      ? '<span class="pill p-refund">할인 '+[p.discount_won?W(p.discount_won):null, p.discount_usd?('$'+Number(p.discount_usd).toFixed(2)):null, p.discount_pct?(p.discount_pct+'%'):null].filter(Boolean).join(' · ')+'</span>'
       : '<span class="pill '+(p.license_type==='FREE'?'p-active':'p-trial')+'">'+(KINDLABEL[p.license_type]||p.license_type||'라이선스')+'</span>';
     var period=(p.valid_from?fmtDate(p.valid_from):'—')+'~'+(p.valid_to?fmtDate(p.valid_to):'무기한');
     return '<tr'+(p.active?'':' style="opacity:.45"')+'>'+
@@ -1201,50 +1216,60 @@ function salePrice(){
   if(!p){ cur.value=''; cur.placeholder='제품을 선택하세요'; saleCalc(); return; }
   var base=AZ.basePrice(p);
   cur.value=W(base); cur.dataset.base=base;
+  var cu=document.getElementById('saleCurU'), db=PRODUCTS[p]||{}; if(cu){ cu.value=(db.price_usd!=null?'$'+Number(db.price_usd).toFixed(2):'해외 정가 미정'); cu.dataset.base=(db.price_usd!=null?db.price_usd:''); }
   saleCalc();
 }
 function saleCalc(){
   var cur=document.getElementById('saleCur'), t=document.getElementById('saleTarget'), out=document.getElementById('saleCalcOut');
   if(!out) return;
   var base=parseInt(cur&&cur.dataset.base||''), target=parseInt(t&&t.value||'');
-  if(isNaN(base)||isNaN(target)){ out.textContent=''; return; }
-  if(target>=base){ out.innerHTML='<b style="color:#ff9ea3">할인가가 정가('+W(base)+') 이상입니다.</b>'; return; }
-  var disc=base-target, pct=Math.round(disc/base*100);
-  out.innerHTML='할인액 <b style="color:#39D48C">'+W(disc)+'</b> ('+pct+'% 할인) → 판매가 <b>'+W(target)+'</b>';
+  if(isNaN(base)||isNaN(target)){ out.textContent=''; }
+  else if(target>=base){ out.innerHTML='<b style="color:#ff9ea3">할인가가 정가('+W(base)+') 이상입니다.</b>'; }
+  else { var disc=base-target, pct=Math.round(disc/base*100); out.innerHTML='할인액 <b style="color:#39D48C">'+W(disc)+'</b> ('+pct+'% 할인) → 판매가 <b>'+W(target)+'</b>'; }
+  var cu=document.getElementById('saleCurU'), tu=document.getElementById('saleTargetU'), ou=document.getElementById('saleCalcOutU'); if(!ou) return;
+  var bu=parseFloat(cu&&cu.dataset.base||''), tgu=parseFloat(tu&&tu.value||'');
+  if(isNaN(bu)||isNaN(tgu)){ ou.textContent=''; return; }
+  if(tgu>=bu){ ou.innerHTML='<b style="color:#ff9ea3">해외 할인가가 정가($'+bu.toFixed(2)+') 이상입니다.</b>'; return; }
+  ou.innerHTML='할인 <b style="color:#39D48C">$'+(bu-tgu).toFixed(2)+'</b> ('+Math.round((bu-tgu)/bu*100)+'%) → 판매가 <b>$'+tgu.toFixed(2)+'</b> + tax';
 }
 function setSale(e){
   e.preventDefault();var d={};new FormData(e.target).forEach((v,k)=>d[k]=v);
-  var base=AZ.basePrice(d.product), target=parseInt(d.target||'');
-  if(isNaN(target)||target<0){ alert('할인 판매가를 입력하세요.'); return false; }
-  if(target>=base){ alert('할인가('+W(target)+')가 정가('+W(base)+') 이상입니다.'); return false; }
+  var base=AZ.basePrice(d.product), target=(d.target===''||d.target==null)?null:parseInt(d.target||'');
+  var db=PRODUCTS[d.product]||{}, baseU=db.price_usd!=null?Number(db.price_usd):null, targetU=(d.targetU===''||d.targetU==null)?null:Math.round(parseFloat(d.targetU)*100)/100;
+  if(target==null && targetU==null){ alert('국내 또는 해외 할인 판매가를 하나 이상 입력하세요.'); return false; }
+  if(target!=null && (isNaN(target)||target<0)){ alert('국내 할인 판매가가 잘못되었습니다.'); return false; }
+  if(target!=null && target>=base){ alert('국내 할인가('+W(target)+')가 정가('+W(base)+') 이상입니다.'); return false; }
+  if(targetU!=null && (baseU==null)){ alert('해외 정가가 먼저 설정돼야 합니다 (제품·버전 탭).'); return false; }
+  if(targetU!=null && (isNaN(targetU)||targetU<0||targetU>=baseU)){ alert('해외 할인가($'+targetU+')가 정가($'+baseU+') 이상이거나 잘못되었습니다.'); return false; }
   if(d.start&&d.end&&d.start>d.end){ alert('세일 기간이 잘못되었습니다 (시작 > 종료).'); return false; }
-  sb.from('products').update({sale_price:target, sale_from:d.start||null, sale_to:d.end||null}).eq('id',d.product).then(function(r){
+  sb.from('products').update({sale_price:target, sale_price_usd:targetU, sale_from:d.start||null, sale_to:d.end||null}).eq('id',d.product).then(function(r){
     if(r.error){ alert('세일 저장 실패: '+r.error.message); return; }
-    AZ.setSale(d.product, target, d.start||null, d.end||null);
+    if(target!=null) AZ.setSale(d.product, target, d.start||null, d.end||null); else AZ.clearSale(d.product);
     renderSales(); e.target.reset(); salePrice(); try{loadProducts();}catch(_){}
   });
   return false;
 }
 function clearSaleRow(prod){
   if(!confirm(PRODNAME[prod]+' 세일을 해제할까요? 정가로 돌아갑니다.'))return;
-  sb.from('products').update({sale_price:null, sale_from:null, sale_to:null}).eq('id',prod).then(function(r){
+  sb.from('products').update({sale_price:null, sale_price_usd:null, sale_from:null, sale_to:null}).eq('id',prod).then(function(r){
     if(r.error){ alert('세일 해제 실패: '+r.error.message); return; }
     AZ.clearSale(prod); renderSales(); try{loadProducts();}catch(_){}
   });
 }
 function renderSales(){
   var tb=document.getElementById('saleRows'); if(!tb) return;
-  var s=AZ.sales(), keys=Object.keys(s);
+  var s=AZ.sales(), keys=Object.keys(PRODUCTS).filter(function(k){ var db=PRODUCTS[k]||{}; return s[k] || db.sale_price_usd!=null; });
   if(!keys.length){ tb.innerHTML='<tr><td colspan="6" style="color:var(--dim)">진행 중인 세일이 없습니다.</td></tr>'; return; }
   var today=AZ.today();
   tb.innerHTML=keys.map(function(k){
-    var v=s[k], base=AZ.basePrice(k), pct=base?Math.round((base-v.price)/base*100):0;
+    var db=PRODUCTS[k]||{}, v=s[k]||{price:null,start:db.sale_from||null,end:db.sale_to||null}, base=AZ.basePrice(k), pct=(base&&v.price!=null)?Math.round((base-v.price)/base*100):null;
+    var bu=db.price_usd!=null?Number(db.price_usd):null, su=db.sale_price_usd!=null?Number(db.sale_price_usd):null, pctU=(bu&&su!=null)?Math.round((bu-su)/bu*100):null;
     var live=(!v.start||today>=v.start)&&(!v.end||today<=v.end);
     return '<tr>'+
       '<td>'+(PRODNAME[k]||k)+'</td>'+
-      '<td class="mono" style="text-decoration:line-through;color:var(--dim)">'+W(base)+'</td>'+
-      '<td><b>'+W(v.price)+'</b></td>'+
-      '<td><span class="pill p-refund">'+pct+'%↓</span></td>'+
+      '<td class="mono">'+(v.price!=null?('<span style="text-decoration:line-through;color:var(--dim)">'+W(base)+'</span> → <b>'+W(v.price)+'</b>'):'<span style="color:var(--dim)">—</span>')+'</td>'+
+      '<td class="mono">'+(su!=null?('<span style="text-decoration:line-through;color:var(--dim)">$'+bu.toFixed(2)+'</span> → <b>$'+su.toFixed(2)+'</b>'):'<span style="color:var(--dim)">—</span>')+'</td>'+
+      '<td>'+(pct!=null?'<span class="pill p-refund">₩ '+pct+'%↓</span> ':'')+(pctU!=null?'<span class="pill p-refund">$ '+pctU+'%↓</span>':'')+'</td>'+
       '<td class="mono">'+((v.start||'—')+'~'+(v.end||'상시'))+(live?' <span class="pill p-active">진행중</span>':' <span class="pill p-revoked">기간외</span>')+'</td>'+
       '<td><button class="tbtn danger" onclick="clearSaleRow(\''+k+'\')">해제</button></td>'+
     '</tr>';
@@ -1569,7 +1594,7 @@ async function custDetail(id){
 // ===== 제품 · 버전 (가격·버전 편집 → 홈페이지·결제 즉시 반영) =====
 var PRODUCTS={};  // DB products 캐시 {id:{name,version,price_krw,active}}
 async function loadProducts(){
-  var r=await sb.from('products').select('id,name,version,price_krw,active,sale_price,sale_from,sale_to,max_devices').order('id');
+  var r=await sb.from('products').select('id,name,version,price_krw,active,sale_price,sale_from,sale_to,max_devices,price_usd,sale_price_usd').order('id');
   if(r.error){ var tb=document.getElementById('prodRows'); if(tb) tb.innerHTML='<tr><td colspan="6" style="color:#ff9ea3">불러오기 실패: '+esc(r.error.message)+'</td></tr>'; return; }
   PRODUCTS={}; var sl={};
   (r.data||[]).forEach(function(x){ PRODUCTS[x.id]=x; if(x.price_krw!=null) AZ.setBasePrice(x.id,x.price_krw); if(x.version) AZ.setVersion(x.id,x.version); if(x.sale_price!=null) sl[x.id]={price:x.sale_price,start:x.sale_from||null,end:x.sale_to||null}; });
@@ -1584,8 +1609,8 @@ function renderProducts(){
     var status = price==null ? '<span class="pill p-trial">정가 미정</span>' : (price===0 ? '<span class="pill p-active">무료</span>' : '<span class="pill p-active">판매중</span>');
     return '<tr><td>'+esc(db.name||m.name)+'</td>'+
       '<td class="mono">'+esc(db.version||AZ.versionOf(p))+'</td>'+
-      '<td>'+(price==null?'<span style="color:var(--dim)">미정</span>':(price?W(price):'무료'))+'</td>'+
-      '<td>'+(sale?('<b>'+W(sale.price)+'</b>'):'—')+'</td>'+
+      '<td>'+(price==null?'<span style="color:var(--dim)">미정</span>':(price?W(price):'무료'))+'<div class="mono" style="font-size:11px;color:var(--dim)">해외 '+(db.price_usd!=null?'$'+Number(db.price_usd).toFixed(2):'미정')+'</div></td>'+
+      '<td>'+(sale?('<b>'+W(sale.price)+'</b>'):'—')+(db.sale_price_usd!=null?'<div class="mono" style="font-size:11px;color:var(--dim)">해외 $'+Number(db.sale_price_usd).toFixed(2)+'</div>':'')+'</td>'+
       '<td><b>'+(db.max_devices!=null?db.max_devices:1)+'대</b></td>'+
       '<td>'+status+'</td>'+
       '<td style="white-space:nowrap"><button class="tbtn pri" onclick="editProduct(\''+p+'\')">정가 설정</button> <button class="tbtn" onclick="bumpVersion(\''+p+'\')">버전</button> <button class="tbtn" onclick="editDevices(\''+p+'\')">기기 수</button></td>'+
@@ -1594,12 +1619,14 @@ function renderProducts(){
 }
 async function editProduct(p){
   var m=AZ.PRODMETA[p], db=PRODUCTS[p]||{}, cur=db.price_krw;
-  var v0=await azModal({title:m.name+' — 정가 설정', body:'현재: <b style="color:#E9EEF7">'+(cur==null?'미정':W(cur))+'</b><br>저장 즉시 모든 고객의 결제·할인에 반영됩니다.',
-    fields:[{id:'price',label:'정가 (원)',type:'number',value:(cur==null?'':cur),placeholder:'0 = 무료 · 빈칸 = 미정(출시 예정)'}], okText:'저장'});
+  var curU=db.price_usd;
+  var v0=await azModal({title:m.name+' — 정가 설정 (국내 · 해외)', body:'현재: 국내 <b style="color:#E9EEF7">'+(cur==null?'미정':W(cur))+'</b> · 해외 <b style="color:#E9EEF7">'+(curU==null?'미정':'$'+Number(curU).toFixed(2))+'</b><br>국내는 포트원(원화), 해외는 Paddle(달러, 세금 별도)에 적용됩니다. 저장 즉시 반영.',
+    fields:[{id:'price',label:'국내 정가 (원)',type:'number',value:(cur==null?'':cur),placeholder:'0 = 무료 · 빈칸 = 미정'},{id:'usd',label:'해외 정가 (USD, 세전)',type:'number',value:(curU==null?'':curU),placeholder:'예: 199 · 빈칸 = 해외 판매 안 함'}], okText:'저장'});
   if(v0===null) return;
   var price=String(v0.price).replace(/[^0-9]/g,'');
   var v = price===''? null : parseInt(price,10);
-  var r=await sb.from('products').update({price_krw:v}).eq('id',p).select('id,price_krw').single();
+  var us=String(v0.usd==null?'':v0.usd).replace(/[^0-9.]/g,''); var vu = us===''? null : Math.round(parseFloat(us)*100)/100;
+  var r=await sb.from('products').update({price_krw:v, price_usd:vu}).eq('id',p).select('id,price_krw').single();
   if(r.error){ alert('저장 실패: '+r.error.message+'\n(관리자 update 정책이 적용됐는지 확인)'); return; }
   if(v==null){ var o={}; try{o=JSON.parse(localStorage.getItem('az_prices')||'{}');}catch(_){ } delete o[p]; localStorage.setItem('az_prices',JSON.stringify(o)); } else AZ.setBasePrice(p,v);
   await loadProducts(); try{renderSales();}catch(_){}

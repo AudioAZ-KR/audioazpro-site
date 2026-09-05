@@ -77,24 +77,30 @@
     syncCatalog: function (cb) {
       var done = function () { try { cb && cb(); } catch (e) {} };
       try {
-        fetch('https://lkbbenyvchddsjsihofv.supabase.co/rest/v1/products?select=id,price_krw,version,sale_price,sale_from,sale_to,max_devices&active=is.true',
+        fetch('https://lkbbenyvchddsjsihofv.supabase.co/rest/v1/products?select=id,price_krw,version,sale_price,sale_from,sale_to,max_devices,price_usd,sale_price_usd&active=is.true',
           { headers: { apikey: 'sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_' } })
         .then(function (r) { return r.ok ? r.json() : []; })
         .then(function (rows) {
-          var pr = read('az_prices', {}), vs = read('az_vers', {}), sl = {}, md = read('az_maxdev', {});
+          var pr = read('az_prices', {}), vs = read('az_vers', {}), sl = {}, md = read('az_maxdev', {}), us = {};
           (rows || []).forEach(function (row) {
             if (!PRODMETA[row.id]) return;
             if (row.price_krw != null) pr[row.id] = row.price_krw; else delete pr[row.id];
             if (row.version) vs[row.id] = row.version;
             if (row.sale_price != null) sl[row.id] = { price: row.sale_price, start: row.sale_from || null, end: row.sale_to || null };
             if (row.max_devices != null) md[row.id] = row.max_devices;
+            us[row.id] = { price: row.price_usd != null ? Number(row.price_usd) : null, sale: row.sale_price_usd != null ? Number(row.sale_price_usd) : null, start: row.sale_from || null, end: row.sale_to || null };
           });
-          write('az_prices', pr); write('az_vers', vs); write('az_maxdev', md);
+          write('az_prices', pr); write('az_vers', vs); write('az_maxdev', md); if (rows && rows.length) write('az_usd', us);
           if (rows && rows.length) write('az_sales', sl); // 세일은 DB가 단일 진실 — 로컬 잔재 제거
         })
         .catch(function () {})
         .then(done);
       } catch (e) { done(); }
+    },
+    usdOf: function (prod) { // 해외 가격 { base, sale, now } — DB products.price_usd / sale_price_usd (세일 기간은 원화와 공유)
+      var u = read('az_usd', {})[prod]; if (!u || u.price == null) return { base: null, sale: null, now: null };
+      var today = localToday(), on = u.sale != null && (!u.start || today >= u.start) && (!u.end || today <= u.end);
+      return { base: u.price, sale: on ? u.sale : null, now: on ? u.sale : u.price };
     },
     maxDevices: function (prod) { var o = read('az_maxdev', {}); return o[prod] != null ? o[prod] : 1; }, // 제품별 허용 기기 수 (DB products.max_devices)
     versionOf: function (prod) { var o = read('az_vers', {}); if (o[prod]) return o[prod]; var m = PRODMETA[prod]; return m ? m.ver : ''; },
