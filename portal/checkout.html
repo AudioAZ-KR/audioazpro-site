@@ -310,6 +310,7 @@ function setProduct(p){
 (function(){
   var qp=new URLSearchParams(location.search);
   var p=(qp.get('p')||'').toUpperCase();
+  if(p==='KV'){ alert('Klera Voice는 아직 판매 전입니다. 출시 알림은 문의 페이지에서 신청해 주세요.'); location.replace('/products.html'); return; }
   if(PROD[p]) setProduct(p);
   renderPrice();
   var c=qp.get('code');
