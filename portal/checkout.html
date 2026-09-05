@@ -61,7 +61,7 @@ h1{font-size:24px;font-weight:800;margin-bottom:4px}.lead{color:var(--dim);font-
   <span style="color:var(--dim);font-size:13px">결제</span>
 </div>
 
-<div class="wrap">
+<div class="wrap" id="checkoutWrap" style="visibility:hidden">
   <h1>결제</h1>
   <p class="lead">프로모션/할인 코드를 입력하면 자동으로 분석해 라이선스 또는 할인이 적용됩니다.</p>
   <div class="cols">
@@ -173,7 +173,7 @@ async function applyCode(){
   // 발행 DB(promo_codes)와 대조 — 정확히 일치하는 코드만 조회되는 서버 함수(promo_lookup)
   var r=await sbC.rpc('promo_lookup',{p_code:c});
   var row=(r.data&&r.data[0])||null;
-  if(r.error){ var lu=(await sbC.auth.getUser()).data.user; m.className='codemsg err'; m.textContent=lu?('코드를 확인하지 못했습니다: '+(r.error.message||'')):'로그인 후 코드를 적용할 수 있습니다.'; if(!lu){ var a=document.createElement('a'); a.href='index.html'; a.textContent=' 로그인 →'; a.style.cssText='color:var(--blue);font-weight:700;margin-left:6px'; m.appendChild(a); } return; }
+  if(r.error){ var lu=(await sbC.auth.getUser()).data.user; if(!lu){ location.href='index.html?next='+encodeURIComponent('checkout.html'+location.search); return; } m.className='codemsg err'; m.textContent='코드를 확인하지 못했습니다: '+(r.error.message||''); return; }
   if(!row){m.className='codemsg err';m.textContent='등록되지 않은 코드입니다.';return;}
   if(!row.active){m.className='codemsg err';m.textContent='사용이 중지된 코드입니다.';return;}
   if(row.max_uses && (row.used_count||0)>=row.max_uses){m.className='codemsg err';m.textContent='사용 한도가 소진된 코드입니다.';return;}
@@ -303,7 +303,8 @@ function setProduct(p){
   renderPrice();
 }
 // 로그인 필요 — 미로그인 시 로그인 페이지로 보내고, 로그인 후 이 결제 페이지로 복귀
-(async function(){ try{ var u=(await sbC.auth.getUser()).data.user; if(!u){ location.replace('index.html?next='+encodeURIComponent('checkout.html'+location.search)); } }catch(_){} })();
+// 로그인 확인 전에는 본문을 감춰 미로그인 사용자에게 결제 화면(기본 제품)이 잠깐 노출되지 않게 함
+(async function(){ try{ var u=(await sbC.auth.getUser()).data.user; if(!u){ location.replace('index.html?next='+encodeURIComponent('checkout.html'+location.search)); return; } }catch(_){} var w=document.getElementById('checkoutWrap'); if(w) w.style.visibility='visible'; })();
 // ?p=제품 로 구매 대상 설정, ?code= 로 코드 자동 적용
 (function(){
   var qp=new URLSearchParams(location.search);
