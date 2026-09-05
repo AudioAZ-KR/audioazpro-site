@@ -234,11 +234,11 @@ async function pay(ch){
         customData:{ order_id:d.order_id, product:CURPROD },
         redirectUrl: location.origin+'/portal/account.html?order='+d.order_id+'&paid=1'
       });
-      if(res && res.code){ throw new Error(res.message||('결제 실패 ('+res.code+')')); }
+      if(res && res.code){ try{ await callFn('checkout-create',{action:'cancel', order_id:d.order_id}); }catch(_){} throw new Error(res.message||('결제 실패 ('+res.code+')')); }
       location.href='account.html?order='+d.order_id+'&paid=1';
     } else {
       if(!window.Paddle) throw new Error('Paddle 모듈을 불러오지 못했습니다.');
-      window.Paddle.Checkout.open({ items:[{priceId:cfg.priceIds[CURPROD], quantity:1}], customer:{ email:d.email||u.email }, customData:{ order_id:d.order_id, product:CURPROD },
+      window.__azPendingOrder=d.order_id; window.Paddle.Checkout.open({ items:[{priceId:cfg.priceIds[CURPROD], quantity:1}], customer:{ email:d.email||u.email }, customData:{ order_id:d.order_id, product:CURPROD },
         settings:{ successUrl: location.origin+'/portal/account.html?order='+d.order_id+'&paid=1' } });
     }
   }catch(ex){ alert('결제를 진행하지 못했습니다: '+ex.message); }
