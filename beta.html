@@ -32,7 +32,7 @@ nav{position:sticky;top:0;z-index:50;background:var(--navbg);backdrop-filter:blu
 .menu .login{border:1px solid var(--line);border-radius:9px;padding:7px 15px;color:var(--navy)}
 .menu .login:hover{background:var(--sky)}
 @media(max-width:760px){.menu{gap:13px;font-size:12.5px}.menu .hide-sm{display:none}}
-.head{padding-top:46px;padding-bottom:8px}.head p{color:var(--dim);max-width:620px;font-size:16px}
+.head{padding-top:46px;padding-bottom:8px}.head p,.head .desc{color:var(--dim);max-width:620px;font-size:16px;line-height:1.7}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px}
 @media(max-width:720px){.grid{grid-template-columns:1fr}}
 .scard{display:block;position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px;transition:box-shadow .2s,transform .2s,border-color .2s;overflow:hidden}
@@ -88,6 +88,8 @@ footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center}footer .rig
 .legal ul{padding-left:18px}
 .done{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:44px 26px;margin-top:22px;text-align:center;color:var(--dim)}
 .done b{display:block;font-size:18px;color:var(--text);margin-bottom:6px}
+#bDesc{white-space:normal}#bDesc p{margin:0 0 12px}#bDesc h3{font-size:15px;margin:18px 0 6px;color:var(--text)}#bDesc ul,#bDesc ol{margin:0 0 12px;padding-left:20px}#bDesc li{margin:4px 0}#bDesc b{color:var(--text)}
+#bTitle{display:flex;align-items:center;gap:12px}#bTitle .ticon{width:44px;height:44px;border-radius:10px;flex:none}
 </style>
 <script src="/portal/az-i18n.js" defer></script>
 </head>
@@ -106,7 +108,7 @@ footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center}footer .rig
 <div class="wrap head">
   <div class="eyebrow">Beta Program</div>
   <h1 id="bTitle" data-i18n-skip>베타 테스터 모집</h1>
-  <p id="bDesc" data-i18n-skip>모집 정보를 불러오는 중입니다…</p>
+  <div id="bDesc" class="desc" data-i18n-skip>모집 정보를 불러오는 중입니다…</div>
   <div class="meta" id="bMeta" hidden>
     <span>제품 <b id="bProd">—</b></span>
     <span>제공 라이선스 <b id="bType">—</b></span>
@@ -122,7 +124,7 @@ footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center}footer .rig
       <div class="sub" id="bSub">신청하면 입력하신 이메일로 베타 테스트용 라이선스 코드를 보내 드립니다. 라이선스는 AudioAZ 계정(같은 이메일)에서 관리됩니다.</div>
       <form id="bForm" onsubmit="return betaSubmit(event)">
         <div class="field"><label for="bEmail">이메일</label><input id="bEmail" name="email" type="email" placeholder="you@example.com" required autocomplete="email" maxlength="120"></div>
-        <div class="field" id="bNameWrap"><label for="bName">이름 또는 활동명 <span class="optmark" style="color:var(--dim);font-weight:600" hidden>(선택)</span></label><input id="bName" name="name" type="text" placeholder="예: 김형준, 홍길동 스튜디오" required maxlength="60" autocomplete="name"></div>
+        <div class="field" id="bNameWrap"><label for="bName">이름 또는 활동명 <span class="optmark" style="color:var(--dim);font-weight:600" hidden>(선택)</span></label><input id="bName" name="name" type="text" placeholder="예: 홍길동, 홍길동 스튜디오" required maxlength="60" autocomplete="name"></div>
         <div class="field" id="bNoteWrap"><label for="bNote">한 줄 소개 <span class="optmark" style="color:var(--dim);font-weight:600">(선택)</span></label><textarea id="bNote" name="note" maxlength="500" placeholder="예: 라이브 방송 현장에서 사용 예정"></textarea></div>
         <div id="bExtra"></div>
         <label class="chk"><input type="checkbox" name="consent_privacy" required> <span><span class="req">[필수]</span> 아래 <a href="#legal">개인정보 수집·이용 안내</a>를 읽었으며 동의합니다.</span></label>
@@ -169,6 +171,26 @@ var PROD={KV:'Klera Voice',KI:'Klera Instrument',TALLY:'Flare Tally',LMAZ:'Laten
 var TYPE={D7:'7일 체험',D14:'14일 체험',D30:'30일 체험',FREE:'무료 (영구)',FULL:'정식 (영구)'};
 var SLUG=(new URLSearchParams(location.search).get('c')||'').trim().toLowerCase();
 var CAMP=null;
+function fmtDesc(t){
+  // 안내문 서식: 줄 단위 — "- / * / •" 글머리, "1." 번호, **굵게**, 짧은 한 줄 뒤에 목록이 오면 소제목, 빈 줄은 문단. HTML은 모두 이스케이프.
+  function inline(x){ return escB(x).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>'); }
+  var lines=String(t).replace(/\r/g,'').split('\n'), out=[], para=[], list=null, ltype='';
+  function flushP(){ if(para.length){ out.push('<p>'+para.map(inline).join('<br>')+'</p>'); para=[]; } }
+  function flushL(){ if(list){ out.push('<'+ltype+'>'+list.map(function(x){return '<li>'+inline(x)+'</li>';}).join('')+'</'+ltype+'>'); list=null; } }
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i], tr=l.trim();
+    if(tr===''){ flushP(); flushL(); continue; }
+    var mb=tr.match(/^[-•*]\s+(.*)$/), mn=tr.match(/^\d+[.)]\s+(.*)$/);
+    if(mb||mn){ var ty=mb?'ul':'ol'; if(list&&ltype!==ty) flushL(); flushP(); if(!list){ list=[]; ltype=ty; } list.push((mb||mn)[1]); continue; }
+    flushL();
+    var next=(lines[i+1]||'').trim(), nextIsList=/^([-•*]|\d+[.)])\s+/.test(next);
+    var isHead=/^\*\*.+\*\*$/.test(tr) || (nextIsList && tr.length<=30 && !/[.。]$/.test(tr));
+    if(isHead){ flushP(); out.push('<h3>'+inline(tr.replace(/^\*\*|\*\*$/g,''))+'</h3>'); continue; }
+    para.push(tr);
+  }
+  flushP(); flushL();
+  return out.join('');
+}
 function escB(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
 function fmtD(t){ if(!t) return null; var d=new Date(t); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function showEmpty(title,text){ document.getElementById('bMain').hidden=true; document.getElementById('bEmpty').hidden=false; document.getElementById('bEmptyTitle').textContent=title; document.getElementById('bEmptyText').textContent=text; document.getElementById('bDesc').textContent=''; }
@@ -179,7 +201,8 @@ function showEmpty(title,text){ document.getElementById('bMain').hidden=true; do
   CAMP=r.data;
   document.title=CAMP.title+' — AudioAZ 베타 테스터 모집';
   document.getElementById('bTitle').textContent=CAMP.title;
-  document.getElementById('bDesc').textContent=CAMP.description||'AudioAZ 제품 베타 테스트에 참여할 분을 모집합니다.';
+  var ICON={TALLY:'/assets/flare-tally-icon.png'}; if(ICON[CAMP.product_id]){ var im=document.createElement('img'); im.src=ICON[CAMP.product_id]; im.alt=''; im.width=44; im.height=44; im.className='ticon'; document.getElementById('bTitle').prepend(im); }
+  document.getElementById('bDesc').innerHTML=fmtDesc(CAMP.description||'AudioAZ 제품 베타 테스트에 참여할 분을 모집합니다.');
   document.getElementById('bProd').textContent=PROD[CAMP.product_id]||CAMP.product_id||'—';
   document.getElementById('bType').textContent=TYPE[CAMP.license_type]||CAMP.license_type||'—';
   document.getElementById('bPeriod').textContent=(fmtD(CAMP.starts_at)||'즉시')+' ~ '+(fmtD(CAMP.ends_at)||'별도 공지 시까지');
