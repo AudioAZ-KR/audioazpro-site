@@ -45,7 +45,10 @@
     wrap.querySelector('#azNavLogout').addEventListener('click',async function(){
       try{ await sbNav.auth.signOut(); }catch(_){}
       try{ localStorage.removeItem('az_session'); }catch(_){}
-      location.href='/';
+      // 회원 전용 페이지(마이페이지·활성화·결제)에서 로그아웃하면 볼 게 없으므로 홈으로,
+      // 그 외 일반 페이지에서는 그 자리에 머문다(새로고침으로 내비만 로그아웃 상태로).
+      if(/\/portal\/(account|activate|checkout)/.test(location.pathname)) location.href='/';
+      else location.reload();
     });
     return true;
   }
@@ -57,11 +60,18 @@
       if(!s){ // 인증 링크 직후엔 토큰 처리에 잠깐 걸릴 수 있음
         if(location.hash.indexOf('access_token')>=0 || location.search.indexOf('welcome=1')>=0){ await new Promise(function(r){setTimeout(r,900);}); s=(await sbNav.auth.getSession()).data.session; }
       }
-      if(!s) return;
+      if(!s){ stampLoginNext(); return; }
       var u=s.user||{};
       render({name:(u.user_metadata&&u.user_metadata.name)||'', email:u.email||''});
-    }catch(_){}
+    }catch(_){ try{ stampLoginNext(); }catch(_2){} }
   })();
+  // 로그아웃 상태: 로그인 링크에 ?next=현재 페이지 를 붙여 로그인 후 원래 페이지로 복귀
+  function stampLoginNext(){
+    var a=document.querySelector('.nav-in .menu .login, .menu .login, a.login'); if(!a) return;
+    var here=location.pathname;
+    if(/\/portal\/(index|forgot|reset-password)/.test(here)) return; // 로그인/비번 페이지 자신은 제외
+    a.href='/portal/index.html?next='+encodeURIComponent(location.pathname+location.search+location.hash);
+  }
 })();
 
 // 스테이징(테스트) 사이트 표식 — 실도메인(audioazpro.com)이 아니면 상단 고정 라벨. 실서비스 화면에는 절대 나오지 않음.

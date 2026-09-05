@@ -324,7 +324,7 @@ function toggleSide(){ var side=document.getElementById('mySide'), ham=document.
 document.querySelectorAll('.myside a[data-view]').forEach(function(a){ a.addEventListener('click',function(e){ e.preventDefault(); showView(a.getAttribute('data-view')); }); });
 window.addEventListener('hashchange',function(){ showView(location.hash.replace('#','')); });
 showView(location.hash.replace('#','')||'home');
-function doLogout(){ try{AZ.logout();}catch(_){}; sbA.auth.signOut().finally(function(){ location.href='index.html'; }); }
+function doLogout(){ try{AZ.logout();}catch(_){}; sbA.auth.signOut().finally(function(){ location.href='/'; }); }  // 마이페이지 로그아웃 → 메인 홈
 
 // 내 라이선스 — DB licenses(+activations) → 화면 모델
 var LICS=[];   // {id, product, type, key, at, status, expires, max, acts:[{id,type,bid,label,at}], note}
