@@ -697,7 +697,7 @@ async function reportSubmit(e){
 }
 function rpSurveyHtml(sv){
   if(!sv||!sv.gear) return '';
-  var g=sv.gear, parts=[]; if(g.brand) parts.push(g.brand+(g.model?' '+g.model:'')); var hostp=[g.platform==='mac'?'맥':(g.platform==='win'?'윈도우':''),g.os,g.host||g.mac].filter(Boolean).join(' · '); if(hostp) parts.push(hostp); if(g.phones) parts.push(g.phones); if(g.mode) parts.push(g.mode); if(g.venue) parts.push(g.venue);
+  var g=sv.gear, parts=[]; if(g.brand) parts.push((g.brand==='Blackmagic ATEM'&&/^ATEM/.test(g.model||''))?('Blackmagic '+g.model):(g.brand+(g.model?' '+g.model:''))); var hostp=[g.platform==='mac'?'맥':(g.platform==='win'?'윈도우':''),g.os,g.host||g.mac].filter(Boolean).join(' · '); if(hostp) parts.push(hostp); if(g.phones) parts.push(g.phones); if(g.mode) parts.push(g.mode); if(g.venue) parts.push(g.venue);
   var ok=[],ng=[]; Object.keys(sv.features||{}).forEach(function(k){ var x=sv.features[k]||{}; if(x.r==='ok') ok.push(RP_LABEL[k]||k); if(x.r==='ng') ng.push((RP_LABEL[k]||k)+(x.why?' — '+x.why:'')); });
   return '<div class="sv">'+(parts.length?'<div>장비: '+escH(parts.join(' · '))+'</div>':'')+(sv.rating?'<div>만족도: '+escH(String(sv.rating))+' / 5</div>':'')+
     (ok.length?'<div><span class="ok">됨 '+ok.length+'</span> — '+escH(ok.join(', '))+'</div>':'')+
