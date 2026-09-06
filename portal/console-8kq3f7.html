@@ -655,7 +655,7 @@ td{color:var(--text)}
           <div class="result" id="betaRes"><div style="font-size:11px;color:#8fa5c2;letter-spacing:.05em;text-transform:uppercase">모집 페이지 링크</div><div class="k" id="betaLink">—</div></div>
         </div>
 
-        <div class="card"><h2>최근 테스트 보고 <span class="n" id="betaRecentCount"></span> <button class="tbtn" style="margin-left:8px" onclick="betaLoad()">새로고침</button></h2>
+        <div class="card"><h2>최근 테스트 보고 <span class="n" id="betaRecentCount"></span> <button class="tbtn" style="margin-left:8px" onclick="betaLoad()">새로고침</button> <button class="tbtn" onclick="betaRpExport('all',null,this)" title="모든 모집의 보고 전체를 클로드용 마크다운(+JSON)으로 복사·저장">전체 모집 통합 추출</button></h2>
           <div class="sub">모든 모집의 테스터가 올린 보고를 최신순으로 보여줍니다. "열기"를 누르면 그 모집의 보고 게시판으로 이동합니다.</div>
           <table style="margin-top:10px"><thead><tr><th>시각</th><th>모집</th><th>테스터</th><th>제목</th><th>상태</th><th></th></tr></thead><tbody id="betaRecentRows"><tr><td colspan="6" class="n">불러오는 중…</td></tr></tbody></table>
         </div>
@@ -690,7 +690,7 @@ td{color:var(--text)}
           <div style="margin-top:18px;padding:18px;border:1px solid var(--line);border-radius:12px;background:#0E1A2E" id="betaReportBox">
             <h2 style="font-size:15px;margin-bottom:4px">테스트 보고 게시판 — 이 모집의 테스터가 올린 보고 <span class="n" id="betaReportCount"></span></h2>
             <div class="sub">테스터가 마이페이지에서 올린 설문(장비·기능 점검·사유)과 건의사항, 스크린샷입니다. 답변을 저장하면 테스터 화면에 AudioAZ 답변으로 표시됩니다.</div>
-            <div class="toolbar" style="margin-top:8px"><select id="betaRpStatus" onchange="renderBetaReports()" style="border:1px solid #243350;border-radius:9px;padding:9px 12px;font-family:inherit;font-size:13.5px;background:#0E1A2E;color:#E9EEF7"><option value="">전체</option><option value="new">새 보고</option><option value="read">확인함</option><option value="answered">답변 완료</option></select><input class="field search" style="margin:0" id="betaRpSearch" placeholder="제목·내용·이메일 검색" oninput="renderBetaReports()"></div>
+            <div class="toolbar" style="margin-top:8px"><select id="betaRpStatus" onchange="renderBetaReports()" style="border:1px solid #243350;border-radius:9px;padding:9px 12px;font-family:inherit;font-size:13.5px;background:#0E1A2E;color:#E9EEF7"><option value="">전체</option><option value="new">새 보고</option><option value="read">확인함</option><option value="answered">답변 완료</option></select><input class="field search" style="margin:0" id="betaRpSearch" placeholder="제목·내용·이메일 검색" oninput="renderBetaReports()"><button class="tbtn" id="betaRpExportBtn" onclick="betaRpExport('list',null,this)" title="지금 보이는 보고를 클로드용 마크다운(+JSON)으로 복사·저장">보이는 보고 추출</button></div>
             <div id="betaReportList" class="n">—</div>
           </div>
         </div>
@@ -817,7 +817,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.19.3', AZ_CONSOLE_DATE='2026-09-07'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.20.0', AZ_CONSOLE_DATE='2026-09-07'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1491,6 +1491,47 @@ async function betaToggle(i){
   var r=await sb.from('beta_campaigns').update({active:!c.active}).eq('id',c.id); if(r.error){ alert('실패: '+r.error.message); return; }
   betaLoad();
 }
+// ===== 테스트 보고 추출(클로드용 마크다운 + JSON) =====
+function betaRpMdOne(x, ctx){
+  var L=[]; var sv=x.survey||{}; var g=sv.gear||{}; var c=ctx.campOf[x.campaign_id]||{}; var em=ctx.emailOf[x.user_id]||x.user_id;
+  L.push('## '+(x.title||'(제목 없음)'));
+  L.push('- 모집: '+(c.title||'—')+' ('+(c.slug||'')+') · 테스터: '+em+' · 올린 시각: '+fmtDateTime(x.created_at)+' · 상태: '+((RP_ST[x.status]||[x.status])[0])+' · id: '+x.id);
+  if(sv.gear){
+    var hostp=[g.platform==='mac'?'맥':(g.platform==='win'?'윈도우':''),g.os,g.host||g.mac].filter(Boolean).join(' · ');
+    L.push('- 장비: 스위처 '+(g.brand||'—')+(g.model?' '+g.model:'')+(hostp?' · 호스트 '+hostp:'')+(g.phones?' · 카메라 '+g.phones:'')+(g.mode?' · 운용 '+g.mode:'')+(g.venue?' · 현장 '+g.venue:''));
+    if(sv.rating) L.push('- 만족도: '+sv.rating+' / 5');
+    var F=sv.features||{}; var keys=Object.keys(F); if(keys.length){
+      L.push(''); L.push('| 기능 | 결과 | 사유 |'); L.push('|---|---|---|');
+      keys.forEach(function(k){ var f=F[k]||{}; var r=f.r==='ok'?'됨':(f.r==='ng'?'안 됨':'안 써봄'); L.push('| '+(BETA_RP_LABEL[k]||k)+' | '+r+' | '+String(f.why||'').replace(/\|/g,'/').replace(/\n/g,' ')+' |'); });
+    }
+  }
+  L.push(''); L.push('### 건의사항 · 내용'); L.push(x.body||'');
+  if(x.admin_note){ L.push(''); L.push('### AudioAZ 답변'); L.push(x.admin_note); }
+  var imgs=(x.images||[]); if(imgs.length){ L.push(''); L.push('### 첨부 이미지 ('+imgs.length+'장, 링크 1시간 유효)'); imgs.forEach(function(pth){ L.push('- '+(ctx.urls[pth]||pth)); }); }
+  L.push(''); return L.join('\n');
+}
+async function betaRpExport(kind, id, btn){
+  var rows=[], label='';
+  if(kind==='one'){ rows=BETA_REPORTS.filter(function(x){return x.id===id;}); label='보고 1건'; }
+  else if(kind==='list'){ var st=(document.getElementById('betaRpStatus')||{}).value||'', q=((document.getElementById('betaRpSearch')||{}).value||'').trim().toLowerCase(); var emailOf={}; BETA_TESTERS.forEach(function(t){ emailOf[t.user_id]=t.email; }); rows=BETA_REPORTS.filter(function(x){ var em=emailOf[x.user_id]||''; return (!st||x.status===st) && (!q || (x.title+' '+x.body+' '+em+' '+(x.survey?JSON.stringify(x.survey):'')).toLowerCase().indexOf(q)>=0); }); label=(BETA_CUR?BETA_CUR.title:'')+' 보고 '+rows.length+'건'; }
+  else { var r=await sb.from('beta_reports').select('*').order('created_at',{ascending:false}).limit(2000); rows=r.data||[]; label='전체 모집 보고 '+rows.length+'건'; }
+  if(!rows.length){ alert('추출할 보고가 없습니다.'); return; }
+  var ids={}; rows.forEach(function(x){ ids[x.user_id]=1; }); var emailOf={};
+  try{ var tr=await sb.from('beta_testers').select('user_id,email').in('user_id',Object.keys(ids)); (tr.data||[]).forEach(function(t){ emailOf[t.user_id]=t.email; }); }catch(_){}
+  var campOf={}; BETA.forEach(function(c){ campOf[c.id]=c; });
+  var paths=[]; rows.forEach(function(x){ (x.images||[]).forEach(function(pth){ if(!BETA_RP_URLS[pth]) paths.push(pth); }); });
+  if(paths.length){ try{ var su=await sb.storage.from('beta-reports').createSignedUrls(paths, 3600); (su.data||[]).forEach(function(o){ if(o&&o.signedUrl) BETA_RP_URLS[o.path]=o.signedUrl; }); }catch(_){} }
+  var ctx={campOf:campOf, emailOf:emailOf, urls:BETA_RP_URLS};
+  var now=new Date(); var L=['# Flare Tally 베타 테스트 보고 추출 — '+label, '- 추출 시각: '+now.toISOString()+' · 콘솔 v'+AZ_CONSOLE_VERSION, '- 항목 설명: 결과 = 됨/안 됨/안 써봄, 사유는 "안 됨"일 때 테스터가 적은 내용', ''];
+  var ok=0,ng=0; rows.forEach(function(x){ var F=(x.survey||{}).features||{}; Object.keys(F).forEach(function(k){ if(F[k].r==='ok') ok++; if(F[k].r==='ng') ng++; }); });
+  if(rows.length>1){ L.push('- 요약: 보고 '+rows.length+'건 · 기능 됨 '+ok+' · 안 됨 '+ng); var ngc={}; rows.forEach(function(x){ var F=(x.survey||{}).features||{}; Object.keys(F).forEach(function(k){ if(F[k].r==='ng') ngc[k]=(ngc[k]||0)+1; }); }); var top=Object.keys(ngc).sort(function(a,b){return ngc[b]-ngc[a];}); if(top.length) L.push('- 안 됨 많은 기능: '+top.map(function(k){return (BETA_RP_LABEL[k]||k)+' '+ngc[k];}).join(', ')); L.push(''); }
+  rows.forEach(function(x){ L.push(betaRpMdOne(x, ctx)); });
+  L.push('```json'); L.push(JSON.stringify({exported:now.toISOString(),count:rows.length,reports:rows.map(function(x){ return {id:x.id,campaign:(campOf[x.campaign_id]||{}).slug||x.campaign_id,email:emailOf[x.user_id]||null,created_at:x.created_at,status:x.status,title:x.title,body:x.body,survey:x.survey||null,admin_note:x.admin_note||null,images:(x.images||[]).map(function(pth){return BETA_RP_URLS[pth]||pth;})}; })})); L.push('```');
+  var md=L.join('\n');
+  var copied=false; try{ await navigator.clipboard.writeText(md); copied=true; }catch(_){ try{ var ta=document.createElement('textarea'); ta.value=md; document.body.appendChild(ta); ta.select(); copied=document.execCommand('copy'); ta.remove(); }catch(__){} }
+  var saved=false; try{ var name='flare-tally-beta-reports_'+(kind==='one'?'one_':(kind==='all'?'all_':((BETA_CUR?BETA_CUR.slug:'list')+'_')))+now.toISOString().slice(0,16).replace(/[-:T]/g,'')+'.md'; var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown;charset=utf-8'})); a.download=name; document.body.appendChild(a); a.click(); saved=true; setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},2000); }catch(_){}
+  if(btn){ var t=btn.textContent; btn.textContent=(copied?'복사됨':'복사 실패')+(saved?' · .md 저장':''); setTimeout(function(){btn.textContent=t;},2600); }
+}
 async function betaRenderRecent(all){
   var tb=document.getElementById('betaRecentRows'); if(!tb) return;
   var cnt=document.getElementById('betaRecentCount'); if(cnt) cnt.textContent=all.length?('전체 '+all.length+' · 새 보고 '+all.filter(function(x){return x.status==='new';}).length):'';
@@ -1646,7 +1687,7 @@ function renderBetaReports(){
     return '<div style="padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#0E1A2E;margin-top:10px" data-rp="'+esc(x.id)+'">'+
       '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b style="font-size:15px;color:#E9EEF7">'+esc(x.title)+'</b><span class="pill '+s[1]+'">'+s[0]+'</span>'+(top?'<span class="pill p-active">우수 테스터</span>':'')+'<span class="n" style="margin-left:auto">'+esc(em)+' · '+fmtDateTime(x.created_at)+'</span></div>'+
       '<div style="white-space:pre-wrap;font-size:13.5px;color:#E9EEF7;line-height:1.65;margin-top:8px">'+esc(x.body)+'</div>'+betaSurveyHtml(x.survey)+(imgs?'<div>'+imgs+'</div>':'')+
-      '<div style="margin-top:12px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start"><textarea class="rp-note" rows="2" placeholder="답변·메모 (테스터의 마이페이지에 AudioAZ 답변으로 표시됩니다)" style="width:100%;border:1px solid #243350;border-radius:9px;padding:9px 12px;font-family:inherit;font-size:13px;background:#121D33;color:#E9EEF7;resize:vertical">'+esc(x.admin_note||'')+'</textarea><div style="display:flex;flex-direction:column;gap:6px"><button class="tbtn" type="button" onclick="betaRpNote(\''+esc(x.id)+'\',this)">답변 저장</button>'+(x.status==='new'?'<button class="tbtn" type="button" onclick="betaRpStatus(\''+esc(x.id)+'\',\'read\')">확인함</button>':'')+'</div></div>'+
+      '<div style="margin-top:12px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start"><textarea class="rp-note" rows="2" placeholder="답변·메모 (테스터의 마이페이지에 AudioAZ 답변으로 표시됩니다)" style="width:100%;border:1px solid #243350;border-radius:9px;padding:9px 12px;font-family:inherit;font-size:13px;background:#121D33;color:#E9EEF7;resize:vertical">'+esc(x.admin_note||'')+'</textarea><div style="display:flex;flex-direction:column;gap:6px"><button class="tbtn" type="button" onclick="betaRpExport(\'one\',\''+esc(x.id)+'\',this)" title="이 보고만 추출">추출</button><button class="tbtn" type="button" onclick="betaRpNote(\''+esc(x.id)+'\',this)">답변 저장</button>'+(x.status==='new'?'<button class="tbtn" type="button" onclick="betaRpStatus(\''+esc(x.id)+'\',\'read\')">확인함</button>':'')+'</div></div>'+
     '</div>';
   }).join('');
 }
