@@ -137,7 +137,7 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
 .rp-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}@media(max-width:640px){.rp-grid{grid-template-columns:1fr}}
 .rp-grp{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.08em;color:var(--dim);margin:14px 0 6px}
 .rp-f{display:grid;grid-template-columns:1fr auto;gap:8px 14px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
-.rp-f .nm{font-size:14px}
+.rp-f .nm{font-size:14px}.rp-f .hint{font-size:12px;color:var(--dim);line-height:1.5;margin-top:2px}
 .rp-f .opts{display:flex;gap:4px}
 .rp-f .opts label{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;padding:5px 9px;border:1px solid var(--line);border-radius:8px;cursor:pointer;color:var(--dim)}
 .rp-f .opts input{margin:0}
@@ -288,10 +288,12 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
 
         <h4 class="rp-h">1. 사용한 장비</h4>
         <div class="rp-grid">
-          <div class="field"><label for="rp-brand">스위처 브랜드</label><select id="rp-brand" name="brand" required>
+          <div class="field"><label for="rp-brand">스위처 브랜드</label><select id="rp-brand" name="brand" required onchange="rpBrandChange()">
             <option value="">선택</option><option>Blackmagic ATEM</option><option>Roland</option><option>vMix</option><option>OBS Studio</option><option>TSL UMD</option><option>없음 (데모 방)</option><option>기타</option></select></div>
-          <div class="field"><label for="rp-model">스위처 모델</label><input id="rp-model" name="model" type="text" maxlength="60" placeholder="예: ATEM Mini Extreme ISO, V-160HD"></div>
-          <div class="field"><label for="rp-mac">호스트 맥 · macOS</label><input id="rp-mac" name="mac" type="text" maxlength="60" placeholder="예: MacBook Air M2 · macOS 15.1"></div>
+          <div class="field" id="rp-model-wrap"><label for="rp-model">스위처 모델</label><select id="rp-model" name="model"><option value="">브랜드를 먼저 고르세요</option></select><input id="rp-model-etc" name="model_etc" type="text" maxlength="60" placeholder="모델명을 적어 주세요" hidden style="margin-top:6px"></div>
+          <div class="field"><label for="rp-platform">호스트 컴퓨터</label><select id="rp-platform" name="platform" required onchange="rpPlatformChange()"><option value="">선택</option><option value="mac">맥 (macOS)</option><option value="win">윈도우 (Windows)</option></select></div>
+          <div class="field"><label for="rp-os">운영체제 버전</label><select id="rp-os" name="os"><option value="">컴퓨터를 먼저 고르세요</option></select></div>
+          <div class="field"><label for="rp-host">호스트 기종 (선택)</label><input id="rp-host" name="host" type="text" maxlength="60" placeholder="예: MacBook Air M2 · 또는 노트북 모델명"></div>
           <div class="field"><label for="rp-phones">카메라 폰·태블릿</label><input id="rp-phones" name="phones" type="text" maxlength="80" placeholder="예: iPhone 15 × 3, iPad 9세대 × 1"></div>
           <div class="field"><label for="rp-mode">운용 방식</label><select id="rp-mode" name="mode" required>
             <option value="">선택</option><option>오프라인 (같은 Wi-Fi)</option><option>온라인 (LTE·5G)</option><option>둘 다</option></select></div>
@@ -611,16 +613,53 @@ async function loadTesters(){
   if(TESTERS.length){ rpRenderFeatures(); loadReports(); } else if(location.hash==='#reports') showView('home');
 }
 var RP_FEATURES=[
-  ['호스트(맥)',[['host_scan','스위처 자동 검색·연결'],['host_room','방 코드·QR 생성'],['host_tally','PGM·PVW 반영이 정확함'],['host_notice','공지·타이머·목표 시각 전달'],['host_key','키어 온에어 반영']]],
-  ['카메라 앱(iPhone·iPad)',[['app_join','방 코드로 합류'],['app_qr','QR로 합류'],['app_tally','ON AIR·PREVIEW 화면 전환'],['app_haptic','진동·알림'],['app_island','다이나믹 아일랜드·잠금화면 표시'],['app_bg','앱을 뒤로 보내도 갱신됨'],['app_lte','Wi-Fi 끊겼을 때 LTE·5G 자동 전환'],['app_border','아이패드 테두리 모드'],['app_lang','언어 전환']]],
-  ['라이선스',[['lic','코드 등록·라이선스 적용']]]
+  ['호스트(맥·윈도우)',[
+    ['host_scan','스위처 자동 검색·연결','호스트에서 "스캔"을 눌렀을 때 같은 네트워크의 스위처를 찾아 연결되는지'],
+    ['host_room','방 코드·QR 생성','탈리 시작 후 방 코드와 온라인·오프라인 QR이 표시되는지'],
+    ['host_tally','PGM·PVW 반영이 정확함','스위처에서 컷·프리뷰를 바꿀 때 호스트의 카메라 칸 색(빨강·초록)이 맞게 바뀌는지'],
+    ['host_notice','공지·타이머·목표 시각 전달','호스트에서 입력한 공지, 타이머, 목표 시각이 카메라 폰에 뜨는지'],
+    ['host_key','키어 온에어 반영','업스트림·다운스트림 키어(자막·PIP·로고 등)를 켰을 때 그 키에 물린 카메라도 빨강(ON AIR)으로 바뀌는지. ATEM만 해당, 안 써봤으면 "안 써봄"']]],
+  ['카메라 앱(iPhone·iPad)',[
+    ['app_join','방 코드로 합류','앱에 방 코드와 카메라 번호를 넣고 Connect 하면 접속되는지'],
+    ['app_qr','QR로 합류','호스트의 QR을 앱으로 찍었을 때 바로 접속되는지'],
+    ['app_tally','ON AIR·PREVIEW 화면 전환','내 카메라가 방송이면 화면 전체 빨강, 프리뷰면 초록으로 지연 없이 바뀌는지'],
+    ['app_haptic','진동·알림','프리뷰·온에어로 바뀔 때 진동 패턴과 알림이 오는지'],
+    ['app_island','다이나믹 아일랜드·잠금화면 표시','다른 앱을 쓰거나 화면을 잠갔을 때 아일랜드·잠금화면에 CAM 번호와 ON AIR/PVW가 보이는지'],
+    ['app_bg','앱을 뒤로 보내도 갱신됨','홈 화면으로 나가거나 다른 앱을 쓰는 동안(앱이 백그라운드일 때) 아일랜드·잠금화면의 상태가 계속 바뀌는지 — 멈춰 있으면 "안 됨"'],
+    ['app_lte','Wi-Fi 끊겼을 때 LTE·5G 자동 전환','오프라인(Wi-Fi)으로 쓰다 Wi-Fi가 끊기면 앱이 스스로 온라인 서버로 붙어 탈리가 이어지는지'],
+    ['app_border','아이패드 테두리 모드','아이패드에서 테두리 모드를 켜면 가운데는 비우고 가장자리만 빨강·초록으로 빛나는지'],
+    ['app_lang','언어 전환','앱 하단의 English / 한국어 버튼을 눌렀을 때 화면 문구가 바로 바뀌는지']]],
+  ['라이선스',[
+    ['lic','코드 등록·라이선스 적용','베타 코드를 홈페이지에서 등록한 뒤 호스트에 로그인하면 라이선스가 적용되는지']]]
 ];
+var RP_MODELS={
+  'Blackmagic ATEM':['ATEM Mini','ATEM Mini Pro','ATEM Mini Pro ISO','ATEM Mini Extreme','ATEM Mini Extreme ISO','ATEM SDI','ATEM SDI Pro ISO','ATEM SDI Extreme ISO','ATEM Television Studio HD','ATEM Television Studio HD8','ATEM Television Studio HD8 ISO','ATEM Television Studio Pro 4K','ATEM 1 M/E Production Studio 4K','ATEM 2 M/E Production Studio 4K','ATEM 1 M/E Constellation HD','ATEM 2 M/E Constellation HD','ATEM 4 M/E Constellation HD','ATEM 1 M/E Constellation 4K','ATEM 2 M/E Constellation 4K','ATEM 4 M/E Constellation 4K','기타 ATEM'],
+  'Roland':['V-60HD','V-80HD','V-160HD','V-8HD','V-1HD+','VR-6HD','VR-120HD','기타 Roland'],
+  'vMix':['vMix 28','vMix 27','vMix 26 이하'],
+  'OBS Studio':['OBS Studio 31','OBS Studio 30','OBS Studio 29 이하'],
+  'TSL UMD':['TSL UMD v3.1','TSL UMD v5.0','기타 UMD 장비'],
+  '기타':[]
+};
+var RP_OS={mac:['macOS 26 (Tahoe)','macOS 15 (Sequoia)','macOS 14 (Sonoma)','macOS 13 (Ventura)','macOS 12 (Monterey)','macOS 11 (Big Sur)'], win:['Windows 11','Windows 10']};
+function rpBrandChange(){
+  var b=document.getElementById('rp-brand').value, sel=document.getElementById('rp-model'), etc=document.getElementById('rp-model-etc'), wrap=document.getElementById('rp-model-wrap');
+  var list=RP_MODELS[b]||[]; wrap.hidden=(b==='없음 (데모 방)');
+  if(!b){ sel.innerHTML='<option value="">브랜드를 먼저 고르세요</option>'; sel.hidden=false; etc.hidden=true; return; }
+  if(!list.length){ sel.hidden=true; etc.hidden=false; return; }
+  sel.hidden=false; etc.hidden=true;
+  sel.innerHTML='<option value="">선택</option>'+list.map(function(m){ return '<option>'+escH(m)+'</option>'; }).join('');
+  sel.onchange=function(){ etc.hidden=!/^기타/.test(sel.value); };
+}
+function rpPlatformChange(){
+  var pf=document.getElementById('rp-platform').value, sel=document.getElementById('rp-os');
+  var list=RP_OS[pf]||[]; sel.innerHTML=list.length?('<option value="">선택</option>'+list.map(function(m){ return '<option>'+escH(m)+'</option>'; }).join('')):'<option value="">컴퓨터를 먼저 고르세요</option>';
+}
 var RP_LABEL={}; RP_FEATURES.forEach(function(g){ g[1].forEach(function(f){ RP_LABEL[f[0]]=f[1]; }); });
 function rpRenderFeatures(){
   var box=document.getElementById('rp-features'); if(!box||box.children.length) return;
   box.innerHTML=RP_FEATURES.map(function(g){
     return '<div class="rp-grp">'+escH(g[0])+'</div>'+g[1].map(function(f){ var k=f[0];
-      return '<div class="rp-f" data-k="'+k+'"><div class="nm">'+escH(f[1])+'</div><div class="opts">'+
+      return '<div class="rp-f" data-k="'+k+'"><div class="nm">'+escH(f[1])+(f[2]?'<div class="hint">'+escH(f[2])+'</div>':'')+'</div><div class="opts">'+
         '<label class="ok"><input type="radio" name="f_'+k+'" value="ok"> 됨</label>'+
         '<label class="ng"><input type="radio" name="f_'+k+'" value="ng"> 안 됨</label>'+
         '<label><input type="radio" name="f_'+k+'" value="na" checked> 안 써봄</label></div>'+
@@ -633,7 +672,9 @@ async function reportSubmit(e){
   e.preventDefault();
   var f=e.target, btn=document.getElementById('rpBtn'); var camp=f.campaign.value, body=f.body.value.trim(); var files=Array.prototype.slice.call(f.files.files||[]);
   if(!camp){ showMsg('rpMsg','베타 프로그램을 선택하세요.'); return false; }
-  if(!f.brand.value||!f.mode.value){ showMsg('rpMsg','스위처 브랜드와 운용 방식을 선택하세요.'); return false; }
+  if(!f.brand.value||!f.mode.value||!f.platform.value){ showMsg('rpMsg','스위처 브랜드, 호스트 컴퓨터, 운용 방식을 선택하세요.'); return false; }
+  var modelSel=document.getElementById('rp-model'), modelEtc=(f.model_etc.value||'').trim(); var model=(f.brand.value==='없음 (데모 방)')?'':((modelSel.hidden||/^기타/.test(modelSel.value))?(modelEtc||modelSel.value):modelSel.value);
+  if(f.brand.value!=='없음 (데모 방)' && !model){ showMsg('rpMsg','스위처 모델을 고르거나 적어 주세요.'); return false; }
   var feats={}, ng=[], used=0;
   RP_FEATURES.forEach(function(g){ g[1].forEach(function(x){ var k=x[0]; var v=(f['f_'+k]&&f['f_'+k].value)||'na'; var why=(f['w_'+k]&&f['w_'+k].value||'').trim(); if(v!=='na') used++; if(v==='ng'&&!why){ ng.push(x[1]); } feats[k]={r:v, why:(v==='ng'?why:'')}; }); });
   if(ng.length){ showMsg('rpMsg','"안 됨"으로 표시한 항목의 이유를 적어 주세요: '+ng.join(', ')); return false; }
@@ -642,21 +683,21 @@ async function reportSubmit(e){
   if(files.some(function(x){ return x.size>8*1024*1024 || !/^image\//.test(x.type); })){ showMsg('rpMsg','이미지 파일만, 장당 8MB 이하로 올려 주세요.'); return false; }
   var u=(await sbA.auth.getUser()).data.user; if(!u){ location.replace('index.html'); return false; }
   var rating=(f.rating&&f.rating.value)?parseInt(f.rating.value):null;
-  var survey={v:1, gear:{brand:f.brand.value, model:f.model.value.trim(), mac:f.mac.value.trim(), phones:f.phones.value.trim(), mode:f.mode.value, venue:f.venue.value.trim()}, features:feats, rating:rating};
+  var survey={v:2, gear:{brand:f.brand.value, model:model, platform:f.platform.value, os:f.os.value, host:f.host.value.trim(), phones:f.phones.value.trim(), mode:f.mode.value, venue:f.venue.value.trim()}, features:feats, rating:rating};
   var ngCount=Object.keys(feats).filter(function(k){return feats[k].r==='ng';}).length, okCount=Object.keys(feats).filter(function(k){return feats[k].r==='ok';}).length;
-  var title=f.title.value.trim()||('테스트 보고 · '+f.brand.value+(f.model.value.trim()?' '+f.model.value.trim():'')+' · 됨 '+okCount+' / 안 됨 '+ngCount);
+  var title=f.title.value.trim()||('테스트 보고 · '+f.brand.value+(model?' '+model:'')+' · 됨 '+okCount+' / 안 됨 '+ngCount);
   btn.disabled=true; btn.textContent=files.length?'이미지 올리는 중…':'저장 중…';
   try{
     var paths=[];
     for(var i=0;i<files.length;i++){ var ext=(files[i].name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5)||'jpg'; var path=u.id+'/'+Date.now()+'_'+i+'.'+ext; var up=await sbA.storage.from('beta-reports').upload(path, files[i], {contentType:files[i].type, upsert:false}); if(up.error) throw new Error('이미지 업로드 실패: '+up.error.message); paths.push(path); }
     var ins=await sbA.from('beta_reports').insert({campaign_id:camp, user_id:u.id, title:title, body:body||'(설문만 제출)', images:paths, survey:survey}); if(ins.error) throw new Error(ins.error.message);
-    f.reset(); document.querySelectorAll('#rp-features .why').forEach(function(w){ w.hidden=true; }); showMsg('rpMsg','보고가 등록되었습니다. 감사합니다.',true); loadReports();
+    f.reset(); rpBrandChange(); rpPlatformChange(); document.querySelectorAll('#rp-features .why').forEach(function(w){ w.hidden=true; }); showMsg('rpMsg','보고가 등록되었습니다. 감사합니다.',true); loadReports();
   }catch(err){ showMsg('rpMsg', (err.message||String(err))); }
   btn.disabled=false; btn.textContent='보고 올리기'; return false;
 }
 function rpSurveyHtml(sv){
   if(!sv||!sv.gear) return '';
-  var g=sv.gear, parts=[]; if(g.brand) parts.push(g.brand+(g.model?' '+g.model:'')); if(g.mac) parts.push(g.mac); if(g.phones) parts.push(g.phones); if(g.mode) parts.push(g.mode); if(g.venue) parts.push(g.venue);
+  var g=sv.gear, parts=[]; if(g.brand) parts.push((g.brand==='Blackmagic ATEM'&&/^ATEM/.test(g.model||''))?('Blackmagic '+g.model):(g.brand+(g.model?' '+g.model:''))); var hostp=[g.platform==='mac'?'맥':(g.platform==='win'?'윈도우':''),g.os,g.host||g.mac].filter(Boolean).join(' · '); if(hostp) parts.push(hostp); if(g.phones) parts.push(g.phones); if(g.mode) parts.push(g.mode); if(g.venue) parts.push(g.venue);
   var ok=[],ng=[]; Object.keys(sv.features||{}).forEach(function(k){ var x=sv.features[k]||{}; if(x.r==='ok') ok.push(RP_LABEL[k]||k); if(x.r==='ng') ng.push((RP_LABEL[k]||k)+(x.why?' — '+x.why:'')); });
   return '<div class="sv">'+(parts.length?'<div>장비: '+escH(parts.join(' · '))+'</div>':'')+(sv.rating?'<div>만족도: '+escH(String(sv.rating))+' / 5</div>':'')+
     (ok.length?'<div><span class="ok">됨 '+ok.length+'</span> — '+escH(ok.join(', '))+'</div>':'')+
