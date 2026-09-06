@@ -812,7 +812,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.18.2', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.18.3', AZ_CONSOLE_DATE='2026-09-05'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1855,21 +1855,19 @@ function renderOrders(){
       '<td>'+(o.status==='paid'?'<button class="tbtn danger" onclick="refundOrder(\''+o.id+'\')">환불</button>':'')+(o.status==='pending'?'<button class="tbtn" title="미결제 주문 취소'+(o.promo_reserved?' · 할인코드 선점 반환':'')+'" onclick="cancelOrder(\''+o.id+'\')">취소'+(o.promo_reserved?'(코드반환)':'')+'</button>':'')+(o.promo_note?' <span class="n" title="'+esc(o.promo_note)+'" style="color:#FFD27A">코드 초과</span>':'')+' <button class="tbtn" onclick="copyText(\''+o.id+'\',this)">ID복사</button></td></tr>';
   }).join('');
 }
-function renderOrdMonths(){
+// 월별 매출: 서버 집계 뷰 orders_monthly(테스트 제외·RLS 적용) — 목록 1,000건 캡과 무관하게 정확. 실패 시 목록 기반 폴백
+async function renderOrdMonths(){
   var tb=document.getElementById('ordMonthRows'); if(!tb) return;
+  var r=await sb.from('orders_monthly').select('*');
   var M={};
-  ORDERS.forEach(function(o){
-    if(o.status!=='paid'||o.is_test) return;
-    var d=new Date(o.created_at); if(isNaN(d)) return;
-    var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-    (M[k]=M[k]||[]).push(o);
-  });
+  if(!r.error&&r.data&&r.data.length){
+    r.data.forEach(function(x){ var m=M[x.month]=M[x.month]||{dom:{},abroad:{},domN:0,abroadN:0}; var b=x.bucket==='abroad'?'abroad':'dom'; m[b][x.cur]=(m[b][x.cur]||0)+Number(x.total||0); m[b+'N']+=Number(x.n||0); });
+  } else {
+    ORDERS.forEach(function(o){ if(o.status!=='paid'||o.is_test) return; var d=new Date(o.paid_at||o.created_at); if(isNaN(d)) return; var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); var m=M[k]=M[k]||{dom:{},abroad:{},domN:0,abroadN:0}; var b=revBucket(o); var cur=o.paid_currency||o.currency||'KRW'; m[b][cur]=(m[b][cur]||0)+Number((o.paid_currency?o.paid_amount:o.amount)||0); m[b+'N']++; });
+  }
   var ks=Object.keys(M).sort().reverse();
   if(!ks.length){ tb.innerHTML='<tr><td colspan="4" class="n">결제완료 주문이 아직 없습니다.</td></tr>'; return; }
-  tb.innerHTML=ks.map(function(k){
-    var sp=revSplit(M[k]);
-    return '<tr><td class="mono">'+k+'</td><td class="mono">'+(sp.domN?fmtMoney(sp.dom):'—')+'</td><td class="mono">'+(sp.abroadN?fmtMoney(sp.abroad):'—')+'</td><td>'+(sp.domN+sp.abroadN)+'</td></tr>';
-  }).join('');
+  tb.innerHTML=ks.map(function(k){ var sp=M[k]; return '<tr><td class="mono">'+k+'</td><td class="mono">'+(sp.domN?fmtMoney(sp.dom):'—')+'</td><td class="mono">'+(sp.abroadN?fmtMoney(sp.abroad):'—')+'</td><td>'+(sp.domN+sp.abroadN)+'</td></tr>'; }).join('');
 }
 function ordCsv(){
   var L=ordFiltered();
