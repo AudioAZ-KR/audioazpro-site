@@ -656,11 +656,11 @@ td{color:var(--text)}
         </div>
 
         <div class="card"><h2>모집 목록</h2>
-          <table><thead><tr><th>제목</th><th>제품 · 라이선스</th><th>기간 · 정원</th><th>신청</th><th>상태</th><th></th></tr></thead>
+          <table><thead><tr><th>제목</th><th>제품 · 라이선스</th><th>기간 · 정원</th><th>신청</th><th>보고</th><th>상태</th><th></th></tr></thead>
           <tbody id="betaRows"><tr><td colspan="6" class="n">불러오는 중…</td></tr></tbody></table>
         </div>
 
-        <div class="card" id="betaSignCard" style="display:none"><h2 id="betaSignTitle">신청자</h2>
+        <div class="card" id="betaSignCard" style="display:none"><h2 id="betaSignTitle">신청자</h2><div class="toolbar" style="margin:6px 0 10px;display:flex;gap:6px;flex-wrap:wrap"><span class="n">이 모집 안에서 이동:</span><button class="tbtn" onclick="document.getElementById('betaSignTable')&&document.getElementById('betaSignTable').scrollIntoView({behavior:'smooth',block:'start'})">신청자 목록</button><button class="tbtn" onclick="document.getElementById('betaTesterBox').scrollIntoView({behavior:'smooth',block:'start'})">베타 테스터</button><button class="tbtn" onclick="document.getElementById('betaReportBox').scrollIntoView({behavior:'smooth',block:'start'})">테스트 보고 <span id="betaReportNav" class="n"></span></button></div>
           <div class="toolbar"><input class="field search" style="margin:0" id="betaSearch" placeholder="이메일·이름 검색" oninput="renderBetaSignups()"><select id="betaStatus" onchange="renderBetaSignups()" style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-family:inherit;font-size:14px;background:#0E1A2E;color:#E9EEF7;border-color:#243350"><option value="">전체 상태</option><option value="pending">미발급</option><option value="issued">발급됨</option><option value="failed">실패</option></select><button class="tbtn" type="button" onclick="betaCopyEmails(this)">이메일 복사</button><button class="tbtn" type="button" onclick="betaCsv()">CSV 내보내기</button></div>
           <table><thead><tr><th><input type="checkbox" id="betaAll" onchange="betaToggleAll(this)" title="표시된 항목 전체 선택"></th><th>이메일</th><th>이름</th><th>소개 · 응답</th><th>상태</th><th>발급 내역</th><th>신청일</th></tr></thead>
           <tbody id="betaSignRows"></tbody></table>
@@ -683,8 +683,9 @@ td{color:var(--text)}
             <table><thead><tr><th>이메일</th><th>참여일</th><th>보고</th><th>추천 · 우수</th><th>보상 라이선스</th><th>상태</th><th></th></tr></thead><tbody id="betaTesterRows"><tr><td colspan="6" class="n">—</td></tr></tbody></table>
           </div>
 
-          <div style="margin-top:18px" id="betaReportBox">
-            <h2 style="font-size:15px;margin-bottom:4px">테스트 보고 게시판 <span class="n" id="betaReportCount"></span></h2>
+          <div style="margin-top:18px;padding:18px;border:1px solid var(--line);border-radius:12px;background:#0E1A2E" id="betaReportBox">
+            <h2 style="font-size:15px;margin-bottom:4px">테스트 보고 게시판 — 이 모집의 테스터가 올린 보고 <span class="n" id="betaReportCount"></span></h2>
+            <div class="sub">테스터가 마이페이지에서 올린 설문(장비·기능 점검·사유)과 건의사항, 스크린샷입니다. 답변을 저장하면 테스터 화면에 AudioAZ 답변으로 표시됩니다.</div>
             <div class="toolbar" style="margin-top:8px"><select id="betaRpStatus" onchange="renderBetaReports()" style="border:1px solid #243350;border-radius:9px;padding:9px 12px;font-family:inherit;font-size:13.5px;background:#0E1A2E;color:#E9EEF7"><option value="">전체</option><option value="new">새 보고</option><option value="read">확인함</option><option value="answered">답변 완료</option></select><input class="field search" style="margin:0" id="betaRpSearch" placeholder="제목·내용·이메일 검색" oninput="renderBetaReports()"></div>
             <div id="betaReportList" class="n">—</div>
           </div>
@@ -812,7 +813,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.19.0', AZ_CONSOLE_DATE='2026-09-06'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.19.1', AZ_CONSOLE_DATE='2026-09-06'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1466,16 +1467,17 @@ function betaState(c){ var now=new Date(); if(!c.active) return ['비활성','p-
 async function betaLoad(){
   var tb=document.getElementById('betaRows'); if(!tb) return;
   var r=await sb.from('beta_campaigns').select('*,beta_signups(count)').order('created_at',{ascending:false}).limit(100);
-  if(r.error){ tb.innerHTML='<tr><td colspan="6" style="color:#ff9ea3">불러오기 실패: '+esc(r.error.message)+'</td></tr>'; return; }
-  BETA=(r.data||[]).map(function(c){ c.cnt=(c.beta_signups&&c.beta_signups[0]&&c.beta_signups[0].count)||0; return c; });
-  if(!BETA.length){ tb.innerHTML='<tr><td colspan="6" class="n">아직 모집이 없습니다. 위에서 모집 페이지를 만드세요.</td></tr>'; return; }
+  if(r.error){ tb.innerHTML='<tr><td colspan="7" style="color:#ff9ea3">불러오기 실패: '+esc(r.error.message)+'</td></tr>'; return; }
+  BETA=(r.data||[]).map(function(c){ c.cnt=(c.beta_signups&&c.beta_signups[0]&&c.beta_signups[0].count)||0; c.rp=0; c.rpNew=0; return c; });
+  try{ var rr=await sb.from('beta_reports').select('campaign_id,status').limit(5000); (rr.data||[]).forEach(function(x){ var c=BETA.find(function(b){return b.id===x.campaign_id;}); if(c){ c.rp++; if(x.status==='new') c.rpNew++; } }); }catch(_){}
+  if(!BETA.length){ tb.innerHTML='<tr><td colspan="7" class="n">아직 모집이 없습니다. 위에서 모집 페이지를 만드세요.</td></tr>'; return; }
   tb.innerHTML=BETA.map(function(c,i){
     var st=betaState(c);
     return '<tr'+(c.active?'':' style="opacity:.55"')+'><td><b>'+esc(c.title)+'</b><div class="mono" style="font-size:11px;color:#8fa5c2">'+esc(c.slug)+'</div></td>'+
       '<td>'+esc(PRODNAME[c.product_id]||c.product_id||'—')+'<div class="n">'+esc(BETA_TYPE[c.license_type]||c.license_type)+(c.auto_issue===false?' · 수동 발송':' · 즉시 발송')+'</div></td>'+
       '<td class="mono" style="font-size:12px">'+(c.starts_at?fmtDate(c.starts_at):'즉시')+' ~ '+(c.ends_at?fmtDate(c.ends_at):'수동 마감')+'<div class="n">정원 '+(c.max_signups||'제한 없음')+'</div></td>'+
-      '<td class="mono">'+c.cnt+'</td><td><span class="pill '+st[1]+'">'+st[0]+'</span></td>'+
-      '<td style="white-space:nowrap"><button class="tbtn" onclick="copyText(betaUrl(BETA['+i+'].slug),this)">링크 복사</button> <button class="tbtn" onclick="betaOpen('+i+')">신청자</button> <button class="tbtn" onclick="betaEdit('+i+')">편집</button> <button class="tbtn'+(c.active?' danger':'')+'" onclick="betaToggle('+i+')">'+(c.active?'마감':'재개')+'</button></td></tr>';
+      '<td class="mono">'+c.cnt+'</td><td class="mono">'+(c.rp?('<button class="tbtn" onclick="betaOpenReports('+i+')" title="이 모집의 테스트 보고 보기">'+c.rp+(c.rpNew?' <span class="pill p-revoked">새 '+c.rpNew+'</span>':'')+'</button>'):'<span class="n">0</span>')+'</td><td><span class="pill '+st[1]+'">'+st[0]+'</span></td>'+
+      '<td style="white-space:nowrap"><button class="tbtn" onclick="copyText(betaUrl(BETA['+i+'].slug),this)">링크 복사</button> <button class="tbtn" onclick="betaOpen('+i+')">신청자</button> <button class="tbtn" onclick="betaOpenReports('+i+')">테스트 보고</button> <button class="tbtn" onclick="betaEdit('+i+')">편집</button> <button class="tbtn'+(c.active?' danger':'')+'" onclick="betaToggle('+i+')">'+(c.active?'마감':'재개')+'</button></td></tr>';
   }).join('');
   if(BETA_CUR){ var cur=BETA.find(function(c){return c.id===BETA_CUR.id;}); if(cur) BETA_CUR=cur; }
 }
@@ -1485,13 +1487,14 @@ async function betaToggle(i){
   var r=await sb.from('beta_campaigns').update({active:!c.active}).eq('id',c.id); if(r.error){ alert('실패: '+r.error.message); return; }
   betaLoad();
 }
-async function betaOpen(i){
+async function betaOpenReports(i){ await betaOpen(i, true); var box=document.getElementById('betaReportBox'); if(box){ box.scrollIntoView({behavior:'smooth',block:'start'}); box.style.boxShadow='0 0 0 2px #4D96F5'; setTimeout(function(){ box.style.boxShadow=''; },1600); } }
+async function betaOpen(i, noScroll){
   BETA_CUR=BETA[i]; if(!BETA_CUR) return;
   var card=document.getElementById('betaSignCard'); card.style.display='';
   document.getElementById('betaSignTitle').textContent='신청자 — '+BETA_CUR.title;
   var bp=document.getElementById('biProd'), bt=document.getElementById('biType'); if(BETA_CUR.product_id) bp.value=BETA_CUR.product_id; if(BETA_CUR.license_type) bt.value=BETA_CUR.license_type;
   document.getElementById('biRes').classList.remove('on');
-  await betaLoadSignups(); betaLoadTesters(); betaLoadReports(); card.scrollIntoView({behavior:'smooth',block:'start'});
+  await betaLoadSignups(); betaLoadTesters(); await betaLoadReports(); if(!noScroll) card.scrollIntoView({behavior:'smooth',block:'start'});
 }
 async function betaLoadSignups(){
   if(!BETA_CUR) return;
@@ -1621,7 +1624,7 @@ function renderBetaReports(){
   var st=(document.getElementById('betaRpStatus')||{}).value||'', q=((document.getElementById('betaRpSearch')||{}).value||'').trim().toLowerCase();
   var emailOf={}; BETA_TESTERS.forEach(function(t){ emailOf[t.user_id]=t.email; });
   var L=BETA_REPORTS.filter(function(x){ var em=emailOf[x.user_id]||''; return (!st||x.status===st) && (!q || (x.title+' '+x.body+' '+em+' '+(x.survey?JSON.stringify(x.survey):'')).toLowerCase().indexOf(q)>=0); });
-  var cnt=document.getElementById('betaReportCount'); if(cnt) cnt.textContent=BETA_REPORTS.length?('전체 '+BETA_REPORTS.length+' · 새 보고 '+BETA_REPORTS.filter(function(x){return x.status==='new';}).length):'';
+  var cnt=document.getElementById('betaReportCount'); if(cnt) cnt.textContent=BETA_REPORTS.length?('전체 '+BETA_REPORTS.length+' · 새 보고 '+BETA_REPORTS.filter(function(x){return x.status==='new';}).length):''; var nv=document.getElementById('betaReportNav'); if(nv) nv.textContent=BETA_REPORTS.length?('('+BETA_REPORTS.length+')'):'';
   if(!L.length){ box.className='n'; box.textContent=BETA_REPORTS.length?'조건에 맞는 보고가 없습니다.':'아직 올라온 테스트 보고가 없습니다.'; return; }
   box.className='';
   box.innerHTML=L.map(function(x){
