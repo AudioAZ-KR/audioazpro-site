@@ -133,6 +133,21 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
 .btn.danger{background:#3A1B1B;color:#FF9EA3;border-color:#5A2A2A}.btn.danger:hover{background:#4A2222}.btn:disabled{opacity:.5;cursor:not-allowed}
 .dellist{margin:0 0 18px;padding-left:18px;font-size:13.5px;color:var(--dim);line-height:1.75}.dellist li{margin-bottom:4px}.delwarn{background:#2E2410;border:1px solid #6B5A2A;color:#FFD27A;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;margin-bottom:16px}
 .msg{display:none;margin-left:10px;font-size:13px;font-weight:600}
+.rp-h{font-size:14px;font-weight:800;margin:22px 0 10px;padding-top:16px;border-top:1px solid var(--line)}
+.rp-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}@media(max-width:640px){.rp-grid{grid-template-columns:1fr}}
+.rp-grp{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.08em;color:var(--dim);margin:14px 0 6px}
+.rp-f{display:grid;grid-template-columns:1fr auto;gap:8px 14px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.rp-f .nm{font-size:14px}
+.rp-f .opts{display:flex;gap:4px}
+.rp-f .opts label{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;padding:5px 9px;border:1px solid var(--line);border-radius:8px;cursor:pointer;color:var(--dim)}
+.rp-f .opts input{margin:0}
+.rp-f .opts label.ok{color:#39D48C;border-color:#1f5a3f}.rp-f .opts label.ng{color:#F0727C;border-color:#5a2a2e}
+.rp-f .why{grid-column:1/-1;margin:0}.rp-f .why textarea{min-height:64px;font-size:13.5px}
+.rp-rate label{display:inline-flex;align-items:center;gap:4px;margin-right:10px;font-size:14px}
+.rp .sv{margin-top:8px;font-size:13px;color:var(--dim);line-height:1.7}
+.rp .sv .ng{color:#F0727C}.rp .sv .ok{color:#39D48C}
+@media(max-width:520px){.rp-f{grid-template-columns:1fr}}
+
 .rp{padding:14px 0;border-top:1px solid var(--line)}.rp:first-child{border-top:0;padding-top:0}.rp .t{font-size:15px;font-weight:800;color:var(--text)}.rp .m{font-size:12px;color:var(--dim);margin-top:3px}.rp .m .st{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.06em;border:1px solid var(--line);padding:1px 6px;margin-left:6px;color:var(--dim)}.rp .m .st.ans{color:#39D48C;border-color:#1E4D35}.rp .b{font-size:13.5px;color:var(--text);margin-top:8px;white-space:pre-wrap;line-height:1.65}.rp .imgs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.rp .imgs a img{height:96px;border:1px solid var(--line);border-radius:8px;display:block;object-fit:cover}.rp .note{margin-top:10px;padding:10px 12px;background:#0E2B1E;border:1px solid #1E4D35;border-radius:9px;font-size:13px;color:#9BE3BE;white-space:pre-wrap}.rp .note b{display:block;font-size:11px;letter-spacing:.06em;margin-bottom:3px}
 </style>
 <script src="/portal/az-i18n.js" defer></script>
@@ -270,9 +285,29 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
     <div class="panel">
       <form id="rpForm" onsubmit="return reportSubmit(event)">
         <div class="field"><label for="rp-camp">베타 프로그램</label><select id="rp-camp" name="campaign" required></select></div>
-        <div class="field"><label for="rp-title">제목</label><input id="rp-title" name="title" type="text" maxlength="120" required placeholder="예: 스위처 연결이 3분 뒤 끊김"></div>
-        <div class="field"><label for="rp-body">내용</label><textarea id="rp-body" name="body" maxlength="5000" rows="14" required placeholder="재현 순서, 기대한 동작, 실제 동작, 사용 환경(컴퓨터·OS·장비)" style="min-height:320px;font-size:15px;line-height:1.7"></textarea></div>
-        <div class="field"><label for="rp-files">이미지 첨부 (선택 · 최대 5장, 장당 8MB)</label><input id="rp-files" name="files" type="file" accept="image/*" multiple></div>
+
+        <h4 class="rp-h">1. 사용한 장비</h4>
+        <div class="rp-grid">
+          <div class="field"><label for="rp-brand">스위처 브랜드</label><select id="rp-brand" name="brand" required>
+            <option value="">선택</option><option>Blackmagic ATEM</option><option>Roland</option><option>vMix</option><option>OBS Studio</option><option>TSL UMD</option><option>없음 (데모 방)</option><option>기타</option></select></div>
+          <div class="field"><label for="rp-model">스위처 모델</label><input id="rp-model" name="model" type="text" maxlength="60" placeholder="예: ATEM Mini Extreme ISO, V-160HD"></div>
+          <div class="field"><label for="rp-mac">호스트 맥 · macOS</label><input id="rp-mac" name="mac" type="text" maxlength="60" placeholder="예: MacBook Air M2 · macOS 15.1"></div>
+          <div class="field"><label for="rp-phones">카메라 폰·태블릿</label><input id="rp-phones" name="phones" type="text" maxlength="80" placeholder="예: iPhone 15 × 3, iPad 9세대 × 1"></div>
+          <div class="field"><label for="rp-mode">운용 방식</label><select id="rp-mode" name="mode" required>
+            <option value="">선택</option><option>오프라인 (같은 Wi-Fi)</option><option>온라인 (LTE·5G)</option><option>둘 다</option></select></div>
+          <div class="field"><label for="rp-venue">현장 종류 (선택)</label><input id="rp-venue" name="venue" type="text" maxlength="60" placeholder="예: 교회 예배, 콘서트, 유튜브 라이브"></div>
+        </div>
+
+        <h4 class="rp-h">2. 기능 점검</h4>
+        <p class="muted" style="margin:0 0 8px">써 본 기능마다 결과를 골라 주세요. "안 됨"을 고르면 어떤 상황이었는지 적는 칸이 열립니다.</p>
+        <div id="rp-features"></div>
+
+        <h4 class="rp-h">3. 총평</h4>
+        <div class="field"><label>전체 만족도</label><div class="rp-rate" id="rp-rate">
+          <label><input type="radio" name="rating" value="1"> 1</label><label><input type="radio" name="rating" value="2"> 2</label><label><input type="radio" name="rating" value="3"> 3</label><label><input type="radio" name="rating" value="4"> 4</label><label><input type="radio" name="rating" value="5"> 5</label><span class="muted" style="font-size:12px;margin-left:6px">1 = 못 쓰겠음 · 5 = 바로 현장에서 쓰겠음</span></div></div>
+        <div class="field"><label for="rp-body">건의사항 · 자유 의견</label><textarea id="rp-body" name="body" maxlength="5000" rows="7" placeholder="불편했던 점, 바라는 기능, 현장에서 있었던 일 등 자유롭게 적어 주세요."></textarea></div>
+        <div class="field"><label for="rp-title">제목 (선택)</label><input id="rp-title" name="title" type="text" maxlength="120" placeholder="비워 두면 장비·결과로 자동 생성"></div>
+        <div class="field"><label for="rp-files">스크린샷 첨부 (선택 · 최대 5장, 장당 8MB)</label><input id="rp-files" name="files" type="file" accept="image/*" multiple></div>
         <button class="btn pri" type="submit" id="rpBtn" style="height:44px;padding:0 22px">보고 올리기</button>
         <span id="rpMsg" class="msg"></span>
       </form>
@@ -573,27 +608,63 @@ async function loadTesters(){
   TESTERS=r.error?[]:(r.data||[]);
   var nav=document.getElementById('navReports'); if(nav) nav.hidden=!TESTERS.length;
   var sel=document.getElementById('rp-camp'); if(sel) sel.innerHTML=TESTERS.map(function(t){ var c=t.beta_campaigns||{}; return '<option value="'+escH(t.campaign_id)+'">'+escH(c.title||'베타 프로그램')+(t.is_top?' · 우수 테스터':'')+'</option>'; }).join('');
-  if(TESTERS.length) loadReports(); else if(location.hash==='#reports') showView('home');
+  if(TESTERS.length){ rpRenderFeatures(); loadReports(); } else if(location.hash==='#reports') showView('home');
+}
+var RP_FEATURES=[
+  ['호스트(맥)',[['host_scan','스위처 자동 검색·연결'],['host_room','방 코드·QR 생성'],['host_tally','PGM·PVW 반영이 정확함'],['host_notice','공지·타이머·목표 시각 전달'],['host_key','키어 온에어 반영']]],
+  ['카메라 앱(iPhone·iPad)',[['app_join','방 코드로 합류'],['app_qr','QR로 합류'],['app_tally','ON AIR·PREVIEW 화면 전환'],['app_haptic','진동·알림'],['app_island','다이나믹 아일랜드·잠금화면 표시'],['app_bg','앱을 뒤로 보내도 갱신됨'],['app_lte','Wi-Fi 끊겼을 때 LTE·5G 자동 전환'],['app_border','아이패드 테두리 모드'],['app_lang','언어 전환']]],
+  ['라이선스',[['lic','코드 등록·라이선스 적용']]]
+];
+var RP_LABEL={}; RP_FEATURES.forEach(function(g){ g[1].forEach(function(f){ RP_LABEL[f[0]]=f[1]; }); });
+function rpRenderFeatures(){
+  var box=document.getElementById('rp-features'); if(!box||box.children.length) return;
+  box.innerHTML=RP_FEATURES.map(function(g){
+    return '<div class="rp-grp">'+escH(g[0])+'</div>'+g[1].map(function(f){ var k=f[0];
+      return '<div class="rp-f" data-k="'+k+'"><div class="nm">'+escH(f[1])+'</div><div class="opts">'+
+        '<label class="ok"><input type="radio" name="f_'+k+'" value="ok"> 됨</label>'+
+        '<label class="ng"><input type="radio" name="f_'+k+'" value="ng"> 안 됨</label>'+
+        '<label><input type="radio" name="f_'+k+'" value="na" checked> 안 써봄</label></div>'+
+        '<div class="why field" hidden><textarea name="w_'+k+'" maxlength="600" placeholder="어떤 상황에서 어떻게 안 됐나요? (장비·순서·화면에 뜬 문구)"></textarea></div></div>';
+    }).join('');
+  }).join('');
+  box.addEventListener('change',function(e){ var r=e.target; if(r.type!=='radio') return; var row=r.closest('.rp-f'); if(!row) return; row.querySelector('.why').hidden=(r.value!=='ng'); });
 }
 async function reportSubmit(e){
   e.preventDefault();
-  var f=e.target, btn=document.getElementById('rpBtn'); var camp=f.campaign.value, title=f.title.value.trim(), body=f.body.value.trim(); var files=Array.prototype.slice.call(f.files.files||[]);
+  var f=e.target, btn=document.getElementById('rpBtn'); var camp=f.campaign.value, body=f.body.value.trim(); var files=Array.prototype.slice.call(f.files.files||[]);
   if(!camp){ showMsg('rpMsg','베타 프로그램을 선택하세요.'); return false; }
+  if(!f.brand.value||!f.mode.value){ showMsg('rpMsg','스위처 브랜드와 운용 방식을 선택하세요.'); return false; }
+  var feats={}, ng=[], used=0;
+  RP_FEATURES.forEach(function(g){ g[1].forEach(function(x){ var k=x[0]; var v=(f['f_'+k]&&f['f_'+k].value)||'na'; var why=(f['w_'+k]&&f['w_'+k].value||'').trim(); if(v!=='na') used++; if(v==='ng'&&!why){ ng.push(x[1]); } feats[k]={r:v, why:(v==='ng'?why:'')}; }); });
+  if(ng.length){ showMsg('rpMsg','"안 됨"으로 표시한 항목의 이유를 적어 주세요: '+ng.join(', ')); return false; }
+  if(!used && !body){ showMsg('rpMsg','기능 점검 결과나 의견 중 하나는 남겨 주세요.'); return false; }
   if(files.length>5){ showMsg('rpMsg','이미지는 최대 5장까지 올릴 수 있습니다.'); return false; }
   if(files.some(function(x){ return x.size>8*1024*1024 || !/^image\//.test(x.type); })){ showMsg('rpMsg','이미지 파일만, 장당 8MB 이하로 올려 주세요.'); return false; }
   var u=(await sbA.auth.getUser()).data.user; if(!u){ location.replace('index.html'); return false; }
+  var rating=(f.rating&&f.rating.value)?parseInt(f.rating.value):null;
+  var survey={v:1, gear:{brand:f.brand.value, model:f.model.value.trim(), mac:f.mac.value.trim(), phones:f.phones.value.trim(), mode:f.mode.value, venue:f.venue.value.trim()}, features:feats, rating:rating};
+  var ngCount=Object.keys(feats).filter(function(k){return feats[k].r==='ng';}).length, okCount=Object.keys(feats).filter(function(k){return feats[k].r==='ok';}).length;
+  var title=f.title.value.trim()||('테스트 보고 · '+f.brand.value+(f.model.value.trim()?' '+f.model.value.trim():'')+' · 됨 '+okCount+' / 안 됨 '+ngCount);
   btn.disabled=true; btn.textContent=files.length?'이미지 올리는 중…':'저장 중…';
   try{
     var paths=[];
     for(var i=0;i<files.length;i++){ var ext=(files[i].name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,5)||'jpg'; var path=u.id+'/'+Date.now()+'_'+i+'.'+ext; var up=await sbA.storage.from('beta-reports').upload(path, files[i], {contentType:files[i].type, upsert:false}); if(up.error) throw new Error('이미지 업로드 실패: '+up.error.message); paths.push(path); }
-    var ins=await sbA.from('beta_reports').insert({campaign_id:camp, user_id:u.id, title:title, body:body, images:paths}); if(ins.error) throw new Error(ins.error.message);
-    f.reset(); showMsg('rpMsg','보고가 등록되었습니다. 감사합니다.',true); loadReports();
+    var ins=await sbA.from('beta_reports').insert({campaign_id:camp, user_id:u.id, title:title, body:body||'(설문만 제출)', images:paths, survey:survey}); if(ins.error) throw new Error(ins.error.message);
+    f.reset(); document.querySelectorAll('#rp-features .why').forEach(function(w){ w.hidden=true; }); showMsg('rpMsg','보고가 등록되었습니다. 감사합니다.',true); loadReports();
   }catch(err){ showMsg('rpMsg', (err.message||String(err))); }
   btn.disabled=false; btn.textContent='보고 올리기'; return false;
 }
+function rpSurveyHtml(sv){
+  if(!sv||!sv.gear) return '';
+  var g=sv.gear, parts=[]; if(g.brand) parts.push(g.brand+(g.model?' '+g.model:'')); if(g.mac) parts.push(g.mac); if(g.phones) parts.push(g.phones); if(g.mode) parts.push(g.mode); if(g.venue) parts.push(g.venue);
+  var ok=[],ng=[]; Object.keys(sv.features||{}).forEach(function(k){ var x=sv.features[k]||{}; if(x.r==='ok') ok.push(RP_LABEL[k]||k); if(x.r==='ng') ng.push((RP_LABEL[k]||k)+(x.why?' — '+x.why:'')); });
+  return '<div class="sv">'+(parts.length?'<div>장비: '+escH(parts.join(' · '))+'</div>':'')+(sv.rating?'<div>만족도: '+escH(String(sv.rating))+' / 5</div>':'')+
+    (ok.length?'<div><span class="ok">됨 '+ok.length+'</span> — '+escH(ok.join(', '))+'</div>':'')+
+    (ng.length?'<div><span class="ng">안 됨 '+ng.length+'</span></div><ul style="margin:2px 0 0 18px;padding:0">'+ng.map(function(t){return '<li class="ng">'+escH(t)+'</li>';}).join('')+'</ul>':'')+'</div>';
+}
 async function loadReports(){
   var box=document.getElementById('rpList'); if(!box) return;
-  var r=await sbA.from('beta_reports').select('id,campaign_id,title,body,images,status,admin_note,created_at').order('created_at',{ascending:false}).limit(100);
+  var r=await sbA.from('beta_reports').select('id,campaign_id,title,body,images,status,admin_note,created_at,survey').order('created_at',{ascending:false}).limit(100);
   if(r.error){ box.innerHTML='<p class="muted" style="margin:0;color:#ff9ea3">불러오지 못했습니다: '+escH(r.error.message)+'</p>'; return; }
   var L=r.data||[]; if(!L.length){ box.innerHTML='<p class="muted" style="margin:0">아직 올린 보고가 없습니다.</p>'; return; }
   var allPaths=[]; L.forEach(function(x){ (x.images||[]).forEach(function(p){ allPaths.push(p); }); });
@@ -601,7 +672,7 @@ async function loadReports(){
   var cmap={}; TESTERS.forEach(function(t){ cmap[t.campaign_id]=(t.beta_campaigns&&t.beta_campaigns.title)||''; });
   box.innerHTML=L.map(function(x){
     var imgs=(x.images||[]).map(function(p){ var url=urls[p]; return url?'<a href="'+escH(url)+'" target="_blank" rel="noopener"><img src="'+escH(url)+'" alt=""></a>':''; }).join('');
-    return '<div class="rp"><div class="t">'+escH(x.title)+'</div><div class="m">'+escH(cmap[x.campaign_id]||'')+' · '+fmtDate(x.created_at)+'<span class="st'+(x.status==='answered'?' ans':'')+'">'+escH(RP_ST[x.status]||x.status)+'</span></div><div class="b">'+escH(x.body)+'</div>'+(imgs?'<div class="imgs">'+imgs+'</div>':'')+(x.admin_note?'<div class="note"><b>AudioAZ 답변</b>'+escH(x.admin_note)+'</div>':'')+'</div>';
+    return '<div class="rp"><div class="t">'+escH(x.title)+'</div><div class="m">'+escH(cmap[x.campaign_id]||'')+' · '+fmtDate(x.created_at)+'<span class="st'+(x.status==='answered'?' ans':'')+'">'+escH(RP_ST[x.status]||x.status)+'</span></div><div class="b">'+escH(x.body)+'</div>'+rpSurveyHtml(x.survey)+(imgs?'<div class="imgs">'+imgs+'</div>':'')+(x.admin_note?'<div class="note"><b>AudioAZ 답변</b>'+escH(x.admin_note)+'</div>':'')+'</div>';
   }).join('');
 }
 // 프로필(이름) 저장 — auth 메타데이터 + profiles
