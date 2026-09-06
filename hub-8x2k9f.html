@@ -388,7 +388,7 @@ fill('g-other', [
 /* ===== 자동 최신화: hub-data.json(배포 시 생성) → 갱신일·버전·최근 변경·누락 페이지 카드 ===== */
 (function(){
 const fmtD=iso=>{ const d=new Date(iso); if(isNaN(d)) return iso||''; return (d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
-const has=(gridId,file)=>[...document.querySelectorAll('#'+gridId+' a.card')].some(a=>{ try{ return new URL(a.href).pathname.replace(/^\//,'')===file; }catch(e){ return false; } });
+const has=(gridId,file)=>[...document.querySelectorAll('#'+gridId+' a.card')].some(a=>{ try{ const pth=new URL(a.href).pathname.replace(/^\//,'')||'index.html'; return pth===file; }catch(e){ return false; } });
 fetch('/hub-data.json?cb='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(d=>{
   const g=document.getElementById('hubGen'); if(g&&d.generated) g.textContent='자동 갱신 '+fmtD(d.generated);
   if(d.downloads){ const t=d.downloads.tally; const e1=document.getElementById('hubTallyVer'); if(e1&&t&&t.label) e1.textContent=t.label+' pkg · '+(t.date||''); const e2=document.getElementById('hubSfVer'); if(e2&&d.downloads.showfile) e2.textContent=d.downloads.showfile; const e3=document.getElementById('hubLmVer'); if(e3&&d.downloads.lmaz) e3.textContent=d.downloads.lmaz; }
