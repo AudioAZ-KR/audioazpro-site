@@ -655,9 +655,13 @@ td{color:var(--text)}
           <div class="result" id="betaRes"><div style="font-size:11px;color:#8fa5c2;letter-spacing:.05em;text-transform:uppercase">모집 페이지 링크</div><div class="k" id="betaLink">—</div></div>
         </div>
 
+        <div class="card"><h2>최근 테스트 보고 <span class="n" id="betaRecentCount"></span> <button class="tbtn" style="margin-left:8px" onclick="betaLoad()">새로고침</button></h2>
+          <div class="sub">모든 모집의 테스터가 올린 보고를 최신순으로 보여줍니다. "열기"를 누르면 그 모집의 보고 게시판으로 이동합니다.</div>
+          <table style="margin-top:10px"><thead><tr><th>시각</th><th>모집</th><th>테스터</th><th>제목</th><th>상태</th><th></th></tr></thead><tbody id="betaRecentRows"><tr><td colspan="6" class="n">불러오는 중…</td></tr></tbody></table>
+        </div>
         <div class="card"><h2>모집 목록</h2>
           <table><thead><tr><th>제목</th><th>제품 · 라이선스</th><th>기간 · 정원</th><th>신청</th><th>보고</th><th>상태</th><th></th></tr></thead>
-          <tbody id="betaRows"><tr><td colspan="6" class="n">불러오는 중…</td></tr></tbody></table>
+          <tbody id="betaRows"><tr><td colspan="7" class="n">불러오는 중…</td></tr></tbody></table>
         </div>
 
         <div class="card" id="betaSignCard" style="display:none"><h2 id="betaSignTitle">신청자</h2><div class="toolbar" style="margin:6px 0 10px;display:flex;gap:6px;flex-wrap:wrap"><span class="n">이 모집 안에서 이동:</span><button class="tbtn" onclick="document.getElementById('betaSignRows').scrollIntoView({behavior:'smooth',block:'start'})">신청자 목록</button><button class="tbtn" onclick="document.getElementById('betaTesterBox').scrollIntoView({behavior:'smooth',block:'start'})">베타 테스터</button><button class="tbtn" onclick="document.getElementById('betaReportBox').scrollIntoView({behavior:'smooth',block:'start'})">테스트 보고 <span id="betaReportNav" class="n"></span></button></div>
@@ -813,7 +817,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.19.2', AZ_CONSOLE_DATE='2026-09-07'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.19.3', AZ_CONSOLE_DATE='2026-09-07'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1469,7 +1473,7 @@ async function betaLoad(){
   var r=await sb.from('beta_campaigns').select('*,beta_signups(count)').order('created_at',{ascending:false}).limit(100);
   if(r.error){ tb.innerHTML='<tr><td colspan="7" style="color:#ff9ea3">불러오기 실패: '+esc(r.error.message)+'</td></tr>'; return; }
   BETA=(r.data||[]).map(function(c){ c.cnt=(c.beta_signups&&c.beta_signups[0]&&c.beta_signups[0].count)||0; c.rp=0; c.rpNew=0; return c; });
-  try{ var rr=await sb.from('beta_reports').select('campaign_id,status').limit(5000); (rr.data||[]).forEach(function(x){ var c=BETA.find(function(b){return b.id===x.campaign_id;}); if(c){ c.rp++; if(x.status==='new') c.rpNew++; } }); }catch(_){}
+  try{ var rr=await sb.from('beta_reports').select('id,campaign_id,user_id,title,status,created_at').order('created_at',{ascending:false}).limit(5000); var RP_ALL=rr.data||[]; RP_ALL.forEach(function(x){ var c=BETA.find(function(b){return b.id===x.campaign_id;}); if(c){ c.rp++; if(x.status==='new') c.rpNew++; } }); betaRenderRecent(RP_ALL); }catch(_){}
   if(!BETA.length){ tb.innerHTML='<tr><td colspan="7" class="n">아직 모집이 없습니다. 위에서 모집 페이지를 만드세요.</td></tr>'; return; }
   tb.innerHTML=BETA.map(function(c,i){
     var st=betaState(c);
@@ -1486,6 +1490,15 @@ async function betaToggle(i){
   if(!confirm((c.active?'모집을 마감(비활성)합니다. 페이지에서 신청을 받지 않습니다.':'모집을 다시 엽니다.')+'\n'+c.title)) return;
   var r=await sb.from('beta_campaigns').update({active:!c.active}).eq('id',c.id); if(r.error){ alert('실패: '+r.error.message); return; }
   betaLoad();
+}
+async function betaRenderRecent(all){
+  var tb=document.getElementById('betaRecentRows'); if(!tb) return;
+  var cnt=document.getElementById('betaRecentCount'); if(cnt) cnt.textContent=all.length?('전체 '+all.length+' · 새 보고 '+all.filter(function(x){return x.status==='new';}).length):'';
+  if(!all.length){ tb.innerHTML='<tr><td colspan="6" class="n">아직 올라온 테스트 보고가 없습니다. 테스터가 마이페이지 › 테스트 보고에서 올리면 여기에 나타납니다.</td></tr>'; return; }
+  var L=all.slice(0,15), ids=L.map(function(x){return x.user_id;}); var emailOf={};
+  try{ var tr=await sb.from('beta_testers').select('user_id,email').in('user_id',ids); (tr.data||[]).forEach(function(t){ emailOf[t.user_id]=t.email; }); }catch(_){}
+  tb.innerHTML=L.map(function(x){ var ci=BETA.findIndex(function(b){return b.id===x.campaign_id;}); var c=BETA[ci]||{}; var st=RP_ST[x.status]||[x.status,'p-trial'];
+    return '<tr><td class="mono" style="font-size:12px;white-space:nowrap">'+fmtDateTime(x.created_at)+'</td><td>'+esc(c.title||'—')+'</td><td>'+esc(emailOf[x.user_id]||'')+'</td><td>'+esc(x.title)+'</td><td><span class="pill '+st[1]+'">'+st[0]+'</span></td><td>'+(ci>=0?'<button class="tbtn" onclick="betaOpenReports('+ci+')">열기</button>':'')+'</td></tr>'; }).join('');
 }
 async function betaOpenReports(i){ await betaOpen(i, true); var box=document.getElementById('betaReportBox'); if(box){ box.scrollIntoView({behavior:'smooth',block:'start'}); box.style.boxShadow='0 0 0 2px #4D96F5'; setTimeout(function(){ box.style.boxShadow=''; },1600); } }
 async function betaOpen(i, noScroll){
