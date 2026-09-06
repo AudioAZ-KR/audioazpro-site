@@ -690,7 +690,7 @@ td{color:var(--text)}
           <div style="margin-top:18px;padding:18px;border:1px solid var(--line);border-radius:12px;background:#0E1A2E" id="betaReportBox">
             <h2 style="font-size:15px;margin-bottom:4px">테스트 보고 게시판 — 이 모집의 테스터가 올린 보고 <span class="n" id="betaReportCount"></span></h2>
             <div class="sub">테스터가 마이페이지에서 올린 설문(장비·기능 점검·사유)과 건의사항, 스크린샷입니다. 답변을 저장하면 테스터 화면에 AudioAZ 답변으로 표시됩니다.</div>
-            <div class="toolbar" style="margin-top:8px"><select id="betaRpStatus" onchange="renderBetaReports()" style="border:1px solid #243350;border-radius:9px;padding:9px 12px;font-family:inherit;font-size:13.5px;background:#0E1A2E;color:#E9EEF7"><option value="">전체</option><option value="new">새 보고</option><option value="read">확인함</option><option value="answered">답변 완료</option></select><input class="field search" style="margin:0" id="betaRpSearch" placeholder="제목·내용·이메일 검색" oninput="renderBetaReports()"><button class="tbtn" id="betaRpExportBtn" onclick="betaRpExport('list',null,this)" title="지금 보이는 보고를 클로드용 마크다운(+JSON)으로 복사·저장">보이는 보고 추출</button></div>
+            <div class="toolbar" style="margin-top:8px"><select id="betaRpStatus" onchange="renderBetaReports()" style="border:1px solid #243350;border-radius:9px;padding:9px 12px;font-family:inherit;font-size:13.5px;background:#0E1A2E;color:#E9EEF7"><option value="">전체</option><option value="new">새 보고</option><option value="read">확인함</option><option value="answered">답변 완료</option></select><input class="field search" style="margin:0" id="betaRpSearch" placeholder="제목·내용·이메일 검색" oninput="renderBetaReports()"><button class="tbtn" id="betaRpExportBtn" onclick="betaRpExport('camp',null,this)" title="이 모집의 보고 전체를 클로드용 마크다운(+JSON)으로 복사·저장">이 모집 전체 보고 추출</button></div>
             <div id="betaReportList" class="n">—</div>
           </div>
         </div>
@@ -817,7 +817,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.20.0', AZ_CONSOLE_DATE='2026-09-07'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.20.1', AZ_CONSOLE_DATE='2026-09-07'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1513,6 +1513,7 @@ function betaRpMdOne(x, ctx){
 async function betaRpExport(kind, id, btn){
   var rows=[], label='';
   if(kind==='one'){ rows=BETA_REPORTS.filter(function(x){return x.id===id;}); label='보고 1건'; }
+  else if(kind==='camp'){ rows=BETA_REPORTS.slice(); label=(BETA_CUR?BETA_CUR.title:'')+' 전체 보고 '+rows.length+'건'; }
   else if(kind==='list'){ var st=(document.getElementById('betaRpStatus')||{}).value||'', q=((document.getElementById('betaRpSearch')||{}).value||'').trim().toLowerCase(); var emailOf={}; BETA_TESTERS.forEach(function(t){ emailOf[t.user_id]=t.email; }); rows=BETA_REPORTS.filter(function(x){ var em=emailOf[x.user_id]||''; return (!st||x.status===st) && (!q || (x.title+' '+x.body+' '+em+' '+(x.survey?JSON.stringify(x.survey):'')).toLowerCase().indexOf(q)>=0); }); label=(BETA_CUR?BETA_CUR.title:'')+' 보고 '+rows.length+'건'; }
   else { var r=await sb.from('beta_reports').select('*').order('created_at',{ascending:false}).limit(2000); rows=r.data||[]; label='전체 모집 보고 '+rows.length+'건'; }
   if(!rows.length){ alert('추출할 보고가 없습니다.'); return; }
@@ -1529,7 +1530,7 @@ async function betaRpExport(kind, id, btn){
   L.push('```json'); L.push(JSON.stringify({exported:now.toISOString(),count:rows.length,reports:rows.map(function(x){ return {id:x.id,campaign:(campOf[x.campaign_id]||{}).slug||x.campaign_id,email:emailOf[x.user_id]||null,created_at:x.created_at,status:x.status,title:x.title,body:x.body,survey:x.survey||null,admin_note:x.admin_note||null,images:(x.images||[]).map(function(pth){return BETA_RP_URLS[pth]||pth;})}; })})); L.push('```');
   var md=L.join('\n');
   var copied=false; try{ await navigator.clipboard.writeText(md); copied=true; }catch(_){ try{ var ta=document.createElement('textarea'); ta.value=md; document.body.appendChild(ta); ta.select(); copied=document.execCommand('copy'); ta.remove(); }catch(__){} }
-  var saved=false; try{ var name='flare-tally-beta-reports_'+(kind==='one'?'one_':(kind==='all'?'all_':((BETA_CUR?BETA_CUR.slug:'list')+'_')))+now.toISOString().slice(0,16).replace(/[-:T]/g,'')+'.md'; var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown;charset=utf-8'})); a.download=name; document.body.appendChild(a); a.click(); saved=true; setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},2000); }catch(_){}
+  var saved=false; try{ var name='flare-tally-beta-reports_'+(kind==='one'?'one_':(kind==='all'?'all_':((BETA_CUR?BETA_CUR.slug:'camp')+'_')))+now.toISOString().slice(0,16).replace(/[-:T]/g,'')+'.md'; var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown;charset=utf-8'})); a.download=name; document.body.appendChild(a); a.click(); saved=true; setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},2000); }catch(_){}
   if(btn){ var t=btn.textContent; btn.textContent=(copied?'복사됨':'복사 실패')+(saved?' · .md 저장':''); setTimeout(function(){btn.textContent=t;},2600); }
 }
 async function betaRenderRecent(all){
