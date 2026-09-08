@@ -370,6 +370,7 @@ td{color:var(--text)}
     </div>
     <nav>
       <a class="on" data-p="dash">대시보드</a>
+      <a data-p="hub">지휘소 <span id="hubBadge" style="display:none;background:#3FB950;color:#06210F;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;margin-left:6px"></span></a>
       <a data-p="board">작업현황 <span id="boardBadge" style="display:none;background:#E7B252;color:#2E2410;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;margin-left:6px"></span></a>
       <a data-p="usage">서비스·한도 <span id="usageBadge" style="display:none;background:#E5484D;color:#fff;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:800;margin-left:6px"></span></a>
       <a data-p="diag">진단</a>
@@ -436,6 +437,55 @@ td{color:var(--text)}
         <div id="bdBoard"><div class="bd-empty">불러오는 중…</div></div>
         <pre class="bd-raw" id="bdRaw" style="display:none"></pre>
         <p class="n" style="margin-top:10px;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--dim)" id="bdFoot">맥의 ~/Projects/AudioAZ/00_작업현황.md 가 바뀌면 launchd(board-sync)가 올리고, 이 화면은 30초마다 확인합니다.</p>
+      </section>
+
+      <!-- 클로드 지휘소 (agent_sessions·agent_tasks·agent_commands·agent_alerts / 로컬 agent-hub.py) -->
+      <section id="p-hub" class="page">
+        <div class="hub-bar">
+          <span class="hchip grn" id="hubCRun">작업 중 <b>0</b></span>
+          <span class="hchip amb" id="hubCWait">대기 <b>0</b></span>
+          <span class="hchip dim" id="hubCIdle">유휴 <b>0</b></span>
+          <span class="sp"></span>
+          <span class="hst"><i class="hub-led" id="hubLed"></i><span id="hubAgo">—</span></span>
+          <button class="tbtn" onclick="hubLoad()">새로고침</button>
+        </div>
+
+        <div class="hub-alerts" id="hubAlerts" style="display:none"></div>
+
+        <h2 class="hub-h">실시간 세션 <span class="hub-sub">맥에서 지금 열려 있는 클로드 채팅</span></h2>
+        <div id="hubSessions" class="hub-grid"><div class="hub-empty">불러오는 중…</div></div>
+
+        <div class="hub-cols">
+          <div class="hub-cmd card">
+            <h2>명령 하달</h2>
+            <div class="sub">대상 채팅의 인박스(<span class="mono">_지휘소_인박스.md</span>)로 배달됩니다. 실행 중인 세션을 끊지 않고 큐로 전달 — 담당 채팅이 시작·확인 시 받습니다.</div>
+            <div class="field"><label>대상</label>
+              <select id="hubCmdTarget">
+                <option value="all">전체 (모든 채팅)</option>
+                <option value="①">① 홈페이지·백엔드</option>
+                <option value="②">② 쇼파일 생성기</option>
+                <option value="③">③ 빌드·패키징</option>
+                <option value="④">④ 플러그인·기타</option>
+              </select>
+            </div>
+            <div class="field"><label>명령</label><textarea id="hubCmdText" rows="3" placeholder="예: staging 검증 끝났으면 promote-to-live 하고 보고"></textarea></div>
+            <button class="btn" onclick="hubSendCmd()">하달</button>
+            <span id="hubCmdMsg" class="n" style="margin-left:10px"></span>
+            <div id="hubCmdList" class="hub-cmdlist"></div>
+          </div>
+
+          <div class="hub-kanban card">
+            <h2>작업 큐 <button class="tbtn" style="margin-left:8px" onclick="hubTaskNew()">＋ 새 작업</button></h2>
+            <div class="sub">할 일을 카드로 쌓고 영역에 배정 — todo → doing → done</div>
+            <div class="kb" id="hubKanban">
+              <div class="kb-col" data-st="todo"><div class="kb-h">할 일 <span id="kbNtodo">0</span></div><div class="kb-body" id="kbtodo"></div></div>
+              <div class="kb-col" data-st="doing"><div class="kb-h">진행 중 <span id="kbNdoing">0</span></div><div class="kb-body" id="kbdoing"></div></div>
+              <div class="kb-col" data-st="blocked"><div class="kb-h">막힘 <span id="kbNblocked">0</span></div><div class="kb-body" id="kbblocked"></div></div>
+              <div class="kb-col" data-st="done"><div class="kb-h">완료 <span id="kbNdone">0</span></div><div class="kb-body" id="kbdone"></div></div>
+            </div>
+          </div>
+        </div>
+        <p class="note">맥의 <span class="mono">agent-hub.py</span>(launchd, 30초)가 <span class="mono">~/.claude</span> 세션을 스캔해 올리고, 이 화면은 열려 있는 동안 20초마다 확인합니다. 세션·경보는 로컬 에이전트만 쓰고(서비스 롤), 작업·명령은 관리자만 씁니다.</p>
       </section>
 
       <!-- 서비스·한도 — 런치패드식 타일 (services + service_status, usage-collector 30분) -->
@@ -1229,7 +1279,7 @@ function extendSession(){
   showStep('stepPk');
 })();
 
-var titles={dash:'대시보드',board:'작업현황',usage:'서비스·한도',diag:'진단',status:'접속자 현황',appr:'결재',inq:'문의',lic:'라이선스',promo:'프로모션 · 할인',beta:'베타 모집',orders:'주문·결제',customers:'고객',products:'제품·버전',notice:'공지',settings:'설정',admins:'관리자 계정'};
+var titles={dash:'대시보드',hub:'클로드 지휘소',board:'작업현황',usage:'서비스·한도',diag:'진단',status:'접속자 현황',appr:'결재',inq:'문의',lic:'라이선스',promo:'프로모션 · 할인',beta:'베타 모집',orders:'주문·결제',customers:'고객',products:'제품·버전',notice:'공지',settings:'설정',admins:'관리자 계정'};
 function toggleMenu(){
   var s=document.querySelector('.side'), b=document.getElementById('burger');
   var open=s.classList.toggle('open');
@@ -1250,6 +1300,7 @@ document.querySelectorAll('.side a[data-p]').forEach(a=>{
     if(p==='beta'){ try{betaLoad();}catch(_){} }
     if(p==='orders'){ try{loadOrders();}catch(_){} }
     if(p==='dash'){ try{loadDash();}catch(_){} }
+    if(p==='hub'){ try{hubEnter();}catch(_){} } else { try{hubLeave();}catch(_){} }
     if(p==='board'){ try{bdLoad(true);}catch(_){} }
     if(p==='usage'){ try{usLoad();}catch(_){} }
     if(p==='diag'){ try{dgLoad();}catch(_){} }
@@ -2493,6 +2544,168 @@ async function usSaveDate(id,val){
 }
 setInterval(function(){ var pg=document.getElementById('p-usage'); if(pg&&pg.classList.contains('on')&&document.visibilityState==='visible') usLoad(); },60000);
 window.azUsagePreview=function(svcs,st){ US.svcs=svcs; US.st={}; US.at=null; st.forEach(function(x){US.st[x.id]=x; if(!US.at||x.checked_at>US.at)US.at=x.checked_at;}); usRender(); };
+
+/* ===== 클로드 지휘소 ===== */
+var HUB={timer:null,area:{'①':'홈페이지·백엔드','②':'쇼파일 생성기','③':'빌드·패키징','④':'플러그인·기타','·':'미분류'}};
+function hubEsc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function hubAgo(ts){ if(!ts) return '—'; var t=new Date(ts).getTime(); if(isNaN(t)) return '—'; var s=Math.max(0,(Date.now()-t)/1000);
+  if(s<60) return Math.floor(s)+'초 전'; if(s<3600) return Math.floor(s/60)+'분 전'; if(s<86400) return Math.floor(s/3600)+'시간 전'; return Math.floor(s/86400)+'일 전'; }
+function hubEnter(){ hubLoad(); if(HUB.timer) clearInterval(HUB.timer); HUB.timer=setInterval(function(){ if(document.visibilityState==='visible') hubLoad(); },20000); }
+function hubLeave(){ if(HUB.timer){ clearInterval(HUB.timer); HUB.timer=null; } }
+async function hubLoad(){
+  try{
+    var res=await Promise.all([
+      sb.from('agent_sessions').select('*').neq('state','ended').order('last_seen',{ascending:false}).limit(60),
+      sb.from('agent_tasks').select('*').order('priority',{ascending:false}).order('updated_at',{ascending:false}).limit(200),
+      sb.from('agent_commands').select('*').order('created_at',{ascending:false}).limit(40),
+      sb.from('agent_alerts').select('*').eq('seen',false).order('created_at',{ascending:false}).limit(30)
+    ]);
+    hubRenderSessions(res[0].data||[]);
+    hubRenderKanban(res[1].data||[]);
+    hubRenderCmds(res[2].data||[]);
+    hubRenderAlerts(res[3].data||[]);
+    var led=document.getElementById('hubLed'); if(led) led.className='hub-led ok'; var ag=document.getElementById('hubAgo'); if(ag) ag.textContent='방금 갱신';
+  }catch(e){ var led2=document.getElementById('hubLed'); if(led2) led2.className='hub-led bad'; }
+}
+function hubRenderSessions(rows){
+  var run=0,wait=0,idle=0,html='';
+  rows.forEach(function(s){
+    var st=s.state; if(st==='running')run++; else if(st==='waiting')wait++; else idle++;
+    var cls=st==='running'?'grn':(st==='waiting'?'amb':'dim');
+    var stl=st==='running'?'작업 중':(st==='waiting'?'대기':'유휴');
+    var an=HUB.area[s.area]||s.area||'미분류';
+    var last=s.last_assistant||s.last_user||'';
+    html+='<div class="hub-card '+cls+'">'
+      +'<div class="hc-top"><i class="hub-led '+cls+(st==='running'?' pulse':'')+'"></i>'
+      +'<span class="hc-area">'+hubEsc(s.area||'·')+'</span><span class="hc-areaN">'+hubEsc(an)+'</span>'
+      +'<span class="hc-state '+cls+'">'+stl+'</span></div>'
+      +'<div class="hc-title">'+hubEsc(s.title||'세션')+'</div>'
+      +'<div class="hc-last">'+hubEsc(last).slice(0,140)+'</div>'
+      +'<div class="hc-meta"><span>'+hubAgo(s.last_seen)+'</span><span>메시지 '+(s.msg_count||0)+'</span></div>'
+      +'</div>';
+  });
+  document.getElementById('hubSessions').innerHTML=html||'<div class="hub-empty">최근 60분 안에 열린 세션이 없습니다. (맥에서 클로드 채팅을 열면 여기에 뜹니다)</div>';
+  var q=function(id,v){var e=document.getElementById(id);if(e)e.querySelector('b').textContent=v;};
+  q('hubCRun',run); q('hubCWait',wait); q('hubCIdle',idle);
+  var b=document.getElementById('hubBadge'); if(b){ if(run>0){ b.style.display=''; b.textContent=run; } else b.style.display='none'; }
+}
+function hubRenderKanban(tasks){
+  var cols={todo:'',doing:'',blocked:'',done:''},n={todo:0,doing:0,blocked:0,done:0};
+  var next={todo:'doing',doing:'done',blocked:'doing',done:'todo'};
+  var nlbl={todo:'시작',doing:'완료',blocked:'재개',done:'되돌리기'};
+  tasks.forEach(function(t){
+    if(!(t.status in cols)) return; n[t.status]++;
+    var an=t.area?(t.area+' '+(HUB.area[t.area]||'')):'미배정';
+    cols[t.status]+='<div class="kb-card">'
+      +'<div class="kb-t">'+hubEsc(t.title)+'</div>'
+      +(t.detail?'<div class="kb-d">'+hubEsc(t.detail).slice(0,120)+'</div>':'')
+      +'<div class="kb-m"><span class="kb-area">'+hubEsc(an)+'</span>'
+      +'<span class="kb-act">'
+      +'<button class="tbtn xs" onclick="hubTaskMove('+t.id+',\''+next[t.status]+'\')">'+nlbl[t.status]+'</button>'
+      +'<button class="tbtn xs" onclick="hubTaskArea('+t.id+')">배정</button>'
+      +'<button class="tbtn xs" onclick="hubTaskDel('+t.id+')">×</button>'
+      +'</span></div></div>';
+  });
+  ['todo','doing','blocked','done'].forEach(function(k){
+    document.getElementById('kb'+k).innerHTML=cols[k]||'<div class="kb-empty">—</div>';
+    document.getElementById('kbN'+k).textContent=n[k];
+  });
+}
+function hubRenderCmds(cmds){
+  var el=document.getElementById('hubCmdList'); if(!el) return;
+  var open=cmds.filter(function(c){return c.status!=='canceled';}).slice(0,10);
+  if(!open.length){ el.innerHTML=''; return; }
+  el.innerHTML='<div class="hcl-h">최근 명령</div>'+open.map(function(c){
+    var stc=c.status==='pending'?'amb':(c.status==='done'?'grn':'dim');
+    var stl=c.status==='pending'?'대기':(c.status==='delivered'?'배달됨':(c.status==='done'?'완료':c.status));
+    return '<div class="hcl-row"><span class="hcl-tg">'+hubEsc(c.target)+'</span>'
+      +'<span class="hcl-tx">'+hubEsc(c.text).slice(0,80)+'</span>'
+      +'<span class="hcl-st '+stc+'">'+stl+'</span>'
+      +(c.status==='pending'?'<button class="tbtn xs" onclick="hubCmdCancel('+c.id+')">취소</button>':'')
+      +'</div>';
+  }).join('');
+}
+function hubRenderAlerts(al){
+  var el=document.getElementById('hubAlerts'); if(!el) return;
+  if(!al.length){ el.style.display='none'; el.innerHTML=''; return; }
+  el.style.display='';
+  el.innerHTML=al.map(function(a){
+    var c=a.level==='crit'?'bad':(a.level==='warn'?'amb':'info');
+    return '<div class="hub-al '+c+'"><b>'+hubEsc(a.title)+'</b>'+(a.body?'<span> — '+hubEsc(a.body).slice(0,120)+'</span>':'')
+      +'<span class="hal-t">'+hubAgo(a.created_at)+'</span>'
+      +'<button class="tbtn xs" onclick="hubAlertAck('+a.id+')">확인</button></div>';
+  }).join('');
+}
+async function hubSendCmd(){
+  var t=document.getElementById('hubCmdTarget').value, x=(document.getElementById('hubCmdText').value||'').trim();
+  var m=document.getElementById('hubCmdMsg'); if(!x){ m.textContent='명령을 입력하세요'; return; }
+  m.textContent='보내는 중…';
+  var r=await sb.from('agent_commands').insert({target:t,text:x});
+  if(r.error){ m.textContent='실패: '+r.error.message; return; }
+  document.getElementById('hubCmdText').value=''; m.textContent='하달됨 — 인박스로 배달됩니다'; setTimeout(function(){m.textContent='';},2500); hubLoad();
+}
+async function hubCmdCancel(id){ var r=await sb.from('agent_commands').update({status:'canceled'}).eq('id',id); if(r.error){alert('실패: '+r.error.message);return;} hubLoad(); }
+async function hubTaskNew(){
+  var title=prompt('새 작업 제목'); if(!title) return; title=title.trim(); if(!title) return;
+  var area=prompt('배정 영역 (①/②/③/④, 비우면 미배정)','')||''; area=area.trim();
+  var row={title:title}; if(['①','②','③','④'].indexOf(area)>=0) row.area=area;
+  var r=await sb.from('agent_tasks').insert(row); if(r.error){alert('실패: '+r.error.message);return;} hubLoad();
+}
+async function hubTaskMove(id,st){ var r=await sb.from('agent_tasks').update({status:st,updated_at:new Date().toISOString()}).eq('id',id); if(r.error){alert('실패: '+r.error.message);return;} hubLoad(); }
+async function hubTaskArea(id){ var a=prompt('배정 영역 (①/②/③/④, 비우면 미배정)','')||''; a=a.trim(); var v=(['①','②','③','④'].indexOf(a)>=0)?a:null; var r=await sb.from('agent_tasks').update({area:v,updated_at:new Date().toISOString()}).eq('id',id); if(r.error){alert('실패: '+r.error.message);return;} hubLoad(); }
+async function hubTaskDel(id){ if(!confirm('이 작업을 삭제할까요?')) return; var r=await sb.from('agent_tasks').delete().eq('id',id); if(r.error){alert('실패: '+r.error.message);return;} hubLoad(); }
+async function hubAlertAck(id){ var r=await sb.from('agent_alerts').update({seen:true}).eq('id',id); if(r.error){alert('실패: '+r.error.message);return;} hubLoad(); }
 </script>
+<style>
+#p-hub .hub-bar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+#p-hub .hchip{border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:700;color:var(--dim)}
+#p-hub .hchip b{margin-left:5px;color:var(--text)}
+#p-hub .hchip.grn{border-color:#1f5132;background:#0e2417;color:#7fe0a0} #p-hub .hchip.grn b{color:#b6f2cb}
+#p-hub .hchip.amb{border-color:#5a4410;background:#241c07;color:#e7c778} #p-hub .hchip.amb b{color:#f4dfa6}
+#p-hub .hchip.dim{color:var(--dim)}
+#p-hub .hub-bar .sp{flex:1}
+#p-hub .hst{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--dim);font-family:ui-monospace,Menlo,monospace}
+#p-hub .hub-led{width:9px;height:9px;border-radius:50%;background:var(--dim);display:inline-block;flex:none}
+#p-hub .hub-led.ok,#p-hub .hub-led.grn{background:#3FB950} #p-hub .hub-led.amb{background:#E7B252} #p-hub .hub-led.bad{background:#E5484D}
+#p-hub .hub-led.pulse{box-shadow:0 0 0 0 rgba(63,185,80,.6);animation:hubpulse 1.6s infinite}
+@keyframes hubpulse{0%{box-shadow:0 0 0 0 rgba(63,185,80,.5)}70%{box-shadow:0 0 0 7px rgba(63,185,80,0)}100%{box-shadow:0 0 0 0 rgba(63,185,80,0)}}
+#p-hub .hub-h{font-size:15px;font-weight:800;margin:6px 0 10px} #p-hub .hub-sub{font-size:12px;color:var(--dim);font-weight:500;margin-left:8px}
+#p-hub .hub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+#p-hub .hub-empty{grid-column:1/-1;color:var(--dim);font-size:13px;padding:26px;text-align:center;border:1px dashed var(--line);border-radius:12px}
+#p-hub .hub-card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px 15px;border-left:3px solid var(--line)}
+#p-hub .hub-card.grn{border-left-color:#3FB950} #p-hub .hub-card.amb{border-left-color:#E7B252} #p-hub .hub-card.dim{border-left-color:#33415f}
+#p-hub .hc-top{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+#p-hub .hc-area{font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:800;color:var(--text)}
+#p-hub .hc-areaN{font-size:11px;color:var(--dim)}
+#p-hub .hc-state{margin-left:auto;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px}
+#p-hub .hc-state.grn{background:#0e2417;color:#7fe0a0} #p-hub .hc-state.amb{background:#241c07;color:#e7c778} #p-hub .hc-state.dim{background:#141d30;color:var(--dim)}
+#p-hub .hc-title{font-size:13.5px;font-weight:700;line-height:1.4;margin-bottom:5px}
+#p-hub .hc-last{font-size:12px;color:var(--dim);line-height:1.45;height:34px;overflow:hidden}
+#p-hub .hc-meta{display:flex;justify-content:space-between;margin-top:9px;font-size:11px;color:var(--dim);font-family:ui-monospace,Menlo,monospace}
+#p-hub .hub-cols{display:grid;grid-template-columns:360px 1fr;gap:18px;margin-top:18px}
+@media(max-width:1000px){#p-hub .hub-cols{grid-template-columns:1fr}}
+#p-hub .mono{font-family:ui-monospace,Menlo,monospace;font-size:.92em}
+#p-hub .hub-cmdlist{margin-top:14px}
+#p-hub .hcl-h{font-size:11px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px}
+#p-hub .hcl-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid var(--line);font-size:12px}
+#p-hub .hcl-tg{font-family:ui-monospace,Menlo,monospace;font-weight:800;flex:none}
+#p-hub .hcl-tx{flex:1;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#p-hub .hcl-st{font-size:11px;font-weight:800;flex:none} #p-hub .hcl-st.amb{color:#e7c778} #p-hub .hcl-st.grn{color:#7fe0a0} #p-hub .hcl-st.dim{color:var(--dim)}
+#p-hub .kb{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+@media(max-width:820px){#p-hub .kb{grid-template-columns:1fr 1fr}}
+#p-hub .kb-col{background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:9px;min-height:80px}
+#p-hub .kb-h{font-size:11.5px;font-weight:800;color:var(--dim);margin-bottom:8px;display:flex;justify-content:space-between}
+#p-hub .kb-card{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:9px 10px;margin-bottom:8px}
+#p-hub .kb-t{font-size:12.5px;font-weight:700;line-height:1.35}
+#p-hub .kb-d{font-size:11px;color:var(--dim);margin-top:3px;line-height:1.4}
+#p-hub .kb-m{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:7px}
+#p-hub .kb-area{font-size:10.5px;color:var(--dim);font-family:ui-monospace,Menlo,monospace}
+#p-hub .kb-act{display:flex;gap:4px} #p-hub .tbtn.xs{padding:2px 7px;font-size:11px}
+#p-hub .kb-empty{color:var(--line);font-size:12px;text-align:center;padding:6px}
+#p-hub .hub-alerts{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
+#p-hub .hub-al{display:flex;align-items:center;gap:9px;padding:9px 13px;border-radius:10px;font-size:12.5px;border:1px solid var(--line)}
+#p-hub .hub-al.bad{background:#2a1113;border-color:#5a1f22;color:#f4b6b8} #p-hub .hub-al.amb{background:#241c07;border-color:#5a4410;color:#f4dfa6} #p-hub .hub-al.info{background:#0e1c30;border-color:#22406a;color:#9cc2f5}
+#p-hub .hub-al .hal-t{margin-left:auto;font-size:11px;opacity:.8;font-family:ui-monospace,Menlo,monospace}
+</style>
 </body>
 </html>
