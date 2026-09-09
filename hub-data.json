@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-08T12:25+09:00",
+ "generated": "2026-09-10T01:08+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -98,18 +98,45 @@
   "tally": {
    "product": "flare-tally-host",
    "version": "1.0",
-   "build": 50,
-   "label": "v1.0 (50)",
-   "pkg": "Flare-Tally-1.0-b50.pkg",
-   "url": "https://audioazpro.com/downloads/Flare-Tally-1.0-b50.pkg",
-   "date": "2026-09-06",
-   "note": "백그라운드 폰을 명단에 잠자는 중(☾)으로 표시"
+   "build": 69,
+   "label": "v1.0 (69)",
+   "pkg": "Flare-Tally-1.0-b69.pkg",
+   "url": "https://audioazpro.com/downloads.html",
+   "date": "2026-09-08",
+   "note": "스위처 스캔 속도 개선(약 26초 → 3초) · 지역 자동 선택·알림 수정 · Windows 호스트 베타 추가",
+   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b69/Flare-Tally-1.0-b69.pkg",
+   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b69/Flare-Tally-win-1.0-b69.zip",
+   "win_label": "v1.0 (69) 베타"
   },
   "showfile": "v0.6.6",
   "lmaz": "v0.2.0"
  },
- "console_version": "1.20.1",
+ "console_version": "1.21.0",
  "commits_live": [
+  {
+   "date": "2026-09-10T01:05:02+09:00",
+   "msg": "콘솔 v1.21.0: 지휘소를 관리자 콘솔 탭으로 복귀, 자동 로그아웃 10분→1시간"
+  },
+  {
+   "date": "2026-09-10T00:23:41+09:00",
+   "msg": "지휘소를 관리자 콘솔에서 런치패드로 이동 (로그인 없는 독립 페이지 cc-a49e7b.html)"
+  },
+  {
+   "date": "2026-09-08T21:27:24+09:00",
+   "msg": "제품 페이지 상단 뱃지 v1.0 (33) → (69) · Windows(베타) 표기 추가"
+  },
+  {
+   "date": "2026-09-08T21:24:59+09:00",
+   "msg": "Flare Tally 다운로드: Windows 호스트(베타) 추가 · 맥 v1.0 (50) → (69)"
+  },
+  {
+   "date": "2026-09-08T20:06:39+09:00",
+   "msg": "콘솔: 클로드 지휘소 탭 추가 (Phase 1 — 실시간 세션 관제·작업 큐 칸반·명령 하달·경보)"
+  },
+  {
+   "date": "2026-09-08T12:25:00+09:00",
+   "msg": "downloads: Latency Meter AZ v0.2.0 배포 재개 (공증 pkg, 릴리스 lmaz-v0.2.0)"
+  },
   {
    "date": "2026-09-08T11:37:13+09:00",
    "msg": "downloads: Latency Meter AZ 배포 일시 중지 (버튼 비활성·문구 정리)"
@@ -141,34 +168,6 @@
   {
    "date": "2026-09-07T23:35:10+09:00",
    "msg": "sync: system-designer v1.3.0"
-  },
-  {
-   "date": "2026-09-07T00:26:32+09:00",
-   "msg": "콘솔 v1.20.1: '보이는 보고 추출' → '이 모집 전체 보고 추출'(필터 무관 전체)"
-  },
-  {
-   "date": "2026-09-07T00:21:41+09:00",
-   "msg": "콘솔 v1.20.0: 테스트 보고 추출 — 개별(카드 '추출')·보이는 보고·전체 모집 통합, 클로드용 마크다운(장비·기능 표·사유·건의·답변·이미지 링크)+JSON 클립보드 복사·.md 저장"
-  },
-  {
-   "date": "2026-09-07T00:14:04+09:00",
-   "msg": "콘솔 v1.19.3: 베타 모집 탭 상단에 '최근 테스트 보고'(전 모집 통합, 열기 버튼)"
-  },
-  {
-   "date": "2026-09-07T00:09:46+09:00",
-   "msg": "테스트 보고: 키어 온에어 설명을 ATEM 한정에서 스위처별(키어·오버레이·장면 소스)로 정정"
-  },
-  {
-   "date": "2026-09-07T00:03:14+09:00",
-   "msg": "테스트 보고 요약: 브랜드·모델 중복 표기 정리"
-  },
-  {
-   "date": "2026-09-07T00:02:12+09:00",
-   "msg": "테스트 보고 설문: 기능별 설명문, 호스트 컴퓨터(맥/윈도우)·OS 버전 선택, 브랜드별 스위처 모델 선택(기타는 직접 입력); 콘솔 v1.19.2 요약 반영"
-  },
-  {
-   "date": "2026-09-06T23:52:38+09:00",
-   "msg": "콘솔: 이동 바 '신청자 목록' 대상 수정"
   }
  ],
  "commits_staging": []
