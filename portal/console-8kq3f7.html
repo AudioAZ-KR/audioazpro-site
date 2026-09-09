@@ -445,6 +445,7 @@ td{color:var(--text)}
           <span class="hchip grn" id="hubCRun">작업 중 <b>0</b></span>
           <span class="hchip amb" id="hubCWait">대기 <b>0</b></span>
           <span class="hchip dim" id="hubCIdle">유휴 <b>0</b></span>
+          <span class="hchip dim" id="hubCTok">오늘 토큰 <b>0</b></span>
           <span class="sp"></span>
           <span class="hst"><i class="hub-led" id="hubLed"></i><span id="hubAgo">—</span></span>
           <button class="tbtn" onclick="hubLoad()">새로고침</button>
@@ -452,7 +453,7 @@ td{color:var(--text)}
 
         <div class="hub-alerts" id="hubAlerts" style="display:none"></div>
 
-        <h2 class="hub-h">실시간 세션 <span class="hub-sub">맥에서 지금 열려 있는 클로드 채팅</span></h2>
+        <h2 class="hub-h">실시간 세션 <span class="hub-sub">맥에서 지금 열려 있는 클로드 채팅 — 카드를 누르면 최근 대화·경로가 펼쳐집니다</span></h2>
         <div id="hubSessions" class="hub-grid"><div class="hub-empty">불러오는 중…</div></div>
 
         <div class="hub-cols">
@@ -476,7 +477,7 @@ td{color:var(--text)}
 
           <div class="hub-kanban card">
             <h2>작업 큐 <button class="tbtn" style="margin-left:8px" onclick="hubTaskNew()">＋ 새 작업</button></h2>
-            <div class="sub">할 일을 카드로 쌓고 영역에 배정 — todo → doing → done</div>
+            <div class="sub">할 일을 카드로 쌓고 <b>영역·담당 채팅·마감일</b>을 배정 — todo → doing → done. 카드의 <b>편집</b>으로 셋 다 지정.</div>
             <div class="kb" id="hubKanban">
               <div class="kb-col" data-st="todo"><div class="kb-h">할 일 <span id="kbNtodo">0</span></div><div class="kb-body" id="kbtodo"></div></div>
               <div class="kb-col" data-st="doing"><div class="kb-h">진행 중 <span id="kbNdoing">0</span></div><div class="kb-body" id="kbdoing"></div></div>
@@ -867,7 +868,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.21.1', AZ_CONSOLE_DATE='2026-09-10'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.22.1', AZ_CONSOLE_DATE='2026-09-10'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -2567,42 +2568,70 @@ async function hubLoad(){
     var led=document.getElementById('hubLed'); if(led) led.className='hub-led ok'; var ag=document.getElementById('hubAgo'); if(ag) ag.textContent='방금 갱신';
   }catch(e){ var led2=document.getElementById('hubLed'); if(led2) led2.className='hub-led bad'; }
 }
+function hubNum(n){ n=+n||0; return n>=1e6?(n/1e6).toFixed(1)+'M':(n>=1e3?Math.round(n/1e3)+'K':''+n); }
+function hubToggle(el){ el.classList.toggle('open'); }
+function hubSpark(h){
+  if(!h||!h.length) return '';
+  var mx=Math.max.apply(null,h)||1,b='',i,v,ht;
+  for(i=0;i<24;i++){ v=h[i]||0; ht=v?Math.max(2,Math.round(v/mx*14)):1;
+    b+='<rect x="'+(i*4.2)+'" y="'+(15-ht)+'" width="3" height="'+ht+'" rx="1" class="'+(v?'on':'off')+'"/>'; }
+  return '<svg class="hc-spark" viewBox="0 0 101 16" preserveAspectRatio="none" aria-label="오늘 시간별 활동">'+b+'</svg>';
+}
 function hubRenderSessions(rows){
-  var run=0,wait=0,idle=0,html='';
+  HUB.sessions=rows||[];
+  var run=0,wait=0,idle=0,html='',tok=0;
   rows.forEach(function(s){
     var st=s.state; if(st==='running')run++; else if(st==='waiting')wait++; else idle++;
+    tok+=(+s.tokens_in||0)+(+s.tokens_out||0);
     var cls=st==='running'?'grn':(st==='waiting'?'amb':'dim');
     var stl=st==='running'?'작업 중':(st==='waiting'?'대기':'유휴');
     var an=HUB.area[s.area]||s.area||'미분류';
     var last=s.last_assistant||s.last_user||'';
-    html+='<div class="hub-card '+cls+'">'
+    var tl=(s.timeline||[]).map(function(e){
+      return '<div class="tl-r"><span class="tl-t">'+hubEsc(e.t||'')+'</span>'
+        +'<span class="tl-w '+(e.r==='u'?'u':'a')+'">'+(e.r==='u'?'사장님':'클로드')+'</span>'
+        +'<span class="tl-x">'+hubEsc(e.x||'')+'</span></div>';
+    }).join('');
+    html+='<div class="hub-card '+cls+'" onclick="hubToggle(this)">'
       +'<div class="hc-top"><i class="hub-led '+cls+(st==='running'?' pulse':'')+'"></i>'
       +'<span class="hc-area">'+hubEsc(s.area||'·')+'</span><span class="hc-areaN">'+hubEsc(an)+'</span>'
       +'<span class="hc-state '+cls+'">'+stl+'</span></div>'
       +'<div class="hc-title">'+hubEsc(s.title||'세션')+'</div>'
       +'<div class="hc-last">'+hubEsc(last).slice(0,140)+'</div>'
-      +'<div class="hc-meta"><span>'+hubAgo(s.last_seen)+'</span><span>메시지 '+(s.msg_count||0)+'</span></div>'
+      +hubSpark(s.hourly)
+      +'<div class="hc-meta"><span>'+hubAgo(s.last_seen)+'</span><span>메시지 '+(s.msg_count||0)+'</span>'
+      +'<span>'+hubNum(s.tokens_in)+'↓ '+hubNum(s.tokens_out)+'↑</span></div>'
+      +'<div class="hc-more">'
+      +(tl?'<div class="tl">'+tl+'</div>':'<div class="tl-none">최근 대화 없음</div>')
+      +'<div class="hc-cwd">'+hubEsc(s.cwd||'')+'</div></div>'
       +'</div>';
   });
   document.getElementById('hubSessions').innerHTML=html||'<div class="hub-empty">최근 60분 안에 열린 세션이 없습니다. (맥에서 클로드 채팅을 열면 여기에 뜹니다)</div>';
   var q=function(id,v){var e=document.getElementById(id);if(e)e.querySelector('b').textContent=v;};
-  q('hubCRun',run); q('hubCWait',wait); q('hubCIdle',idle);
+  q('hubCRun',run); q('hubCWait',wait); q('hubCIdle',idle); q('hubCTok',hubNum(tok));
   var b=document.getElementById('hubBadge'); if(b){ if(run>0){ b.style.display=''; b.textContent=run; } else b.style.display='none'; }
 }
 function hubRenderKanban(tasks){
+  HUB.tasks=tasks||[];
   var cols={todo:'',doing:'',blocked:'',done:''},n={todo:0,doing:0,blocked:0,done:0};
   var next={todo:'doing',doing:'done',blocked:'doing',done:'todo'};
   var nlbl={todo:'시작',doing:'완료',blocked:'재개',done:'되돌리기'};
+  var smap={}; (HUB.sessions||[]).forEach(function(x){smap[x.id]=x;});
+  var today=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
   tasks.forEach(function(t){
     if(!(t.status in cols)) return; n[t.status]++;
     var an=t.area?(t.area+' '+(HUB.area[t.area]||'')):'미배정';
+    var asg=''; if(t.assignee_session){ var ss=smap[t.assignee_session];
+      asg='<span class="kb-asg">'+hubEsc(ss?('담당 '+(ss.title||'세션').slice(0,12)):'담당 (종료됨)')+'</span>'; }
+    var due=''; if(t.due){ var dc=t.due<today?'over':(t.due===today?'today':'');
+      due='<span class="kb-due '+dc+'">'+hubEsc(t.due.slice(5))+(dc==='over'?' 지남':(dc==='today'?' 오늘':''))+'</span>'; }
     cols[t.status]+='<div class="kb-card">'
       +'<div class="kb-t">'+hubEsc(t.title)+'</div>'
       +(t.detail?'<div class="kb-d">'+hubEsc(t.detail).slice(0,120)+'</div>':'')
-      +'<div class="kb-m"><span class="kb-area">'+hubEsc(an)+'</span>'
-      +'<span class="kb-act">'
+      +'<div class="kb-tags"><span class="kb-area">'+hubEsc(an)+'</span>'+asg+due+'</div>'
+      +'<div class="kb-m"><span class="kb-act">'
       +'<button class="tbtn xs" onclick="hubTaskMove('+t.id+',\''+next[t.status]+'\')">'+nlbl[t.status]+'</button>'
-      +'<button class="tbtn xs" onclick="hubTaskArea('+t.id+')">배정</button>'
+      +'<button class="tbtn xs" onclick="hubTaskEdit('+t.id+')">편집</button>'
       +'<button class="tbtn xs" onclick="hubTaskDel('+t.id+')">×</button>'
       +'</span></div></div>';
   });
@@ -2618,11 +2647,13 @@ function hubRenderCmds(cmds){
   el.innerHTML='<div class="hcl-h">최근 명령</div>'+open.map(function(c){
     var stc=c.status==='pending'?'amb':(c.status==='done'?'grn':'dim');
     var stl=c.status==='pending'?'대기':(c.status==='delivered'?'배달됨·픽업 대기':(c.status==='done'?'완료':c.status));
+    var act=c.status!=='done'
+      ? '<button class="tbtn xs" onclick="hubCmdDone('+c.id+')">완료</button><button class="tbtn xs" onclick="hubCmdCancel('+c.id+')">취소</button>'
+      : '';
     return '<div class="hcl-row"><span class="hcl-tg">'+hubEsc(c.target)+'</span>'
       +'<span class="hcl-tx">'+hubEsc(c.text).slice(0,80)+'</span>'
-      +'<span class="hcl-st '+stc+'">'+stl+'</span>'
-      +(c.status==='pending'?'<button class="tbtn xs" onclick="hubCmdCancel('+c.id+')">취소</button>':'')
-      +'</div>';
+      +'<span class="hcl-st '+stc+'">'+stl+'</span>'+act+'</div>'
+      +(c.result?'<div class="hcl-res">'+hubEsc(c.result).slice(0,300)+'</div>':'');
   }).join('');
 }
 function hubRenderAlerts(al){
@@ -2644,7 +2675,20 @@ async function hubSendCmd(){
   if(r.error){ m.textContent='실패: '+r.error.message; return; }
   document.getElementById('hubCmdText').value=''; m.textContent='하달됨 — 인박스로 배달됩니다'; setTimeout(function(){m.textContent='';},2500); hubLoad();
 }
-async function hubCmdCancel(id){ var r=await sb.from('agent_commands').update({status:'canceled'}).eq('id',id); if(r.error){alert('실패: '+r.error.message);return;} hubLoad(); }
+async function hubCmdCancel(id){ if(!confirm('이 명령을 취소할까요?')) return; var r=await sb.from('agent_commands').update({status:'canceled'}).eq('id',id); if(r.error){alert('실패: '+r.error.message);return;} hubLoad(); }
+async function hubCmdDone(id){ var m=prompt('완료로 표시합니다. 결과 메모(선택)','사장님이 콘솔에서 직접 처리'); if(m===null) return; var r=await sb.from('agent_commands').update({status:'done',done_at:new Date().toISOString(),result:m||null}).eq('id',id); if(r.error){alert('실패: '+r.error.message);return;} hubLoad(); }
+async function hubTaskEdit(id){
+  var t=(HUB.tasks||[]).filter(function(x){return x.id===id;})[0]||{};
+  var a=(prompt('영역 (①/②/③/④, 비우면 미배정)', t.area||'')||'').trim();
+  var ls=(HUB.sessions||[]), list=ls.map(function(x,i){return (i+1)+') '+(x.area||'·')+' '+(x.title||'세션').slice(0,30);}).join('\n');
+  var cur=''; ls.forEach(function(x,i){ if(x.id===t.assignee_session) cur=''+(i+1); });
+  var pick=(prompt('담당 채팅 번호 (비우면 없음)\n'+(list||'(열린 세션 없음)'), cur)||'').trim();
+  var idx=parseInt(pick,10), asg=(idx>=1&&ls[idx-1])?ls[idx-1].id:null;
+  var d=(prompt('마감일 YYYY-MM-DD (비우면 없음)', t.due||'')||'').trim();
+  var r=await sb.from('agent_tasks').update({area:(['①','②','③','④'].indexOf(a)>=0?a:null), assignee_session:asg,
+        due:(/^\d{4}-\d{2}-\d{2}$/.test(d)?d:null), updated_at:new Date().toISOString()}).eq('id',id);
+  if(r.error){alert('실패: '+r.error.message);return;} hubLoad();
+}
 async function hubTaskNew(){
   var title=prompt('새 작업 제목'); if(!title) return; title=title.trim(); if(!title) return;
   var area=prompt('배정 영역 (①/②/③/④, 비우면 미배정)','')||''; area=area.trim();
@@ -2652,7 +2696,6 @@ async function hubTaskNew(){
   var r=await sb.from('agent_tasks').insert(row); if(r.error){alert('실패: '+r.error.message);return;} hubLoad();
 }
 async function hubTaskMove(id,st){ var r=await sb.from('agent_tasks').update({status:st,updated_at:new Date().toISOString()}).eq('id',id); if(r.error){alert('실패: '+r.error.message);return;} hubLoad(); }
-async function hubTaskArea(id){ var a=prompt('배정 영역 (①/②/③/④, 비우면 미배정)','')||''; a=a.trim(); var v=(['①','②','③','④'].indexOf(a)>=0)?a:null; var r=await sb.from('agent_tasks').update({area:v,updated_at:new Date().toISOString()}).eq('id',id); if(r.error){alert('실패: '+r.error.message);return;} hubLoad(); }
 async function hubTaskDel(id){ if(!confirm('이 작업을 삭제할까요?')) return; var r=await sb.from('agent_tasks').delete().eq('id',id); if(r.error){alert('실패: '+r.error.message);return;} hubLoad(); }
 async function hubAlertAck(id){ var r=await sb.from('agent_alerts').update({seen:true}).eq('id',id); if(r.error){alert('실패: '+r.error.message);return;} hubLoad(); }
 </script>
@@ -2691,7 +2734,7 @@ async function hubAlertAck(id){ var r=await sb.from('agent_alerts').update({seen
 #p-hub .hcl-tg{font-family:ui-monospace,Menlo,monospace;font-weight:800;flex:none}
 #p-hub .hcl-tx{flex:1;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #p-hub .hcl-st{font-size:11px;font-weight:800;flex:none} #p-hub .hcl-st.amb{color:#e7c778} #p-hub .hcl-st.grn{color:#7fe0a0} #p-hub .hcl-st.dim{color:var(--dim)}
-#p-hub .kb{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+#p-hub .kb{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px;margin-top:10px}
 @media(max-width:820px){#p-hub .kb{grid-template-columns:1fr 1fr}}
 #p-hub .kb-col{background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:9px;min-height:80px}
 #p-hub .kb-h{font-size:11.5px;font-weight:800;color:var(--dim);margin-bottom:8px;display:flex;justify-content:space-between}
@@ -2700,8 +2743,28 @@ async function hubAlertAck(id){ var r=await sb.from('agent_alerts').update({seen
 #p-hub .kb-d{font-size:11px;color:var(--dim);margin-top:3px;line-height:1.4}
 #p-hub .kb-m{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:7px}
 #p-hub .kb-area{font-size:10.5px;color:var(--dim);font-family:ui-monospace,Menlo,monospace}
-#p-hub .kb-act{display:flex;gap:4px} #p-hub .tbtn.xs{padding:2px 7px;font-size:11px}
+#p-hub .kb-act{display:flex;gap:4px;flex-wrap:nowrap} #p-hub .tbtn.xs{padding:2px 7px;font-size:11px;white-space:nowrap;flex:none}
+#p-hub .kb-asg,#p-hub .kb-due{white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+#p-hub .kb-m{justify-content:flex-end}
 #p-hub .kb-empty{color:var(--line);font-size:12px;text-align:center;padding:6px}
+#p-hub .hub-card{cursor:pointer}
+#p-hub .hc-spark{width:100%;height:16px;margin:8px 0 2px;display:block}
+#p-hub .hc-spark rect.on{fill:#3FB950}#p-hub .hc-spark rect.off{fill:#243350}
+#p-hub .hub-card.amb .hc-spark rect.on{fill:#E7B252}#p-hub .hub-card.dim .hc-spark rect.on{fill:#5B6B85}
+#p-hub .hc-more{display:none;margin-top:10px;border-top:1px solid var(--line);padding-top:9px}
+#p-hub .hub-card.open .hc-more{display:block}
+#p-hub .hub-card.open .hc-last{height:auto}
+#p-hub .tl-r{display:flex;gap:7px;font-size:11.5px;line-height:1.45;padding:3px 0;border-bottom:1px solid rgba(36,51,80,.5)}
+#p-hub .tl-t{font-family:ui-monospace,Menlo,monospace;color:var(--dim);flex:none}
+#p-hub .tl-w{flex:none;font-weight:700;font-size:10.5px;padding:1px 5px;border-radius:4px;height:16px;line-height:14px}
+#p-hub .tl-w.u{color:#9cc2f5;background:#0e1c30}#p-hub .tl-w.a{color:var(--dim);background:#141d30}
+#p-hub .tl-x{color:var(--text);opacity:.85;word-break:break-all;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+#p-hub .tl-none{font-size:11.5px;color:var(--dim);padding:4px 0}
+#p-hub .hc-cwd{font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--dim);margin-top:7px;word-break:break-all;opacity:.7}
+#p-hub .kb-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+#p-hub .kb-asg,#p-hub .kb-due{font-size:10.5px;font-family:ui-monospace,Menlo,monospace;padding:1px 6px;border-radius:999px;background:#141d30;color:var(--dim)}
+#p-hub .kb-due.today{color:#f4dfa6;background:#241c07}#p-hub .kb-due.over{color:#f4b6b8;background:#2a1113}
+#p-hub .hcl-res{font-size:11.5px;color:var(--dim);line-height:1.5;padding:2px 0 7px 0;border-bottom:1px solid var(--line);word-break:break-all}
 #p-hub .hub-alerts{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
 #p-hub .hub-al{display:flex;align-items:center;gap:9px;padding:9px 13px;border-radius:10px;font-size:12.5px;border:1px solid var(--line)}
 #p-hub .hub-al.bad{background:#2a1113;border-color:#5a1f22;color:#f4b6b8} #p-hub .hub-al.amb{background:#241c07;border-color:#5a4410;color:#f4dfa6} #p-hub .hub-al.info{background:#0e1c30;border-color:#22406a;color:#9cc2f5}
