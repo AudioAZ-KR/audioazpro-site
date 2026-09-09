@@ -469,7 +469,18 @@ td{color:var(--text)}
                 <option value="④">④ 플러그인·기타</option>
               </select>
             </div>
-            <div class="field"><label>명령</label><textarea id="hubCmdText" rows="3" placeholder="예: staging 검증 끝났으면 promote-to-live 하고 보고"></textarea></div>
+            <div class="field"><label>명령</label><textarea id="hubCmdText" rows="3" oninput="hubModelHint()" placeholder="예: staging 검증 끝났으면 promote-to-live 하고 보고"></textarea></div>
+            <div class="field"><label>AI 모델 <span class="n" id="hubModelWhy"></span></label>
+              <select id="hubCmdModel" onchange="hubModelHint()">
+                <option value="">자동 추천 (명령 내용으로 판단)</option>
+                <option value="opus">Opus — 설계·디버깅·리팩터 (가장 강함·비쌈)</option>
+                <option value="fable">Fable — 복잡한 작업 (강함)</option>
+                <option value="sonnet">Sonnet — 일반 작업 (균형)</option>
+                <option value="haiku">Haiku — 요약·정리·반복 (빠름·쌈)</option>
+                <option value="keep">지정 안 함 — 각 채팅 현재 모델 그대로</option>
+              </select>
+            </div>
+            <label class="hub-chk"><input type="checkbox" id="hubCmdAuto"> <span>이 모델로 <b>자동 실행</b> — 맥이 바로 돌려 결과를 보고 (계획·분석만, 파일 변경 없음)</span></label>
             <button class="btn" onclick="hubSendCmd()">하달</button>
             <span id="hubCmdMsg" class="n" style="margin-left:10px"></span>
             <div id="hubCmdList" class="hub-cmdlist"></div>
@@ -868,7 +879,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.22.1', AZ_CONSOLE_DATE='2026-09-10'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.23.0', AZ_CONSOLE_DATE='2026-09-10'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -2652,6 +2663,7 @@ function hubRenderCmds(cmds){
       : '';
     return '<div class="hcl-row"><span class="hcl-tg">'+hubEsc(c.target)+'</span>'
       +'<span class="hcl-tx">'+hubEsc(c.text).slice(0,80)+'</span>'
+      +(c.model?'<span class="hcl-md'+(c.auto_run?' auto':'')+'">'+hubEsc(c.model)+(c.auto_run?' 자동':'')+'</span>':'')
       +'<span class="hcl-st '+stc+'">'+stl+'</span>'+act+'</div>'
       +(c.result?'<div class="hcl-res">'+hubEsc(c.result).slice(0,300)+'</div>':'');
   }).join('');
@@ -2667,13 +2679,37 @@ function hubRenderAlerts(al){
       +'<button class="tbtn xs" onclick="hubAlertAck('+a.id+')">확인</button></div>';
   }).join('');
 }
+var HUB_MODEL_RULES=[
+  {m:'opus',  kw:['설계','아키텍','리팩터','리팩토','디버','원인','버그','오류','장애','보안','최적화','성능','마이그레이','스키마','알고리즘','왜 ','분석']},
+  {m:'haiku', kw:['요약','정리','목록','나열','복사','번역','표기','이름','링크','확인만','체크','읽어']},
+];
+function hubPickModel(txt){
+  var t=(txt||'').toLowerCase(), best='sonnet', hi=0;
+  HUB_MODEL_RULES.forEach(function(r){
+    var n=0; r.kw.forEach(function(k){ if(t.indexOf(k)>=0) n++; });
+    if(n>hi){ hi=n; best=r.m; }
+  });
+  return best;
+}
+function hubModelHint(){
+  var sel=document.getElementById('hubCmdModel'), w=document.getElementById('hubModelWhy');
+  if(!sel||!w) return;
+  if(sel.value===''){ var m=hubPickModel(document.getElementById('hubCmdText').value); w.textContent='→ '+m+' 로 보냅니다'; }
+  else if(sel.value==='keep'){ w.textContent='→ 모델 지정 없이 전달'; }
+  else w.textContent='';
+}
 async function hubSendCmd(){
   var t=document.getElementById('hubCmdTarget').value, x=(document.getElementById('hubCmdText').value||'').trim();
+  var msel=document.getElementById('hubCmdModel').value, auto=document.getElementById('hubCmdAuto').checked;
   var m=document.getElementById('hubCmdMsg'); if(!x){ m.textContent='명령을 입력하세요'; return; }
+  var model = msel==='keep' ? null : (msel || hubPickModel(x));
+  if(auto && !model){ m.textContent='자동 실행은 모델을 지정해야 합니다'; return; }
   m.textContent='보내는 중…';
-  var r=await sb.from('agent_commands').insert({target:t,text:x});
+  var r=await sb.from('agent_commands').insert({target:t,text:x,model:model,auto_run:auto});
   if(r.error){ m.textContent='실패: '+r.error.message; return; }
-  document.getElementById('hubCmdText').value=''; m.textContent='하달됨 — 인박스로 배달됩니다'; setTimeout(function(){m.textContent='';},2500); hubLoad();
+  document.getElementById('hubCmdText').value=''; document.getElementById('hubCmdAuto').checked=false;
+  m.textContent=auto?('하달됨 — '+model+' 로 자동 실행합니다'):('하달됨'+(model?(' ('+model+' 권장)'):'')+' — 인박스로 배달됩니다');
+  setTimeout(function(){m.textContent='';},3000); hubModelHint(); hubLoad();
 }
 async function hubCmdCancel(id){ if(!confirm('이 명령을 취소할까요?')) return; var r=await sb.from('agent_commands').update({status:'canceled'}).eq('id',id); if(r.error){alert('실패: '+r.error.message);return;} hubLoad(); }
 async function hubCmdDone(id){ var m=prompt('완료로 표시합니다. 결과 메모(선택)','사장님이 콘솔에서 직접 처리'); if(m===null) return; var r=await sb.from('agent_commands').update({status:'done',done_at:new Date().toISOString(),result:m||null}).eq('id',id); if(r.error){alert('실패: '+r.error.message);return;} hubLoad(); }
@@ -2764,6 +2800,12 @@ async function hubAlertAck(id){ var r=await sb.from('agent_alerts').update({seen
 #p-hub .kb-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
 #p-hub .kb-asg,#p-hub .kb-due{font-size:10.5px;font-family:ui-monospace,Menlo,monospace;padding:1px 6px;border-radius:999px;background:#141d30;color:var(--dim)}
 #p-hub .kb-due.today{color:#f4dfa6;background:#241c07}#p-hub .kb-due.over{color:#f4b6b8;background:#2a1113}
+#p-hub .hub-chk{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--dim);line-height:1.5;margin:2px 0 12px;cursor:pointer}
+#p-hub .hub-chk input{margin-top:2px;flex:none}
+#p-hub .hub-chk b{color:var(--text)}
+#p-hub #hubModelWhy{font-weight:600;color:var(--navy);margin-left:6px}
+#p-hub .hcl-md{font-family:ui-monospace,Menlo,monospace;font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;background:#141d30;color:var(--dim);flex:none}
+#p-hub .hcl-md.auto{background:#0e2417;color:#7fe0a0}
 #p-hub .hcl-res{font-size:11.5px;color:var(--dim);line-height:1.5;padding:2px 0 7px 0;border-bottom:1px solid var(--line);word-break:break-all}
 #p-hub .hub-alerts{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
 #p-hub .hub-al{display:flex;align-items:center;gap:9px;padding:9px 13px;border-radius:10px;font-size:12.5px;border:1px solid var(--line)}
