@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-10T08:17+09:00",
+ "generated": "2026-09-10T23:38+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -23,7 +23,7 @@
   },
   {
    "file": "product-flare-tally.html",
-   "title": "Flare Tally — 스마트폰 카메라 탈리"
+   "title": "Flare Tally — 모바일 탈리 (스마트폰이 곧 탈리 라이트)"
   },
   {
    "file": "product-klera-voice.html",
@@ -114,6 +114,10 @@
  "console_version": "1.23.0",
  "commits_live": [
   {
+   "date": "2026-09-10T08:16:53+09:00",
+   "msg": "콘솔 v1.23.0: 명령마다 AI 모델 선택·자동 추천, 선택 모델로 자동 실행 옵션"
+  },
+  {
    "date": "2026-09-10T07:21:49+09:00",
    "msg": "콘솔 v1.22.1: 지휘소 칸반 열 자동 맞춤·버튼 줄바꿈 방지"
   },
@@ -152,10 +156,6 @@
   {
    "date": "2026-09-08T12:25:00+09:00",
    "msg": "downloads: Latency Meter AZ v0.2.0 배포 재개 (공증 pkg, 릴리스 lmaz-v0.2.0)"
-  },
-  {
-   "date": "2026-09-08T11:37:13+09:00",
-   "msg": "downloads: Latency Meter AZ 배포 일시 중지 (버튼 비활성·문구 정리)"
   }
  ],
  "commits_staging": []
