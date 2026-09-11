@@ -325,6 +325,7 @@ async function pay(ch){
 }
 // 결제 모드: 한국어 브라우저 = 국내 결제(원화, 국내 발급 카드) / 그 외 = 해외 결제(달러, Paddle). 아래 전환 링크로 수동 변경 가능.
 function payMode(){
+  if(!(window.AZ_PAY&&window.AZ_PAY.intl)) return 'kr';   // 해외 결제 비활성 기간 — 언어·저장값과 무관하게 국내 결제 (pay-config.js의 intl 스위치)
   try{ var o=localStorage.getItem('az_pay_mode'); if(o==='kr'||o==='intl') return o; }catch(_){}
   var lang=(navigator.language||'').toLowerCase();
   return lang.indexOf('ko')===0 ? 'kr' : 'intl';
