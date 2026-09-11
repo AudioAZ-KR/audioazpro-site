@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-11T13:10+09:00",
+ "generated": "2026-09-11T14:53+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -98,15 +98,15 @@
   "tally": {
    "product": "flare-tally-host",
    "version": "1.0",
-   "build": 71,
-   "label": "v1.0 (71)",
-   "pkg": "Flare-Tally-1.0-b71.pkg",
+   "build": 72,
+   "label": "v1.0 (72)",
+   "pkg": "Flare-Tally-1.0-b72.pkg",
    "url": "https://audioazpro.com/downloads.html",
    "date": "2026-09-11",
-   "note": "OSEE GoStream 지원 · 스캔이 다른 대역(169.254 직결)의 ATEM 도 찾음 · 스캔 속도 개선",
-   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b71/Flare-Tally-1.0-b71.pkg",
-   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b71/Flare-Tally-win-1.0-b71.zip",
-   "win_label": "v1.0 (71) 베타"
+   "note": "OSEE GoStream 지원 · 스캔이 서브넷 마스크(255.255.0.0 직결 포함)를 따라 ATEM 을 찾음 · 스캔 속도 개선",
+   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b72/Flare-Tally-1.0-b72.pkg",
+   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b72/Flare-Tally-win-1.0-b72.zip",
+   "win_label": "v1.0 (72) 베타"
   },
   "showfile": "v0.6.6",
   "lmaz": "v0.2.0"
@@ -154,5 +154,10 @@
    "msg": "제품 페이지 상단 뱃지 v1.0 (33) → (69) · Windows(베타) 표기 추가"
   }
  ],
- "commits_staging": []
+ "commits_staging": [
+  {
+   "date": "2026-09-11T13:09:57+09:00",
+   "msg": "Flare Tally 호스트 v1.0 (70) → (71): 스캔이 169.254 직결 대역의 ATEM 도 찾음"
+  }
+ ]
 }
