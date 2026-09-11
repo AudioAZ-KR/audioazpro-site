@@ -275,13 +275,18 @@ async function loadBuyer(){
   if(!n.value) n.value = md.name || md.full_name || sn || '';
   if(!t.value) t.value = fmtPhone(md.phone || md.phone_number || st || '');
 }
+// 실제로 발급되지 않는 번호만 좁게 거른다.
+// 연속 숫자(010-2345-6789)나 같은 숫자 반복(010-1111-1111)은 실존할 수 있는 번호라 막지 않는다
+// — 가짜 몇 건을 막으려다 진짜 구매자를 막는 쪽이 손해가 크다.
+function dummyPhone(d){ return /^01[0-9]0{8}$/.test(d); }   // 010-0000-0000 류
 // 유효하면 {name,phone} 반환, 아니면 해당 칸으로 보내고 null
 function buyerInfo(){
   var n=document.getElementById('buyName'), t=document.getElementById('buyPhone'), m=document.getElementById('buyerMsg');
   var name=(n?n.value:'').trim(), phone=digits(t?t.value:'');
   function bad(el,msg){ if(m){ m.className='codemsg err'; m.textContent=msg; } if(el){ el.focus(); el.scrollIntoView({block:'center',behavior:'smooth'}); } return null; }
   if(name.length<2) return bad(n,'구매자 이름을 입력하세요. (카드 본인확인에 사용)');
-  if(!/^01[0-9]{8,9}$/.test(phone)) return bad(t,'휴대폰 번호를 010-1234-5678 형식으로 정확히 입력하세요.');
+  if(!/^(010\d{8}|01[16789]\d{7,8})$/.test(phone)) return bad(t,'휴대폰 번호를 010-1234-5678 형식으로 정확히 입력하세요.');
+  if(dummyPhone(phone)) return bad(t,'실제로 연락 가능한 휴대폰 번호를 입력해 주세요. 결제 오류·환불 안내에 사용됩니다.');
   if(m){ m.className='codemsg'; m.textContent=''; }
   try{ localStorage.setItem('az_buy_name',name); localStorage.setItem('az_buy_phone',phone); }catch(_){}
   try{ sbC.auth.updateUser({data:{name:name, phone:phone}}); }catch(_){}   // 다음 구매 때 자동으로 채워지도록 계정에 저장 (실패해도 결제는 진행)
