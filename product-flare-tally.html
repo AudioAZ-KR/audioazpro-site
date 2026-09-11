@@ -99,6 +99,13 @@ footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px}f
 .shot p{font-size:13px;line-height:1.65;color:var(--dim);margin:0 16px 16px}
 .shot .k{display:inline-block;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.08em;color:var(--blue-soft,#4D96F5);margin:14px 16px 0}
 .shot .k+h3{margin-top:4px}
+
+.svcbox{margin-top:18px;padding:14px 16px;border:1px solid rgba(255,255,255,.16);border-radius:10px;background:rgba(255,255,255,.04);max-width:620px}
+.svcbox .r{display:flex;gap:12px;font-size:13px;padding:4px 0;line-height:1.55;color:#C7D6E8}
+.svcbox .r span{flex:none;width:118px;color:#8fa5c2}
+.svcbox .r b{font-weight:600;color:#fff}
+.svcbox .r a{color:#9CC2F5}
+@media(max-width:560px){.svcbox .r{flex-direction:column;gap:1px}.svcbox .r span{width:auto}}
 </style>
 <script src="/portal/az-i18n.js" defer></script>
 </head>
@@ -118,6 +125,12 @@ footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px}f
   <div class="price" style="margin-top:16px;font-size:15px;color:#C7D6E8">라이선스 <b id="heroPrice" style="color:#fff;font-size:20px">—</b> <span style="color:#8fa5c2">· 7일 무료 데모 (호스트 다운로드는 무료)</span></div>
   <div class="salebar" id="saleBar" hidden></div>
   <div class="cta"><a class="btn btn-primary" href="/portal/checkout.html?p=TALLY">라이선스 구매</a><a class="btn btn-ghost" href="https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b72/Flare-Tally-1.0-b72.pkg" download>macOS 호스트 다운로드</a><a class="btn btn-ghost" href="https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b72/Flare-Tally-win-1.0-b72.zip" download>Windows 호스트 다운로드 (베타)</a><a class="btn btn-ghost" href="#how">작동 방식</a></div>
+  <div class="svcbox" data-i18n-skip>
+    <div class="r"><span>서비스 제공 방식</span><b>온라인 다운로드 · 결제 즉시 라이선스 키 발급 (이메일 발송)</b></div>
+    <div class="r"><span>서비스 제공 기간</span><b>영구 라이선스 (기간 제한 없음) · 무료 업데이트</b></div>
+    <div class="r"><span>다운로드 유효기간</span><b>구매일로부터 1년</b></div>
+    <div class="r"><span>환불</span><b><a href="/refund.html">환불 정책</a>에 따름</b></div>
+  </div>
   <div class="meta"><span>macOS 호스트 앱</span><span>iPhone · iPad 앱</span><span>웹 탈리 (iOS · Android)</span><span>온라인(LTE) · 오프라인(Wi-Fi) 자동</span><span>ATEM · Roland · vMix · OBS · OSEE · TSL</span></div>
 </div></header>
 
