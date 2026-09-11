@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-11T12:47+09:00",
+ "generated": "2026-09-11T13:10+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -98,21 +98,29 @@
   "tally": {
    "product": "flare-tally-host",
    "version": "1.0",
-   "build": 70,
-   "label": "v1.0 (70)",
-   "pkg": "Flare-Tally-1.0-b70.pkg",
+   "build": 71,
+   "label": "v1.0 (71)",
+   "pkg": "Flare-Tally-1.0-b71.pkg",
    "url": "https://audioazpro.com/downloads.html",
    "date": "2026-09-11",
-   "note": "OSEE GoStream(Deck · Duet · Duet 8-ISO) 스위처 지원 · 스위처 스캔 속도 개선 · Windows 호스트 베타",
-   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b70/Flare-Tally-1.0-b70.pkg",
-   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b70/Flare-Tally-win-1.0-b70.zip",
-   "win_label": "v1.0 (70) 베타"
+   "note": "OSEE GoStream 지원 · 스캔이 다른 대역(169.254 직결)의 ATEM 도 찾음 · 스캔 속도 개선",
+   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b71/Flare-Tally-1.0-b71.pkg",
+   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b71/Flare-Tally-win-1.0-b71.zip",
+   "win_label": "v1.0 (71) 베타"
   },
   "showfile": "v0.6.6",
   "lmaz": "v0.2.0"
  },
  "console_version": "1.23.0",
  "commits_live": [
+  {
+   "date": "2026-09-11T12:47:35+09:00",
+   "msg": "Flare Tally: OSEE GoStream 호환 목록 추가 · 호스트 v1.0 (69) → (70)"
+  },
+  {
+   "date": "2026-09-10T23:38:20+09:00",
+   "msg": "Flare Tally 페이지: '모바일 탈리' 중심으로 히어로·메타 재구성"
+  },
   {
    "date": "2026-09-10T08:16:53+09:00",
    "msg": "콘솔 v1.23.0: 명령마다 AI 모델 선택·자동 추천, 선택 모델로 자동 실행 옵션"
@@ -144,24 +152,7 @@
   {
    "date": "2026-09-08T21:27:24+09:00",
    "msg": "제품 페이지 상단 뱃지 v1.0 (33) → (69) · Windows(베타) 표기 추가"
-  },
-  {
-   "date": "2026-09-08T21:24:59+09:00",
-   "msg": "Flare Tally 다운로드: Windows 호스트(베타) 추가 · 맥 v1.0 (50) → (69)"
-  },
-  {
-   "date": "2026-09-08T20:06:39+09:00",
-   "msg": "콘솔: 클로드 지휘소 탭 추가 (Phase 1 — 실시간 세션 관제·작업 큐 칸반·명령 하달·경보)"
-  },
-  {
-   "date": "2026-09-08T12:25:00+09:00",
-   "msg": "downloads: Latency Meter AZ v0.2.0 배포 재개 (공증 pkg, 릴리스 lmaz-v0.2.0)"
   }
  ],
- "commits_staging": [
-  {
-   "date": "2026-09-10T23:38:20+09:00",
-   "msg": "Flare Tally 페이지: '모바일 탈리' 중심으로 히어로·메타 재구성"
-  }
- ]
+ "commits_staging": []
 }
