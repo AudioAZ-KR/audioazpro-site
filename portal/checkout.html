@@ -37,6 +37,13 @@ h1{font-size:24px;font-weight:800;margin-bottom:4px}.lead{color:var(--dim);font-
 .codemsg.ok{display:block;background:#E7F7EF;color:#0a7a48}
 .codemsg.err{display:block;background:#FDE8E8;color:var(--red)}
 .codemsg.lic{display:block;background:var(--sky);color:var(--blue-deep)}
+.svcinfo{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.svcinfo .r{display:flex;gap:12px;font-size:13px;padding:5px 0;line-height:1.55}
+.svcinfo .r span{flex:none;width:116px;color:var(--dim)}
+.svcinfo .r b{font-weight:600;color:var(--text)}
+.svcinfo .n{font-size:12px;color:var(--dim);line-height:1.65;margin-top:10px}
+.svcinfo .n a{color:var(--blue,#1877F2)}
+@media(max-width:520px){.svcinfo .r{flex-direction:column;gap:2px}.svcinfo .r span{width:auto}}
 .sum{position:sticky;top:20px}
 .sum .line{display:flex;justify-content:space-between;font-size:14px;padding:7px 0;color:var(--dim)}
 .sum .line b{color:var(--text)}
@@ -72,6 +79,13 @@ h1{font-size:24px;font-weight:800;margin-bottom:4px}.lead{color:var(--dim);font-
           <div class="ic" id="pTag">KV</div>
           <div><h3 id="pName">Klera Voice</h3><div class="d" id="pDesc">영구 라이선스 · 무료 업데이트</div></div>
           <div class="p" id="pPrice">₩49,000</div>
+        </div>
+        <div class="svcinfo">
+          <div class="r"><span>서비스 제공 방식</span><b>온라인 다운로드 · 결제 즉시 라이선스 키 발급</b></div>
+          <div class="r"><span>서비스 제공 기간</span><b id="svcPeriod">영구 (기간 제한 없음)</b></div>
+          <div class="r"><span>다운로드 유효기간</span><b>구매일로부터 1년</b></div>
+          <div class="r"><span>이용 환경</span><b id="svcDev">활성화 가능 기기 수는 제품별로 다릅니다</b></div>
+          <p class="n">결제 완료 후 등록하신 이메일로 라이선스 키가 발송되며, <a href="/portal/account.html">내 계정 &gt; 내 라이선스</a>에서도 확인·다운로드할 수 있습니다. 청약철회·환불 조건은 <a href="/refund.html">환불 정책</a>을 따릅니다.</p>
         </div>
       </div>
 
@@ -300,6 +314,7 @@ function setProduct(p){
   CURPROD=p; document.getElementById('pName').textContent=PROD[p];
   var tag=document.getElementById('pTag'); if(tag&&AZ.PRODMETA[p]) tag.textContent=AZ.PRODMETA[p].tag;
   try{ document.getElementById('pDesc').textContent='영구 라이선스 · '+AZ.maxDevices(p)+'대 활성화 · 무료 업데이트'; }catch(_){}
+  try{ document.getElementById('svcDev').textContent='구매 후 최대 '+AZ.maxDevices(p)+'대에서 활성화 · 기기 변경 시 내 계정에서 해제 후 재활성화'; }catch(_){}
   try{ var u=new URL(location.href); u.searchParams.set('p',p); history.replaceState(null,'',u.pathname+u.search+u.hash); }catch(_){}
   renderPrice();
 }
@@ -315,7 +330,7 @@ function setProduct(p){
   renderPrice();
   var c=qp.get('code');
   // DB 정가 동기화 후 다시 렌더 (관리자 콘솔에서 정한 정가 반영)
-  renderPayButtons(); AZ.syncCatalog(function(){ try{ document.getElementById('pDesc').textContent='영구 라이선스 · '+AZ.maxDevices(CURPROD)+'대 활성화 · 무료 업데이트'; }catch(_){} if(!APPLIED) renderPrice(); if(c){document.getElementById('code').value=c;applyCode();} });
+  renderPayButtons(); AZ.syncCatalog(function(){ try{ document.getElementById('pDesc').textContent='영구 라이선스 · '+AZ.maxDevices(CURPROD)+'대 활성화 · 무료 업데이트'; document.getElementById('svcDev').textContent='구매 후 최대 '+AZ.maxDevices(CURPROD)+'대에서 활성화 · 기기 변경 시 내 계정에서 해제 후 재활성화'; }catch(_){} if(!APPLIED) renderPrice(); if(c){document.getElementById('code').value=c;applyCode();} });
 })();
 </script>
 
