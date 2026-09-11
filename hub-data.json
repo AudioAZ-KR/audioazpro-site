@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-11T16:32+09:00",
+ "generated": "2026-09-11T17:23+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -98,15 +98,15 @@
   "tally": {
    "product": "flare-tally-host",
    "version": "1.0",
-   "build": 72,
-   "label": "v1.0 (72)",
-   "pkg": "Flare-Tally-1.0-b72.pkg",
+   "build": 74,
+   "label": "v1.0 (74)",
+   "pkg": "Flare-Tally-1.0-b74.pkg",
    "url": "https://audioazpro.com/downloads.html",
    "date": "2026-09-11",
-   "note": "OSEE GoStream 지원 · 스캔이 서브넷 마스크(255.255.0.0 직결 포함)를 따라 ATEM 을 찾음 · 스캔 속도 개선",
-   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b72/Flare-Tally-1.0-b72.pkg",
-   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b72/Flare-Tally-win-1.0-b72.zip",
-   "win_label": "v1.0 (72) 베타"
+   "note": "OSEE GoStream 지원 · 서브넷 마스크를 따르는 스캔 · 링크 복사 확인 표시 · 연결 안 될 때 안내(!)",
+   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b74/Flare-Tally-1.0-b74.pkg",
+   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b74/Flare-Tally-win-1.0-b74.zip",
+   "win_label": "v1.0 (74) 베타"
   },
   "showfile": "v0.6.6",
   "lmaz": "v0.2.0"
@@ -146,5 +146,10 @@
    "msg": "KG이니시스 심사 요구 반영: 서비스 제공 방식·제공 기간·다운로드 유효기간 표기"
   }
  ],
- "commits_staging": []
+ "commits_staging": [
+  {
+   "date": "2026-09-11T16:32:13+09:00",
+   "msg": "푸터에 전화번호 복원 (전 페이지 21곳) — 이니시스 요구사항 ①"
+  }
+ ]
 }
