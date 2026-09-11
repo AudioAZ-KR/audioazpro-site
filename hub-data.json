@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-11T15:39+09:00",
+ "generated": "2026-09-11T17:23+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -98,21 +98,33 @@
   "tally": {
    "product": "flare-tally-host",
    "version": "1.0",
-   "build": 72,
-   "label": "v1.0 (72)",
-   "pkg": "Flare-Tally-1.0-b72.pkg",
+   "build": 74,
+   "label": "v1.0 (74)",
+   "pkg": "Flare-Tally-1.0-b74.pkg",
    "url": "https://audioazpro.com/downloads.html",
    "date": "2026-09-11",
-   "note": "OSEE GoStream 지원 · 스캔이 서브넷 마스크(255.255.0.0 직결 포함)를 따라 ATEM 을 찾음 · 스캔 속도 개선",
-   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b72/Flare-Tally-1.0-b72.pkg",
-   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b72/Flare-Tally-win-1.0-b72.zip",
-   "win_label": "v1.0 (72) 베타"
+   "note": "OSEE GoStream 지원 · 서브넷 마스크를 따르는 스캔 · 링크 복사 확인 표시 · 연결 안 될 때 안내(!)",
+   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b74/Flare-Tally-1.0-b74.pkg",
+   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b74/Flare-Tally-win-1.0-b74.zip",
+   "win_label": "v1.0 (74) 베타"
   },
   "showfile": "v0.6.6",
   "lmaz": "v0.2.0"
  },
  "console_version": "1.23.0",
  "commits_live": [
+  {
+   "date": "2026-09-11T15:39:48+09:00",
+   "msg": "결제: 해외 결제 비활성 시 달러 결제 안내 링크도 숨김"
+  },
+  {
+   "date": "2026-09-11T15:38:10+09:00",
+   "msg": "해외 결제 모드 완전 차단 (AZ_PAY.intl 스위치)"
+  },
+  {
+   "date": "2026-09-11T15:35:32+09:00",
+   "msg": "결제: 구매자 이름·휴대폰 번호 입력 추가 (이니시스 V2 필수)"
+  },
   {
    "date": "2026-09-11T15:33:31+09:00",
    "msg": "Flare Tally 호스트 v1.0 (72) — 릴리스 파일 200 확인 후 링크 갱신"
@@ -132,28 +144,12 @@
   {
    "date": "2026-09-11T15:00:23+09:00",
    "msg": "KG이니시스 심사 요구 반영: 서비스 제공 방식·제공 기간·다운로드 유효기간 표기"
-  },
-  {
-   "date": "2026-09-11T14:53:20+09:00",
-   "msg": "EN(해외·달러) 모드 잠시 비활성 — Paddle 계정 인증 거절로 해외 결제 경로 없음"
-  },
-  {
-   "date": "2026-09-11T13:17:33+09:00",
-   "msg": "Flare Tally 호스트 v1.0 (71) → (72): 스캔이 서브넷 마스크(255.255.0.0)를 따름"
-  },
-  {
-   "date": "2026-09-11T13:09:57+09:00",
-   "msg": "Flare Tally 호스트 v1.0 (70) → (71): 스캔이 169.254 직결 대역의 ATEM 도 찾음"
   }
  ],
  "commits_staging": [
   {
-   "date": "2026-09-11T15:38:10+09:00",
-   "msg": "해외 결제 모드 완전 차단 (AZ_PAY.intl 스위치)"
-  },
-  {
-   "date": "2026-09-11T15:35:32+09:00",
-   "msg": "결제: 구매자 이름·휴대폰 번호 입력 추가 (이니시스 V2 필수)"
+   "date": "2026-09-11T16:32:13+09:00",
+   "msg": "푸터에 전화번호 복원 (전 페이지 21곳) — 이니시스 요구사항 ①"
   }
  ]
 }
