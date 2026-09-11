@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-11T15:22+09:00",
+ "generated": "2026-09-11T15:28+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -98,21 +98,25 @@
   "tally": {
    "product": "flare-tally-host",
    "version": "1.0",
-   "build": 72,
-   "label": "v1.0 (72)",
-   "pkg": "Flare-Tally-1.0-b72.pkg",
+   "build": 70,
+   "label": "v1.0 (70)",
+   "pkg": "Flare-Tally-1.0-b70.pkg",
    "url": "https://audioazpro.com/downloads.html",
    "date": "2026-09-11",
-   "note": "OSEE GoStream 지원 · 스캔이 서브넷 마스크(255.255.0.0 직결 포함)를 따라 ATEM 을 찾음 · 스캔 속도 개선",
-   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b72/Flare-Tally-1.0-b72.pkg",
-   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b72/Flare-Tally-win-1.0-b72.zip",
-   "win_label": "v1.0 (72) 베타"
+   "note": "OSEE GoStream(Deck · Duet · Duet 8-ISO) 스위처 지원 · 스위처 스캔 속도 개선 · Windows 호스트 베타",
+   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b70/Flare-Tally-1.0-b70.pkg",
+   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b70/Flare-Tally-win-1.0-b70.zip",
+   "win_label": "v1.0 (70) 베타"
   },
   "showfile": "v0.6.6",
   "lmaz": "v0.2.0"
  },
  "console_version": "1.23.0",
  "commits_live": [
+  {
+   "date": "2026-09-11T15:22:15+09:00",
+   "msg": "결제 페이지: 해외 결제(달러) 안내 링크를 결제사 준비된 경우에만 노출"
+  },
   {
    "date": "2026-09-11T15:14:40+09:00",
    "msg": "다운로드 유효기간: 1년 → 제한 없음 + 서비스 종료 3개월 전 공지 (사장님 결정)"
@@ -140,10 +144,6 @@
   {
    "date": "2026-09-10T23:38:20+09:00",
    "msg": "Flare Tally 페이지: '모바일 탈리' 중심으로 히어로·메타 재구성"
-  },
-  {
-   "date": "2026-09-10T08:16:53+09:00",
-   "msg": "콘솔 v1.23.0: 명령마다 AI 모델 선택·자동 추천, 선택 모델로 자동 실행 옵션"
   }
  ],
  "commits_staging": []
