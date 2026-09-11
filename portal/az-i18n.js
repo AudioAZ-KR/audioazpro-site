@@ -5,10 +5,19 @@
  */
 (function(){
   var KO=/[가-힣]/;
-  function lang(){ try{ var l=localStorage.getItem('az_lang'); if(l==='kr'||l==='en') return l; }catch(_){}
+  // 2026-09-11: Paddle 계정 인증 거절(최종)로 해외 결제 경로가 없음 → EN(달러) 모드 잠시 비활성.
+  // 새 해외 결제사(Lemon Squeezy·Polar·FastSpring 등)가 정해지면 아래 한 줄만 true 로 되돌리면 원복된다.
+  var EN_ENABLED = false;
+  function lang(){ if(!EN_ENABLED) return 'kr';
+    try{ var l=localStorage.getItem('az_lang'); if(l==='kr'||l==='en') return l; }catch(_){}
     return ((navigator.language||'').toLowerCase().indexOf('ko')===0) ? 'kr' : 'en'; }
-  function setLang(l){ try{ localStorage.setItem('az_lang',l); localStorage.setItem('az_pay_mode', l==='en'?'intl':'kr'); }catch(_){} location.reload(); }
+  function setLang(l){ if(!EN_ENABLED) return;
+    try{ localStorage.setItem('az_lang',l); localStorage.setItem('az_pay_mode', l==='en'?'intl':'kr'); }catch(_){} location.reload(); }
   window.azLang=lang; window.azSetLang=setLang;
+  if(!EN_ENABLED){   // 이전에 EN을 골랐던 방문자도 국내 모드로 되돌린다
+    try{ if(localStorage.getItem('az_lang')==='en') localStorage.setItem('az_lang','kr');
+         if(localStorage.getItem('az_pay_mode')==='intl') localStorage.setItem('az_pay_mode','kr'); }catch(_){}
+  }
   try{ if(!localStorage.getItem('az_pay_mode')) localStorage.setItem('az_pay_mode', lang()==='en'?'intl':'kr'); }catch(_){}
 
   var DICT=null;
@@ -73,6 +82,7 @@
   }
   // 푸터(하단) 언어 전환 — 전 페이지 footer에 KR/EN
   function mountFooterSwitch(){
+    if(!EN_ENABLED) return;   // 해외 결제 비활성 기간 동안 언어 스위치 숨김
     if(document.getElementById('az-lang-switch-foot')) return;
     var f=document.querySelector('footer'); if(!f) return;
     var cur=lang();
