@@ -10,6 +10,9 @@
       live: LIVE
     },
     paddle:  { clientToken: LIVE ? "" : "test_5509b9b264cb4dfca7510fdf707", env: "sandbox", priceIds: { KV: "pri_01m1p7nqc1ktc8w5tqsm95hg33", KI: "", TALLY: "pri_01m1p7tnqhs25nr9r1422kn7es" }, usd: { KV: 199, KI: null, TALLY: 99 } },   // Paddle 샌드박스 · clientToken(공개) 입력 시 해외 결제 버튼 활성
+    // 해외(달러) 결제 모드 스위치 — Paddle 심사 거절(2026-09-11)로 대체 결제사 확정 전까지 꺼 둠.
+    // 꺼져 있으면 브라우저 언어와 무관하게 모든 방문자가 국내(원화) 결제 화면을 본다.
+    intl: false,
     functions: "https://lkbbenyvchddsjsihofv.supabase.co/functions/v1"
   };
 })();
