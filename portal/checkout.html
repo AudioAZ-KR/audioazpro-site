@@ -302,7 +302,10 @@ function renderPayButtons(){
   if(mode==='kr'){
     kr.style.display=''; kr.textContent = payReady('portone') ? '카드·간편결제로 구매 (국내 발급 카드)' : '구매 문의하기';
     if(intl) intl.style.display='none';
-    sw.innerHTML='해외 발급 카드 · PayPal은 <a href="#" onclick="setPayMode(\'intl\');return false" style="color:var(--blue)">달러 결제(International checkout)</a>';
+    // 해외 결제(달러)는 결제사가 준비된 경우에만 안내 — 2026-09-11 Paddle 거절로 경로가 없어 숨김
+    sw.innerHTML = payReady('paddle')
+      ? '해외 발급 카드 · PayPal은 <a href="#" onclick="setPayMode(\'intl\');return false" style="color:var(--blue)">달러 결제(International checkout)</a>'
+      : '';
   } else {
     kr.style.display='none';
     if(intl){ intl.style.display=''; intl.innerHTML = payReady('paddle') ? ('<span class="pbtn-in"><span>Pay with card / PayPal</span>' + PAYLOGOS + '</span>') : 'International checkout — coming soon'; intl.disabled=!payReady('paddle'); }
