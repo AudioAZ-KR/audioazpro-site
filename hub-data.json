@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-12T11:45+09:00",
+ "generated": "2026-09-12T14:44+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -98,15 +98,15 @@
   "tally": {
    "product": "flare-tally-host",
    "version": "1.0",
-   "build": 74,
-   "label": "v1.0 (74)",
-   "pkg": "Flare-Tally-1.0-b74.pkg",
+   "build": 75,
+   "label": "v1.0 (75)",
+   "pkg": "Flare-Tally-1.0-b75.pkg",
    "url": "https://audioazpro.com/downloads.html",
-   "date": "2026-09-11",
-   "note": "OSEE GoStream 지원 · 서브넷 마스크를 따르는 스캔 · 링크 복사 확인 표시 · 연결 안 될 때 안내(!)",
-   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b74/Flare-Tally-1.0-b74.pkg",
-   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b74/Flare-Tally-win-1.0-b74.zip",
-   "win_label": "v1.0 (74) 베타"
+   "date": "2026-09-12",
+   "note": "카메라별 오프라인/온라인 표시와 전환 알림 · 연결 끊김 자동 복구 · 웹 탈리 재접속 개선",
+   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b75/Flare-Tally-1.0-b75.pkg",
+   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b75/Flare-Tally-win-1.0-b75.zip",
+   "win_label": "v1.0 (75) 베타"
   },
   "showfile": "v0.6.6",
   "lmaz": "v0.2.0"
@@ -147,6 +147,10 @@
   }
  ],
  "commits_staging": [
+  {
+   "date": "2026-09-12T11:45:18+09:00",
+   "msg": "제품 판매 상태(active) 토글 + 스테일 기본가 정정 (KV 199,000 / TALLY 99,000)"
+  },
   {
    "date": "2026-09-12T11:06:42+09:00",
    "msg": "Klera Voice: 테스트 사이트에서만 판매 동선 개방 (라이브는 계속 '출시 준비 중')"
