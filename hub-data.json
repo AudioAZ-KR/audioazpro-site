@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-11T18:36+09:00",
+ "generated": "2026-09-12T11:06+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -27,7 +27,7 @@
   },
   {
    "file": "product-klera-voice.html",
-   "title": "Klera Voice — 준비 중"
+   "title": "Klera Voice — 라이브용 제로레이턴시 AI 보이스 클린"
   },
   {
    "file": "products.html",
@@ -47,7 +47,7 @@
   },
   {
    "file": "support-klera.html",
-   "title": "Klera Voice 지원 — 준비 중"
+   "title": "Klera Voice 설치·문제해결"
   },
   {
    "file": "support.html",
@@ -114,6 +114,10 @@
  "console_version": "1.23.0",
  "commits_live": [
   {
+   "date": "2026-09-11T18:36:01+09:00",
+   "msg": "휴대폰 번호 수집 사유 명시 (개인정보처리방침 2-1항 + 결제 페이지 안내)"
+  },
+  {
    "date": "2026-09-11T18:28:30+09:00",
    "msg": "법무 문서 초안 딱지 제거·개인정보처리방침 정비 (이니시스 검수 대비)"
   },
@@ -140,10 +144,6 @@
   {
    "date": "2026-09-11T15:38:10+09:00",
    "msg": "해외 결제 모드 완전 차단 (AZ_PAY.intl 스위치)"
-  },
-  {
-   "date": "2026-09-11T15:35:32+09:00",
-   "msg": "결제: 구매자 이름·휴대폰 번호 입력 추가 (이니시스 V2 필수)"
   }
  ],
  "commits_staging": []
