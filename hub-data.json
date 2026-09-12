@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-12T11:06+09:00",
+ "generated": "2026-09-12T11:45+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -111,7 +111,7 @@
   "showfile": "v0.6.6",
   "lmaz": "v0.2.0"
  },
- "console_version": "1.23.0",
+ "console_version": "1.24.0",
  "commits_live": [
   {
    "date": "2026-09-11T18:36:01+09:00",
@@ -146,5 +146,10 @@
    "msg": "해외 결제 모드 완전 차단 (AZ_PAY.intl 스위치)"
   }
  ],
- "commits_staging": []
+ "commits_staging": [
+  {
+   "date": "2026-09-12T11:06:42+09:00",
+   "msg": "Klera Voice: 테스트 사이트에서만 판매 동선 개방 (라이브는 계속 '출시 준비 중')"
+  }
+ ]
 }
