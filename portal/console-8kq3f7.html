@@ -879,7 +879,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.23.0', AZ_CONSOLE_DATE='2026-09-10'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.24.0', AZ_CONSOLE_DATE='2026-09-12'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -2183,16 +2183,31 @@ function renderProducts(){
   var ids=['KV','KI','TALLY','LMAZ'];
   tb.innerHTML=ids.map(function(p){
     var m=AZ.PRODMETA[p], db=PRODUCTS[p]||{}, price=db.price_krw, sale=AZ.saleFor(p);
-    var status = price==null ? '<span class="pill p-trial">정가 미정</span>' : (price===0 ? '<span class="pill p-active">무료</span>' : '<span class="pill p-active">판매중</span>');
+    var on = db.active !== false;
+    var status = !on ? '<span class="pill p-refund">판매 중지</span>'
+               : price==null ? '<span class="pill p-trial">정가 미정</span>'
+               : (price===0 ? '<span class="pill p-active">무료</span>' : '<span class="pill p-active">판매중</span>');
     return '<tr><td>'+esc(db.name||m.name)+'</td>'+
       '<td class="mono">'+esc(db.version||AZ.versionOf(p))+'</td>'+
       '<td>'+(price==null?'<span style="color:var(--dim)">미정</span>':(price?W(price):'무료'))+'<div class="mono" style="font-size:11px;color:var(--dim)">해외 '+(db.price_usd!=null?'$'+Number(db.price_usd).toFixed(2):'미정')+'</div></td>'+
       '<td>'+(sale?('<b>'+W(sale.price)+'</b>'):'—')+(db.sale_price_usd!=null?'<div class="mono" style="font-size:11px;color:var(--dim)">해외 $'+Number(db.sale_price_usd).toFixed(2)+'</div>':'')+'</td>'+
       '<td><b>'+(db.max_devices!=null?db.max_devices:1)+'대</b></td>'+
       '<td>'+status+'</td>'+
-      '<td style="white-space:nowrap"><button class="tbtn pri" onclick="editProduct(\''+p+'\')">정가 설정</button> <button class="tbtn" onclick="bumpVersion(\''+p+'\')">버전</button> <button class="tbtn" onclick="editDevices(\''+p+'\')">기기 수</button></td>'+
+      '<td style="white-space:nowrap"><button class="tbtn" onclick="toggleProduct(\''+p+'\')">'+(on?'판매 중지':'판매 시작')+'</button> <button class="tbtn pri" onclick="editProduct(\''+p+'\')">정가 설정</button> <button class="tbtn" onclick="bumpVersion(\''+p+'\')">버전</button> <button class="tbtn" onclick="editDevices(\''+p+'\')">기기 수</button></td>'+
     '</tr>';
   }).join('');
+}
+// 판매 상태(products.active) 전환 — 끄면 서버(checkout-create)가 '판매 중인 제품이 아닙니다'로 주문을 거부하고,
+// 고객 화면의 가격 동기화(syncCatalog는 active=true만 조회) 대상에서도 빠진다.
+async function toggleProduct(p){
+  var m=AZ.PRODMETA[p], db=PRODUCTS[p]||{}, on=db.active!==false;
+  var msg = on ? '<b style="color:#E9EEF7">'+esc(db.name||m.name)+'</b> 판매를 중지합니다.<br>결제 페이지에서 주문이 거부되고, 고객 화면 가격 동기화에서도 빠집니다.'
+               : '<b style="color:#E9EEF7">'+esc(db.name||m.name)+'</b> 판매를 시작합니다.<br>결제가 가능해지고 DB 정가가 고객 화면에 반영됩니다.'+((db.price_krw==null)?'<br><b style="color:#E7B252">정가가 미정이라 결제가 실패합니다 — 먼저 정가를 설정하세요.</b>':'');
+  var ok=await azModal({title:(on?'판매 중지':'판매 시작'), body:msg, fields:[], okText:(on?'중지':'시작')});
+  if(ok===null) return;
+  var r=await sb.from('products').update({active:!on}).eq('id',p);
+  if(r.error){ alert('저장 실패: '+r.error.message); return; }
+  await loadProducts(); try{renderSales();}catch(_){}
 }
 async function editProduct(p){
   var m=AZ.PRODMETA[p], db=PRODUCTS[p]||{}, cur=db.price_krw;

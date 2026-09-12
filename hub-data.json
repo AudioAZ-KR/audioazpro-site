@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-11T18:36+09:00",
+ "generated": "2026-09-12T14:44+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -27,7 +27,7 @@
   },
   {
    "file": "product-klera-voice.html",
-   "title": "Klera Voice — 준비 중"
+   "title": "Klera Voice — 라이브용 제로레이턴시 AI 보이스 클린"
   },
   {
    "file": "products.html",
@@ -47,7 +47,7 @@
   },
   {
    "file": "support-klera.html",
-   "title": "Klera Voice 지원 — 준비 중"
+   "title": "Klera Voice 설치·문제해결"
   },
   {
    "file": "support.html",
@@ -98,21 +98,25 @@
   "tally": {
    "product": "flare-tally-host",
    "version": "1.0",
-   "build": 74,
-   "label": "v1.0 (74)",
-   "pkg": "Flare-Tally-1.0-b74.pkg",
+   "build": 75,
+   "label": "v1.0 (75)",
+   "pkg": "Flare-Tally-1.0-b75.pkg",
    "url": "https://audioazpro.com/downloads.html",
-   "date": "2026-09-11",
-   "note": "OSEE GoStream 지원 · 서브넷 마스크를 따르는 스캔 · 링크 복사 확인 표시 · 연결 안 될 때 안내(!)",
-   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b74/Flare-Tally-1.0-b74.pkg",
-   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b74/Flare-Tally-win-1.0-b74.zip",
-   "win_label": "v1.0 (74) 베타"
+   "date": "2026-09-12",
+   "note": "카메라별 오프라인/온라인 표시와 전환 알림 · 연결 끊김 자동 복구 · 웹 탈리 재접속 개선",
+   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b75/Flare-Tally-1.0-b75.pkg",
+   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b75/Flare-Tally-win-1.0-b75.zip",
+   "win_label": "v1.0 (75) 베타"
   },
   "showfile": "v0.6.6",
   "lmaz": "v0.2.0"
  },
- "console_version": "1.23.0",
+ "console_version": "1.24.0",
  "commits_live": [
+  {
+   "date": "2026-09-11T18:36:01+09:00",
+   "msg": "휴대폰 번호 수집 사유 명시 (개인정보처리방침 2-1항 + 결제 페이지 안내)"
+  },
   {
    "date": "2026-09-11T18:28:30+09:00",
    "msg": "법무 문서 초안 딱지 제거·개인정보처리방침 정비 (이니시스 검수 대비)"
@@ -140,11 +144,16 @@
   {
    "date": "2026-09-11T15:38:10+09:00",
    "msg": "해외 결제 모드 완전 차단 (AZ_PAY.intl 스위치)"
-  },
-  {
-   "date": "2026-09-11T15:35:32+09:00",
-   "msg": "결제: 구매자 이름·휴대폰 번호 입력 추가 (이니시스 V2 필수)"
   }
  ],
- "commits_staging": []
+ "commits_staging": [
+  {
+   "date": "2026-09-12T11:45:18+09:00",
+   "msg": "제품 판매 상태(active) 토글 + 스테일 기본가 정정 (KV 199,000 / TALLY 99,000)"
+  },
+  {
+   "date": "2026-09-12T11:06:42+09:00",
+   "msg": "Klera Voice: 테스트 사이트에서만 판매 동선 개방 (라이브는 계속 '출시 준비 중')"
+  }
+ ]
 }

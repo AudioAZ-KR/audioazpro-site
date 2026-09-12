@@ -62,6 +62,8 @@ h1{font-size:24px;font-weight:800;margin-bottom:4px}.lead{color:var(--dim);font-
 @media(max-width:520px){.pbtn .paylogos{display:none}}
 </style>
 <script src="/portal/az-i18n.js" defer></script>
+<script src="/assets/az-preview.js"></script>
+<style>html.kv-closed .kv-real{display:none}html.kv-open .kv-soon{display:none}</style>
 </head>
 <body>
 <div class="topbar">
@@ -378,7 +380,7 @@ function setProduct(p){
 (function(){
   var qp=new URLSearchParams(location.search);
   var p=(qp.get('p')||'').toUpperCase();
-  if(p==='KV'){ alert('Klera Voice는 아직 판매 전입니다.'); location.replace('/products.html'); return; }
+  if(p==='KV' && !window.AZ_KV_OPEN){ alert('Klera Voice는 아직 판매 전입니다.'); location.replace('/products.html'); return; }   // 테스트 사이트에서는 열림 (assets/az-preview.js)
   if(PROD[p]) setProduct(p);
   renderPrice();
   var c=qp.get('code');
