@@ -48,6 +48,8 @@ details p{font-size:14px;color:var(--dim);padding:0 0 16px;line-height:1.6}
 footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px;margin-top:50px}footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center}footer .right{margin-left:auto}footer a:hover{color:#fff}
 :root{--page:#0B1220;--card:#121D33;--navbg:rgba(11,18,32,.9);--text:#E9EEF7;--dim:#96A6BF;--line:#243350;--bg:#0C1424;--sky:#17273F;--wordmark:#ffffff}.navtoggle{display:none;margin-left:auto;background:none;border:0;color:var(--text);cursor:pointer;padding:6px;line-height:0}@media(max-width:760px){.navtoggle{display:block}.nav-in .menu{position:absolute;top:64px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:#0B1220;z-index:60;box-shadow:0 18px 44px rgba(0,0,0,.6);border-bottom:1px solid var(--line);padding:8px 24px 18px;margin-left:0;display:none}.nav-in .menu.open{display:flex}.nav-in .menu .hide-sm{display:block}.nav-in .menu a{padding:13px 2px;border-bottom:1px solid var(--line);font-size:15px}.nav-in .menu .login{background:var(--blue);color:#fff;border:1px solid var(--blue);border-radius:10px;padding:12px;text-align:center;margin-top:10px}}</style>
 <script src="/portal/az-i18n.js" defer></script>
+<script src="/assets/az-preview.js"></script>
+<style>html.kv-closed .kv-real{display:none}html.kv-open .kv-soon{display:none}</style>
 </head>
 <body>
 <nav><div class="wrap nav-in">
@@ -76,7 +78,8 @@ footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px;m
 
   <h2>제품별 가이드</h2>
   <div class="cards">
-    <div class="qcard" style="display:block;opacity:.6;cursor:default"><div class="ic">KV</div><h3>Klera Voice 설치·문제해결 <span style="font-size:11px;color:var(--dim)">출시 준비 중</span></h3><p>DAW 설치·재스캔, 시스템 요구사항, 라이선스 활성화</p></div>
+    <div class="qcard kv-soon" style="display:block;opacity:.6;cursor:default"><div class="ic">KV</div><h3>Klera Voice 설치·문제해결 <span style="font-size:11px;color:var(--dim)">출시 준비 중</span></h3><p>DAW 설치·재스캔, 시스템 요구사항, 라이선스 활성화</p></div>
+    <a class="qcard kv-real" href="support-klera.html" style="display:block"><div class="ic">KV</div><h3>Klera Voice 설치·문제해결</h3><p>DAW 설치·재스캔, 시스템 요구사항, 라이선스 활성화</p></a>
     <a class="qcard" href="support-flare.html" style="display:block"><div class="ic">FT</div><h3>Flare Tally 연결·문제해결</h3><p>ATEM 연결, QR·방 코드, 네트워크·원격(LTE) 문제</p></a>
   </div>
 
