@@ -768,6 +768,8 @@ td{color:var(--text)}
             <select id="ordStatus" class="field" style="margin:0;width:auto;padding:8px 10px" onchange="renderOrders()">
               <option value="">모든 상태</option><option value="paid">결제완료</option><option value="pending">대기</option><option value="refunded">환불</option>
             </select>
+            <input id="ordQ" type="search" placeholder="고객 이메일 · 주문번호 · 라이선스 키 · 결제사 참조" oninput="renderOrders()" autocomplete="off" spellcheck="false"
+              style="flex:1;min-width:240px;background:#0E1A2E;color:#E9EEF7;border:1px solid #243350;border-radius:8px;padding:7px 11px;font-family:inherit;font-size:13px">
             <button class="tbtn" onclick="ordCsv()">CSV 내보내기</button>
         </div>
         <div id="ordSum" style="display:none;margin:12px 0 2px;gap:10px;flex-wrap:wrap"></div>
@@ -879,7 +881,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.25.0', AZ_CONSOLE_DATE='2026-09-15'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.26.0', AZ_CONSOLE_DATE='2026-09-15'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1941,7 +1943,16 @@ function ordRange(){
 }
 function ordFiltered(){
   var st=(document.getElementById('ordStatus')||{}).value||'', rg=ordRange();
+  // 고객 문의는 보통 이메일·주문번호·라이선스 키 중 하나를 들고 온다 — 셋 다 한 칸에서 찾게
+  var q=((document.getElementById('ordQ')||{}).value||'').trim().toLowerCase();
   return ORDERS.filter(function(o){
+    if(q){
+      var em=((EMAILS[o.user_id]||{}).email||'').toLowerCase();
+      var keys=(o.licenses||[]).map(function(l){return String(l.license_key||'').toLowerCase();}).join(' ');
+      var hay=[em, String(o.id||''), String(o.provider_ref||''), String(o.user_id||''), keys,
+               String(PRODNAME[o.product_id]||o.product_id||'')].join(' ').toLowerCase();
+      if(hay.indexOf(q)<0) return false;
+    }
     if(st && o.status!==st) return false;
     var t=new Date(o.created_at);
     if(rg[0] && t<rg[0]) return false;
@@ -1960,7 +1971,7 @@ async function cancelOrder(id){
 }
 async function loadOrders(){
   var tb=document.getElementById('orderRows'); if(!tb) return;
-  var r=await sb.from('orders').select('id,user_id,product_id,provider,provider_ref,amount,currency,paid_amount,paid_currency,status,created_at,promo_code,promo_reserved,promo_note,is_test').order('created_at',{ascending:false}).limit(1000);
+  var r=await sb.from('orders').select('id,user_id,product_id,provider,provider_ref,amount,currency,paid_amount,paid_currency,status,created_at,promo_code,promo_reserved,promo_note,is_test,licenses(license_key)').order('created_at',{ascending:false}).limit(1000);
   if(r.error){ tb.innerHTML='<tr><td colspan="8" style="color:#ff9ea3">불러오기 실패: '+esc(r.error.message)+'</td></tr>'; return; }
   ORDERS=r.data||[];
   await loadEmails(ORDERS.map(function(o){return o.user_id;}));
@@ -1977,7 +1988,7 @@ function renderOrders(){
     sm.style.display='flex';
   }
   if(!ORDERS.length){ tb.innerHTML='<tr><td colspan="8" style="color:var(--dim)">주문이 아직 없습니다. (결제 연동 후 자동 기록)</td></tr>'; return; }
-  if(!L.length){ tb.innerHTML='<tr><td colspan="8" style="color:var(--dim)">조건에 맞는 주문이 없습니다.</td></tr>'; return; }
+  if(!L.length){ tb.innerHTML='<tr><td colspan="8" style="color:var(--dim)">조건에 맞는 주문이 없습니다. (검색어·기간·상태를 확인하세요)</td></tr>'; return; }
   var PCLS={pending:'p-trial',paid:'p-paid',refunded:'p-refund',canceled:'p-revoked'};
   tb.innerHTML=L.map(function(o){
     var p=EMAILS[o.user_id]||{}; var stale=ordStale(o);
