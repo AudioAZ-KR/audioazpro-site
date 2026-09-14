@@ -280,11 +280,12 @@ fill('g-portal', [
   {t:'비밀번호 찾기', href:'https://audioazpro.com/portal/forgot.html', chip:{k:'live',t:'LIVE'}},
   {t:'비밀번호 재설정', href:'https://audioazpro.com/portal/reset-password.html', chip:{k:'live',t:'LIVE'}},
 ]);
+var STG='https://'+atob('YXVkaW9hei1zdGctbTR4OS5vbnJlbmRlci5jb20=')+'/';
 fill('g-admin', [
   {cls:'admin', t:'관리자 콘솔', href:'https://audioazpro.com/portal/console-8kq3f7.html',
    chip:{k:'lock',t:'PASSKEY'}, d:'<span id="hubConsoleVer">콘솔</span> · 대시보드 · <b>클로드 지휘소</b>(병렬 채팅 관제·명령·작업 큐·경보) · 작업현황 · 서비스·한도 · 결재 · 문의함 · 라이선스 · 프로모션(수량 발행·복사) · 베타 모집(신청자·테스터·보고 게시판) · 주문 · 고객 · 제품 · 공지 · 관리자 · 10분 자동 로그아웃',
    warn:'패스키 전용 · 비공개 URL · 외부 공유 금지'},
-  {cls:'admin', t:'스테이징(테스트) 사이트', href:'https://audioaz-stg-m4x9.onrender.com/',
+  {cls:'admin', t:'스테이징(테스트) 사이트', href:STG,
    chip:{k:'auth',t:'STAGING'}, d:'staging 브랜치 자동 배포 · 여기서 확인 후 라이브 승격 · 상단 STAGING 라벨 · 백엔드는 라이브와 공유 · 여기서의 결제는 테스트 결제 → TEST 라이선스(3일)',
    warn:'비공개 URL · 외부 공유 금지 · 콘솔 패스키는 여기서 동작 안 함'},
   {cls:'admin', t:'접속자 현황 (탈리 실시간)', href:'https://camera-tally.onrender.com/status.html?key=ft-tb972il3run7pioolr8dfnev',
@@ -301,7 +302,7 @@ fill('g-svc', [
   {cls:'svc', t:'Supabase', href:'https://supabase.com/dashboard/project/lkbbenyvchddsjsihofv', chip:{k:'auth',t:'LOGIN'},
    rows:[['용도','인증 · DB · <b>Edge Functions</b> · Storage(문의·베타 보고 첨부)'],['함수','checkout-create · payment-webhook · beta-signup · beta-issue · inquiry-reply · admin-manage · usage-collector · board-sync'],['로그인','GitHub 으로 로그인']]},
   {cls:'svc', t:'Render', href:'https://dashboard.render.com/', chip:{k:'auth',t:'LOGIN'},
-   rows:[['서비스','audioaz-showfile · audioaz-stg-m4x9 · camera-tally(싱가폴) · camera-tally-eu · camera-tally-us · camera-tally-use'],['플랜','Free (유휴 15분 절전·콜드스타트 ~50초) · 무료 750h/월 합산 주의'],['연동','GitHub push 자동 배포(탈리 서버 4곳 동시)']]},
+   rows:[['서비스','audioaz-showfile · camera-tally(싱가폴) · camera-tally-eu · camera-tally-us · camera-tally-use'],['플랜','Free (유휴 15분 절전·콜드스타트 ~50초) · 무료 750h/월 합산 주의'],['연동','GitHub push 자동 배포(탈리 서버 4곳 동시)']]},
   {cls:'svc', t:'포트원 (PortOne)', href:'https://admin.portone.io/', chip:{k:'auth',t:'LOGIN'},
    rows:[['용도','국내 <b>카드·간편결제</b>'],['상태','KG이니시스 실연동 채널 + 토스 테스트 채널 · 웹훅(테스트/실모드)·시크릿 등록 완료'],['남은 것','KG이니시스 전자계약·등록비·카드사 심사 → 실결제 테스트']]},
   {cls:'svc', t:'Paddle', href:'https://sandbox-vendors.paddle.com/', chip:{k:'auth',t:'SANDBOX'},
@@ -396,7 +397,7 @@ fetch('/hub-data.json?cb='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then
   const gc=document.getElementById('g-changes'); const sec=document.getElementById('sec-changes');
   if(gc&&((d.commits_live||[]).length||(d.commits_staging||[]).length)){
     if((d.commits_live||[]).length) gc.appendChild(card({t:'라이브 반영 (main)', href:'https://github.com/AudioAZ-KR/audioazpro-site/commits/main', chip:{k:'live',t:'LIVE'}, rows:d.commits_live.slice(0,8).map(c=>[fmtD(c.date), c.msg])}));
-    if((d.commits_staging||[]).length) gc.appendChild(card({t:'테스트 중 (staging · 아직 라이브 아님)', href:'https://audioaz-stg-m4x9.onrender.com/', chip:{k:'auth',t:'STAGING'}, rows:d.commits_staging.slice(0,8).map(c=>[fmtD(c.date), c.msg])}));
+    if((d.commits_staging||[]).length) gc.appendChild(card({t:'테스트 중 (staging · 아직 라이브 아님)', href:STG, chip:{k:'auth',t:'STAGING'}, rows:d.commits_staging.slice(0,8).map(c=>[fmtD(c.date), c.msg])}));
     sec.style.display=''; const cc=document.getElementById('chgCount'); if(cc) cc.textContent='라이브 '+(d.commits_live||[]).length+'건 · 대기 '+(d.commits_staging||[]).length+'건';
   }
   (d.pages||[]).forEach(p=>{ if(!has('g-public',p.file)) fill('g-public',[{t:p.title, href:'https://audioazpro.com/'+p.file, chip:{k:'live',t:'NEW'}, d:'자동 감지된 페이지 — 런치패드 설명은 아직 없음'}]); });
