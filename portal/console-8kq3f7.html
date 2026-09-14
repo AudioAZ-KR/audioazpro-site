@@ -881,7 +881,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.26.0', AZ_CONSOLE_DATE='2026-09-15'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.26.1', AZ_CONSOLE_DATE='2026-09-15'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1948,7 +1948,7 @@ function ordFiltered(){
   return ORDERS.filter(function(o){
     if(q){
       var em=((EMAILS[o.user_id]||{}).email||'').toLowerCase();
-      var keys=(o.licenses||[]).map(function(l){return String(l.license_key||'').toLowerCase();}).join(' ');
+      var keys=(ORDKEYS[o.id]||[]).join(' ').toLowerCase();
       var hay=[em, String(o.id||''), String(o.provider_ref||''), String(o.user_id||''), keys,
                String(PRODNAME[o.product_id]||o.product_id||'')].join(' ').toLowerCase();
       if(hay.indexOf(q)<0) return false;
@@ -1971,11 +1971,27 @@ async function cancelOrder(id){
 }
 async function loadOrders(){
   var tb=document.getElementById('orderRows'); if(!tb) return;
-  var r=await sb.from('orders').select('id,user_id,product_id,provider,provider_ref,amount,currency,paid_amount,paid_currency,status,created_at,promo_code,promo_reserved,promo_note,is_test,licenses(license_key)').order('created_at',{ascending:false}).limit(1000);
+  var r=await sb.from('orders').select('id,user_id,product_id,provider,provider_ref,amount,currency,paid_amount,paid_currency,status,created_at,promo_code,promo_reserved,promo_note,is_test').order('created_at',{ascending:false}).limit(1000);
   if(r.error){ tb.innerHTML='<tr><td colspan="8" style="color:#ff9ea3">불러오기 실패: '+esc(r.error.message)+'</td></tr>'; return; }
   ORDERS=r.data||[];
   await loadEmails(ORDERS.map(function(o){return o.user_id;}));
+  await loadOrderKeys();
   renderOrders(); renderOrdMonths();
+}
+// 주문번호 → 라이선스 키. orders 와 licenses 사이에 FK 가 없어 중첩 조회(licenses(...))가 안 되므로 따로 받아 맵으로 만든다.
+var ORDKEYS={};
+async function loadOrderKeys(){
+  ORDKEYS={};
+  var ids=ORDERS.map(function(o){return o.id;}).filter(Boolean);
+  for(var i=0;i<ids.length;i+=200){
+    var part=ids.slice(i,i+200);
+    var lr=await sb.from('licenses').select('order_id,license_key').in('order_id',part);
+    if(lr.error) return;   // 검색 보조 기능이라 실패해도 목록은 그대로 보여준다
+    (lr.data||[]).forEach(function(l){
+      if(!l.order_id) return;
+      (ORDKEYS[l.order_id]=ORDKEYS[l.order_id]||[]).push(String(l.license_key||''));
+    });
+  }
 }
 function renderOrders(){
   var tb=document.getElementById('orderRows'); if(!tb) return;
