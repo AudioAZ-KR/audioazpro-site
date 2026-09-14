@@ -633,7 +633,7 @@ async function refundOrder(oid){
   var r=await sbA.functions.invoke('customer-refund',{body:{order_id:oid}});
   var err = (r.data&&r.data.error)||null;
   if(r.error){ err=r.error.message||'요청 실패'; try{ var ctx=await r.error.context.json(); if(ctx&&ctx.error) err=ctx.error; }catch(_){} }
-  if(err){ alert('환불하지 못했습니다.\n\n'+err); return; }
+  if(err){ var det=(r.data&&r.data.detail)?('\n\n[결제사 응답] '+String(r.data.detail).slice(0,300)):''; alert('환불하지 못했습니다.\n\n'+err+det); return; }   // 결제사 원문을 같이 보여줘야 원인을 바로 안다
   alert('환불이 접수되었습니다.'+((r.data&&r.data.note)?('\n('+r.data.note+')'):'')+'\n\n환급은 결제 수단으로 처리되며 카드사·결제사 정책에 따라 수일이 걸릴 수 있습니다.');
   await loadLicenses(); loadOrders();
 }
