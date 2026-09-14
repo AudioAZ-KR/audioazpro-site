@@ -879,7 +879,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.24.0', AZ_CONSOLE_DATE='2026-09-12'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.25.0', AZ_CONSOLE_DATE='2026-09-15'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1328,6 +1328,8 @@ document.querySelectorAll('.side a[data-p]').forEach(a=>{
 var PRODNAME={ALL:'전 제품',KV:'Klera Voice',KI:'Klera Instrument',TALLY:'Flare Tally',LMAZ:'Latency Meter AZ'};
 var KINDLABEL={D7:'체험 7일',D14:'체험 14일',D30:'체험 30일',FREE:'무료(영구)'};
 var W=function(v){return '₩'+Number(v||0).toLocaleString();};
+// 로그용 날짜+시각 (분 단위) — 문제 생겼을 때 순서를 되짚을 수 있게
+function azDT(t){ if(!t) return '—'; var d=new Date(t); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
 
 function promoType(){
   var isDisc=document.querySelector('input[name=ctype]:checked').value==='discount';
@@ -1899,14 +1901,14 @@ function renderIssued(){
       '<td>'+(revoked?'<span class="pill p-revoked">'+(l.status==='revoked'?'회수':l.status)+'</span>':'<span class="pill p-active">활성</span>')+'</td>'+
       '<td class="mono">'+fmtDate(l.issued_at)+'</td>'+
       '<td style="white-space:nowrap"><button class="tbtn" onclick="copyText(\''+esc(l.license_key)+'\',this)">복사</button> '+
-        (revoked?'':'<button class="tbtn" onclick="reissue(\''+l.id+'\')">재발급</button> <button class="tbtn danger" onclick="revokeLic(\''+l.id+'\')">회수</button>')+
+        (revoked?'':'<button class="tbtn" onclick="reissue(\''+l.id+'\')">재발급</button> <button class="tbtn danger" onclick="revokeLic(\''+l.id+'\')" title="라이선스만 무효화합니다. 돈은 환불되지 않습니다 — 환불은 주문·결제 탭에서">회수(환불 아님)</button>')+
       '</td></tr>';
   }).join('');
 }
 function copyText(t,btn){ navigator.clipboard&&navigator.clipboard.writeText(t); if(btn){btn.textContent='복사됨'; setTimeout(function(){btn.textContent='복사';},1200);} }
 async function revokeLic(id){
   var l=LICS.find(function(x){return x.id===id;}); if(!l) return;
-  if(!confirm('라이선스 회수: '+l.license_key+'\n고객이 더 이상 활성화할 수 없게 됩니다. 계속할까요?')) return;
+  if(!confirm('라이선스 회수: '+l.license_key+'\n\n⚠ 이 기능은 환불이 아닙니다. 라이선스만 무효화되고 결제 금액은 환불되지 않습니다.\n돈을 돌려주려면 [주문·결제] 탭에서 환불을 실행하세요.\n\n고객이 더 이상 활성화할 수 없게 됩니다. 계속할까요?')) return;
   try{ var r=await azSuperDo('license_revoke','라이선스 회수 — '+l.license_key,'콘솔에서 회수',{license_key:l.license_key}); alert('✓ '+r.text); }catch(ex){ alert('실패: '+ex.message); }
   loadLicenses();
 }
@@ -2140,16 +2142,19 @@ async function custDetail(id){
   var c=CUSTOMERS.find(function(x){return x.id===id;}); if(!c) return;
   var licHtml='<div class="n">조회 실패</div>', ordHtml='<div class="n">조회 실패</div>';
   var both=await Promise.all([
-    sb.from('licenses').select('license_key,product_id,type,status,issued_at,activations(binding_type,binding_id,label)').eq('user_id',id).order('issued_at',{ascending:false}),
+    sb.from('licenses').select('license_key,product_id,type,status,issued_at,first_activated_at,activations(binding_type,binding_id,label,activated_at)').eq('user_id',id).order('issued_at',{ascending:false}),
     sb.from('orders').select('product_id,status,created_at,amount,currency,paid_amount,paid_currency,provider,is_test').eq('user_id',id).order('created_at',{ascending:false}).limit(20)
   ]);
   try{
     var r=both[0];
     if(!r.error){
       var ls=r.data||[];
-      licHtml=ls.length? '<table style="min-width:0"><thead><tr><th>키</th><th>제품</th><th>유형</th><th>상태</th><th>기기</th></tr></thead><tbody>'+ls.map(function(l){
-        var acts=(l.activations||[]).map(function(a){return esc(a.label||(a.binding_type==='usb'?'USB':'컴퓨터'));}).join(', ')||'—';
-        return '<tr><td class="mono" style="font-size:11px">'+esc(l.license_key)+'</td><td>'+esc(PRODNAME[l.product_id]||l.product_id)+'</td><td>'+esc(TYPELABEL[l.type]||l.type)+(l.type==='TEST'?testTag():'')+'</td><td>'+(l.status==='active'?'<span class="pill p-active">활성</span>':'<span class="pill p-revoked">'+esc(l.status)+'</span>')+'</td><td style="font-size:12px">'+acts+'</td></tr>';
+      licHtml=ls.length? '<table style="min-width:0"><thead><tr><th>키</th><th>제품</th><th>유형</th><th>상태</th><th>발급</th><th>최초 활성화</th><th>기기 · 활성화 시각</th></tr></thead><tbody>'+ls.map(function(l){
+        // 기기마다 언제 활성화됐는지 함께 — 분쟁·환불 검토 시 시간순 추적용
+        var acts=(l.activations||[]).map(function(a){
+          return esc(a.label||(a.binding_type==='usb'?'USB':'컴퓨터'))+' <span class="n">'+azDT(a.activated_at)+'</span>';
+        }).join('<br>')||'—';
+        return '<tr><td class="mono" style="font-size:11px">'+esc(l.license_key)+'</td><td>'+esc(PRODNAME[l.product_id]||l.product_id)+'</td><td>'+esc(TYPELABEL[l.type]||l.type)+(l.type==='TEST'?testTag():'')+'</td><td>'+(l.status==='active'?'<span class="pill p-active">활성</span>':'<span class="pill p-revoked">'+esc(l.status)+'</span>')+'</td><td class="mono" style="font-size:11px">'+azDT(l.issued_at)+'</td><td class="mono" style="font-size:11px">'+(l.first_activated_at?azDT(l.first_activated_at):'<span class="n">미활성화</span>')+'</td><td style="font-size:12px">'+acts+'</td></tr>';
       }).join('')+'</tbody></table>' : '<div class="n">라이선스 없음</div>';
     }
   }catch(_){}
