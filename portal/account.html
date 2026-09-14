@@ -149,6 +149,12 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
 @media(max-width:520px){.rp-f{grid-template-columns:1fr}}
 
 .rp{padding:14px 0;border-top:1px solid var(--line)}.rp:first-child{border-top:0;padding-top:0}.rp .t{font-size:15px;font-weight:800;color:var(--text)}.rp .m{font-size:12px;color:var(--dim);margin-top:3px}.rp .m .st{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;letter-spacing:.06em;border:1px solid var(--line);padding:1px 6px;margin-left:6px;color:var(--dim)}.rp .m .st.ans{color:#39D48C;border-color:#1E4D35}.rp .b{font-size:13.5px;color:var(--text);margin-top:8px;white-space:pre-wrap;line-height:1.65}.rp .imgs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.rp .imgs a img{height:96px;border:1px solid var(--line);border-radius:8px;display:block;object-fit:cover}.rp .note{margin-top:10px;padding:10px 12px;background:#0E2B1E;border:1px solid #1E4D35;border-radius:9px;font-size:13px;color:#9BE3BE;white-space:pre-wrap}.rp .note b{display:block;font-size:11px;letter-spacing:.06em;margin-bottom:3px}
+.lr-refund{margin-top:8px;font-size:12.5px;line-height:1.6;border-radius:9px;padding:7px 11px}
+.lr-refund.ok{color:#9CC2F5;background:rgba(24,119,242,.10);border:1px solid rgba(24,119,242,.28)}
+.lr-refund.no{color:#96A6BF;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.lr-refund b{color:#E9EEF7}
+.lr-refund a{color:var(--blue);font-weight:700}
+.lr-refund .sub{display:block;margin-top:3px;font-size:11.5px;color:#8FA5C2}
 </style>
 <script src="/portal/az-i18n.js" defer></script>
 </head>
@@ -388,7 +394,9 @@ function doLogout(){ try{AZ.logout();}catch(_){}; sbA.auth.signOut().finally(fun
 var LICS=[];   // {id, product, type, key, at, status, expires, max, acts:[{id,type,bid,label,at}], note}
 async function loadLicenses(){
   var box=document.getElementById('licenses');
-  var r=await sbA.from('licenses').select('id,product_id,type,license_key,status,issued_at,expires_at,max_devices,user_note,order_id,first_activated_at,activations(id,binding_type,binding_id,label,activated_at)').order('issued_at',{ascending:false});
+  // 관리자 계정은 RLS상 전체 조회 권한이 있어, 필터가 없으면 고객 화면에 남의 라이선스까지 뜬다. 항상 본인 것만.
+  var me=(await sbA.auth.getUser()).data.user; if(!me) return;
+  var r=await sbA.from('licenses').select('id,product_id,type,license_key,status,issued_at,expires_at,max_devices,user_note,order_id,first_activated_at,activations(id,binding_type,binding_id,label,activated_at)').eq('user_id',me.id).order('issued_at',{ascending:false});
   if(r.error){ box.innerHTML='<p class="muted" style="color:#ff9ea3">라이선스를 불러오지 못했습니다: '+escH(r.error.message)+'</p>'; return; }
   LICS=(r.data||[]).map(function(x){
     return { id:x.id, product:x.product_id, type:x.type, key:x.license_key, at:x.issued_at, status:x.status, expires:x.expires_at, max:x.max_devices||1,
@@ -413,6 +421,19 @@ function licRow(l, idx){
   var status = revoked ? '<span class="pill" style="background:#2E1519;color:#F0727C">폐기</span>'
     : expired ? '<span class="pill" style="background:#2E2410;color:#E7B252">만료</span>'
     : l.acts.length ? '<span class="pill inuse">사용 중</span>' : '<span class="pill avail">사용 가능</span>';
+  // 환불 안내 — 활성화 전이라 환불이 되는 상태인지, 이미 활성화해 안 되는 상태인지 그 자리에서 알려준다
+  var within14 = l.at && (Date.now()-new Date(l.at).getTime())<=14*86400000;
+  var refundLine = '';
+  if(!revoked && !expired && l.type==='FULL'){
+    if(!l.firstAct && within14 && l.orderId)
+      refundLine = '<div class="lr-refund ok">아직 활성화하지 않아 <b>환불 가능</b>합니다 (발급 후 14일 이내) · '
+                 + '<a href="#orders">주문 내역에서 환불 신청</a>'
+                 + '<span class="sub">기기에 한 번이라도 활성화하면 환불할 수 없습니다.</span></div>';
+    else if(l.firstAct)
+      refundLine = '<div class="lr-refund no">이미 활성화한 라이선스라 <b>환불되지 않습니다.</b></div>';
+    else if(l.orderId)
+      refundLine = '<div class="lr-refund no">발급 후 14일이 지나 <b>환불 기간이 끝났습니다.</b></div>';
+  }
   var noteHtml = l.note
     ? '<div class="txt" onclick="editNote(this,'+idx+')" title="눌러서 수정">'+escH(l.note)+'<span class="pen">✎</span></div>'
     : '<div class="txt empty" onclick="editNote(this,'+idx+')">+ 메모 추가</div>';
@@ -420,7 +441,7 @@ function licRow(l, idx){
     '<div class="lr-main">'+
       '<div class="lr-key">'+escH(l.key)+'</div>'+
       '<div class="lr-meta">'+escH(AZ.TYPELABEL[l.type]||l.type)+' · '+details+'</div>'+
-      '<div class="notecell" data-i="'+idx+'">'+noteHtml+'</div>'+
+      '<div class="notecell" data-i="'+idx+'">'+noteHtml+'</div>'+refundLine+
     '</div>'+
     '<div class="lr-side">'+status+'<button class="dots" onclick="licMenu(event,'+idx+')" aria-label="라이선스 메뉴" aria-haspopup="menu">···</button></div>'+
   '</div>';
@@ -476,6 +497,7 @@ function licMenu(ev, idx){
     '<button onclick="licMenuAct('+idx+',\'dl\')"><span class="mi">↓</span>다운로드</button>'+
     '<button onclick="licMenuAct('+idx+',\'act\')"><span class="mi">◎</span>'+(b?'활성화 변경':'활성화')+'</button>'+
     '<button onclick="licMenuAct('+idx+',\'note\')"><span class="mi">✎</span>메모 수정</button>'+
+    (canRefundLic(l) ? '<button onclick="licMenuAct('+idx+',\'refund\')" style="color:#ff9ea3"><span class="mi">↩</span>환불하기</button>' : '')+
     ((l.status==='revoked'||l.status==='expired'||(l.expires&&new Date(l.expires)<new Date())) ? '<button onclick="licMenuAct('+idx+',\'del\')" style="color:#F0727C"><span class="mi">✕</span>목록에서 삭제</button>' : '');
   licMenuEl.addEventListener('click',function(e){e.stopPropagation();});
   document.body.appendChild(licMenuEl);
@@ -486,8 +508,19 @@ function licMenu(ev, idx){
 }
 document.addEventListener('click', closeLicMenu);
 window.addEventListener('scroll', closeLicMenu, {passive:true});
+// 환불 가능 판정 — 결제 주문이 있고, 한 번도 활성화하지 않았고, 발급 후 14일 이내인 정식 라이선스만.
+// 한 번이라도 활성화하면(기기를 해제했더라도) first_activated_at 이 남아 영구히 환불 불가.
+function canRefundLic(l){
+  if(!l || l.type!=='FULL' || !l.orderId) return false;
+  if(l.status!=='active') return false;
+  if(l.firstAct) return false;
+  if(l.acts && l.acts.length) return false;
+  if(l.expires && new Date(l.expires)<new Date()) return false;
+  return l.at && (Date.now()-new Date(l.at).getTime())<=14*86400000;
+}
 function licMenuAct(idx, act, btn){
   var l=licAt(idx); if(!l){ closeLicMenu(); return; }
+  if(act==='refund'){ closeLicMenu(); if(!canRefundLic(l)){ alert('이 라이선스는 환불할 수 없습니다.'); return; } refundOrder(l.orderId); return; }
   if(act==='copy'){
     navigator.clipboard&&navigator.clipboard.writeText(l.key);
     if(btn){ btn.innerHTML='<span class="mi" style="color:var(--green)">✓</span>복사됨'; setTimeout(closeLicMenu,700); return; }
@@ -577,7 +610,8 @@ var ORD_ST={pending:'결제 대기',paid:'결제 완료',refunded:'환불',cance
 function fmtAmt(o){ if(o.paid_currency&&o.paid_currency!=='KRW') return o.paid_currency+' '+Number(o.paid_amount||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); return '₩'+Number(o.amount||0).toLocaleString(); }
 async function loadOrders(){
   var box=document.getElementById('orderBox'); if(!box) return;
-  var r=await sbA.from('orders').select('id,product_id,amount,currency,paid_amount,paid_currency,status,provider,created_at,paid_at,is_test').order('created_at',{ascending:false}).limit(50);
+  var me=(await sbA.auth.getUser()).data.user; if(!me) return;   // 라이선스와 같은 이유로 본인 주문만
+  var r=await sbA.from('orders').select('id,product_id,amount,currency,paid_amount,paid_currency,status,provider,created_at,paid_at,is_test').eq('user_id',me.id).order('created_at',{ascending:false}).limit(50);
   if(r.error){ box.innerHTML='<p class="muted" style="color:#ff9ea3">주문 내역을 불러오지 못했습니다: '+escH(r.error.message)+'</p>'; return; }
   var L=(r.data||[]).filter(function(o){ return !(o.status==='pending' && (Date.now()-new Date(o.created_at))>86400000); });
   if(!L.length){ box.innerHTML='<p class="muted" style="margin:0">주문 내역이 없습니다.</p>'; return; }
