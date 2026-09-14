@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-15T01:30+09:00",
+ "generated": "2026-09-15T08:53+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -146,5 +146,14 @@
    "msg": "다운로드 페이지 정리 — 설명 칸이 좁아 글이 뭉치던 문제"
   }
  ],
- "commits_staging": []
+ "commits_staging": [
+  {
+   "date": "2026-09-15T02:14:16+09:00",
+   "msg": "가비아(Apache) 웹호스팅용 .htaccess 추가(HTTPS 강제·404·보안헤더·캐시). GitHub Pages/Render는 무시하여 영향 없음"
+  },
+  {
+   "date": "2026-09-15T01:30:09+09:00",
+   "msg": "테스트 서버에서 영어 홈페이지 미리보기 개방(EN_ENABLED=호스트 판별, 라이브 audioazpro.com은 계속 한국어만). Klera Voice는 az-preview.js로 이미 스테이징 개방됨"
+  }
+ ]
 }
