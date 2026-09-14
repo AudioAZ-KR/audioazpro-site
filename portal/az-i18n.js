@@ -5,9 +5,11 @@
  */
 (function(){
   var KO=/[가-힣]/;
-  // 2026-09-11: Paddle 계정 인증 거절(최종)로 해외 결제 경로가 없음 → EN(달러) 모드 잠시 비활성.
-  // 새 해외 결제사(Lemon Squeezy·Polar·FastSpring 등)가 정해지면 아래 한 줄만 true 로 되돌리면 원복된다.
-  var EN_ENABLED = false;
+  // 2026-09-11: Paddle 계정 인증 거절(최종)로 해외 결제 경로가 없음 → EN(달러) 모드 라이브에선 비활성.
+  // 2026-09-15: 테스트 서버(스테이징·로컬)에서는 영어 홈페이지 미리보기를 열어둔다(라이브 audioazpro.com은 계속 한국어만).
+  //   해외 결제사가 정해지면 EN_LIVE 를 true 로 바꾸면 라이브에도 그대로 열린다.
+  var EN_LIVE = false;
+  var EN_ENABLED = EN_LIVE || !/^(www\.)?audioazpro\.com$/.test(location.hostname);
   function lang(){ if(!EN_ENABLED) return 'kr';
     try{ var l=localStorage.getItem('az_lang'); if(l==='kr'||l==='en') return l; }catch(_){}
     return ((navigator.language||'').toLowerCase().indexOf('ko')===0) ? 'kr' : 'en'; }
