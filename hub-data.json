@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-15T09:02+09:00",
+ "generated": "2026-09-15T09:23+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -111,7 +111,7 @@
   "showfile": "v0.6.6",
   "lmaz": null
  },
- "console_version": "1.27.0",
+ "console_version": "1.28.0",
  "commits_live": [
   {
    "date": "2026-09-15T08:52:58+09:00",
@@ -146,5 +146,10 @@
    "msg": "환불 실패 시 결제사 응답 원문도 함께 표시"
   }
  ],
- "commits_staging": []
+ "commits_staging": [
+  {
+   "date": "2026-09-15T09:02:20+09:00",
+   "msg": "콘솔 v1.27.0: 지휘소 '지금 이 순간' 실시간 층 (로컬 hq-server 1.5초 피드, 참모·워크플로 진행, 세션 카드 현재 도구)"
+  }
+ ]
 }
