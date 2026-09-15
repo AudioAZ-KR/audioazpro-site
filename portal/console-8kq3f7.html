@@ -452,6 +452,13 @@ td{color:var(--text)}
         </div>
 
         <div class="hub-alerts" id="hubAlerts" style="display:none"></div>
+        <div class="hq" id="hq">
+          <div class="hq-h"><i class="hub-led" id="hqLed"></i><b>지금 이 순간</b><span class="hq-sub" id="hqSub">맥 로컬 피드 연결 중…</span><span class="sp"></span>
+            <span class="hchip" id="hqCAg">참모 가동 <b>0</b></span><span class="hchip" id="hqCRun">도구 돌리는 채팅 <b>0</b></span>
+            <a class="tbtn" href="http://127.0.0.1:8787" target="_blank" rel="noopener">앱 창으로</a></div>
+          <div id="hqWf"></div>
+          <div class="hq-off" id="hqOff">이 층은 <b>맥 앞에서 열었을 때만</b> 켜집니다(로컬 <span class="mono">hq-server.py</span> 1.5초 피드). 밖에서는 아래 30초 세션만 보입니다.</div>
+        </div>
 
         <h2 class="hub-h">실시간 세션 <span class="hub-sub">맥에서 지금 열려 있는 클로드 채팅 — 카드를 누르면 최근 대화·경로가 펼쳐집니다</span></h2>
         <div id="hubSessions" class="hub-grid"><div class="hub-empty">불러오는 중…</div></div>
@@ -540,9 +547,9 @@ td{color:var(--text)}
       <!-- 접속자 현황 (탈리 서버 실시간) -->
       <section id="p-status" class="page">
         <div class="card">
-          <h2>접속자 현황 <button class="tbtn" style="margin-left:10px" onclick="statusReload()">새로고침</button> <a class="tbtn" href="https://camera-tally.onrender.com/status.html?key=ft-tb972il3run7pioolr8dfnev" target="_blank" rel="noopener" style="margin-left:6px">새 창으로 열기 ↗</a></h2>
+          <h2>접속자 현황 <button class="tbtn" style="margin-left:10px" onclick="statusReload()">새로고침</button> <button class="tbtn" onclick="tallyForgetKey()" title="저장된 접근 키를 지우고 다시 입력">키 변경</button> <a class="tbtn" href="#" data-tally-url="https://camera-tally.onrender.com/status.html?key=__TALLY_KEY__" onclick="return tallyOpen(this)" target="_blank" rel="noopener" style="margin-left:6px">새 창으로 열기 ↗</a></h2>
           <div class="sub">탈리 서버에 지금 접속 중인 방·호스트·카메라·큐입니다. 3초마다 자동 갱신됩니다. (무료 인스턴스라 처음 열 때 최대 50초 콜드스타트가 있을 수 있습니다.)</div>
-          <iframe id="statusFrame" title="접속자 현황" data-src="https://camera-tally.onrender.com/status.html?key=ft-tb972il3run7pioolr8dfnev" style="width:100%;height:72vh;border:1px solid var(--line);border-radius:12px;background:#0B0B0C;margin-top:12px;display:block"></iframe>
+          <iframe id="statusFrame" title="접속자 현황" data-tally-url="https://camera-tally.onrender.com/status.html?key=__TALLY_KEY__" style="width:100%;height:72vh;border:1px solid var(--line);border-radius:12px;background:#0B0B0C;margin-top:12px;display:block"></iframe>
         </div>
       </section>
 
@@ -881,7 +888,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.26.1', AZ_CONSOLE_DATE='2026-09-15'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.28.0', AZ_CONSOLE_DATE='2026-09-15'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1300,7 +1307,12 @@ function toggleMenu(){
   if(b) b.setAttribute('aria-expanded', open?'true':'false');
 }
 function statusLoad(){ var f=document.getElementById('statusFrame'); if(f && !f.src && f.dataset.src){ f.src=f.dataset.src; } }   // 탭 처음 열 때만 로드(콜드스타트 방지)
-function statusReload(){ var f=document.getElementById('statusFrame'); if(f && f.dataset.src){ f.src=f.dataset.src+'&_='+Date.now(); } }
+// 탈리 접속자 현황 접근 키: 공개 저장소·공개 HTML에 평문으로 있던 것을 제거(감사 2026-09-15). 관리자 브라우저 localStorage 에만 두고 런타임에 URL을 만든다.
+function tallyKey(ask){ var k=''; try{ k=(localStorage.getItem('az_tally_status_key')||'').trim(); }catch(_){} if(!k&&ask){ k=(prompt('탈리 접속자 현황 접근 키 (서버 환경변수 STATUS_KEY 값)\n이 브라우저에만 저장됩니다.')||'').trim(); if(k){ try{ localStorage.setItem('az_tally_status_key',k); }catch(_){} } } return k; }
+function tallyUrl(el,ask){ var k=tallyKey(ask); return k?el.getAttribute('data-tally-url').replace('__TALLY_KEY__',encodeURIComponent(k)):''; }
+function tallyOpen(a){ var u=tallyUrl(a,true); if(u) window.open(u,'_blank','noopener'); return false; }
+function tallyForgetKey(){ try{ localStorage.removeItem('az_tally_status_key'); }catch(_){} statusReload(); }
+function statusReload(){ var f=document.getElementById('statusFrame'); if(!f) return; var u=tallyUrl(f,true); if(u){ f.src=u+'&_='+Date.now(); } else { f.removeAttribute('src'); } }
 document.querySelectorAll('.side a[data-p]').forEach(a=>{
   a.addEventListener('click',()=>{
     var p=a.dataset.p;
@@ -1971,7 +1983,7 @@ async function cancelOrder(id){
 }
 async function loadOrders(){
   var tb=document.getElementById('orderRows'); if(!tb) return;
-  var r=await sb.from('orders').select('id,user_id,product_id,provider,provider_ref,amount,currency,paid_amount,paid_currency,status,created_at,promo_code,promo_reserved,promo_note,is_test').order('created_at',{ascending:false}).limit(1000);
+  var r=await sb.from('orders').select('id,user_id,product_id,provider,provider_ref,amount,currency,paid_amount,paid_currency,status,created_at,promo_code,promo_reserved,promo_note,is_test,refunded_at,refunded_by').order('created_at',{ascending:false}).limit(1000);
   if(r.error){ tb.innerHTML='<tr><td colspan="8" style="color:#ff9ea3">불러오기 실패: '+esc(r.error.message)+'</td></tr>'; return; }
   ORDERS=r.data||[];
   await loadEmails(ORDERS.map(function(o){return o.user_id;}));
@@ -2009,8 +2021,8 @@ function renderOrders(){
   tb.innerHTML=L.map(function(o){
     var p=EMAILS[o.user_id]||{}; var stale=ordStale(o);
     var cls=stale?'p-refund':(PCLS[o.status]||'p-trial');
-    return '<tr'+(stale||o.status==='refunded'?' style="opacity:.55"':'')+'><td class="mono" title="'+esc(o.id)+'">'+esc(String(o.id).slice(0,8))+'</td><td>'+esc(PRODNAME[o.product_id]||o.product_id)+'</td><td>'+esc(p.email||o.user_id)+'</td><td>'+esc(chanLabel(o.provider))+'</td><td class="mono">'+fmtOrderAmt(o)+'</td><td><span class="pill '+cls+'">'+esc(ordStatusLabel(o))+'</span>'+(o.is_test?testTag():'')+'</td><td class="mono">'+fmtDate(o.created_at)+'</td>'+
-      '<td>'+(o.status==='paid'?'<button class="tbtn danger" onclick="refundOrder(\''+o.id+'\')">환불</button>':'')+(o.status==='pending'?'<button class="tbtn" title="미결제 주문 취소'+(o.promo_reserved?' · 할인코드 선점 반환':'')+'" onclick="cancelOrder(\''+o.id+'\')">취소'+(o.promo_reserved?'(코드반환)':'')+'</button>':'')+(o.promo_note?' <span class="n" title="'+esc(o.promo_note)+'" style="color:#FFD27A">코드 초과</span>':'')+' <button class="tbtn" onclick="copyText(\''+o.id+'\',this)">ID복사</button></td></tr>';
+    return '<tr'+(stale||(o.status==='refunded'&&o.refunded_at)?' style="opacity:.55"':'')+'><td class="mono" title="'+esc(o.id)+'">'+esc(String(o.id).slice(0,8))+'</td><td>'+esc(PRODNAME[o.product_id]||o.product_id)+'</td><td>'+esc(p.email||o.user_id)+'</td><td>'+esc(chanLabel(o.provider))+'</td><td class="mono">'+fmtOrderAmt(o)+'</td><td><span class="pill '+cls+'">'+esc(ordStatusLabel(o))+'</span>'+(o.is_test?testTag():'')+'</td><td class="mono">'+fmtDate(o.created_at)+'</td>'+
+      '<td>'+(o.status==='paid'?'<button class="tbtn danger" onclick="refundOrder(\''+o.id+'\')">환불</button>':'')+(o.status==='refunded'&&!o.refunded_at?'<button class="tbtn danger" title="DB·라이선스는 환불됐지만 결제사 실환불이 확인되지 않은 주문" onclick="retryRefundMoney(\''+o.id+'\')">결제사 환불 재시도</button>':'')+(o.status==='pending'?'<button class="tbtn" title="미결제 주문 취소'+(o.promo_reserved?' · 할인코드 선점 반환':'')+'" onclick="cancelOrder(\''+o.id+'\')">취소'+(o.promo_reserved?'(코드반환)':'')+'</button>':'')+(o.promo_note?' <span class="n" title="'+esc(o.promo_note)+'" style="color:#FFD27A">코드 초과</span>':'')+' <button class="tbtn" onclick="copyText(\''+o.id+'\',this)">ID복사</button></td></tr>';
   }).join('');
 }
 // 월별 매출: 서버 집계 뷰 orders_monthly(테스트 제외·RLS 적용) — 목록 1,000건 캡과 무관하게 정확. 실패 시 목록 기반 폴백
@@ -2069,6 +2081,14 @@ async function refundOrder(id){
     else alert('✓ DB 환불·라이선스 회수 완료.\n\n⚠ 결제사 실환불은 실패했습니다: '+money.error+'\n결제사 콘솔에서 수동 취소가 필요할 수 있습니다.');
   }catch(ex){ alert('실패: '+ex.message); }
   loadOrders(); loadLicenses();
+}
+// 감사 2026-09-15: 관리자 환불은 DB 먼저·결제사 나중이라 결제사 단계가 실패하면 status=refunded·refunded_at=null 로 남고 환불 버튼이 사라져 막다른 길이었다.
+// admin-refund 는 그 상태를 재시도로 처리하므로(결재 재상신 금지) 버튼만 이어 준다. 결제사 쪽에서 취소가 확인되면 웹훅이 refunded_at 을 채운다.
+async function retryRefundMoney(id){
+  if(!confirm('결제사 실환불을 다시 시도합니다.\n(DB·라이선스는 이미 환불 처리된 주문 — 돈만 아직)')) return;
+  var money=await adminRefundMoney(id);
+  alert(money.ok?('✓ 결제사 환불 완료'+(money.note?(' · '+money.note):'')):('⚠ 다시 실패: '+money.error+'\n포트원 콘솔에서 수동 취소하면 웹훅이 상태를 맞춥니다.'));
+  loadOrders();
 }
 // admin-refund 엣지 함수 호출(결제사 실환불 + refunded_at + 메일). DB 환불은 이미 decide_approval 이 처리한 뒤 호출.
 async function adminRefundMoney(orderId){
@@ -2604,13 +2624,70 @@ async function usSaveDate(id,val){
 setInterval(function(){ var pg=document.getElementById('p-usage'); if(pg&&pg.classList.contains('on')&&document.visibilityState==='visible') usLoad(); },60000);
 window.azUsagePreview=function(svcs,st){ US.svcs=svcs; US.st={}; US.at=null; st.forEach(function(x){US.st[x.id]=x; if(!US.at||x.checked_at>US.at)US.at=x.checked_at;}); usRender(); };
 
+
+/* ===== 지휘소 실시간 층 — 맥 로컬 hq-server(127.0.0.1:8787) 1.5초 피드. 밖에서는 자동으로 꺼짐 ===== */
+var HQ={url:'http://127.0.0.1:8787/api/state',timer:null,tick:null,S:null,drift:0,fails:0,prev:{}};
+function hqStart(){ hqStop(); hqPoll(); HQ.timer=setInterval(function(){ if(document.visibilityState==='visible') hqPoll(); },1500); HQ.tick=setInterval(hqTick,1000); }
+function hqStop(){ if(HQ.timer){clearInterval(HQ.timer);HQ.timer=null;} if(HQ.tick){clearInterval(HQ.tick);HQ.tick=null;} }
+function hqNow(){ return Date.now()/1000-HQ.drift; }
+function hqAgo(t){ if(!t) return '-'; var d=Math.max(0,hqNow()-t)|0; if(d<60) return d+'초'; if(d<3600) return (d/60|0)+'분 '+(d%60)+'초'; return (d/3600|0)+'시간 '+((d%3600)/60|0)+'분'; }
+function hqFlash(k,v){ var ch=(k in HQ.prev)&&HQ.prev[k]!==v; HQ.prev[k]=v; return ch?' flash':''; }
+async function hqPoll(){
+  try{ var r=await fetch(HQ.url,{cache:'no-store'}); HQ.S=await r.json(); HQ.drift=Date.now()/1000-HQ.S.now; HQ.fails=0; hqRender(); }
+  catch(e){ HQ.fails++; if(HQ.fails>=2) hqOffline(); }
+}
+function hqOffline(){
+  var box=document.getElementById('hq'); if(!box) return; box.classList.add('off');
+  document.getElementById('hqLed').className='hub-led'; document.getElementById('hqSub').textContent='로컬 피드 없음';
+  document.getElementById('hqWf').innerHTML=''; document.querySelectorAll('#hubSessions .hc-now').forEach(function(e){e.remove();});
+}
+function hqRender(){
+  var S=HQ.S, box=document.getElementById('hq'); if(!S||!box) return; box.classList.remove('off');
+  var n=hqNow(), agN=0, h='';
+  S.workflows.forEach(function(w){
+    if(!w.live && w.done>=w.total && n-w.mtime>1800) return;   // 끝난 지 30분 지난 건 숨김
+    var pct=w.total?Math.round(w.done/w.total*100):0, rows='';
+    w.agents.forEach(function(a){
+      var idle=n-(a.last||n), run=!a.done&&idle<60; if(run) agN++;
+      rows+='<div class="hq-ag'+(a.done?' done':(run?'':' wait'))+(a.done?'':hqFlash('a:'+a.id,a.doing))+'">'
+        +'<i class="hub-led '+(a.done?'grn':(run?'run':'amb'))+'"></i>'
+        +'<span class="lb"><span class="ph">'+hubEsc(a.phase)+'</span>'+hubEsc(String(a.label).replace(/^[^:]+:/,''))+'</span>'
+        +'<span class="wd">'+(a.done?'완료':(run?'작업중':'대기'))+'</span>'
+        +'<span class="el" data-hqt="'+(a.started||'')+'"></span>'
+        +(a.done||!a.doing?'':'<span class="do">'+hubEsc(a.doing)+'</span>')+'</div>';
+    });
+    h+='<div class="hq-wf"><div class="hq-wfh"><i class="hub-led '+(w.live?'run':'grn')+'"></i><span>'+hubEsc(w.id)+'</span>'
+      +'<div class="hq-bar"><i style="width:'+pct+'%"></i></div><span>'+w.done+'/'+w.total+' 완료'+(w.live?'':' · 끝')+'</span></div>'+rows+'</div>';
+  });
+  document.getElementById('hqWf').innerHTML=h;
+  var run=S.sessions.filter(function(s){return s.idle<20;}).length;
+  document.getElementById('hqLed').className='hub-led run';
+  document.getElementById('hqSub').textContent='실시간 · 배달부 '+(S.hub.age!=null?(S.hub.age|0)+'초 전 스캔':'없음')+' · 채팅 '+S.sessions_total+'개'+(S.inbox.pending?' · 인박스 미처리 '+S.inbox.pending:'');
+  document.getElementById('hqCAg').querySelector('b').textContent=agN;
+  document.getElementById('hqCRun').querySelector('b').textContent=run;
+  hqApplyNow(); hqTick();
+  setTimeout(function(){ document.querySelectorAll('#p-hub .flash').forEach(function(e){e.classList.remove('flash');}); },700);
+}
+function hqApplyNow(){
+  var S=HQ.S; if(!S||document.getElementById('hq').classList.contains('off')) return;
+  var by={}; S.sessions.forEach(function(s){by[s.id]=s;});
+  document.querySelectorAll('#hubSessions .hub-card[data-sid]').forEach(function(card){
+    var s=by[card.getAttribute('data-sid')], old=card.querySelector('.hc-now'), led=card.querySelector('.hub-led');
+    if(s && s.idle<20){
+      if(!old){ old=document.createElement('div'); old.className='hc-now'; card.querySelector('.hc-last').after(old); }
+      var txt=s.doing||'응답 생성 중'; if(old.textContent!==txt){ old.textContent=txt; card.classList.add('flash'); }
+      if(led) led.className='hub-led run';
+    }else if(old){ old.remove(); if(led&&led.classList.contains('run')) led.className='hub-led '+(card.classList.contains('grn')?'grn pulse':(card.classList.contains('amb')?'amb':'dim')); }
+  });
+}
+function hqTick(){ document.querySelectorAll('#p-hub [data-hqt]').forEach(function(e){ var t=+e.getAttribute('data-hqt'); e.textContent=t?hqAgo(t):'-'; }); }
 /* ===== 클로드 지휘소 ===== */
 var HUB={timer:null,area:{'①':'홈페이지·백엔드','②':'쇼파일 생성기','③':'빌드·패키징','④':'플러그인·기타','·':'미분류'}};
 function hubEsc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 function hubAgo(ts){ if(!ts) return '—'; var t=new Date(ts).getTime(); if(isNaN(t)) return '—'; var s=Math.max(0,(Date.now()-t)/1000);
   if(s<60) return Math.floor(s)+'초 전'; if(s<3600) return Math.floor(s/60)+'분 전'; if(s<86400) return Math.floor(s/3600)+'시간 전'; return Math.floor(s/86400)+'일 전'; }
-function hubEnter(){ hubLoad(); if(HUB.timer) clearInterval(HUB.timer); HUB.timer=setInterval(function(){ if(document.visibilityState==='visible') hubLoad(); },20000); }
-function hubLeave(){ if(HUB.timer){ clearInterval(HUB.timer); HUB.timer=null; } }
+function hubEnter(){ hubLoad(); hqStart(); if(HUB.timer) clearInterval(HUB.timer); HUB.timer=setInterval(function(){ if(document.visibilityState==='visible') hubLoad(); },20000); }
+function hubLeave(){ hqStop(); if(HUB.timer){ clearInterval(HUB.timer); HUB.timer=null; } }
 async function hubLoad(){
   try{
     var res=await Promise.all([
@@ -2650,7 +2727,7 @@ function hubRenderSessions(rows){
         +'<span class="tl-w '+(e.r==='u'?'u':'a')+'">'+(e.r==='u'?'사장님':'클로드')+'</span>'
         +'<span class="tl-x">'+hubEsc(e.x||'')+'</span></div>';
     }).join('');
-    html+='<div class="hub-card '+cls+'" onclick="hubToggle(this)">'
+    html+='<div class="hub-card '+cls+'" data-sid="'+hubEsc(s.id)+'" onclick="hubToggle(this)">'
       +'<div class="hc-top"><i class="hub-led '+cls+(st==='running'?' pulse':'')+'"></i>'
       +'<span class="hc-area">'+hubEsc(s.area||'·')+'</span><span class="hc-areaN">'+hubEsc(an)+'</span>'
       +'<span class="hc-state '+cls+'">'+stl+'</span></div>'
@@ -2665,6 +2742,7 @@ function hubRenderSessions(rows){
       +'</div>';
   });
   document.getElementById('hubSessions').innerHTML=html||'<div class="hub-empty">최근 60분 안에 열린 세션이 없습니다. (맥에서 클로드 채팅을 열면 여기에 뜹니다)</div>';
+  hqApplyNow();
   var q=function(id,v){var e=document.getElementById(id);if(e)e.querySelector('b').textContent=v;};
   q('hubCRun',run); q('hubCWait',wait); q('hubCIdle',idle); q('hubCTok',hubNum(tok));
   var b=document.getElementById('hubBadge'); if(b){ if(run>0){ b.style.display=''; b.textContent=run; } else b.style.display='none'; }
@@ -2847,6 +2925,27 @@ async function hubAlertAck(id){ var r=await sb.from('agent_alerts').update({seen
 #p-hub .kb-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
 #p-hub .kb-asg,#p-hub .kb-due{font-size:10.5px;font-family:ui-monospace,Menlo,monospace;padding:1px 6px;border-radius:999px;background:#141d30;color:var(--dim)}
 #p-hub .kb-due.today{color:#f4dfa6;background:#241c07}#p-hub .kb-due.over{color:#f4b6b8;background:#2a1113}
+#p-hub .hq{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:12px 14px;margin-bottom:14px;border-left:3px solid var(--blue)}
+#p-hub .hq.off{border-left-color:var(--line)}
+#p-hub .hq-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap} #p-hub .hq-h b{font-size:13.5px}
+#p-hub .hq-sub{font-size:12px;color:var(--dim);font-family:ui-monospace,Menlo,monospace}
+#p-hub .hq-off{display:none;font-size:12px;color:var(--dim);margin-top:6px} #p-hub .hq.off .hq-off{display:block}
+#p-hub .hub-led.run{background:#1877F2;box-shadow:0 0 0 0 rgba(24,119,242,.55);animation:hqpulse 1.4s infinite}
+@keyframes hqpulse{0%{box-shadow:0 0 0 0 rgba(24,119,242,.5)}70%{box-shadow:0 0 0 7px rgba(24,119,242,0)}100%{box-shadow:0 0 0 0 rgba(24,119,242,0)}}
+#p-hub .hq-wf{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+#p-hub .hq-wfh{display:flex;align-items:center;gap:10px;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--dim);margin-bottom:4px}
+#p-hub .hq-bar{flex:1;max-width:320px;height:5px;background:var(--line);border-radius:3px;overflow:hidden}
+#p-hub .hq-bar i{display:block;height:100%;background:#1877F2;transition:width .6s ease}
+#p-hub .hq-ag{display:grid;grid-template-columns:16px 1fr 60px 78px;gap:0 8px;align-items:center;padding:4px 4px;border-radius:6px;transition:background .5s;font-size:12.5px}
+#p-hub .hq-ag.flash{background:var(--sky,#E8F1FE)} #p-hub .hq-ag.done{color:var(--dim);opacity:.7}
+#p-hub .hq-ag .lb{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#p-hub .hq-ag .ph{font-size:10px;font-weight:700;color:var(--dim);border:1px solid var(--line);border-radius:3px;padding:0 4px;margin-right:5px;font-family:ui-monospace,Menlo,monospace}
+#p-hub .hq-ag .wd{font-size:11.5px;font-weight:700;color:#1877F2} #p-hub .hq-ag.done .wd{color:#3FB950} #p-hub .hq-ag.wait .wd{color:#E7B252}
+#p-hub .hq-ag .el{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--dim);text-align:right}
+#p-hub .hq-ag .do{grid-column:2/5;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#p-hub .hq-ag .do:before{content:"└ ";opacity:.6}
+#p-hub .hc-now{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#1877F2;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#p-hub .hc-now:before{content:"└ ";opacity:.6}
 #p-hub .hub-chk{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:var(--dim);line-height:1.5;margin:2px 0 12px;cursor:pointer}
 #p-hub .hub-chk input{margin-top:2px;flex:none}
 #p-hub .hub-chk b{color:var(--text)}

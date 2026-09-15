@@ -380,8 +380,9 @@ function setProduct(p){
 (function(){
   var qp=new URLSearchParams(location.search);
   var p=(qp.get('p')||'').toUpperCase();
+  if(!PROD[p]||p==='ALL') p='TALLY';   // ?p 없이 오면(코드 등록 링크 등) 기본값이 미출시 KV였음 → 판매 중인 제품으로 (감사 2026-09-15)
   if(p==='KV' && !window.AZ_KV_OPEN){ alert('Klera Voice는 아직 판매 전입니다.'); location.replace('/products.html'); return; }   // 테스트 사이트에서는 열림 (assets/az-preview.js)
-  if(PROD[p]) setProduct(p);
+  setProduct(p);
   renderPrice();
   var c=qp.get('code');
   // DB 정가 동기화 후 다시 렌더 (관리자 콘솔에서 정한 정가 반영)

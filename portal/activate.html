@@ -103,7 +103,7 @@ function machineId(){ try{ var v=localStorage.getItem('az_machine'); if(!v){ v='
   if(!u){ location.replace('index.html'); return; }
   var qp=new URLSearchParams(location.search);
   var id=qp.get('id'), p=(qp.get('p')||'').toUpperCase();
-  var q=sbX.from('licenses').select('id,product_id,license_key,status,max_devices,activations(id,binding_type,binding_id,label)');
+  var q=sbX.from('licenses').select('id,product_id,license_key,status,max_devices,activations(id,binding_type,binding_id,label)').eq('user_id',u.id);   // 감사 2026-09-15: 관리자 세션에서 남의 키가 뜨던 구멍
   q = id ? q.eq('id',id) : q.eq('product_id',p||'KV').eq('status','active').order('issued_at',{ascending:false}).limit(1);
   var r=await q; LIC=(r.data&&r.data[0])||null;
   if(LIC) CUR=LIC.product_id; else if(AZ.PRODMETA[p]) CUR=p;
