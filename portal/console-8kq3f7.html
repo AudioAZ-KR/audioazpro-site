@@ -547,9 +547,9 @@ td{color:var(--text)}
       <!-- 접속자 현황 (탈리 서버 실시간) -->
       <section id="p-status" class="page">
         <div class="card">
-          <h2>접속자 현황 <button class="tbtn" style="margin-left:10px" onclick="statusReload()">새로고침</button> <a class="tbtn" href="https://camera-tally.onrender.com/status.html?key=ft-tb972il3run7pioolr8dfnev" target="_blank" rel="noopener" style="margin-left:6px">새 창으로 열기 ↗</a></h2>
+          <h2>접속자 현황 <button class="tbtn" style="margin-left:10px" onclick="statusReload()">새로고침</button> <button class="tbtn" onclick="tallyForgetKey()" title="저장된 접근 키를 지우고 다시 입력">키 변경</button> <a class="tbtn" href="#" data-tally-url="https://camera-tally.onrender.com/status.html?key=__TALLY_KEY__" onclick="return tallyOpen(this)" target="_blank" rel="noopener" style="margin-left:6px">새 창으로 열기 ↗</a></h2>
           <div class="sub">탈리 서버에 지금 접속 중인 방·호스트·카메라·큐입니다. 3초마다 자동 갱신됩니다. (무료 인스턴스라 처음 열 때 최대 50초 콜드스타트가 있을 수 있습니다.)</div>
-          <iframe id="statusFrame" title="접속자 현황" data-src="https://camera-tally.onrender.com/status.html?key=ft-tb972il3run7pioolr8dfnev" style="width:100%;height:72vh;border:1px solid var(--line);border-radius:12px;background:#0B0B0C;margin-top:12px;display:block"></iframe>
+          <iframe id="statusFrame" title="접속자 현황" data-tally-url="https://camera-tally.onrender.com/status.html?key=__TALLY_KEY__" style="width:100%;height:72vh;border:1px solid var(--line);border-radius:12px;background:#0B0B0C;margin-top:12px;display:block"></iframe>
         </div>
       </section>
 
@@ -888,7 +888,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.27.0', AZ_CONSOLE_DATE='2026-09-15'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.28.0', AZ_CONSOLE_DATE='2026-09-15'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1307,7 +1307,12 @@ function toggleMenu(){
   if(b) b.setAttribute('aria-expanded', open?'true':'false');
 }
 function statusLoad(){ var f=document.getElementById('statusFrame'); if(f && !f.src && f.dataset.src){ f.src=f.dataset.src; } }   // 탭 처음 열 때만 로드(콜드스타트 방지)
-function statusReload(){ var f=document.getElementById('statusFrame'); if(f && f.dataset.src){ f.src=f.dataset.src+'&_='+Date.now(); } }
+// 탈리 접속자 현황 접근 키: 공개 저장소·공개 HTML에 평문으로 있던 것을 제거(감사 2026-09-15). 관리자 브라우저 localStorage 에만 두고 런타임에 URL을 만든다.
+function tallyKey(ask){ var k=''; try{ k=(localStorage.getItem('az_tally_status_key')||'').trim(); }catch(_){} if(!k&&ask){ k=(prompt('탈리 접속자 현황 접근 키 (서버 환경변수 STATUS_KEY 값)\n이 브라우저에만 저장됩니다.')||'').trim(); if(k){ try{ localStorage.setItem('az_tally_status_key',k); }catch(_){} } } return k; }
+function tallyUrl(el,ask){ var k=tallyKey(ask); return k?el.getAttribute('data-tally-url').replace('__TALLY_KEY__',encodeURIComponent(k)):''; }
+function tallyOpen(a){ var u=tallyUrl(a,true); if(u) window.open(u,'_blank','noopener'); return false; }
+function tallyForgetKey(){ try{ localStorage.removeItem('az_tally_status_key'); }catch(_){} statusReload(); }
+function statusReload(){ var f=document.getElementById('statusFrame'); if(!f) return; var u=tallyUrl(f,true); if(u){ f.src=u+'&_='+Date.now(); } else { f.removeAttribute('src'); } }
 document.querySelectorAll('.side a[data-p]').forEach(a=>{
   a.addEventListener('click',()=>{
     var p=a.dataset.p;
@@ -1978,7 +1983,7 @@ async function cancelOrder(id){
 }
 async function loadOrders(){
   var tb=document.getElementById('orderRows'); if(!tb) return;
-  var r=await sb.from('orders').select('id,user_id,product_id,provider,provider_ref,amount,currency,paid_amount,paid_currency,status,created_at,promo_code,promo_reserved,promo_note,is_test').order('created_at',{ascending:false}).limit(1000);
+  var r=await sb.from('orders').select('id,user_id,product_id,provider,provider_ref,amount,currency,paid_amount,paid_currency,status,created_at,promo_code,promo_reserved,promo_note,is_test,refunded_at,refunded_by').order('created_at',{ascending:false}).limit(1000);
   if(r.error){ tb.innerHTML='<tr><td colspan="8" style="color:#ff9ea3">불러오기 실패: '+esc(r.error.message)+'</td></tr>'; return; }
   ORDERS=r.data||[];
   await loadEmails(ORDERS.map(function(o){return o.user_id;}));
@@ -2016,8 +2021,8 @@ function renderOrders(){
   tb.innerHTML=L.map(function(o){
     var p=EMAILS[o.user_id]||{}; var stale=ordStale(o);
     var cls=stale?'p-refund':(PCLS[o.status]||'p-trial');
-    return '<tr'+(stale||o.status==='refunded'?' style="opacity:.55"':'')+'><td class="mono" title="'+esc(o.id)+'">'+esc(String(o.id).slice(0,8))+'</td><td>'+esc(PRODNAME[o.product_id]||o.product_id)+'</td><td>'+esc(p.email||o.user_id)+'</td><td>'+esc(chanLabel(o.provider))+'</td><td class="mono">'+fmtOrderAmt(o)+'</td><td><span class="pill '+cls+'">'+esc(ordStatusLabel(o))+'</span>'+(o.is_test?testTag():'')+'</td><td class="mono">'+fmtDate(o.created_at)+'</td>'+
-      '<td>'+(o.status==='paid'?'<button class="tbtn danger" onclick="refundOrder(\''+o.id+'\')">환불</button>':'')+(o.status==='pending'?'<button class="tbtn" title="미결제 주문 취소'+(o.promo_reserved?' · 할인코드 선점 반환':'')+'" onclick="cancelOrder(\''+o.id+'\')">취소'+(o.promo_reserved?'(코드반환)':'')+'</button>':'')+(o.promo_note?' <span class="n" title="'+esc(o.promo_note)+'" style="color:#FFD27A">코드 초과</span>':'')+' <button class="tbtn" onclick="copyText(\''+o.id+'\',this)">ID복사</button></td></tr>';
+    return '<tr'+(stale||(o.status==='refunded'&&o.refunded_at)?' style="opacity:.55"':'')+'><td class="mono" title="'+esc(o.id)+'">'+esc(String(o.id).slice(0,8))+'</td><td>'+esc(PRODNAME[o.product_id]||o.product_id)+'</td><td>'+esc(p.email||o.user_id)+'</td><td>'+esc(chanLabel(o.provider))+'</td><td class="mono">'+fmtOrderAmt(o)+'</td><td><span class="pill '+cls+'">'+esc(ordStatusLabel(o))+'</span>'+(o.is_test?testTag():'')+'</td><td class="mono">'+fmtDate(o.created_at)+'</td>'+
+      '<td>'+(o.status==='paid'?'<button class="tbtn danger" onclick="refundOrder(\''+o.id+'\')">환불</button>':'')+(o.status==='refunded'&&!o.refunded_at?'<button class="tbtn danger" title="DB·라이선스는 환불됐지만 결제사 실환불이 확인되지 않은 주문" onclick="retryRefundMoney(\''+o.id+'\')">결제사 환불 재시도</button>':'')+(o.status==='pending'?'<button class="tbtn" title="미결제 주문 취소'+(o.promo_reserved?' · 할인코드 선점 반환':'')+'" onclick="cancelOrder(\''+o.id+'\')">취소'+(o.promo_reserved?'(코드반환)':'')+'</button>':'')+(o.promo_note?' <span class="n" title="'+esc(o.promo_note)+'" style="color:#FFD27A">코드 초과</span>':'')+' <button class="tbtn" onclick="copyText(\''+o.id+'\',this)">ID복사</button></td></tr>';
   }).join('');
 }
 // 월별 매출: 서버 집계 뷰 orders_monthly(테스트 제외·RLS 적용) — 목록 1,000건 캡과 무관하게 정확. 실패 시 목록 기반 폴백
@@ -2076,6 +2081,14 @@ async function refundOrder(id){
     else alert('✓ DB 환불·라이선스 회수 완료.\n\n⚠ 결제사 실환불은 실패했습니다: '+money.error+'\n결제사 콘솔에서 수동 취소가 필요할 수 있습니다.');
   }catch(ex){ alert('실패: '+ex.message); }
   loadOrders(); loadLicenses();
+}
+// 감사 2026-09-15: 관리자 환불은 DB 먼저·결제사 나중이라 결제사 단계가 실패하면 status=refunded·refunded_at=null 로 남고 환불 버튼이 사라져 막다른 길이었다.
+// admin-refund 는 그 상태를 재시도로 처리하므로(결재 재상신 금지) 버튼만 이어 준다. 결제사 쪽에서 취소가 확인되면 웹훅이 refunded_at 을 채운다.
+async function retryRefundMoney(id){
+  if(!confirm('결제사 실환불을 다시 시도합니다.\n(DB·라이선스는 이미 환불 처리된 주문 — 돈만 아직)')) return;
+  var money=await adminRefundMoney(id);
+  alert(money.ok?('✓ 결제사 환불 완료'+(money.note?(' · '+money.note):'')):('⚠ 다시 실패: '+money.error+'\n포트원 콘솔에서 수동 취소하면 웹훅이 상태를 맞춥니다.'));
+  loadOrders();
 }
 // admin-refund 엣지 함수 호출(결제사 실환불 + refunded_at + 메일). DB 환불은 이미 decide_approval 이 처리한 뒤 호출.
 async function adminRefundMoney(orderId){
