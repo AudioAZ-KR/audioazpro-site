@@ -889,7 +889,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.29.0', AZ_CONSOLE_DATE='2026-09-15'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.30.0', AZ_CONSOLE_DATE='2026-09-15'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1077,10 +1077,19 @@ async function azApprDecide(id, dec){
     fields:[{id:'note',label:label+' 메모 (선택)',placeholder:'요청자에게 남길 메모'}], okText:label, cancelText:'돌아가기 (결재 유지)', danger:dec!=='approved'});
   if(v0===null) return;
   var note=(v0.note||'').trim()||null;
+  var moneyDone=false;
+  if(dec==='approved'){   // 감사 2026-09-15: 환불 결재는 돈 먼저 — 결제사 실환불이 실패하면 결재를 승인하지 않는다 (DB·라이선스 그대로, 결재는 대기 유지)
+    var a0=await sb.from('approvals').select('type,payload').eq('id',id).single();
+    if(!a0.error && a0.data && a0.data.type==='refund' && a0.data.payload && a0.data.payload.order_id){
+      var m0=await adminRefundMoney(a0.data.payload.order_id);
+      if(!m0.ok){ alert('결제사 실환불 실패 — 결재는 대기 상태로 둡니다.\n\n'+m0.error); return; }
+      moneyDone=true;
+    }
+  }
   var r=await sb.rpc('decide_approval',{p_id:id,p_decision:dec,p_note:note});
-  if(r.error){ alert('실패: '+r.error.message); return; }
-  // 환불 결재 승인 시 결제사 실환불 자동 실행 (DB는 decide_approval이 이미 처리, 여기선 돈 환급 + refunded_at + 메일)
-  if(dec==='approved'){
+  if(r.error){ alert('실패: '+r.error.message+(moneyDone?'\n(결제사 환불은 이미 끝남 — 주문은 환불 상태)':'')); return; }
+  // (구) 승인 후 결제사 환불 — 위에서 먼저 처리했으면 건너뜀
+  if(dec==='approved' && !moneyDone){
     try{
       var a=await sb.from('approvals').select('type,payload').eq('id',id).single();
       if(!a.error && a.data && a.data.type==='refund' && a.data.payload && a.data.payload.order_id){
@@ -2073,14 +2082,17 @@ async function refundOrder(id){
     body:'<b style="color:#E9EEF7">'+esc(PRODNAME[o.product_id]||o.product_id||'')+'</b> · '+esc(p.email||'')+' · <span class="mono">'+fmtOrderAmt(o)+'</span>'+refInfo+notice});
   if(v0===null) return;
   try{
-    // 1) 결재(approvals) 상신 + (super면 즉시 승인) → decide_approval 이 DB 환불·라이선스 회수·감사이력
-    var rr=await azSuperDo('refund','주문 환불 — '+id.slice(0,8),'콘솔에서 환불 처리',{order_id:id});
-    if(rr.pending){ alert('✓ '+rr.text); loadOrders(); loadLicenses(); return; } // 비-super: 승인 대기
-    // 2) super: DB 환불 완료됨 → 결제사 실환불 + refunded_at + 메일
+    if(!isSuper){   // 비-super: 결재 상신만. 승인 시 azApprDecide 가 '돈 먼저'로 처리
+      var rr=await azSuperDo('refund','주문 환불 — '+id.slice(0,8),'콘솔에서 환불 처리',{order_id:id});
+      alert('✓ '+rr.text); loadOrders(); loadLicenses(); return;
+    }
+    // super — 감사 2026-09-15 근본 수정: 돈 먼저. admin-refund(결제사 취소 + DB refunded/refunded_at + 라이선스 회수 + 메일)가
+    // 성공한 뒤에만 결재 이력(decide_approval, 이미 refunded 여도 통과하도록 멱등 처리됨)을 남긴다. 실패하면 아무것도 바뀌지 않는다.
     var money=await adminRefundMoney(id);
-    if(money.ok) alert('✓ DB 환불·라이선스 회수 완료 · 결제사: '+(money.note||'완료'));
-    else alert('✓ DB 환불·라이선스 회수 완료.\n\n⚠ 결제사 실환불은 실패했습니다: '+money.error+'\n결제사 콘솔에서 수동 취소가 필요할 수 있습니다.');
-  }catch(ex){ alert('실패: '+ex.message); }
+    if(!money.ok){ alert('결제사 실환불 실패 — 아무것도 바꾸지 않았습니다.\n\n'+money.error); return; }
+    await azSuperDo('refund','주문 환불 — '+id.slice(0,8),'콘솔에서 환불 처리 (결제사: '+(money.note||'완료')+')',{order_id:id});
+    alert('✓ 결제사 환불 · DB · 라이선스 회수 완료'+(money.note?(' · '+money.note):''));
+  }catch(ex){ alert('결제사 환불은 끝났으나 결재 이력 기록에 실패: '+ex.message+'\n(주문 상태는 이미 환불됨 — 결재 탭에서 확인)'); }
   loadOrders(); loadLicenses();
 }
 // 감사 2026-09-15: 관리자 환불은 DB 먼저·결제사 나중이라 결제사 단계가 실패하면 status=refunded·refunded_at=null 로 남고 환불 버튼이 사라져 막다른 길이었다.
