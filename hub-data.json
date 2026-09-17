@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-17T15:29+09:00",
+ "generated": "2026-09-17T22:24+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -146,5 +146,10 @@
    "msg": "감사 수정: beta.html 푸터 사업자 표시사항 추가 / flare-tally .devrow flex-wrap(375px 가로스크롤 해결) / hub 스테이징 URL 리터럴 제거(base64 디코드)"
   }
  ],
- "commits_staging": []
+ "commits_staging": [
+  {
+   "date": "2026-09-17T15:29:24+09:00",
+   "msg": "downloads(staging): Klera Latency Meter v0.5.0 — 플러그인+단독 앱 pkg, 최소 macOS 13"
+  }
+ ]
 }
