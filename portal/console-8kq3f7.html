@@ -52,6 +52,7 @@ h1,h2,h3{font-family:'NanumSquareRound','Pretendard',sans-serif}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:14px}
 @media(max-width:900px){.kpis{grid-template-columns:1fr 1fr}}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.kpi.go{cursor:pointer;transition:border-color .12s,background .12s}.kpi.go:hover,.kpi.go:focus-visible{border-color:#3F7BD8;background:#16233C;outline:none}.kpi.go .gochev{color:#6B7C96;font-weight:700}.kpi.go:hover .gochev{color:#9CC2F5}
 .kpi .l{font-size:12.5px;color:var(--dim);font-weight:600}
 .kpi .v{font-size:26px;font-weight:800;margin-top:6px;font-family:'NanumSquareRound','Pretendard',sans-serif}
 .kpi .d{font-size:11.5px;margin-top:4px;font-weight:700}
@@ -405,12 +406,12 @@ td{color:var(--text)}
       <!-- 대시보드 -->
       <section id="p-dash" class="page on">
         <div class="kpis">
-          <div class="kpi"><div class="l">총 매출 (결제완료)</div><div class="v" id="kpiRev" style="font-size:21px">—</div><div class="d flat">국내+해외 · 통화별 합산</div></div>
-          <div class="kpi"><div class="l">국내 매출 (포트원)</div><div class="v" id="kpiRevDom" style="font-size:21px">—</div><div class="d flat">결제완료 기준</div></div>
-          <div class="kpi"><div class="l">해외 매출 (Paddle)</div><div class="v" id="kpiRevAbroad" style="font-size:21px">—</div><div class="d flat">결제완료 기준</div></div>
-          <div class="kpi"><div class="l">활성 라이선스</div><div class="v" id="kpiLic">—</div><div class="d flat">실데이터</div></div>
-          <div class="kpi"><div class="l">이번 달 발급</div><div class="v" id="kpiMonth">—</div><div class="d flat">실데이터</div></div>
-          <div class="kpi"><div class="l">회원</div><div class="v" id="kpiUsers">—</div><div class="d flat">실데이터</div></div>
+          <div class="kpi go" role="link" tabindex="0" title="주문·결제로 이동" onclick="azGo('orders')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();azGo('orders')}"><div class="l">총 매출 (결제완료) <span class="gochev">›</span></div><div class="v" id="kpiRev" style="font-size:21px">—</div><div class="d flat">국내+해외 · 통화별 합산</div></div>
+          <div class="kpi go" role="link" tabindex="0" title="주문·결제로 이동" onclick="azGo('orders')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();azGo('orders')}"><div class="l">국내 매출 (포트원) <span class="gochev">›</span></div><div class="v" id="kpiRevDom" style="font-size:21px">—</div><div class="d flat">결제완료 기준</div></div>
+          <div class="kpi go" role="link" tabindex="0" title="주문·결제로 이동" onclick="azGo('orders')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();azGo('orders')}"><div class="l">해외 매출 (Paddle) <span class="gochev">›</span></div><div class="v" id="kpiRevAbroad" style="font-size:21px">—</div><div class="d flat">결제완료 기준</div></div>
+          <div class="kpi go" role="link" tabindex="0" title="라이선스로 이동" onclick="azGo('lic')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();azGo('lic')}"><div class="l">활성 라이선스 <span class="gochev">›</span></div><div class="v" id="kpiLic">—</div><div class="d flat">실데이터</div></div>
+          <div class="kpi go" role="link" tabindex="0" title="라이선스로 이동" onclick="azGo('lic')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();azGo('lic')}"><div class="l">이번 달 발급 <span class="gochev">›</span></div><div class="v" id="kpiMonth">—</div><div class="d flat">실데이터</div></div>
+          <div class="kpi go" role="link" tabindex="0" title="고객으로 이동" onclick="azGo('customers')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();azGo('customers')}"><div class="l">회원 <span class="gochev">›</span></div><div class="v" id="kpiUsers">—</div><div class="d flat">실데이터</div></div>
         </div>
         <div class="card"><h2>최근 활동 <button class="tbtn" style="margin-left:10px" onclick="loadDash()">새로고침</button></h2><div class="sub">라이선스 발급·주문·문의·결재 최신 기록</div>
           <table><thead><tr><th>시각</th><th>유형</th><th>내용</th></tr></thead>
@@ -890,7 +891,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.30.1', AZ_CONSOLE_DATE='2026-09-17'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.30.2', AZ_CONSOLE_DATE='2026-09-17'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1357,6 +1358,7 @@ async function statusLoad(manual){
   TS.busy=false;
   TS.timer=setTimeout(statusLoad,5000);
 }
+function azGo(p){ var a=document.querySelector('.side a[data-p="'+p+'"]'); if(a) a.click(); }   // 대시보드 카드 → 해당 탭 (2026-09-18)
 document.querySelectorAll('.side a[data-p]').forEach(a=>{
   a.addEventListener('click',()=>{
     var p=a.dataset.p;
