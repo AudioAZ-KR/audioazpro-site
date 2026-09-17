@@ -27,6 +27,7 @@ h1{font-size:24px;font-weight:800;margin-bottom:4px}.lead{color:var(--dim);font-
 .item h3{font-size:15.5px;font-weight:800}.item .d{font-size:12.5px;color:var(--dim)}
 .item .p{margin-left:auto;font-weight:800}
 .field label{display:block;font-size:12.5px;font-weight:700;color:var(--dim);margin-bottom:5px}
+.field>input{display:block;width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-family:inherit;font-size:16px}.field>input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,119,242,.12)}
 .coderow{display:flex;gap:8px}
 .coderow input{flex:1;border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-family:ui-monospace,Menlo,monospace;font-size:14px;text-transform:uppercase}
 .coderow input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,119,242,.12)}
@@ -45,7 +46,7 @@ h1{font-size:24px;font-weight:800;margin-bottom:4px}.lead{color:var(--dim);font-
 .svcinfo .n{font-size:12px;color:var(--dim);line-height:1.65;margin-top:10px}
 .svcinfo .n a{color:var(--blue,#1877F2)}
 @media(max-width:520px){.svcinfo .r{flex-direction:column;gap:2px}.svcinfo .r span{width:auto}}
-.sum{position:sticky;top:20px}
+.side{position:sticky;top:20px;align-self:start}@media(max-width:760px){.side{position:static}}
 .sum .line{display:flex;justify-content:space-between;font-size:14px;padding:7px 0;color:var(--dim)}
 .sum .line b{color:var(--text)}
 .sum .disc{color:var(--green);font-weight:700}
@@ -103,20 +104,22 @@ h1{font-size:24px;font-weight:800;margin-bottom:4px}.lead{color:var(--dim);font-
         <p class="note">휴대폰 번호는 <b>결제대행사(KG이니시스)의 카드 결제에 필수로 요구되는 항목</b>입니다. 카드사 본인확인, 결제 승인·취소 결과 안내, 주문 처리 중 문제가 생겼을 때의 연락, 환불·분쟁 시 본인 확인에만 사용합니다. <b>광고·마케팅 문자나 전화는 보내지 않으며 제3자에게 제공하지 않습니다.</b> 자세한 내용은 <a href="/privacy.html" target="_blank" rel="noopener">개인정보처리방침</a>을 확인하세요.</p>
       </div>
 
-      <div class="card" style="margin-top:16px">
-        <h2>프로모션 / 할인 코드</h2>
-        <div class="field"><label>코드 입력 (라이선스 코드 또는 할인 코드)</label>
-          <div class="coderow">
-            <input id="code" placeholder="코드를 입력하세요" autocomplete="off" autocapitalize="characters" spellcheck="false" data-1p-ignore data-lpignore="true" data-form-type="other">
-            <button class="btn btn-pri" onclick="applyCode()">적용</button>
-          </div>
-        </div>
-        <div class="codemsg" id="codemsg"></div>
-        <p class="note">보유한 코드가 있으면 입력해 적용하세요. 코드는 결제 페이지에서 검증됩니다.</p>
-      </div>
     </div>
 
-    <div class="card sum">
+    <div class="side">
+    <div class="card" id="codeCard">
+      <h2>프로모션 / 할인 코드</h2>
+      <div class="field"><label>코드 입력 (라이선스 코드 또는 할인 코드)</label>
+        <div class="coderow">
+          <input id="code" placeholder="코드를 입력하세요" autocomplete="off" autocapitalize="characters" spellcheck="false" data-1p-ignore data-lpignore="true" data-form-type="other">
+          <button class="btn btn-pri" onclick="applyCode()">적용</button>
+        </div>
+      </div>
+      <div class="codemsg" id="codemsg"></div>
+      <p class="note">보유한 코드가 있으면 입력해 적용하세요. 코드는 결제 페이지에서 검증됩니다.</p>
+    </div>
+
+    <div class="card sum" style="margin-top:16px">
       <h2>결제 요약</h2>
       <div class="line">상품 <b id="sBase">—</b></div>
       <div class="line disc" id="sSaleLine" style="display:none">세일 할인 <b id="sSale">-₩0</b></div>
@@ -130,6 +133,7 @@ h1{font-size:24px;font-weight:800;margin-bottom:4px}.lead{color:var(--dim);font-
         <p class="note" id="payNote" style="margin-top:4px">온라인 카드 결제는 결제사 연동 승인 후 제공됩니다. 그동안은 문의 주시면 계좌이체 안내 후 라이선스를 발급해 드립니다.</p>
       </div>
       <p class="note">발급된 라이선스는 <a href="account.html" style="color:var(--blue);font-weight:600">내 계정</a>에서 확인·활성화할 수 있습니다.</p>
+    </div>
     </div>
   </div>
 </div>

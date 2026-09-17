@@ -167,7 +167,7 @@ footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center}footer .rig
     <h2>테스트할 앱 받기</h2>
     <div class="sub">안내 메일의 프로모션 코드로 가입·등록을 마치면 아래에서 앱을 받아 테스트하실 수 있습니다.</div>
     <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-top:16px">
-      <a href="https://apps.apple.com/kr/app/flare-tally/id6808137674" target="_blank" rel="noopener" aria-label="App Store에서 Flare Tally 다운로드" style="display:inline-block"><img src="/assets/appstore-badge-ko.svg" alt="App Store에서 다운로드" width="170" height="52" style="display:block"></a>
+      <a href="https://apps.apple.com/kr/app/flare-tally/id6808137674" target="_blank" rel="noopener" aria-label="App Store에서 Flare Tally 다운로드" style="display:inline-block"><img src="/assets/appstore-badge-en.svg" alt="Download on the App Store" width="156" height="52" style="display:block"></a>
       <a href="/product-flare-tally.html#ios" style="color:var(--blue-soft);font-weight:700">호스트 앱(맥·윈도우) 다운로드 →</a>
     </div>
   </div>
@@ -270,5 +270,9 @@ async function betaSubmit(e){
   return false;
 }
 </script>
+<script>/* App Store 링크: 아이폰·아이패드에서는 새 탭 대신 App Store 앱으로 바로 연다 (아이패드 사파리는 맥처럼 보이므로 터치 지점으로 판별). 앱으로 못 넘어가는 인앱 브라우저는 1.5초 뒤 웹 페이지로 */
+(function(){var ua=navigator.userAgent||"";var ios=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);if(!ios)return;
+document.querySelectorAll('a[href*="apps.apple.com"]').forEach(function(a){var web=a.getAttribute("href"),m=web.match(/id(\d+)/);if(!m)return;a.removeAttribute("target");
+a.addEventListener("click",function(e){e.preventDefault();var t=setTimeout(function(){if(!document.hidden)location.href=web;},1500);document.addEventListener("visibilitychange",function(){if(document.hidden)clearTimeout(t);},{once:true});location.href="itms-apps://apps.apple.com/app/id"+m[1];});});})();</script>
 </body>
 </html>

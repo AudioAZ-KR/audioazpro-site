@@ -291,7 +291,7 @@ h2{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
     <div class="panel" style="margin-bottom:16px">
       <b style="display:block;margin-bottom:10px">테스트할 앱 받기</b>
       <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
-        <a href="https://apps.apple.com/kr/app/flare-tally/id6808137674" target="_blank" rel="noopener" aria-label="App Store에서 Flare Tally 다운로드" style="display:inline-block"><img src="/assets/appstore-badge-ko.svg" alt="App Store에서 다운로드" width="160" height="49" style="display:block"></a>
+        <a href="https://apps.apple.com/kr/app/flare-tally/id6808137674" target="_blank" rel="noopener" aria-label="App Store에서 Flare Tally 다운로드" style="display:inline-block"><img src="/assets/appstore-badge-en.svg" alt="Download on the App Store" width="147" height="49" style="display:block"></a>
         <a href="/product-flare-tally.html#ios" style="color:var(--blue-soft);font-weight:700">호스트 앱(맥·윈도우) 다운로드 →</a>
       </div>
     </div>
@@ -849,5 +849,9 @@ function lookupLicense(e){
   <div>오디오에이지(AudioAZ) · 대표 김형준 · 사업자등록번호 456-17-01966 · 경기도 남양주시 다산중앙로19번길 21, F동 419호 (다산동, 다산진건블루웨일지식산업센터1차) · 전화 070-4837-1073 · 이메일 <a href="mailto:support@audioazpro.com" style="color:#8FA5C2">support@audioazpro.com</a></div>
   <div><a href="/terms.html" style="color:#8FA5C2">이용약관</a> · <a href="/privacy.html" style="color:#8FA5C2">개인정보처리방침</a> · <a href="/refund.html" style="color:#8FA5C2">환불·라이선스 정책</a> · <a href="/support.html" style="color:#8FA5C2">고객지원</a></div>
 </footer>
+<script>/* App Store 링크: 아이폰·아이패드에서는 새 탭 대신 App Store 앱으로 바로 연다 (아이패드 사파리는 맥처럼 보이므로 터치 지점으로 판별). 앱으로 못 넘어가는 인앱 브라우저는 1.5초 뒤 웹 페이지로 */
+(function(){var ua=navigator.userAgent||"";var ios=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);if(!ios)return;
+document.querySelectorAll('a[href*="apps.apple.com"]').forEach(function(a){var web=a.getAttribute("href"),m=web.match(/id(\d+)/);if(!m)return;a.removeAttribute("target");
+a.addEventListener("click",function(e){e.preventDefault();var t=setTimeout(function(){if(!document.hidden)location.href=web;},1500);document.addEventListener("visibilitychange",function(){if(document.hidden)clearTimeout(t);},{once:true});location.href="itms-apps://apps.apple.com/app/id"+m[1];});});})();</script>
 </body>
 </html>
