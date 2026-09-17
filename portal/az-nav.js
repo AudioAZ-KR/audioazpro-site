@@ -77,6 +77,8 @@
 // 스테이징(테스트) 사이트 표식 — 실도메인(audioazpro.com)이 아니면 상단 고정 라벨. 실서비스 화면에는 절대 나오지 않음.
 (function(){ try{
   if(/^(www\.)?audioazpro\.com$/.test(location.hostname)) return;
+  // 비-실도메인(staging·onrender 등)에서는 검색 색인 차단 — 실도메인만 공개 색인된다.
+  try{ var rb=document.createElement('meta'); rb.name='robots'; rb.content='noindex, nofollow'; (document.head||document.documentElement).appendChild(rb); }catch(_){}
   var m=document.createElement('div'); m.id='az-staging-mark';
   m.style.cssText='position:fixed;left:0;right:0;top:0;z-index:9999;height:22px;line-height:22px;text-align:center;font:600 11px ui-monospace,Menlo,monospace;letter-spacing:.14em;color:#FFD08A;background:#3A2A00;border-bottom:1px solid #6B4F00;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8px';
   m.textContent='STAGING \u00b7 TEST SITE \u00b7 '+location.hostname;
