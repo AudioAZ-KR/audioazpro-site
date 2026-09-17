@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-18T07:35+09:00",
+ "generated": "2026-09-18T07:37+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -111,7 +111,7 @@
   "showfile": "v0.6.6",
   "lmaz": null
  },
- "console_version": "1.30.3",
+ "console_version": "1.30.4",
  "commits_live": [
   {
    "date": "2026-09-18T07:30:41+09:00",
@@ -146,5 +146,10 @@
    "msg": "SEO 오픈: 검색엔진 색인 허용 (홈·제품·탈리·다운로드·지원), 비공개·staging 보호 유지"
   }
  ],
- "commits_staging": []
+ "commits_staging": [
+  {
+   "date": "2026-09-18T07:35:34+09:00",
+   "msg": "런치패드: audioazpro.com 타일은 같은 탭에서 열기 (아이폰에서 뒤로 가기가 새 탭을 닫아 런치패드로 나가던 문제)"
+  }
+ ]
 }
