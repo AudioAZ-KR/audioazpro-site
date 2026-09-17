@@ -1,8 +1,8 @@
 # AudioAZ — audioazpro.com
-# [오픈 전] 전체 크롤링 차단. 오픈할 때는 아래 "User-agent: *" 블록만 Allow로 바꾸고,
-# AI 크롤러 차단 블록과 NO_AI_NOTICE.txt 는 그대로 유지한다.
+# [오픈] 일반 검색엔진 색인 허용. 비공개 페이지(포털·관리자)는 각 페이지 noindex 로 제외.
+# AI 학습·분석 크롤러 차단 블록과 NO_AI_NOTICE.txt 는 그대로 유지한다.
 User-agent: *
-Disallow: /
+Allow: /
 
 # ── AI 학습·분석 크롤러 차단 (오픈 후에도 유지) ─────────────────────────
 User-agent: GPTBot
@@ -27,3 +27,5 @@ User-agent: ImagesiftBot
 Disallow: /
 
 # 고지: https://audioazpro.com/NO_AI_NOTICE.txt
+
+Sitemap: https://audioazpro.com/sitemap.xml
