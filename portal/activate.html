@@ -114,7 +114,8 @@ function machineId(){ try{ var v=localStorage.getItem('az_machine'); if(!v){ v='
   try{ var mx=LIC?(LIC.max_devices||1):AZ.maxDevices(CUR); document.getElementById('optMachineDesc').textContent='이 기기에 저장. USB 없이 바로 사용. (이 제품은 최대 '+mx+'대)'; }catch(_){}
   if(LIC && LIC.activations && LIC.activations.length){
     var note=document.querySelector('.note');
-    note.innerHTML='현재 활성화된 기기 '+LIC.activations.length+'/'+(LIC.max_devices||1)+': '+LIC.activations.map(function(a){ return '<b>'+(a.label||(a.binding_type==='usb'?'USB 드라이브':'이 컴퓨터'))+'</b> <span style="font-family:ui-monospace,Menlo,monospace">'+a.binding_id+'</span> <a href="#" onclick="deact(\''+a.id+'\');return false" style="color:#ff9ea3;font-weight:700">해제</a>'; }).join(' · ')+'<br>활성화 방식은 <a href="account.html" style="color:var(--blue-soft);font-weight:700">내 계정</a>에서도 관리할 수 있습니다.';
+    function escA(x){ return String(x==null?'':x).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+    note.innerHTML='현재 활성화된 기기 '+LIC.activations.length+'/'+(LIC.max_devices||1)+': '+LIC.activations.map(function(a){ return '<b>'+escA(a.label||(a.binding_type==='usb'?'USB 드라이브':'이 컴퓨터'))+'</b> <span style="font-family:ui-monospace,Menlo,monospace">'+escA(a.binding_id)+'</span> <a href="#" onclick="deact(\''+a.id+'\');return false" style="color:#ff9ea3;font-weight:700">해제</a>'; }).join(' · ')+'<br>활성화 방식은 <a href="account.html" style="color:var(--blue-soft);font-weight:700">내 계정</a>에서도 관리할 수 있습니다.';
   }
 })();
 function pick(loc){

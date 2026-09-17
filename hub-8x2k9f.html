@@ -236,6 +236,7 @@ const short = u => u.replace(/^https?:\/\//,'').replace(/\/$/,'');
 function card(o){
   const a=document.createElement('a');
   a.className='card'+(o.cls?(' '+o.cls):''); a.href=o.href; a.target='_blank'; a.rel='noopener';
+  if(o.ph) a.dataset.ph='1';
   const chip = o.chip ? `<span class="chip ${o.chip.k}">${o.chip.t}</span>`
                       : `<svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M7 17 17 7M17 7H8M17 7v9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   const dot = o.dot ? `<span class="dot ${o.dot}"></span>` : '';
@@ -286,6 +287,11 @@ fill('g-admin', [
   {cls:'admin', t:'관리자 콘솔', href:'https://audioazpro.com/portal/console-8kq3f7.html',
    chip:{k:'lock',t:'PASSKEY'}, d:'<span id="hubConsoleVer">콘솔</span> · 대시보드 · <b>클로드 지휘소</b>(병렬 채팅 관제·명령·작업 큐·경보) · 작업현황 · 서비스·한도 · 결재 · 문의함 · 라이선스 · 프로모션(수량 발행·복사) · 베타 모집(신청자·테스터·보고 게시판) · 주문 · 고객 · 제품 · 공지 · 관리자 · 10분 자동 로그아웃',
    warn:'패스키 전용 · 비공개 URL · 외부 공유 금지'},
+  // 비공개 주소·키가 든 타일은 관리자 세션을 확인한 뒤에만 실제 링크로 바뀐다(보안 점검 2026-09-15/17). 그 전엔 자리만 보인다.
+  {cls:'admin', ph:1, t:'스테이징(테스트) 사이트', href:'https://audioazpro.com/portal/console-8kq3f7.html',
+   chip:{k:'lock',t:'잠김'}, d:'관리자 콘솔에 패스키로 로그인한 뒤 <b>이 페이지를 새로고침</b>하면 테스트 사이트 링크가 나타납니다.'},
+  {cls:'admin', ph:1, t:'접속자 현황 (탈리 실시간)', href:'https://audioazpro.com/portal/console-8kq3f7.html',
+   chip:{k:'lock',t:'잠김'}, d:'관리자 콘솔 로그인 후 표시 · 콘솔의 <b>접속자 현황</b> 탭에서도 볼 수 있습니다.'},
 ]);
 fill('g-svc', [
   {cls:'svc', t:'GitHub · 사이트', href:'https://github.com/AudioAZ-KR/audioazpro-site', chip:{k:'auth',t:'LOGIN'},
@@ -363,7 +369,7 @@ fill('g-other', [
     if(!sess){ empty('잔량·결제일은 관리자 콘솔에 패스키로 로그인한 뒤 이 페이지를 열면 보입니다.'); return; }
     var r1=await sb.from('services').select('*').order('sort'), r2=await sb.from('service_status').select('*');
     if(r1.error||r2.error||!(r1.data||[]).length){ empty('관리자 권한이 없거나 아직 수집 전입니다.'); return; }
-    window.__azAdmin=true; try{ var ga=document.getElementById('g-admin'); [
+    window.__azAdmin=true; try{ var ga=document.getElementById('g-admin'); ga.querySelectorAll('[data-ph]').forEach(function(e){ e.remove(); }); [
   {cls:'admin', t:'스테이징(테스트) 사이트', href:STG,
    chip:{k:'auth',t:'STAGING'}, d:'staging 브랜치 자동 배포 · 여기서 확인 후 라이브 승격 · 상단 STAGING 라벨 · 백엔드는 라이브와 공유 · 여기서의 결제는 테스트 결제 → TEST 라이선스(3일)',
    warn:'비공개 URL · 외부 공유 금지 · 콘솔 패스키는 여기서 동작 안 함'},

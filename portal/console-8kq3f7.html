@@ -889,7 +889,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.29.0', AZ_CONSOLE_DATE='2026-09-15'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.30.1', AZ_CONSOLE_DATE='2026-09-17'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1236,6 +1236,8 @@ var ROLES={
 var ADMIN_LIST=[];
 function roleOptions(sel){ return Object.keys(ROLES).filter(function(k){return k!=='super';}).map(function(k){return '<option value="'+k+'"'+(sel===k?' selected':'')+'>'+ROLES[k].label+'</option>';}).join(''); }
 function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+// onclick="f(\'…\')" 처럼 HTML 속성 안의 JS 문자열에 값을 넣을 때는 반드시 jsq(). esc() 는 속성 해석 때 ' 가 되살아나 깨진다 (보안 점검 2026-09-17)
+function jsq(v){ return esc(String(v==null?'':v).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\r/g,'\\r').replace(/\n/g,'\\n').replace(/</g,'\\x3c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029')); }
 async function renderAdmins(){
   var tb=document.getElementById('adminRows'); if(!tb) return;
   var me=window.__ADMIN_PROFILE||{};
@@ -1509,7 +1511,7 @@ async function betaCreate(e){
                     : await sb.from('beta_campaigns').insert(Object.assign(row,{created_by:me?me.id:null})).select('id,slug').single();
   if(r.error){ out.innerHTML='<b style="color:#ff9ea3">실패: '+esc(/duplicate|unique/i.test(r.error.message)?'이미 같은 링크 코드가 있습니다':r.error.message)+'</b>'; return false; }
   var url=betaUrl(r.data.slug);
-  out.innerHTML='<a href="'+esc(url)+'" target="_blank" rel="noopener" style="color:#9CC2F5;font-weight:700;word-break:break-all">'+esc(url)+'</a> <button class="tbtn" type="button" onclick="copyText(\''+esc(url)+'\',this)">복사</button>'+(navigator.share?' <button class="tbtn" type="button" onclick="navigator.share({title:\'AudioAZ 베타 테스터 모집\',url:\''+esc(url)+'\'}).catch(function(){})">공유</button>':'')+'<div class="n" style="margin-top:6px">테스트 사이트에서 확인하려면 주소의 audioazpro.com 을 테스트 사이트 주소로 바꾸면 됩니다.</div>';
+  out.innerHTML='<a href="'+esc(url)+'" target="_blank" rel="noopener" style="color:#9CC2F5;font-weight:700;word-break:break-all">'+esc(url)+'</a> <button class="tbtn" type="button" onclick="copyText(\''+jsq(url)+'\',this)">복사</button>'+(navigator.share?' <button class="tbtn" type="button" onclick="navigator.share({title:\'AudioAZ 베타 테스터 모집\',url:\''+esc(url)+'\'}).catch(function(){})">공유</button>':'')+'<div class="n" style="margin-top:6px">테스트 사이트에서 확인하려면 주소의 audioazpro.com 을 테스트 사이트 주소로 바꾸면 됩니다.</div>';
   betaEditCancel();
   betaLoad(); return false;
 }
@@ -1646,7 +1648,7 @@ function renderBetaSignups(){
     var st=STL[s.status]||[s.status,'p-trial'];
     var issued=s.license_key?('키 <span class="mono">'+esc(s.license_key)+'</span>'):(s.promo_code?('코드 <span class="mono">'+esc(s.promo_code)+'</span>'):(s.error?'<span style="color:#ff9ea3">'+esc(s.error)+'</span>':'—'));
     var ans=(BETA_CUR&&Array.isArray(BETA_CUR.fields)?BETA_CUR.fields:[]).map(function(f){ var v=s.answers&&s.answers[f.key]; return v?('<div><span style="color:#8fa5c2">'+esc(f.label)+':</span> '+esc(v)+'</div>'):''; }).join('');
-    return '<tr><td><input type="checkbox" class="betaChk" value="'+esc(s.id)+'"></td><td class="mono" style="cursor:pointer" title="누르면 복사" onclick="copyText(\''+esc(s.email)+'\',this.querySelector(\'.cpm\'))">'+esc(s.email)+' <span class="cpm" style="font-size:10.5px;color:#8fa5c2"></span></td><td>'+esc(s.name||'')+'</td><td style="max-width:320px;font-size:12px;color:var(--dim)">'+(s.note?'<div>'+esc(s.note)+'</div>':'')+ans+'</td><td><span class="pill '+st[1]+'">'+st[0]+'</span></td><td style="font-size:12px">'+issued+(s.issued_at?'<div class="n">'+fmtDateTime(s.issued_at)+'</div>':'')+'</td><td class="mono">'+fmtDateTime(s.created_at)+'</td></tr>';
+    return '<tr><td><input type="checkbox" class="betaChk" value="'+esc(s.id)+'"></td><td class="mono" style="cursor:pointer" title="누르면 복사" onclick="copyText(\''+jsq(s.email)+'\',this.querySelector(\'.cpm\'))">'+esc(s.email)+' <span class="cpm" style="font-size:10.5px;color:#8fa5c2"></span></td><td>'+esc(s.name||'')+'</td><td style="max-width:320px;font-size:12px;color:var(--dim)">'+(s.note?'<div>'+esc(s.note)+'</div>':'')+ans+'</td><td><span class="pill '+st[1]+'">'+st[0]+'</span></td><td style="font-size:12px">'+issued+(s.issued_at?'<div class="n">'+fmtDateTime(s.issued_at)+'</div>':'')+'</td><td class="mono">'+fmtDateTime(s.created_at)+'</td></tr>';
   }).join('');
   var all=document.getElementById('betaAll'); if(all) all.checked=false;
 }
@@ -1768,7 +1770,7 @@ function renderBetaReports(){
     return '<div style="padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#0E1A2E;margin-top:10px" data-rp="'+esc(x.id)+'">'+
       '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b style="font-size:15px;color:#E9EEF7">'+esc(x.title)+'</b><span class="pill '+s[1]+'">'+s[0]+'</span>'+(top?'<span class="pill p-active">우수 테스터</span>':'')+'<span class="n" style="margin-left:auto">'+esc(em)+' · '+fmtDateTime(x.created_at)+'</span></div>'+
       '<div style="white-space:pre-wrap;font-size:13.5px;color:#E9EEF7;line-height:1.65;margin-top:8px">'+esc(x.body)+'</div>'+betaSurveyHtml(x.survey)+(imgs?'<div>'+imgs+'</div>':'')+
-      '<div style="margin-top:12px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start"><textarea class="rp-note" rows="2" placeholder="답변·메모 (테스터의 마이페이지에 AudioAZ 답변으로 표시됩니다)" style="width:100%;border:1px solid #243350;border-radius:9px;padding:9px 12px;font-family:inherit;font-size:13px;background:#121D33;color:#E9EEF7;resize:vertical">'+esc(x.admin_note||'')+'</textarea><div style="display:flex;flex-direction:column;gap:6px"><button class="tbtn" type="button" onclick="betaRpExport(\'one\',\''+esc(x.id)+'\',this)" title="이 보고만 추출">추출</button><button class="tbtn" type="button" onclick="betaRpNote(\''+esc(x.id)+'\',this)">답변 저장</button>'+(x.status==='new'?'<button class="tbtn" type="button" onclick="betaRpStatus(\''+esc(x.id)+'\',\'read\')">확인함</button>':'')+'</div></div>'+
+      '<div style="margin-top:12px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start"><textarea class="rp-note" rows="2" placeholder="답변·메모 (테스터의 마이페이지에 AudioAZ 답변으로 표시됩니다)" style="width:100%;border:1px solid #243350;border-radius:9px;padding:9px 12px;font-family:inherit;font-size:13px;background:#121D33;color:#E9EEF7;resize:vertical">'+esc(x.admin_note||'')+'</textarea><div style="display:flex;flex-direction:column;gap:6px"><button class="tbtn" type="button" onclick="betaRpExport(\'one\',\''+esc(x.id)+'\',this)" title="이 보고만 추출">추출</button><button class="tbtn" type="button" onclick="betaRpNote(\''+jsq(x.id)+'\',this)">답변 저장</button>'+(x.status==='new'?'<button class="tbtn" type="button" onclick="betaRpStatus(\''+jsq(x.id)+'\',\'read\')">확인함</button>':'')+'</div></div>'+
     '</div>';
   }).join('');
 }
@@ -1915,7 +1917,7 @@ function renderIssued(){
       '<td style="font-size:12px">'+esc(TYPELABEL[l.type]||l.type)+(l.type==='TEST'?testTag():'')+(l.expires_at?'<br><span class="n">~'+fmtDate(l.expires_at)+'</span>':'')+'</td>'+
       '<td>'+(revoked?'<span class="pill p-revoked">'+(l.status==='revoked'?'회수':l.status)+'</span>':'<span class="pill p-active">활성</span>')+'</td>'+
       '<td class="mono">'+fmtDate(l.issued_at)+'</td>'+
-      '<td style="white-space:nowrap"><button class="tbtn" onclick="copyText(\''+esc(l.license_key)+'\',this)">복사</button> '+
+      '<td style="white-space:nowrap"><button class="tbtn" onclick="copyText(\''+jsq(l.license_key)+'\',this)">복사</button> '+
         (revoked?'':'<button class="tbtn" onclick="reissue(\''+l.id+'\')">재발급</button> <button class="tbtn danger" onclick="revokeLic(\''+l.id+'\')" title="라이선스만 무효화합니다. 돈은 환불되지 않습니다 — 환불은 주문·결제 탭에서">회수(환불 아님)</button>')+
       '</td></tr>';
   }).join('');
@@ -2469,7 +2471,7 @@ function dgRender(){
   var all=DG.rows, rows=dgFiltered();
   var apps=dgCount(all,dgAppKey).sort(function(a,b){return dgOrder(a[0])-dgOrder(b[0])});
   var chips='<span class="chip'+(DG.app==='all'?' on':'')+'" onclick="dgApp(\'all\')">전체<b>'+all.length+'</b></span>';
-  apps.forEach(function(a){chips+='<span class="chip'+(DG.app===a[0]?' on':'')+'" onclick="dgApp(\''+dgEsc(a[0])+'\')">'+dgEsc(dgAppName(a[0]))+'<b>'+a[1]+'</b></span>'});
+  apps.forEach(function(a){chips+='<span class="chip'+(DG.app===a[0]?' on':'')+'" onclick="dgApp(\''+jsq(a[0])+'\')">'+dgEsc(dgAppName(a[0]))+'<b>'+a[1]+'</b></span>'});
   document.getElementById('dgApps').innerHTML=chips;
   var errs=rows.filter(dgIsErr).length, devs={}; rows.forEach(function(r){if(r.dev)devs[r.kind+':'+r.dev]=1});
   document.getElementById('dgVAll').textContent=rows.length; document.getElementById('dgVErr').textContent=errs;
