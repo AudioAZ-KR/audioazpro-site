@@ -283,7 +283,7 @@ fill('g-portal', [
   {t:'비밀번호 찾기', href:'https://audioazpro.com/portal/forgot.html', chip:{k:'live',t:'LIVE'}},
   {t:'비밀번호 재설정', href:'https://audioazpro.com/portal/reset-password.html', chip:{k:'live',t:'LIVE'}},
 ]);
-function tallyStatusUrl(){ var k=''; try{ k=localStorage.getItem('az_tally_status_key')||''; }catch(_){} return k?('https://camera-tally.onrender.com/status.html?key='+encodeURIComponent(k)):'https://audioazpro.com/portal/console-8kq3f7.html#status'; }
+function tallyStatusUrl(){ return 'https://audioazpro.com/portal/console-8kq3f7.html#status'; }   // 콘솔이 관리자 패스키로 서버를 거쳐 조회 — 브라우저에 접근 키를 두지 않는다 (2026-09-18)
 var STG='https://'+atob('YXVkaW9hei1zdGctbTR4OS5vbnJlbmRlci5jb20=')+'/';
 fill('g-admin', [
   {cls:'admin', t:'관리자 콘솔', href:'https://audioazpro.com/portal/console-8kq3f7.html',
@@ -377,7 +377,7 @@ fill('g-other', [
    warn:'비공개 URL · 외부 공유 금지 · 콘솔 패스키는 여기서 동작 안 함'},
   {cls:'admin', t:'접속자 현황 (탈리 실시간)', href:tallyStatusUrl(),
    chip:{k:'live',t:'LIVE'}, d:'지역 서버 4곳(싱가폴·프랑크푸르트·오레곤·오하이오)을 한 페이지에 — 지역별 방·호스트·카메라·평균 핑(폰 보고 RTT)·서버 응답, 방별 카메라 핑, 3초 갱신. 절전 중인 지역은 첫 조회 후 채워짐.',
-   warn:'접근 키는 이 브라우저에만 저장 · 외부 공유 금지'},
+   warn:'관리자 패스키 세션에서만 열림 · 외부 공유 금지'},
     ].forEach(function(c){ ga.appendChild(card(c)); }); }catch(_){}
     render(r1.data,r2.data||[]);
   }
