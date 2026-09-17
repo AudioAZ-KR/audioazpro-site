@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-17T14:38+09:00",
+ "generated": "2026-09-17T15:17+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -98,21 +98,25 @@
   "tally": {
    "product": "flare-tally-host",
    "version": "1.0",
-   "build": 80,
-   "label": "v1.0 (80)",
-   "pkg": "Flare-Tally-1.0-b80.pkg",
+   "build": 81,
+   "label": "v1.0 (81)",
+   "pkg": "Flare-Tally-1.0-b81.pkg",
    "url": "https://audioazpro.com/downloads.html",
    "date": "2026-09-17",
    "note": "보안 업데이트 — 온라인 서버 접속 키가 바뀌어 이전 버전은 온라인 연결이 되지 않습니다. 이 버전으로 업데이트해 주세요.",
-   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b80/Flare-Tally-1.0-b80.pkg",
-   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b80/Flare-Tally-win-1.0-b80.zip",
-   "win_label": "v1.0 (80) 베타"
+   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b81/Flare-Tally-1.0-b81.pkg",
+   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b81/Flare-Tally-win-1.0-b81.zip",
+   "win_label": "v1.0 (81) 베타"
   },
   "showfile": "v0.6.6",
   "lmaz": null
  },
  "console_version": "1.30.1",
  "commits_live": [
+  {
+   "date": "2026-09-17T14:38:17+09:00",
+   "msg": "다운로드: Flare Tally 호스트 v1.0 (78) → v1.0 (80) — 보안 업데이트(서버 접속 키·라이선스 공개키 교체)"
+  },
   {
    "date": "2026-09-17T14:03:55+09:00",
    "msg": "보안 점검 2026-09-17: 콘솔 XSS 수정 (콘솔 v1.30.1) + 런치패드 잠금 자리표시"
@@ -140,10 +144,6 @@
   {
    "date": "2026-09-15T02:14:16+09:00",
    "msg": "가비아(Apache) 웹호스팅용 .htaccess 추가(HTTPS 강제·404·보안헤더·캐시). GitHub Pages/Render는 무시하여 영향 없음"
-  },
-  {
-   "date": "2026-09-15T01:30:09+09:00",
-   "msg": "테스트 서버에서 영어 홈페이지 미리보기 개방(EN_ENABLED=호스트 판별, 라이브 audioazpro.com은 계속 한국어만). Klera Voice는 az-preview.js로 이미 스테이징 개방됨"
   }
  ],
  "commits_staging": []
