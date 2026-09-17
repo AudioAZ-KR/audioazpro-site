@@ -2003,7 +2003,7 @@
     }
     if(S.cOn){
       if(cTypeEff()==='line')addPart('CENTER',S.cAmp,lineCabs(S.cMdl,S.cBox,S.cVar),!!CH2_MODELS[S.cMdl],S.cLink);
-      else addPart('Center',S.cAmp,fillCabs(S.cMdl,1),S.cMdl==='M4',S.cLink);
+      else addPart('Center',S.cAmp,fillCabs(S.cMdl,Math.max(1,Math.trunc(+(S.cBox||1)))),S.cMdl==='M4',S.cLink);   // 1 고정이면 자재표·앰프 수가 실제와 어긋난다
     }
     if(S.oOn){
       if(oTypeEff()==='line'){
@@ -4496,7 +4496,7 @@ function roundTrip(db,spec){
         var mdl=altOf(v.mdl);
         if(LINE[mdl]){var cl2=clampLine(mdl,nb,v.splay,v.mount||'flown');var _nr=(part==='DELAY')?((spec.delay&&spec.delay.rings&&spec.delay.rings.length)||1):1;exp[part]=cl2[0]*((part==='OUT'||part==='DELAY')?2:1)*_nr;}
       }else{
-        var _nr=(part==='DELAY')?((spec.delay&&spec.delay.rings&&spec.delay.rings.length)||1):1;var pm={'Front fill':nb,'CENTER':1,'OUT':2,'DELAY':2*_nr}[part];
+        var _nr=(part==='DELAY')?((spec.delay&&spec.delay.rings&&spec.delay.rings.length)||1):1;var pm={'Front fill':nb,'CENTER':nb,'OUT':2,'DELAY':2*_nr}[part];   // CENTER 를 1 로 두면 통 수 버그를 자체 검증이 못 잡는다
         exp[{'CENTER':'Center','OUT':'Out','DELAY':'Delay'}[part]||part]=pm;
       }
     });
@@ -4563,7 +4563,10 @@ function build(db,spec){
   var _ovp=spec.spkPos||{};
   function _op(part,key,dflt){ var p=_ovp[part]||{}; var v=p[key]; if(v===undefined||v===null)return dflt; v=+v; return isFinite(v)?R(v,2):dflt; }
   var xM=_op('main','x',xF),   yMn=_op('main','y',yM);
-  var xS=_op('sub','x',xF),    ySb=_op('sub','y',yM);
+  // 서브 기본값은 '메인이 실제로 놓인 자리'(yMn)를 따른다. 회장 공식(yM=최외곽|Y|×0.55)으로
+  // 되돌리면 옆으로 떨어진 관객석이 있는 회장에서 서브만 벽까지 밀린다
+  // (실측: 메인 ±11.3 인데 서브 ±18.7~20.5 — 7.4m 바깥).
+  var xS=_op('sub','x',xF),    ySb=_op('sub','y',yMn);
   var xFf=_op('front','x',null), yFf=_op('front','y',0);
   var xDl=_op('delay','x',xD), yDl=_op('delay','y',yM);
   var xC=_op('center','x',xF), yC=_op('center','y',0);
@@ -4748,7 +4751,13 @@ function build(db,spec){
       b.lineArray('CENTER',cm,c.amp||'D80',yC,zc,c.aim||0,bx5,sp3,'flown',xC,+(c.horiz||0),null,0,1,null,c.link||1,0.3,null,c.rigPts||'2');
     }else if(POINT[altOf(cm)]){
       var cm2=altOf(cm);var pu3=POINT[cm2];
-      b.pointRow('Center',pu3[2],c.amp||'D80',pu3[1],[yC],R(+(c.height||zM),1),c.aim||0,xC,1,c.link||1,0.3,+(c.horiz||0));
+      // 센터도 Front fill 과 같이 box 개수만큼 만든다. 좌표를 [yC] 한 개로 고정해 두어서
+      // box 를 11 로 줘도 항상 1 통만 나왔다(앰프 1대, 남는 채널은 Unused channels 로 빠짐).
+      var nbC=Math.max(1,Math.trunc(+(c.box||1)));
+      var _stwC=(spec._state||{}).stageW;
+      var hwC=_stwC?R(Math.max(1.0,(+_stwC)/2.0-0.5),1):R(yM*0.5,1);var ysC=[];
+      if(nbC>1){for(var iC=0;iC<nbC;iC++)ysC.push(R(yC-hwC+2*hwC*iC/(nbC-1),2));}else ysC=[yC];
+      b.pointRow('Center',pu3[2],c.amp||'D80',pu3[1],ysC,R(+(c.height||zM),1),c.aim||0,xC,1,c.link||1,0.3,+(c.horiz||0));
     }else warn('센터필 '+cm+' 미보유→건너뜀');
   }
   var o=spec.out||{};
@@ -4823,5 +4832,5 @@ window.DBSD_WEBGEN=function(spec,env){
 
 </script>
 <!-- DBSD-WEBGEN-END -->
-<footer style="margin:40px 0 24px;padding:16px 20px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;line-height:1.8;color:#6F84A3;font-family:Pretendard,-apple-system,system-ui,sans-serif"><div>© 2026 오디오에이지 (AudioAZ) · <a href="/privacy.html" style="color:inherit">개인정보처리방침</a> · <a href="/terms.html" style="color:inherit">이용약관</a> · <a href="/refund.html" style="color:inherit">환불·라이선스</a> · <a href="/support.html" style="color:inherit">문의</a></div><div style="margin-top:6px">오디오에이지(AudioAZ) · 대표 김형준 · 사업자등록번호 456-17-01966 · 경기도 남양주시 다산중앙로19번길 21, F동 419호 (다산동, 다산진건블루웨일지식산업센터1차) · 전화 070-4837-1073 · 이메일 <a href="mailto:support@audioazpro.com" style="color:#8FA5C2">support@audioazpro.com</a></div>
+<footer style="margin:40px 0 24px;padding:16px 20px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;line-height:1.8;color:#6F84A3;font-family:Pretendard,-apple-system,system-ui,sans-serif"><div>© 2026 오디오에이지 (AudioAZ) · <a href="/privacy.html" style="color:inherit">개인정보처리방침</a> · <a href="/terms.html" style="color:inherit">이용약관</a> · <a href="/refund.html" style="color:inherit">환불·라이선스</a> · <a href="/support.html" style="color:inherit">문의</a></div><div style="margin-top:6px">오디오에이지(AudioAZ) · 대표 김형준 · 사업자등록번호 456-17-01966 · 경기도 남양주시 다산중앙로19번길 21, F동 419호 (다산동, 다산진건블루웨일지식산업센터1차) · 전화 010-3547-0502 · 이메일 <a href="mailto:support@audioazpro.com" style="color:#8FA5C2">support@audioazpro.com</a></div>
 </footer>
