@@ -45,6 +45,7 @@ h1,h2,h3{font-family:'NanumSquareRound','Pretendard',sans-serif}
 .top .who{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--dim)}
 .top .who .av{width:30px;height:30px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
 .content{padding:26px;max-width:1560px}
+.tsmsg{padding:28px 8px;text-align:center;color:var(--dim);font-size:14px}.tstotals{font-family:ui-monospace,Menlo,monospace;font-size:13px;color:var(--dim);padding:2px 2px 6px}.tstotals b,.tsstat b{color:var(--text)}.tsregion{margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:10px 12px 4px}.tsrh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:8px;border-bottom:1px solid var(--line);font-size:14px}.tsdot{width:8px;height:8px;border-radius:50%;background:#6B7C96;flex:none}.tsdot.on{background:#3DD68C}.tsdot.off{background:#FF5A5F}.tscode{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--dim);border:1px solid var(--line);padding:1px 6px}.tsstat,.tsavg{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--dim)}.tsavg{margin-left:auto}.tstable{width:100%;border-collapse:collapse;margin-top:2px}.tstable th,.tstable td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top;font-size:13px}.tstable th{font-size:11px;color:var(--dim);font-weight:600;white-space:nowrap}.tsroom{font-family:ui-monospace,Menlo,monospace;font-weight:700;letter-spacing:.04em}.tsmono{font-family:ui-monospace,Menlo,monospace;font-size:12.5px}.tsdim{color:var(--dim)}.tshost{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--dim)}.tshost i{width:8px;height:8px;border-radius:50%;background:#6B7C96}.tshost.on{color:var(--text)}.tshost.on i{background:#3DD68C}.tshost small{color:var(--dim);font-family:ui-monospace,Menlo,monospace}.tscam{margin-right:10px;white-space:nowrap;color:var(--dim)}#tsBox .good{color:#3DD68C}#tsBox .mid{color:#E7B252}#tsBox .bad,#tsBox .pgm{color:#FF5A5F}#tsBox .pvw{color:#3DD68C}#tsBox .na{color:#6B7C96;font-weight:400}@media(max-width:560px){.tsavg{margin-left:0}.tstable th:nth-child(4),.tstable td:nth-child(4){display:none}}
 .page{display:none}.page.on{display:block}
 
 /* KPI */
@@ -548,9 +549,9 @@ td{color:var(--text)}
       <!-- 접속자 현황 (탈리 서버 실시간) -->
       <section id="p-status" class="page">
         <div class="card">
-          <h2>접속자 현황 <button class="tbtn" style="margin-left:10px" onclick="statusReload()">새로고침</button> <button class="tbtn" onclick="tallyForgetKey()" title="저장된 접근 키를 지우고 다시 입력">키 변경</button> <a class="tbtn" href="#" data-tally-url="https://camera-tally.onrender.com/status.html?key=__TALLY_KEY__" onclick="return tallyOpen(this)" target="_blank" rel="noopener" style="margin-left:6px">새 창으로 열기 ↗</a></h2>
-          <div class="sub">탈리 서버에 지금 접속 중인 방·호스트·카메라·큐입니다. 3초마다 자동 갱신됩니다. (무료 인스턴스라 처음 열 때 최대 50초 콜드스타트가 있을 수 있습니다.)</div>
-          <iframe id="statusFrame" title="접속자 현황" data-tally-url="https://camera-tally.onrender.com/status.html?key=__TALLY_KEY__" style="width:100%;height:72vh;border:1px solid var(--line);border-radius:12px;background:#0B0B0C;margin-top:12px;display:block"></iframe>
+          <h2>접속자 현황 <button class="tbtn" style="margin-left:10px" onclick="statusLoad(true)">새로고침</button> <span id="tsLive" class="n" style="margin-left:8px;font-size:12px;font-family:ui-monospace,Menlo,monospace"></span></h2>
+          <div class="sub">탈리 서버 4개 지역에 지금 접속 중인 방·호스트·카메라와 핑입니다. 이 탭을 보고 있는 동안 5초마다 자동 갱신됩니다. 관리자 패스키 세션으로 서버를 거쳐 조회하므로 접근 키 입력이 필요 없습니다. (절전 중인 지역 서버는 처음 조회에 최대 50초 걸릴 수 있습니다.)</div>
+          <div id="tsBox" style="margin-top:12px"><div class="tsmsg">불러오는 중…</div></div>
         </div>
       </section>
 
@@ -1309,13 +1310,53 @@ function toggleMenu(){
   var open=s.classList.toggle('open');
   if(b) b.setAttribute('aria-expanded', open?'true':'false');
 }
-function statusLoad(){ var f=document.getElementById('statusFrame'); if(f && !f.src && f.dataset.src){ f.src=f.dataset.src; } }   // 탭 처음 열 때만 로드(콜드스타트 방지)
 // 탈리 접속자 현황 접근 키: 공개 저장소·공개 HTML에 평문으로 있던 것을 제거(감사 2026-09-15). 관리자 브라우저 localStorage 에만 두고 런타임에 URL을 만든다.
-function tallyKey(ask){ var k=''; try{ k=(localStorage.getItem('az_tally_status_key')||'').trim(); }catch(_){} if(!k&&ask){ k=(prompt('탈리 접속자 현황 접근 키 (서버 환경변수 STATUS_KEY 값)\n이 브라우저에만 저장됩니다.')||'').trim(); if(k){ try{ localStorage.setItem('az_tally_status_key',k); }catch(_){} } } return k; }
-function tallyUrl(el,ask){ var k=tallyKey(ask); return k?el.getAttribute('data-tally-url').replace('__TALLY_KEY__',encodeURIComponent(k)):''; }
-function tallyOpen(a){ var u=tallyUrl(a,true); if(u) window.open(u,'_blank','noopener'); return false; }
-function tallyForgetKey(){ try{ localStorage.removeItem('az_tally_status_key'); }catch(_){} statusReload(); }
-function statusReload(){ var f=document.getElementById('statusFrame'); if(!f) return; var u=tallyUrl(f,true); if(u){ f.src=u+'&_='+Date.now(); } else { f.removeAttribute('src'); } }
+// 접속자 현황: Edge Function tally-status(관리자 패스키 전용)가 탈리 서버 /status?all=1 을 대신 조회 — 접근 키는 서버 시크릿에만 (2026-09-17)
+var TS={timer:null,busy:false};
+function tsEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function tsRooms(rooms){
+  if(!rooms||!rooms.length) return '<div class="tsmsg">접속 중인 방이 없습니다.</div>';
+  return '<table class="tstable"><thead><tr><th>방</th><th>호스트</th><th>카메라</th><th>탈리(PGM/PVW)</th><th>핑(ms)</th></tr></thead><tbody>'+rooms.map(function(r){
+    var host=r.host_online?'<span class="tshost on"><i></i>온라인 <small>'+tsEsc(r.host_mode==='licensed'?'라이선스':(r.host_mode==='demo'?'데모':''))+'</small></span>':'<span class="tshost"><i></i>오프라인</span>';
+    var cams=(r.cams||[]); var rtt=r.rtt||{};
+    var pings=cams.map(function(c){ var ms=rtt[String(c)]; return '<span class="tscam">#'+tsEsc(c)+' '+(ms==null?'<b class="na">–</b>':'<b class="'+(ms<200?'good':(ms<500?'mid':'bad'))+'">'+tsEsc(ms)+'</b>')+'</span>'; }).join('');
+    return '<tr><td class="tsroom">'+tsEsc(r.room)+'</td><td>'+host+'</td><td class="tsmono"><b>'+(r.cam_count||0)+'</b>대 <span class="tsdim">'+tsEsc(cams.map(function(c){return '#'+c;}).join(' ')||'—')+'</span></td><td class="tsmono"><span class="tsdim">PGM</span> <b class="pgm">'+tsEsc((r.pgm||[]).join(',')||'—')+'</b> <span class="tsdim">PVW</span> <b class="pvw">'+tsEsc((r.pvw||[]).join(',')||'—')+'</b></td><td class="tsmono">'+(pings||'—')+'</td></tr>';
+  }).join('')+'</tbody></table>';
+}
+function tsRender(d){
+  var regs=d.regions||[], T={rooms:0,hosts:0,cams:0}, up=0;
+  regs.forEach(function(r){ if(r.ok){ up++; var t=r.totals||{}; T.rooms+=t.rooms||0; T.hosts+=t.hosts||0; T.cams+=t.cams||0; } });
+  var err=function(e){ return e==='old_version'?'현황 미지원 — 이 지역 서버가 아직 새 버전이 아닙니다':e==='timeout'?'응답 없음 — 절전 중일 수 있습니다(첫 접속 ~50초)':e==='unreachable'?'연결 실패':('오류 '+tsEsc(e||'')); };
+  var html='<div class="tstotals">서버 <b>'+tsEsc(d.ver||'')+'</b> · 지역 <b>'+up+'/'+regs.length+'</b> · 방 <b>'+T.rooms+'</b> · 호스트 <b>'+T.hosts+'</b> · 카메라 <b>'+T.cams+'</b></div>';
+  html+=regs.map(function(r){
+    var t=r.totals||{}, a=r.avg_rtt, cls=(a==null?'na':(a<200?'good':(a<500?'mid':'bad')));
+    var avg=r.ok?'<span class="tsavg">사용자 평균 핑 <b class="'+cls+'">'+(a==null?'—':tsEsc(a)+' ms')+'</b>'+(a==null?' (접속 중인 폰 없음)':' · 폰 '+(r.rtt_n||0)+'대'+(r.rtt_min!=null&&r.rtt_n>1?' · 최소 '+tsEsc(r.rtt_min)+' · 최대 '+tsEsc(r.rtt_max)+' ms':''))+'</span>':'';
+    return '<section class="tsregion"><div class="tsrh"><span class="tsdot '+(r.ok?'on':'off')+'"></span><b>'+tsEsc(r.city||r.name)+'</b> <span class="tscode">'+tsEsc(r.L||'?')+' · '+tsEsc(r.name||'')+'</span>'+(r.ok?'<span class="tsstat">방 <b>'+(t.rooms||0)+'</b> · 호스트 <b>'+(t.hosts||0)+'</b> · 카메라 <b>'+(t.cams||0)+'</b>'+(r.ver?' · '+tsEsc(r.ver):'')+'</span>':'<span class="tsstat">오프라인</span>')+avg+'</div>'+(r.ok?tsRooms(r.rooms):'<div class="tsmsg">'+err(r.error)+'</div>')+'</section>';
+  }).join('');
+  document.getElementById('tsBox').innerHTML=html;
+}
+async function statusLoad(manual){
+  var page=document.getElementById('p-status'), live=document.getElementById('tsLive');
+  if(!page||!page.classList.contains('on')){ clearTimeout(TS.timer); TS.timer=null; return; }   // 탭을 떠나면 갱신 멈춤
+  clearTimeout(TS.timer);
+  if(TS.busy&&!manual){ TS.timer=setTimeout(statusLoad,5000); return; }
+  TS.busy=true;
+  try{
+    var r=await sb.functions.invoke('tally-status',{body:{}});
+    var d=r.data;
+    if((!d||d.ok===false)&&r.error&&r.error.context&&typeof r.error.context.json==='function'){ try{ d=await r.error.context.json(); }catch(_e){} }
+    if(d&&d.ok&&d.regions){ tsRender(d); live.textContent='● 갱신 '+new Date().toTimeString().slice(0,8); live.style.color='#3DD68C'; }
+    else {
+      var e=(d&&d.error)||'unknown';
+      var msg={passkey:'패스키로 로그인한 세션에서만 볼 수 있습니다. 로그아웃 후 패스키로 다시 로그인하세요.',admin:'관리자만 볼 수 있습니다.',login:'로그인이 필요합니다.',not_configured:'서버에 접근 키(TALLY_STATUS_KEY)가 설정되지 않았습니다.',key:'탈리 서버가 접근 키를 거부했습니다 — 서버 STATUS_KEY 와 Supabase 시크릿이 다릅니다.',disabled:'탈리 서버의 현황 기능이 꺼져 있습니다(STATUS_KEY 미설정).',timeout:'탈리 서버 응답이 없습니다 — 절전 중이면 잠시 후 자동으로 다시 시도합니다.'}[e]||('조회 실패 ('+tsEsc(e)+')');
+      if(!document.querySelector('#tsBox .tsregion')) document.getElementById('tsBox').innerHTML='<div class="tsmsg">'+tsEsc(msg)+'</div>';
+      live.textContent='● '+msg.split(' — ')[0].split('.')[0]; live.style.color='#FF9EA3';
+      if(e==='passkey'||e==='admin'||e==='login'){ TS.busy=false; return; }
+    }
+  }catch(_e){ live.textContent='● 연결 끊김'; live.style.color='#FF9EA3'; }
+  TS.busy=false;
+  TS.timer=setTimeout(statusLoad,5000);
+}
 document.querySelectorAll('.side a[data-p]').forEach(a=>{
   a.addEventListener('click',()=>{
     var p=a.dataset.p;
