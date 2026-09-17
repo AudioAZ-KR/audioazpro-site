@@ -162,6 +162,17 @@ footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center}footer .rig
   </div>
 </div>
 
+<div class="wrap" id="bAppGet" hidden style="margin-top:22px">
+  <div class="bcard">
+    <h2>테스트할 앱 받기</h2>
+    <div class="sub">안내 메일의 프로모션 코드로 가입·등록을 마치면 아래에서 앱을 받아 테스트하실 수 있습니다.</div>
+    <div style="display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-top:16px">
+      <a href="https://apps.apple.com/kr/app/flare-tally/id6808137674" target="_blank" rel="noopener" aria-label="App Store에서 Flare Tally 다운로드" style="display:inline-block"><img src="/assets/appstore-badge-ko.svg" alt="App Store에서 다운로드" width="170" height="52" style="display:block"></a>
+      <a href="/product-flare-tally.html#ios" style="color:var(--blue-soft);font-weight:700">호스트 앱(맥·윈도우) 다운로드 →</a>
+    </div>
+  </div>
+</div>
+
 <div class="wrap" id="bEmpty" hidden>
   <div class="done"><b id="bEmptyTitle">모집을 찾을 수 없습니다</b><span id="bEmptyText">주소가 잘못되었거나 종료된 모집입니다.</span><div style="margin-top:14px"><a href="/products.html" style="color:var(--blue-soft);font-weight:700">제품 보러 가기 →</a></div></div>
 </div>
@@ -209,6 +220,7 @@ function showEmpty(title,text){ document.getElementById('bMain').hidden=true; do
   document.title=CAMP.title+' — AudioAZ 베타 테스터 모집';
   document.getElementById('bTitle').textContent=CAMP.title;
   var ICON={TALLY:'/assets/flare-tally-icon.png'}; if(ICON[CAMP.product_id]){ var ic=document.getElementById('bIcon'); ic.src=ICON[CAMP.product_id]; ic.hidden=false; }
+  var APPSTORE={TALLY:'https://apps.apple.com/kr/app/flare-tally/id6808137674'}; if(APPSTORE[CAMP.product_id]){ document.getElementById('bAppGet').hidden=false; }
   document.getElementById('bDesc').innerHTML=fmtDesc(CAMP.description||'AudioAZ 제품 베타 테스트에 참여할 분을 모집합니다.');
   document.getElementById('bProd').textContent=PROD[CAMP.product_id]||CAMP.product_id||'—';
   document.getElementById('bType').textContent=TYPE[CAMP.license_type]||CAMP.license_type||'—';
