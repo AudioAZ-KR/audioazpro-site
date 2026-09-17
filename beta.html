@@ -185,7 +185,7 @@ footer .wrap{display:flex;gap:14px;flex-wrap:wrap;align-items:center}footer .rig
 <script>
 var sbB=window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co','sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_');
 var PROD={KV:'Klera Voice',KI:'Klera Instrument',TALLY:'Flare Tally',LMAZ:'Latency Meter AZ'};
-var TYPE={D7:'7일 체험',D14:'14일 체험',D30:'30일 체험',FREE:'무료 (영구)',FULL:'정식 (영구)'};
+var TYPE={D7:'7일 체험',D14:'14일 체험',D30:'30일 체험',FREE:'영구',FULL:'정식 (영구)'};
 var SLUG=(new URLSearchParams(location.search).get('c')||'').trim().toLowerCase();
 var CAMP=null;
 function fmtDesc(t){

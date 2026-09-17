@@ -18,7 +18,7 @@
     LMAZ:  { name: 'Latency Meter AZ',    tag: 'LMAZ', ver: 'v1.0.0',  file: 'LatencyMeterAZ',    desc: '왕복 레이턴시 측정', price: 0 }
   };
   var TYPELABEL = {
-    FULL: '정식 · 영구', D7: '체험 · 7일', D14: '체험 · 14일', D30: '체험 · 30일', FREE: '무료 · 영구'
+    FULL: '정식 · 영구', D7: '체험 · 7일', D14: '체험 · 14일', D30: '체험 · 30일', FREE: '영구'
   };
 
   function read(k, dflt) { try { return JSON.parse(localStorage.getItem(k)) || dflt; } catch (e) { return dflt; } }

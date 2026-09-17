@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-17T22:42+09:00",
+ "generated": "2026-09-17T23:20+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -98,21 +98,25 @@
   "tally": {
    "product": "flare-tally-host",
    "version": "1.0",
-   "build": 81,
-   "label": "v1.0 (81)",
-   "pkg": "Flare-Tally-1.0-b81.pkg",
+   "build": 83,
+   "label": "v1.0 (83)",
+   "pkg": "Flare-Tally-1.0-b83.pkg",
    "url": "https://audioazpro.com/downloads.html",
    "date": "2026-09-17",
-   "note": "보안 업데이트 — 온라인 서버 접속 키가 바뀌어 이전 버전은 온라인 연결이 되지 않습니다. 이 버전으로 업데이트해 주세요.",
-   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b81/Flare-Tally-1.0-b81.pkg",
-   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b81/Flare-Tally-win-1.0-b81.zip",
-   "win_label": "v1.0 (81) 베타"
+   "note": "무료 데모가 로그인 후 7일(계정·컴퓨터당 1회)로 바뀌었고, 로그인 세션이 끊겨도 정식 라이선스로 온라인 연결이 유지됩니다. 이 버전으로 업데이트해 주세요.",
+   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b83/Flare-Tally-1.0-b83.pkg",
+   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b83/Flare-Tally-win-1.0-b83.zip",
+   "win_label": "v1.0 (83) 베타"
   },
   "showfile": "v0.6.6",
   "lmaz": null
  },
  "console_version": "1.30.1",
  "commits_live": [
+  {
+   "date": "2026-09-17T22:42:18+09:00",
+   "msg": "결제: 주문 상품에 Flare Tally 아이콘 표시 (글자 태그 FT 대신)"
+  },
   {
    "date": "2026-09-17T22:40:16+09:00",
    "msg": "결제: 프로모션/할인 코드 칸을 결제 요약 바로 위로 · 구매자 이름/휴대폰 입력칸이 기본 브라우저 모양으로 보이던 문제"
@@ -140,10 +144,6 @@
   {
    "date": "2026-09-17T15:29:24+09:00",
    "msg": "downloads(staging): Klera Latency Meter v0.5.0 — 플러그인+단독 앱 pkg, 최소 macOS 13"
-  },
-  {
-   "date": "2026-09-17T15:17:22+09:00",
-   "msg": "Flare Tally 1.0 (81) 다운로드 링크 — 방 코드 암호학적 난수"
   }
  ],
  "commits_staging": []
