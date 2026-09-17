@@ -456,7 +456,7 @@ td{color:var(--text)}
         <div class="hq" id="hq">
           <div class="hq-h"><i class="hub-led" id="hqLed"></i><b>지금 이 순간</b><span class="hq-sub" id="hqSub">맥 로컬 피드 연결 중…</span><span class="sp"></span>
             <span class="hchip" id="hqCAg">참모 가동 <b>0</b></span><span class="hchip" id="hqCRun">도구 돌리는 채팅 <b>0</b></span>
-            <a class="tbtn" href="http://127.0.0.1:8787" target="_blank" rel="noopener">앱 창으로</a></div>
+            <a class="tbtn" href="http://127.0.0.1:8799" target="_blank" rel="noopener">앱 창으로</a></div>
           <div id="hqWf"></div>
           <div id="hqChief"></div>
           <div class="hq-off" id="hqOff">이 층은 <b>맥 앞에서 열었을 때만</b> 켜집니다(로컬 <span class="mono">hq-server.py</span> 1.5초 피드). 밖에서는 아래 30초 세션만 보입니다.</div>
@@ -2669,8 +2669,8 @@ setInterval(function(){ var pg=document.getElementById('p-usage'); if(pg&&pg.cla
 window.azUsagePreview=function(svcs,st){ US.svcs=svcs; US.st={}; US.at=null; st.forEach(function(x){US.st[x.id]=x; if(!US.at||x.checked_at>US.at)US.at=x.checked_at;}); usRender(); };
 
 
-/* ===== 지휘소 실시간 층 — 맥 로컬 hq-server(127.0.0.1:8787) 1.5초 피드. 밖에서는 자동으로 꺼짐 ===== */
-var HQ={url:'http://127.0.0.1:8787/api/state',timer:null,tick:null,S:null,drift:0,fails:0,prev:{}};
+/* ===== 지휘소 실시간 층 — 맥 로컬 hq-server(127.0.0.1:8799) 1.5초 피드. 밖에서는 자동으로 꺼짐 ===== */
+var HQ={url:'http://127.0.0.1:8799/api/state',timer:null,tick:null,S:null,drift:0,fails:0,prev:{}};
 function hqStart(){ hqStop(); hqPoll(); HQ.timer=setInterval(function(){ if(document.visibilityState==='visible') hqPoll(); },1500); HQ.tick=setInterval(hqTick,1000); }
 function hqStop(){ if(HQ.timer){clearInterval(HQ.timer);HQ.timer=null;} if(HQ.tick){clearInterval(HQ.tick);HQ.tick=null;} }
 function hqNow(){ return Date.now()/1000-HQ.drift; }
@@ -2742,7 +2742,7 @@ function hqRenderChief(C){
   el.innerHTML=h;
 }
 async function hqChiefDecide(id,action){
-  try{ await fetch('http://127.0.0.1:8787/api/chief/decide',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id,action:action})}); }catch(e){}
+  try{ await fetch('http://127.0.0.1:8799/api/chief/decide',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:id,action:action})}); }catch(e){}
   hqPoll();
 }
 async function hqChiefSend(id){
