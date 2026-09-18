@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-18T11:46+09:00",
+ "generated": "2026-09-18T11:47+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -114,6 +114,18 @@
  "console_version": "1.30.5",
  "commits_live": [
   {
+   "date": "2026-09-18T11:46:32+09:00",
+   "msg": "Flare Tally host 1.0 (86) release links"
+  },
+  {
+   "date": "2026-09-18T11:46:19+09:00",
+   "msg": "Undo in-progress files swept into the 1.0 (86) link commit"
+  },
+  {
+   "date": "2026-09-18T11:45:26+09:00",
+   "msg": "Flare Tally host 1.0 (86) release links"
+  },
+  {
    "date": "2026-09-18T11:16:12+09:00",
    "msg": "Flare Tally host 1.0 (85) release links"
   },
@@ -132,24 +144,7 @@
   {
    "date": "2026-09-18T07:35:34+09:00",
    "msg": "런치패드: audioazpro.com 타일은 같은 탭에서 열기 (아이폰에서 뒤로 가기가 새 탭을 닫아 런치패드로 나가던 문제)"
-  },
-  {
-   "date": "2026-09-18T07:30:41+09:00",
-   "msg": "콘솔 v1.30.3: 탭 전환을 방문 기록에 남겨 뒤로 가기가 콘솔 안에서 동작 (폰에서 런치패드로 나가 버리던 문제)"
-  },
-  {
-   "date": "2026-09-18T07:25:43+09:00",
-   "msg": "콘솔 버전 표기 v1.30.2"
-  },
-  {
-   "date": "2026-09-18T07:24:32+09:00",
-   "msg": "콘솔 v1.30.2: 대시보드 카드 클릭 → 해당 탭 이동 (매출→주문·결제, 라이선스·이번 달 발급→라이선스, 회원→고객)"
   }
  ],
- "commits_staging": [
-  {
-   "date": "2026-09-18T11:45:26+09:00",
-   "msg": "Flare Tally host 1.0 (86) release links"
-  }
- ]
+ "commits_staging": []
 }
