@@ -984,15 +984,23 @@
   //   합격/불합격 판정 26/26 일치. 사장님 260918 v.2 메인 19통: 모델 121.5% / ArrayCalc 121%.
   // 표준(standard) 리깅만 — 컴프레션 모드와 싱글 픽은 모델에 없다.
   var TENS={KSL:{h:0.3285,d:0.56,f:3.8333,a:4.56410,b:0.34486,c:-4.35403,nMin:6,nMax:24,tMin:-4,tMax:14},
-            GSL:{h:0.39,  d:0.50,f:4.0,   a:4.67828,b:0.13010,c:-0.43377,nMin:6,nMax:24,tMin:0, tMax:14}};
+            GSL:{h:0.39,  d:0.50,f:4.0,   a:4.67828,b:0.13010,c:-0.43377,nMin:6,nMax:24,tMin:0, tMax:14},
+            // 2026-09-18 ArrayCalc 12.8.2 자동측정 285건(시리즈당 학습 29~37 + 검증 6)으로 맞춤 — 100% 부근 오차 ≤1.5%p (V·Y·J·T·CCL 은 'Load % of load limit')
+            XSL:{h:0.285,d:0.47,f:3.8500,g:1.100,a:6.74746,b:0.28665,c:-3.88736,nMin:6,nMax:24,tMin:-2,tMax:14},
+            V:{h:0.311,d:0.68,f:3.8500,g:0.600,a:7.00805,b:-1.92457,c:5.91077,nMin:6,nMax:24,tMin:-2,tMax:14},
+            Y:{h:0.257,d:0.20,f:3.6500,g:0.400,a:11.69534,b:-3.27061,c:-1.28948,nMin:6,nMax:24,tMin:-2,tMax:14},
+            J:{h:0.362,d:0.49,f:4.0000,g:-0.000,a:5.79285,b:0.26058,c:0.06708,nMin:6,nMax:24,tMin:-2,tMax:14},
+            T:{h:0.2,d:0.28,f:5.0000,g:-0.000,a:15.55106,b:-4.98304,c:11.25548,nMin:6,nMax:16,tMin:-2,tMax:14},
+            CCL:{h:0.21,d:0.28,f:3.5000,g:0.000,a:6.23231,b:0.17289,c:-0.25464,nMin:6,nMax:24,tMin:-2,tMax:14}};
   function tensionPct(mdl,box,tilt,sp){
     var P=TENS[mdl]; if(!P||!sp||sp.length!==box) return null;
     var a=-tilt,x=0,mom=0;
     for(var i=0;i<box;i++){ if(i>0)a-=sp[i]; var r=a*Math.PI/180, fx=Math.sin(r), bx=-Math.cos(r);
       mom+=-(x+0.5*P.h*fx+0.5*P.d*bx); x+=P.h*fx; }
-    return {pct:Math.max(P.f*box, P.a*mom+P.b*box+P.c), inRange:(box>=P.nMin&&box<=P.nMax&&tilt>=P.tMin&&tilt<=P.tMax)};
+    return {pct:Math.max(P.f*box+(P.g||0), P.a*mom+P.b*box+P.c), inRange:(box>=P.nMin&&box<=P.nMax&&tilt>=P.tMin&&tilt<=P.tMax)};
   }
-  function safeNOf(id){var N={GSL:10,KSL:10};return N[id]!=null?N[id]:null;}
+  function safeNOf(id){var N={GSL:10,KSL:10,A:0};   // A(AL60/90): 통간 최대 40° 별도 체계 — 하중 모델 없음
+    return N[id]!=null?N[id]:null;}
   function spKgOf(id){var M={GSL:1000,KSL:1000,J:1025,XSL:640,V:500,Y:500,A:350,T:350,CCL:400};return M[id]||500;}   // 싱글픽 최대 하중(kg)
   // 서브 플라잉 컬럼 높이(m)·무게(kg) — 매뉴얼 근사(그래픽·통합하중용)
   var SUB_H_UI={'SL-SUB':0.52,'KSL-SUB':0.45,'XSL-SUB':0.56,'V-SUB':0.54,'Y-SUB':0.31,'J-SUB':0.72,'J-INFRA':0.72,'CCL-SUB':0.30,'T-SUB':0.27,'B22':0.63,'B8':0.30,'B6':0.30,'B4':0.22,'E12SUB':0.36,'E15SUB':0.44,'21S':0.63,'18S':0.54,'27S':0.72,'12S':0.36};
@@ -1262,9 +1270,9 @@
   }
   function tag(x,px,py,t,c){ chip(x,px,py,t,c,'l',11.5); }
   // 레티나 대응 — CSS 크기×dpr 백킹스토어로 렌더해 글씨 또렷. 논리좌표(W,H)는 CSS px 유지.
-  function hidpiCtx(cv,defW,defH){
+  function hidpiCtx(cv,defW,defH,forceH){
     var dpr=Math.min(window.devicePixelRatio||1,2.5);
-    var cssW=cv.clientWidth||defW, cssH=Math.round(cssW*defH/defW);
+    var cssW=cv.clientWidth||defW, cssH=forceH||Math.round(cssW*defH/defW);
     cv.style.height=cssH+'px';
     cv.width=Math.round(cssW*dpr); cv.height=Math.round(cssH*dpr);
     var ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
@@ -1381,12 +1389,11 @@
     x.fillStyle=good;x.fillText('■ 프론트필 '+(S.fOn?effDisp(S.fMdl,S.fRot)[0]+'° (무대폭)':'off'),padX+176,H-6);
   }
   function drawRig(){
-    var cv=$('cvRig'),_hd=hidpiCtx(cv,760,300),x=_hd.x,W=_hd.W,H=_hd.H,cs=getComputedStyle(root);
+    var cv=$('cvRig'),cs=getComputedStyle(root);
     var ink=cs.getPropertyValue('--ink').trim(),ink3=cs.getPropertyValue('--ink-3').trim(),line=cs.getPropertyValue('--line-2').trim(),
         acc=cs.getPropertyValue('--accent').trim(),warn=cs.getPropertyValue('--warn').trim(),
         good=cs.getPropertyValue('--good').trim(),crit=cs.getPropertyValue('--crit').trim(),c12v=cs.getPropertyValue('--v12').trim(),
         cfill=cs.getPropertyValue('--cfill').trim(),ofill=cs.getPropertyValue('--ofill').trim();
-    x.clearRect(0,0,W,H);
     var rigs=[],type=decideType();
     if(type==='line')rigs.push({lab:'메인',mdl:S.mMdl,box:S.mBox,man:S.mVar,tilt:S.mTilt,col:acc,rigPts:S.rigPts,splayMax:effSplay(S.splayAuto,S.splayMax),mount:S.mMount,hmin:-6,hmax:16,hstep:2,
       subStack:(S.subPos==='flown'&&S.flyMode==='stacked'&&S.sBox>0&&sameSeriesUI(S.mMdl,S.sMdl))?{mdl:S.sMdl,per:Math.ceil(S.sBox/2),box:S.sBox,kg:subKgui(S.sMdl)}:null});
@@ -1394,10 +1401,22 @@
     if(S.dOn&&S.dtype==='line')rigs.push({lab:'딜레이',mdl:S.dMdl,box:S.dBox,man:S.dVar,tilt:S.dAim,col:warn,rigPts:S.dRigPts,splayMax:effSplay(S.dSplayAuto,S.dSplayMax),mount:S.dMount,hmin:-4,hmax:24,hstep:2});
     if(S.oOn&&oTypeEff()==='line')rigs.push({lab:'아웃필',mdl:S.oMdl,box:S.oBox,man:S.oVar,tilt:S.oTilt,col:ofill,rigPts:S.oRigPts,splayMax:effSplay(S.oSplayAuto,S.oSplayMax),mount:S.oMount,hmin:-6,hmax:16,hstep:2});
     if(S.cOn&&cTypeEff()==='line')rigs.push({lab:'센터필',mdl:S.cMdl,box:S.cBox,man:S.cVar,tilt:S.cAim,col:cfill,rigPts:S.cRigPts,splayMax:effSplay(S.cSplayAuto,S.cSplayMax),mount:'flown',hmin:-4,hmax:24,hstep:2});
+    // 한 칸 최소 폭 290px — 좁은 화면(1024px 이하)에서는 칸을 위아래로 쌓아 글자·그림이 겹치지 않게
+    var cssW0=cv.clientWidth||760, cols=Math.max(1,Math.min(rigs.length||1,Math.floor(cssW0/290))), rows=Math.max(1,Math.ceil(rigs.length/cols));
+    var rowH=rows===1?Math.max(Math.round(cssW0*300/760),260):280;
+    var _hd=hidpiCtx(cv,760,300,rowH*rows),x=_hd.x,W=_hd.W;
+    x.clearRect(0,0,W,_hd.H);
     if(!rigs.length)return;
-    var cw=W/rigs.length;
-    rigs.forEach(function(r,ri){
-      var ox=ri*cw,cx=ox+cw*0.5,pivotY=56,motorY=26;
+    var cw=W/cols;
+    function fitText(t,px,py){   // 칸 폭을 넘으면 글자를 줄이고(최소 7.5px), 그래도 넘으면 말줄임
+      var maxW=cw-12,m=/([\d.]+)px/.exec(x.font),f=m?+m[1]:10,pre=m?x.font.slice(0,m.index):'';
+      while(x.measureText(t).width>maxW&&f>7.5){f-=0.5;x.font=pre+f+'px ui-monospace,monospace';}
+      if(x.measureText(t).width>maxW){while(t.length>4&&x.measureText(t+'…').width>maxW)t=t.slice(0,-1);t+='…';}
+      x.fillText(t,px,py); }
+    rigs.forEach(function(r,ri){ var row=Math.floor(ri/cols); x.save(); x.translate(0,row*rowH);
+      if(row>0&&ri%cols===0){x.strokeStyle=line;x.lineWidth=0.5;x.beginPath();x.moveTo(10,0);x.lineTo(W-10,0);x.stroke();}
+      (function(){ var H=rowH;
+      var ox=(ri%cols)*cw,cx=ox+cw*0.5,pivotY=56,motorY=26;
       var kg=boxKg(r.mdl),sp=splayArray(r.box,r.splayMax,msOf(r.mdl)),n=Math.min(r.box,24);
       var rvars=boxVariantsFor(r.man,r.mdl,r.box),rvp=variantPair(r.mdl),ang=r.tilt*Math.PI/180;
       // 현실 비율: 캐비닛 전면 높이 fh, 깊이 depth≈1.4×fh, 플라잉 프레임 폭 ≈ 캐비닛 깊이(작음)
@@ -1405,7 +1424,7 @@
       var availH=H-pivotY-66, fh=Math.min(20,availH/Math.max(nTot,1)), depth=fh*1.4;
       var barW=depth*1.3, barX=cx-barW*0.5, barH=Math.max(5,fh*0.5);
       x.font='8.5px ui-monospace,monospace';x.textAlign='center';
-      function divider(){if(ri>0){x.strokeStyle=line;x.lineWidth=0.5;x.beginPath();x.moveTo(ox,10);x.lineTo(ox,H-10);x.stroke();}}
+      function divider(){if(ri%cols>0){x.strokeStyle=line;x.lineWidth=0.5;x.beginPath();x.moveTo(ox,10);x.lineTo(ox,H-10);x.stroke();}}
       function arrow(arx,ary){x.strokeStyle=r.col;x.globalAlpha=.7;x.lineWidth=1.3;x.beginPath();x.moveTo(arx,ary);x.lineTo(arx+22,ary);x.stroke();
         x.beginPath();x.moveTo(arx+17,ary-4);x.lineTo(arx+23,ary);x.lineTo(arx+17,ary+4);x.stroke();x.globalAlpha=1;
         chip(x,arx+1,ary-6,'방사 →',r.col,'l',9.5);}
@@ -1433,11 +1452,11 @@
         chip(x,cx,poleTop-pntPH-9,r.mdl,r.col,'c',10.5);
         var totalTop=(r.subN*subHmR+pHmR+pntHmR), m20okR=hasM20(r.sub), pLoadR=(POLES[r.poleMdl]||{load:35}).load, spkKgR=boxKg(r.mdl);
         x.fillStyle=ink;x.font='600 11px ui-monospace,monospace';x.textAlign='center';
-        x.fillText(r.lab+' · '+r.mdl+' 폴 스택 + '+r.sub.replace('-SUB','')+' ×'+r.subN,cx,H-28);
+        fitText(r.lab+' · '+r.mdl+' 폴 스택 + '+r.sub.replace('-SUB','')+' ×'+r.subN,cx,H-28);
         x.fillStyle=ink3;x.font='600 10px ui-monospace,monospace';
-        x.fillText('상단 높이 '+totalTop.toFixed(2)+'m · '+(r.poleMdl.indexOf('km')===0?'K&M':'d&b')+' M20 폴',cx,H-15);
+        fitText('상단 높이 '+totalTop.toFixed(2)+'m · '+(r.poleMdl.indexOf('km')===0?'K&M':'d&b')+' M20 폴',cx,H-15);
         x.fillStyle=(m20okR?(spkKgR<=pLoadR?ink3:crit):crit);
-        x.fillText('폴 SWL '+pLoadR+'kg / '+r.mdl+' '+spkKgR+'kg '+(m20okR?(spkKgR<=pLoadR?'✅':'⚠ 하중초과'):'⚠ M20 없음'),cx,H-4);
+        fitText('폴 SWL '+pLoadR+'kg / '+r.mdl+' '+spkKgR+'kg '+(m20okR?(spkKgR<=pLoadR?'✅':'⚠ 하중초과'):'⚠ M20 없음'),cx,H-4);
         divider(); return;
       }
       if(r.mount==='stack'){
@@ -1470,9 +1489,9 @@
         x.fillStyle=tip?crit:good;x.beginPath();x.arc(fx-cogBack,gy+5,2.4,0,7);x.fill();
         arrow(fx+8,sfp[1]+(gy-sfp[1])*0.4);
         x.fillStyle=ink;x.font='600 10px ui-monospace,monospace';x.textAlign='center';
-        x.fillText(r.lab+' · '+r.mdl+' Ground stack ↑라운드',cx,H-15);
+        fitText(r.lab+' · '+r.mdl+' Ground stack ↑라운드',cx,H-15);
         x.fillStyle=(stS===crit?crit:stS===warn?warn:ink3);x.font='9.5px ui-monospace,monospace';
-        x.fillText(r.box+'/'+stk+'통'+(over?' 초과!':'')+' · 베이스 '+r.tilt+'°→상단 '+topLean.toFixed(0)+'° · '+(tip?'⚠ 무게중심 이탈=전도위험':'무게중심 OK')+' · '+loadS+'kg',cx,H-3);
+        fitText(r.box+'/'+stk+'통'+(over?' 초과!':'')+' · 베이스 '+r.tilt+'°→상단 '+topLean.toFixed(0)+'° · '+(tip?'⚠ 무게중심 이탈=전도위험':'무게중심 OK')+' · '+loadS+'kg',cx,H-3);
         divider(); return;
       }
       // ---- FLOWN ----
@@ -1531,19 +1550,20 @@
       arrow(cx+depth*0.7,pivotY+availH*0.5);
       x.fillStyle=ink;x.font='600 10px ui-monospace,monospace';x.textAlign='center';
       // DGUV 하중 게이지 바(🟢<75%·🟡<90%·🔴) — ArrayCalc Load 색상 직관 표시
-      (function(){var gw=Math.min(cw-30,130),gx=cx-gw/2,gy2=H-54,gh=6,rr=Math.max(0,Math.min((tpg?tpg.pct/100:ratio),1.15));
+      (function(){var gw=Math.min(cw-84,130),gx=cx-(gw+56)/2,gy2=H-54,gh=6,rr=Math.max(0,Math.min((tpg?tpg.pct/100:ratio),1.15));
         x.fillStyle=line;x.globalAlpha=.5;x.fillRect(gx,gy2,gw,gh);x.globalAlpha=1;
         var gcol=tpg?((tpg.pct>=100)?crit:(tpg.pct>=90||!tpg.inRange)?warn:good):((needACg||ratio>0.9)?crit:(ratio>0.75)?warn:good);   // KSL·GSL 은 막대 = 장력 %
         x.fillStyle=gcol;x.fillRect(gx,gy2,gw*Math.min(rr,1),gh);
         x.strokeStyle=ink3;x.globalAlpha=.5;x.lineWidth=0.5;x.strokeRect(gx,gy2,gw,gh);x.globalAlpha=1;
         x.strokeStyle=warn;x.globalAlpha=.7;x.lineWidth=0.8;x.beginPath();x.moveTo(gx+gw*0.75,gy2-1);x.lineTo(gx+gw*0.75,gy2+gh+1);x.stroke();x.globalAlpha=1;  // 75% 눈금
-        x.fillStyle=gcol;x.font='600 9.5px ui-monospace,monospace';x.textAlign='right';x.fillText(tpg?('장력'+Math.round(tpg.pct)+'%'):needACg?'AC필수':(Math.round(ratio*100)+'%'),gx+gw+18,gy2+gh);x.textAlign='center';})();
+        x.fillStyle=gcol;x.font='600 9.5px ui-monospace,monospace';x.textAlign='left';x.fillText(tpg?('장력'+Math.round(tpg.pct)+'%'):needACg?'AC필수':(Math.round(ratio*100)+'%'),gx+gw+6,gy2+gh);x.textAlign='center';})();
       x.fillStyle=ink;x.font='600 11px ui-monospace,monospace';x.textAlign='center';
-      x.fillText(r.lab+' · '+r.mdl+' Flying frame ×'+r.box+(r.subStack?' + '+r.subStack.mdl.replace('-SUB','')+'서브':''),cx,H-28);
+      fitText(r.lab+' · '+r.mdl+' Flying frame ×'+r.box+(r.subStack?' + '+r.subStack.mdl.replace('-SUB','')+'서브':''),cx,H-28);
       x.fillStyle=(st===crit?crit:st===warn?warn:ink3);x.font='600 10px ui-monospace,monospace';
-      x.fillText('근사 홀 '+hole+'/'+nHoles+' → 사이트각 '+effTr.toFixed(0)+'°'+(!two&&Math.abs(cogDr)>=0.5?' (무게중심'+(cogDr>0?'+':'')+cogDr.toFixed(0)+'°)':'')+' · '+(two?'듀얼픽:각도고정':'싱글픽:각도가변'),cx,H-15);
-      x.fillText((r.subStack?'어레이+서브 ':'')+(tpg?(load+'kg · 장력 '+Math.round(tpg.pct)+'%'+(tpg.pct>=100?' 초과':'')):needACg?(load+'kg · ArrayCalc 검증 필수 ('+safeNg+'통 초과)'):(load+' / '+maxL+'kg ('+Math.round(ratio*100)+'%)'))+(r.subStack?' · 서브 '+subW+'kg 포함':''),cx,H-4);
+      fitText('근사 홀 '+hole+'/'+nHoles+' → 사이트각 '+effTr.toFixed(0)+'°'+(!two&&Math.abs(cogDr)>=0.5?' (무게중심'+(cogDr>0?'+':'')+cogDr.toFixed(0)+'°)':'')+' · '+(two?'듀얼픽:각도고정':'싱글픽:각도가변'),cx,H-15);
+      fitText((r.subStack?'어레이+서브 ':'')+(tpg?(load+'kg · 장력 '+Math.round(tpg.pct)+'%'+(tpg.pct>=100?' 초과':'')):needACg?(load+'kg · ArrayCalc 검증 필수'+(safeNg===0?'':' ('+safeNg+'통 초과)')):(load+' / '+maxL+'kg ('+Math.round(ratio*100)+'%)'))+(r.subStack?' · 서브 '+subW+'kg 포함':''),cx,H-4);
       divider();
+      })(); x.restore();
     });
   }
 
@@ -1565,11 +1585,13 @@
     window.__showTab=showTab;
     syncTabs();
     window.addEventListener('resize',syncTabs);
+    var _rigRT; window.addEventListener('resize',function(){ clearTimeout(_rigRT); _rigRT=setTimeout(function(){ var rp=$('rigPanel'); if(rp&&rp.style.display!=='none')drawRig(); },150); });   // 폭이 바뀌면 칸 배치(가로/세로) 다시 계산
   }
   var _mobile=function(){return window.matchMedia('(max-width:900px)').matches;};
   function showTab(t){ _tab=t;
     $('viewtabs').querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.dataset.t===t);});
     syncTabs();
+    if(t==='rig'){ var rp=$('rigPanel'); if(rp&&rp.style.display!=='none')drawRig(); }   // 숨김 상태(폭 0)에서 그린 것을 실제 폭으로 다시
     var st=document.querySelector('.stage'); if(st)st.scrollTop=0;
   }
   function syncTabs(){
@@ -1792,13 +1814,13 @@
       var nH=Math.round((hmax-hmin)/hstep)+1,hole=clamp(Math.round((tlt-hmin)/hstep)+1,1,nH),c={good:'--good',warn:'--warn',crit:'--crit'}[st];
       var pick=(rigPts==='1')?'1점 모터 · 근사 홀 '+hole+'/'+nH:'2점 · 근사 홀 '+hole+'/'+nH;   // 2°/홀 개념 격자 — ArrayCalc 실제 홀 번호와 다르다
       return '<div style="min-width:250px"><div style="color:'+lc+';font-weight:600;margin-bottom:3px">'+lab+' · '+mdl+' Flying frame ×'+box+(overF?' <span style="color:var(--crit)">('+mfOf(mdl)+'통 초과)</span>':'')+'</div>'+
-        '<span style="color:var(--ink-3)">픽포인트</span> '+pick+' · <span style="color:var(--ink-3)">하중</span> <span style="color:var('+c+')">'+(tp?(load+'kg · 장력 '+Math.round(tp.pct)+'% '+(tp.pct>=100?'— ArrayCalc 불합격 예상(DGUV-17 초과)':tp.pct>=90?'— 한계 근접':'— 통과 예상')+(tp.inRange?'':' (시험 범위 밖 추정)')):needAC?(load+'kg · ArrayCalc 하중검증 필수 ('+safeN+'통 초과 — 링크 장력은 이 도구가 계산 못 함)'):(load+'/'+maxL+'kg ('+Math.round(ratio*100)+'%)'))+'</span> · <span style="color:var(--ink-3)">사이트각</span> '+tlt+'° '+(tiltBad?'초과':tiltWarn?'한계':'허용')+' <span style="color:var(--ink-3)">('+hstep+'°/홀, 스플레이≤'+cap+'°)</span></div>'; }
+        '<span style="color:var(--ink-3)">픽포인트</span> '+pick+' · <span style="color:var(--ink-3)">하중</span> <span style="color:var('+c+')">'+(tp?(load+'kg · 장력 '+Math.round(tp.pct)+'% '+(tp.pct>=100?'— ArrayCalc 불합격 예상(DGUV-17 초과)':tp.pct>=90?'— 한계 근접':'— 통과 예상')+(tp.inRange?'':' (시험 범위 밖 추정)')):needAC?(load+'kg · ArrayCalc 하중검증 필수 ('+(safeN===0?'A 시리즈는 이 도구가 하중을 계산하지 않음':safeN+'통 초과 — 링크 장력은 이 도구가 계산 못 함')+')'):(load+'/'+maxL+'kg ('+Math.round(ratio*100)+'%)'))+'</span> · <span style="color:var(--ink-3)">사이트각</span> '+tlt+'° '+(tiltBad?'초과':tiltWarn?'한계':'허용')+' <span style="color:var(--ink-3)">('+hstep+'°/홀, 스플레이≤'+cap+'°)</span></div>'; }
     if(rigMain||rigDelay){ rp.style.display='block'; var rows='';
       if(rigMain)rows+=rigRow('메인',S.mMdl,S.mBox,S.mTilt,'var(--accent)',S.mMount,S.rigPts,-6,16,2,splayArray(S.mBox,effSplay(S.splayAuto,S.splayMax),msOf(S.mMdl)));
       if(rigDelay)rows+=rigRow('딜레이',S.dMdl,S.dBox,S.dAim,'var(--warn)',S.dMount,S.dRigPts,-4,24,2,splayArray(S.dBox,effSplay(S.dSplayAuto,S.dSplayMax),msOf(S.dMdl)));
       $('rigBody').innerHTML=rows+'<div style="flex-basis:100%;font-size:11px;color:var(--ink-3)">※ 리깅 참고 정보(정적 중량·프레임 SWL 기준) — 공식 안전 판정이 아닙니다. ArrayCalc Rigging Plot에서 픽포인트·장력·Safety Factor를 반드시 검증하세요.</div>';
       // '안전'이라고 말하지 않는다 — 이 도구는 총중량만 보고 링크 장력은 못 본다.
-      var wt=anyAC?'ArrayCalc 하중검증 필수':anyOver?'장력 초과 예상 — ArrayCalc 불합격':anyTP?{good:'장력 통과 예상 · ArrayCalc 확인',warn:'장력 한계 근접 · ArrayCalc 확인',crit:'위험 · 초과'}[worst]:{good:'프레임 SWL 이내 · 장력 미계산',warn:'경고 · 한계 근접',crit:'위험 · 초과'}[worst],wc={good:'--good',warn:'--warn',crit:'--crit'}[worst];
+      var wt=anyOver?'장력 초과 예상 — ArrayCalc 불합격':anyAC?'ArrayCalc 하중검증 필수':anyTP?{good:'장력 통과 예상 · ArrayCalc 확인',warn:'장력 한계 근접 · ArrayCalc 확인',crit:'위험 · 초과'}[worst]:{good:'프레임 SWL 이내 · 장력 미계산',warn:'경고 · 한계 근접',crit:'위험 · 초과'}[worst],wc={good:'--good',warn:'--warn',crit:'--crit'}[worst];
       $('rigStatus').innerHTML='<span style="color:var('+wc+');font-weight:600">● '+wt+'</span>';
       drawRig();
     } else rp.style.display='none';
