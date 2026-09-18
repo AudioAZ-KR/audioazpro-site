@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-18T17:21+09:00",
+ "generated": "2026-09-18T19:18+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -114,6 +114,10 @@
  "console_version": "1.30.5",
  "commits_live": [
   {
+   "date": "2026-09-18T17:21:44+09:00",
+   "msg": "System Designer: 전수 검증 반영(싱글픽 장력·CCL 무게·통합 서브·스택 판정)"
+  },
+  {
    "date": "2026-09-18T15:44:21+09:00",
    "msg": "Flare Tally host 1.0 (88) release links"
   },
@@ -140,10 +144,6 @@
   {
    "date": "2026-09-18T11:46:32+09:00",
    "msg": "Flare Tally host 1.0 (86) release links"
-  },
-  {
-   "date": "2026-09-18T11:46:19+09:00",
-   "msg": "Undo in-progress files swept into the 1.0 (86) link commit"
   }
  ],
  "commits_staging": []
