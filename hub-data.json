@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-18T11:45+09:00",
+ "generated": "2026-09-18T11:46+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -146,5 +146,10 @@
    "msg": "콘솔 v1.30.2: 대시보드 카드 클릭 → 해당 탭 이동 (매출→주문·결제, 라이선스·이번 달 발급→라이선스, 회원→고객)"
   }
  ],
- "commits_staging": []
+ "commits_staging": [
+  {
+   "date": "2026-09-18T11:45:26+09:00",
+   "msg": "Flare Tally host 1.0 (86) release links"
+  }
+ ]
 }
