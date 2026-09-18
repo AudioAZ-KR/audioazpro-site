@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-18T11:47+09:00",
+ "generated": "2026-09-18T12:06+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -98,21 +98,25 @@
   "tally": {
    "product": "flare-tally-host",
    "version": "1.0",
-   "build": 86,
-   "label": "v1.0 (86)",
-   "pkg": "Flare-Tally-1.0-b86.pkg",
+   "build": 87,
+   "label": "v1.0 (87)",
+   "pkg": "Flare-Tally-1.0-b87.pkg",
    "url": "https://audioazpro.com/downloads.html",
    "date": "2026-09-18",
-   "note": "스위처 연결을 개선했습니다. 이 버전으로 업데이트해 주세요.",
-   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b86/Flare-Tally-1.0-b86.pkg",
-   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b86/Flare-Tally-win-1.0-b86.zip",
-   "win_label": "v1.0 (86) 베타"
+   "note": "앱이 비정상 종료돼도 같은 Wi-Fi에 호스트가 남아 보이지 않도록 고쳤습니다. 이 버전으로 업데이트해 주세요.",
+   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b87/Flare-Tally-1.0-b87.pkg",
+   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b87/Flare-Tally-win-1.0-b87.zip",
+   "win_label": "v1.0 (87) 베타"
   },
   "showfile": "v0.6.6",
   "lmaz": null
  },
  "console_version": "1.30.5",
  "commits_live": [
+  {
+   "date": "2026-09-18T11:47:44+09:00",
+   "msg": "시스템 디자이너: 리깅 무게·장력을 ArrayCalc 실측과 일치 (원본 audioaz-dnb 80f138a 반영)"
+  },
   {
    "date": "2026-09-18T11:46:32+09:00",
    "msg": "Flare Tally host 1.0 (86) release links"
@@ -140,10 +144,6 @@
   {
    "date": "2026-09-18T07:37:15+09:00",
    "msg": "콘솔 v1.30.4: 로그인 후 주소의 #탭으로 이동 (런치패드 '접속자 현황' 타일이 대시보드로 가던 문제) · 런치패드 타일은 콘솔 #status 로 통일"
-  },
-  {
-   "date": "2026-09-18T07:35:34+09:00",
-   "msg": "런치패드: audioazpro.com 타일은 같은 탭에서 열기 (아이폰에서 뒤로 가기가 새 탭을 닫아 런치패드로 나가던 문제)"
   }
  ],
  "commits_staging": []
