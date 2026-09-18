@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-18T11:16+09:00",
+ "generated": "2026-09-18T11:46+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -98,21 +98,25 @@
   "tally": {
    "product": "flare-tally-host",
    "version": "1.0",
-   "build": 85,
-   "label": "v1.0 (85)",
-   "pkg": "Flare-Tally-1.0-b85.pkg",
+   "build": 86,
+   "label": "v1.0 (86)",
+   "pkg": "Flare-Tally-1.0-b86.pkg",
    "url": "https://audioazpro.com/downloads.html",
    "date": "2026-09-18",
    "note": "스위처 연결을 개선했습니다. 이 버전으로 업데이트해 주세요.",
-   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b85/Flare-Tally-1.0-b85.pkg",
-   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b85/Flare-Tally-win-1.0-b85.zip",
-   "win_label": "v1.0 (85) 베타"
+   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b86/Flare-Tally-1.0-b86.pkg",
+   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b86/Flare-Tally-win-1.0-b86.zip",
+   "win_label": "v1.0 (86) 베타"
   },
   "showfile": "v0.6.6",
   "lmaz": null
  },
  "console_version": "1.30.5",
  "commits_live": [
+  {
+   "date": "2026-09-18T11:16:12+09:00",
+   "msg": "Flare Tally host 1.0 (85) release links"
+  },
   {
    "date": "2026-09-18T08:13:25+09:00",
    "msg": "Flare Tally host 1.0 (84) release links"
@@ -140,11 +144,12 @@
   {
    "date": "2026-09-18T07:24:32+09:00",
    "msg": "콘솔 v1.30.2: 대시보드 카드 클릭 → 해당 탭 이동 (매출→주문·결제, 라이선스·이번 달 발급→라이선스, 회원→고객)"
-  },
-  {
-   "date": "2026-09-18T06:43:12+09:00",
-   "msg": "카드 심사 중 하단 대표번호 원복 (070-4837-1073 → 010-3547-0502) — KG이니시스 안내: 심사 중 번호 변경 시 반송 위험, 심사 완료 후 변경"
   }
  ],
- "commits_staging": []
+ "commits_staging": [
+  {
+   "date": "2026-09-18T11:45:26+09:00",
+   "msg": "Flare Tally host 1.0 (86) release links"
+  }
+ ]
 }
