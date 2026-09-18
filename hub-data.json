@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-18T15:31+09:00",
+ "generated": "2026-09-18T15:44+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -114,6 +114,10 @@
  "console_version": "1.30.5",
  "commits_live": [
   {
+   "date": "2026-09-18T15:31:09+09:00",
+   "msg": "홈: 구글·네이버 사이트 소유확인 메타태그 추가 (Search Console·서치어드바이저)"
+  },
+  {
    "date": "2026-09-18T13:23:00+09:00",
    "msg": "System Designer: A 시리즈 최대 4통·40°·무게·부하 모델(ArrayCalc 실측)"
   },
@@ -140,10 +144,6 @@
   {
    "date": "2026-09-18T11:45:26+09:00",
    "msg": "Flare Tally host 1.0 (86) release links"
-  },
-  {
-   "date": "2026-09-18T11:16:12+09:00",
-   "msg": "Flare Tally host 1.0 (85) release links"
   }
  ],
  "commits_staging": []
