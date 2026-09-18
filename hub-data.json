@@ -98,15 +98,15 @@
   "tally": {
    "product": "flare-tally-host",
    "version": "1.0",
-   "build": 86,
-   "label": "v1.0 (86)",
-   "pkg": "Flare-Tally-1.0-b86.pkg",
+   "build": 87,
+   "label": "v1.0 (87)",
+   "pkg": "Flare-Tally-1.0-b87.pkg",
    "url": "https://audioazpro.com/downloads.html",
    "date": "2026-09-18",
-   "note": "스위처 연결을 개선했습니다. 이 버전으로 업데이트해 주세요.",
-   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b86/Flare-Tally-1.0-b86.pkg",
-   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b86/Flare-Tally-win-1.0-b86.zip",
-   "win_label": "v1.0 (86) 베타"
+   "note": "앱이 비정상 종료돼도 같은 Wi-Fi에 호스트가 남아 보이지 않도록 고쳤습니다. 이 버전으로 업데이트해 주세요.",
+   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b87/Flare-Tally-1.0-b87.pkg",
+   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b87/Flare-Tally-win-1.0-b87.zip",
+   "win_label": "v1.0 (87) 베타"
   },
   "showfile": "v0.6.6",
   "lmaz": null
