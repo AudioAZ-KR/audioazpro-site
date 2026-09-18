@@ -784,7 +784,7 @@
     {id:'V',n:'V8 / V12',amp:'D80',amps:['D80','D40','D90','40D'],bpc:2,tier:1.0,min:4,stk:8,ms:14,mf:24,sp:14,kg:34},
     {id:'Y',n:'Y8 / Y12',amp:'D80',amps:['D80','D40','30D'],bpc:2,tier:0.85,min:4,stk:8,ms:14,mf:24,sp:16,kg:24},
     {id:'J',n:'J8 / J12',amp:'D80',amps:['D80','D90'],bpc:1,tier:1.2,min:4,stk:6,ms:7,mf:24,sp:16,kg:70},
-    {id:'A',n:'AL60 / AL90 (A-Series)',amp:'D40',amps:['D40','D20','D80','30D'],bpc:2,tier:0.9,min:2,stk:8,ms:14,mf:16,sp:14,kg:15},
+    {id:'A',n:'AL60 / AL90 (A-Series)',amp:'D40',amps:['D40','D20','D80','30D'],bpc:2,tier:0.9,min:2,stk:8,ms:40,mf:4,sp:4,kg:23},   // A: ArrayCalc 실측(260918) 통간 최대 40°, 프레임당 4통(90%)·5통 113% 불합격
     {id:'T',n:'T10 (T-Series)',amp:'D80',amps:['D80','D20','10D'],bpc:2,tier:0.75,min:4,stk:8,ms:14,mf:16,sp:14,kg:23},
     {id:'CCL',n:'CCL8 / CCL12 (CL-Series)',amp:'D40',amps:['D40'],bpc:2,tier:0.7,min:4,stk:8,ms:14,mf:24,sp:16,kg:15}
   ];
@@ -970,8 +970,8 @@
   // 플라잉 하중용 무게. 생성기(web_gen.js CAB_W·FRAME_W)와 같은 값 — KSL 19통 1140kg 으로 ArrayCalc(1142kg)와 일치.
   // 예전엔 boxKg(KSL 63kg)+42kg 을 써서 ArrayCalc 보다 99kg 무거운, 다른 숫자를 보여줬다(260918 v.2 실측).
   // ArrayCalc V12 예제 374 어레이로 역산해 확정한 값. 생성기(web_gen.js)와 반드시 같은 표를 쓴다.
-  function flyCabKg(id){var W={GSL:79.938,KSL:57.416,XSL:39.538,Y:20.347,V:33.853,J:60.233,A:21.225,T:11.17,CCL:16.435};return W[id]!=null?W[id]:boxKg(id);}   // 생성기 CAB_W 와 같은 값
-  function flyFrameKg(id){var W={GSL:72.0,KSL:51.221,XSL:28.067,Y:18.62,V:25.4,J:66.0,A:20.0,T:11.25,CCL:24.0};return W[id]!=null?W[id]:42;}   // 생성기 FRAME_W 와 같은 값
+  function flyCabKg(id){var W={GSL:79.938,KSL:57.416,XSL:39.538,Y:20.347,V:33.853,J:60.233,A:22.6,T:11.17,CCL:16.435};return W[id]!=null?W[id]:boxKg(id);}   // 생성기 CAB_W 와 같은 값
+  function flyFrameKg(id){var W={GSL:72.0,KSL:51.221,XSL:28.067,Y:18.62,V:25.4,J:66.0,A:8.1,T:11.25,CCL:24.0};return W[id]!=null?W[id]:42;}   // 생성기 FRAME_W 와 같은 값
   // 제조사가 '어떤 스플레이로도 무조건 안전'하다고 명시한 최대 통수(d&b 리깅 매뉴얼: GSL·KSL 10통).
   // 넘으면 안전을 좌우하는 건 총중량이 아니라 캐비닛 링크 장력(DGUV-17)이고, 이 도구는 그걸 계산하지 못한다.
   // 260918 v.2: KSL 19통을 여기선 '1239/1500kg 83%' 로 보여줬는데 ArrayCalc 는 장력 121% 초과(Load not OK).
@@ -991,7 +991,9 @@
             Y:{h:0.257,d:0.20,f:3.6500,g:0.400,a:11.69534,b:-3.27061,c:-1.28948,nMin:6,nMax:24,tMin:-2,tMax:14},
             J:{h:0.362,d:0.49,f:4.0000,g:-0.000,a:5.79285,b:0.26058,c:0.06708,nMin:6,nMax:24,tMin:-2,tMax:14},
             T:{h:0.2,d:0.28,f:5.0000,g:-0.000,a:15.55106,b:-4.98304,c:11.25548,nMin:6,nMax:16,tMin:-2,tMax:14},
-            CCL:{h:0.21,d:0.28,f:3.5000,g:0.000,a:6.23231,b:0.17289,c:-0.25464,nMin:6,nMax:24,tMin:-2,tMax:14}};
+            CCL:{h:0.21,d:0.28,f:3.5000,g:0.000,a:6.23231,b:0.17289,c:-0.25464,nMin:6,nMax:24,tMin:-2,tMax:14},
+            // A(AL60/90): 2~5통은 각도·스플레이와 무관하게 통수만으로 결정 — 2통 45 · 3통 68 · 4통 90 · 5통 113% (ArrayCalc 58건 실측, 사이트각 −6~16°)
+            A:{h:0.33,d:0.30,f:22.6,g:0,a:0,b:0,c:-1000,nMin:2,nMax:5,tMin:-6,tMax:16}};
   function tensionPct(mdl,box,tilt,sp){
     var P=TENS[mdl]; if(!P||!sp||sp.length!==box) return null;
     var a=-tilt,x=0,mom=0;
@@ -999,8 +1001,7 @@
       mom+=-(x+0.5*P.h*fx+0.5*P.d*bx); x+=P.h*fx; }
     return {pct:Math.max(P.f*box+(P.g||0), P.a*mom+P.b*box+P.c), inRange:(box>=P.nMin&&box<=P.nMax&&tilt>=P.tMin&&tilt<=P.tMax)};
   }
-  function safeNOf(id){var N={GSL:10,KSL:10,A:0};   // A(AL60/90): 통간 최대 40° 별도 체계 — 하중 모델 없음
-    return N[id]!=null?N[id]:null;}
+  function safeNOf(id){var N={GSL:10,KSL:10};return N[id]!=null?N[id]:null;}
   function spKgOf(id){var M={GSL:1000,KSL:1000,J:1025,XSL:640,V:500,Y:500,A:350,T:350,CCL:400};return M[id]||500;}   // 싱글픽 최대 하중(kg)
   // 서브 플라잉 컬럼 높이(m)·무게(kg) — 매뉴얼 근사(그래픽·통합하중용)
   var SUB_H_UI={'SL-SUB':0.52,'KSL-SUB':0.45,'XSL-SUB':0.56,'V-SUB':0.54,'Y-SUB':0.31,'J-SUB':0.72,'J-INFRA':0.72,'CCL-SUB':0.30,'T-SUB':0.27,'B22':0.63,'B8':0.30,'B6':0.30,'B4':0.22,'E12SUB':0.36,'E15SUB':0.44,'21S':0.63,'18S':0.54,'27S':0.72,'12S':0.36};
@@ -1561,7 +1562,7 @@
       fitText(r.lab+' · '+r.mdl+' Flying frame ×'+r.box+(r.subStack?' + '+r.subStack.mdl.replace('-SUB','')+'서브':''),cx,H-28);
       x.fillStyle=(st===crit?crit:st===warn?warn:ink3);x.font='600 10px ui-monospace,monospace';
       fitText('근사 홀 '+hole+'/'+nHoles+' → 사이트각 '+effTr.toFixed(0)+'°'+(!two&&Math.abs(cogDr)>=0.5?' (무게중심'+(cogDr>0?'+':'')+cogDr.toFixed(0)+'°)':'')+' · '+(two?'듀얼픽:각도고정':'싱글픽:각도가변'),cx,H-15);
-      fitText((r.subStack?'어레이+서브 ':'')+(tpg?(load+'kg · 장력 '+Math.round(tpg.pct)+'%'+(tpg.pct>=100?' 초과':'')):needACg?(load+'kg · ArrayCalc 검증 필수'+(safeNg===0?'':' ('+safeNg+'통 초과)')):(load+' / '+maxL+'kg ('+Math.round(ratio*100)+'%)'))+(r.subStack?' · 서브 '+subW+'kg 포함':''),cx,H-4);
+      fitText((r.subStack?'어레이+서브 ':'')+(tpg?(load+'kg · 장력 '+Math.round(tpg.pct)+'%'+(tpg.pct>=100?' 초과':'')):needACg?(load+'kg · ArrayCalc 검증 필수 ('+safeNg+'통 초과)'):(load+' / '+maxL+'kg ('+Math.round(ratio*100)+'%)'))+(r.subStack?' · 서브 '+subW+'kg 포함':''),cx,H-4);
       divider();
       })(); x.restore();
     });
@@ -1814,7 +1815,7 @@
       var nH=Math.round((hmax-hmin)/hstep)+1,hole=clamp(Math.round((tlt-hmin)/hstep)+1,1,nH),c={good:'--good',warn:'--warn',crit:'--crit'}[st];
       var pick=(rigPts==='1')?'1점 모터 · 근사 홀 '+hole+'/'+nH:'2점 · 근사 홀 '+hole+'/'+nH;   // 2°/홀 개념 격자 — ArrayCalc 실제 홀 번호와 다르다
       return '<div style="min-width:250px"><div style="color:'+lc+';font-weight:600;margin-bottom:3px">'+lab+' · '+mdl+' Flying frame ×'+box+(overF?' <span style="color:var(--crit)">('+mfOf(mdl)+'통 초과)</span>':'')+'</div>'+
-        '<span style="color:var(--ink-3)">픽포인트</span> '+pick+' · <span style="color:var(--ink-3)">하중</span> <span style="color:var('+c+')">'+(tp?(load+'kg · 장력 '+Math.round(tp.pct)+'% '+(tp.pct>=100?'— ArrayCalc 불합격 예상(DGUV-17 초과)':tp.pct>=90?'— 한계 근접':'— 통과 예상')+(tp.inRange?'':' (시험 범위 밖 추정)')):needAC?(load+'kg · ArrayCalc 하중검증 필수 ('+(safeN===0?'A 시리즈는 이 도구가 하중을 계산하지 않음':safeN+'통 초과 — 링크 장력은 이 도구가 계산 못 함')+')'):(load+'/'+maxL+'kg ('+Math.round(ratio*100)+'%)'))+'</span> · <span style="color:var(--ink-3)">사이트각</span> '+tlt+'° '+(tiltBad?'초과':tiltWarn?'한계':'허용')+' <span style="color:var(--ink-3)">('+hstep+'°/홀, 스플레이≤'+cap+'°)</span></div>'; }
+        '<span style="color:var(--ink-3)">픽포인트</span> '+pick+' · <span style="color:var(--ink-3)">하중</span> <span style="color:var('+c+')">'+(tp?(load+'kg · 장력 '+Math.round(tp.pct)+'% '+(tp.pct>=100?'— ArrayCalc 불합격 예상(DGUV-17 초과)':tp.pct>=90?'— 한계 근접':'— 통과 예상')+(tp.inRange?'':' (시험 범위 밖 추정)')):needAC?(load+'kg · ArrayCalc 하중검증 필수 ('+safeN+'통 초과 — 링크 장력은 이 도구가 계산 못 함)'):(load+'/'+maxL+'kg ('+Math.round(ratio*100)+'%)'))+'</span> · <span style="color:var(--ink-3)">사이트각</span> '+tlt+'° '+(tiltBad?'초과':tiltWarn?'한계':'허용')+' <span style="color:var(--ink-3)">('+hstep+'°/홀, 스플레이≤'+cap+'°)</span></div>'; }
     if(rigMain||rigDelay){ rp.style.display='block'; var rows='';
       if(rigMain)rows+=rigRow('메인',S.mMdl,S.mBox,S.mTilt,'var(--accent)',S.mMount,S.rigPts,-6,16,2,splayArray(S.mBox,effSplay(S.splayAuto,S.splayMax),msOf(S.mMdl)));
       if(rigDelay)rows+=rigRow('딜레이',S.dMdl,S.dBox,S.dAim,'var(--warn)',S.dMount,S.dRigPts,-4,24,2,splayArray(S.dBox,effSplay(S.dSplayAuto,S.dSplayMax),msOf(S.dMdl)));
@@ -4116,7 +4117,7 @@ var COG_BASE={GSL:0.42,KSL:0.29,XSL:0.20,Y:0.15,V:0.217,J:0.307,A:0.21,T:0.143,C
 // 사장님 260918 v.2(KSL 19통)를 ArrayCalc 는 1142kg 으로 계산 → 19×57.416+51.221=1142.1 로 일치.
 // GSL 프레임은 예제가 전부 컴프레션 프레임을 함께 달고 있어 플라잉 프레임만 따로 분리할 수 없었다(미확정, 72 유지).
 // 컴프레션 프레임을 달면 KSL +39.5kg · XSL +34.0kg 이 더 붙는다(이 생성기는 standard 만 쓴다).
-var CAB_W={GSL:79.938,KSL:57.416,XSL:39.538,Y:20.347,V:33.853,J:60.233,A:21.225,T:11.17,CCL:16.435}, FRAME_W={GSL:72.0,KSL:51.221,XSL:28.067,Y:18.62,V:25.4,J:66.0,A:20.0,T:11.25,CCL:24.0};  // TotalWeight=통수×통무게+프레임(ArrayCalc 로드시 재계산)
+var CAB_W={GSL:79.938,KSL:57.416,XSL:39.538,Y:20.347,V:33.853,J:60.233,A:22.6,T:11.17,CCL:16.435}, FRAME_W={GSL:72.0,KSL:51.221,XSL:28.067,Y:18.62,V:25.4,J:66.0,A:8.1,T:11.25,CCL:24.0};  // TotalWeight=통수×통무게+프레임(ArrayCalc 로드시 재계산)
 var SUB_H={'SL-SUB':0.52,'KSL-SUB':0.45,'V-SUB':0.54,'Y-SUB':0.31,'J-SUB':0.72,'J-INFRA':0.72,'CCL-SUB':0.30,'T-SUB':0.27,'XSL-SUB':0.56,'B22-SUB':0.63,'B8-SUB':0.30,'B6-SUB':0.30,'B4-SUB':0.22,'E12-SUB':0.36,'E15-SUB':0.44,'21S-SUB':0.63,'18S-SUB':0.54,'27S-SUB':0.72,'12S-SUB':0.36};
 var SUB_KG={'SL-SUB':61,'KSL-SUB':39,'V-SUB':41,'Y-SUB':24,'J-SUB':63,'J-INFRA':66,'CCL-SUB':22,'T-SUB':23,'XSL-SUB':40,'B22-SUB':98,'B8-SUB':24,'B6-SUB':16,'B4-SUB':13,'E12-SUB':24,'E15-SUB':32,'21S-SUB':71,'18S-SUB':44,'27S-SUB':83,'12S-SUB':21};
 function subH(name){return SUB_H[name]!==undefined?SUB_H[name]:0.5;}
@@ -4131,6 +4132,7 @@ function clampLine(mdl,boxcount,splays,mount){
   var bc=Math.trunc(+boxcount);
   var n=Math.max(1,Math.min(bc,lim));
   if(bc>lim)warn('⚠ '+mdl+' '+(mount==='stack'?'그라운드스택':'플라잉')+' '+boxcount+'통 → 구성 한계(매뉴얼 최대 통수) '+lim+'통으로 제한');
+  if(mdl==='A'&&mount!=='stack'&&n>4)warn('⚠ A 시리즈 '+n+'통: ArrayCalc 실측 5통부터 하중 초과(4통 90% · 5통 113%) — 프레임당 4통 이하로 나누세요');
   var fl=FRAME_LIMITS[mdl];
   if(fl&&mount!=='stack'&&n>fl.ten)
     warn('ℹ '+mdl+' '+n+'통: 컴프레션 모드 최대 '+fl.comp+'통 기준 — 텐션 모드는 최대 '+fl.ten+'통, 마운팅 프레임은 '+fl.mount+'통 (ArrayCalc Rigging Plot 확인)');
