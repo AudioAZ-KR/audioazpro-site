@@ -90,6 +90,11 @@ footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px}f
 .hostwin{margin:30px auto 0;max-width:960px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#0f1626;box-shadow:0 30px 60px -30px rgba(0,0,0,.8)}
 .hostwin img{display:block;width:100%;height:auto}
 .hostcap{margin:12px auto 0;max-width:960px;text-align:center;font-size:12.5px;color:var(--dim);line-height:1.6}
+.wshots{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:22px 0 30px}
+@media(max-width:900px){.wshots{grid-template-columns:1fr 1fr}}
+.wshots figure{margin:0;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:16px 14px 12px;text-align:center}
+.wshots img{display:block;width:100%;max-width:190px;height:auto;margin:0 auto;border-radius:34px}
+.wshots figcaption{margin-top:10px;font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.06em;color:var(--dim)}
 .shots{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:22px}
 @media(max-width:900px){.shots{grid-template-columns:1fr 1fr}}@media(max-width:520px){.shots{grid-template-columns:1fr}}
 .shot{border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden;display:flex;flex-direction:column}
@@ -198,6 +203,22 @@ footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px}f
   <div style="margin-top:28px;text-align:center"><a href="https://apps.apple.com/kr/app/flare-tally/id6808137674" target="_blank" rel="noopener" aria-label="App Store에서 Flare Tally 다운로드" style="display:inline-block"><img src="/assets/appstore-badge-en.svg" alt="Download on the App Store" width="162" height="54" style="display:block;margin:0 auto"></a></div>
 </div></section>
 
+<section class="sec" id="watch"><div class="wrap">
+  <div class="eyebrow">Apple Watch App</div><h2>뷰파인더를 보는 동안, 손목이 먼저 압니다</h2>
+  <div class="wshots">
+    <figure><img src="/assets/flare/watch-onair.png" alt="애플워치 탈리 화면 — 카메라 2 ON AIR 빨강" width="208" height="248" loading="lazy"><figcaption>ON AIR · 탈리 화면</figcaption></figure>
+    <figure><img src="/assets/flare/watch-preview.png" alt="애플워치 탈리 화면 — 카메라 2 PREVIEW 초록" width="208" height="248" loading="lazy"><figcaption>PREVIEW · 탈리 화면</figcaption></figure>
+    <figure><img src="/assets/flare/watch-wrist-onair.png" alt="손목을 내렸을 때의 애플워치 화면 — 시계와 카메라 2 ON AIR, 모드·서버·통신 상태" width="208" height="248" loading="lazy"><figcaption>손목을 내렸을 때 · ON AIR</figcaption></figure>
+    <figure><img src="/assets/flare/watch-wrist-preview.png" alt="손목을 내렸을 때의 애플워치 화면 — 시계와 카메라 2 PREVIEW, 모드·서버·통신 상태" width="208" height="248" loading="lazy"><figcaption>손목을 내렸을 때 · PREVIEW</figcaption></figure>
+  </div>
+  <div class="feat">
+    <div class="fcard"><div class="ic">01</div><h3>워치가 직접 받습니다</h3><p>아이폰에서 방 코드와 카메라 번호만 정하면, 워치가 같은 Wi-Fi의 호스트(오프라인 모드)나 인터넷(온라인 모드)으로 스스로 연결합니다. 아이폰이 잠겨 있어도 계속 받고, 둘 다 안 될 때만 아이폰을 거칩니다.</p></div>
+    <div class="fcard"><div class="ic">02</div><h3>손목에 오는 신호</h3><p>ON AIR는 묵직하게 한 번, PREVIEW는 짧게 다섯 번. 카메라를 잡고 있어도 지금 상태를 압니다.</p></div>
+    <div class="fcard"><div class="ic">03</div><h3>손목을 내려도 보입니다</h3><p>손목을 내리면 시계·카메라 번호·모드·서버·통신 상태를 흐린 화면으로 계속 보여 줍니다(최대 1시간, 끝나면 알림).</p></div>
+    <div class="fcard"><div class="ic">04</div><h3>자리 비움 · 나가기</h3><p>'탈리 수신' 스위치로 잠시 자리를 비우고, 워치에서 바로 방을 나갈 수 있습니다. 받는 경로와 지연시간이 항상 표시됩니다.</p></div>
+  </div>
+</div></section>
+
 <section class="sec"><div class="wrap">
   <div class="eyebrow">Host & Engine</div><h2>현장에서 만든 탈리</h2>
   <div class="feat">
@@ -214,15 +235,16 @@ footer{background:var(--navy-deep);color:#8FA5C2;padding:34px 0;font-size:13px}f
   <div class="eyebrow">Compatibility</div><h2>호환</h2>
   <div class="spec"><dl>
     <dt>호스트 앱</dt><dd>macOS 11 이상 · Apple Silicon(M1 이상) 전용 · Apple 서명·공증 pkg</dd>
-    <dt>iPhone 앱</dt><dd>iOS 17 이상 · 다이나믹 아일랜드 / 잠금화면 실시간 현황 · 진동·알림·테두리 모드 · QR 스캔 · 데모 방</dd>
-    <dt>iPad 앱</dt><dd>iPadOS 17 이상 · 잠금화면 실시간 현황(아이패드에는 다이나믹 아일랜드가 없음) · 화면 분할 · 창마다 다른 카메라 · Apple Watch는 준비 중</dd>
+    <dt>iPhone 앱</dt><dd>iOS 18 이상 · 다이나믹 아일랜드 / 잠금화면 실시간 현황 · 진동·알림·테두리 모드 · QR 스캔 · 데모 방</dd>
+    <dt>iPad 앱</dt><dd>iPadOS 18 이상 · 잠금화면 실시간 현황(아이패드에는 다이나믹 아일랜드가 없음) · 화면 분할 · 창마다 다른 카메라</dd>
+    <dt>Apple Watch</dt><dd>watchOS 11 이상 · iPhone 앱과 함께 설치 · Wi-Fi·인터넷으로 직접 수신(아이폰이 잠겨도) · 진동 · 손목 내림 화면</dd>
     <dt>웹 탈리</dt><dd>iOS · Android · Web</dd>
     <dt>스위처</dt><dd>Blackmagic ATEM 시리즈(Mini · SDI · Television Studio · Constellation) · Roland Smart Tally(V-60HD · V-80HD · V-160HD, LAN) · vMix(TCP API, 8099) · OBS Studio 28+(obs-websocket 5) · OSEE GoStream(Deck · Duet · Duet 8-ISO, LAN 19010) · TSL UMD 3.1/5.0을 내보내는 스위처(Ross · TriCaster · Panasonic · Grass Valley 등) — 기종·펌웨어에 따라 다를 수 있음</dd>
     <dt>연결</dt><dd>오프라인 Wi-Fi(내장 서버) · 온라인(인터넷·LTE) — 방 코드 하나로 앱이 자동 선택, 두 방식 동시 운용</dd>
     <dt>라이선스</dt><dd>로그인 후 7일 무료 데모(온·오프라인 무제한, 계정·컴퓨터당 1회) · 정식 라이선스는 계정 로그인으로 맥 1대 등록, 언제든 해제해 다른 맥으로</dd>
     <dt>언어</dt><dd>호스트 앱 · 웹 탈리: English · 한국어 · 日本語 · 中文 · Español · Français · Deutsch · Italiano (8개) / iPhone·iPad 앱: English · 한국어</dd>
   </dl></div>
-  <p style="margin-top:14px;font-size:12px;line-height:1.7;color:#6F84A3">ATEM 및 Blackmagic Design은 Blackmagic Design Pty. Ltd.의, Roland 및 Smart Tally는 Roland Corporation의, vMix는 StudioCoast Pty Ltd의, OBS 및 OBS Studio는 OBS Project의, OSEE 및 GoStream은 OSEE Technology Co., Ltd.의, TSL은 TSL Products Ltd.의 상표입니다. Flare Tally는 이들과 무관한 독립 제품이며 상표는 호환 기종을 설명하기 위해서만 사용하고, 연동은 각 사가 공개한 인터페이스(ATEM 프로토콜 · Smart Tally · vMix TCP API · obs-websocket · GoStream 네트워크 프로토콜 · TSL UMD)만 사용합니다. Apple, iPhone, iPad, macOS는 Apple Inc.의 상표입니다.</p>
+  <p style="margin-top:14px;font-size:12px;line-height:1.7;color:#6F84A3">ATEM 및 Blackmagic Design은 Blackmagic Design Pty. Ltd.의, Roland 및 Smart Tally는 Roland Corporation의, vMix는 StudioCoast Pty Ltd의, OBS 및 OBS Studio는 OBS Project의, OSEE 및 GoStream은 OSEE Technology Co., Ltd.의, TSL은 TSL Products Ltd.의 상표입니다. Flare Tally는 이들과 무관한 독립 제품이며 상표는 호환 기종을 설명하기 위해서만 사용하고, 연동은 각 사가 공개한 인터페이스(ATEM 프로토콜 · Smart Tally · vMix TCP API · obs-websocket · GoStream 네트워크 프로토콜 · TSL UMD)만 사용합니다. Apple, iPhone, iPad, Apple Watch, macOS는 Apple Inc.의 상표입니다.</p>
 </div></section>
 
 <section class="sec fcta"><div class="wrap">
