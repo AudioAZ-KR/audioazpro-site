@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-19T22:14+09:00",
+ "generated": "2026-09-20T03:26+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -114,6 +114,10 @@
  "console_version": "1.30.5",
  "commits_live": [
   {
+   "date": "2026-09-19T22:14:00+09:00",
+   "msg": "Flare Tally host 1.0 (97) release links"
+  },
+  {
    "date": "2026-09-19T00:32:11+09:00",
    "msg": "System Designer: 장력% 모델 재맞춤(8시리즈 1,432건 실측, 앞숙임·급각도·24통)"
   },
@@ -140,16 +144,12 @@
   {
    "date": "2026-09-18T13:04:20+09:00",
    "msg": "System Designer: XSL·V·Y·J·T·CCL 장력 모델, A 시리즈 ArrayCalc 필수, 좁은 화면 리깅 겹침 수정"
-  },
-  {
-   "date": "2026-09-18T12:06:51+09:00",
-   "msg": "Flare Tally host 1.0 (87) release links"
   }
  ],
  "commits_staging": [
   {
-   "date": "2026-09-19T22:14:00+09:00",
-   "msg": "Flare Tally host 1.0 (97) release links"
+   "date": "2026-09-20T03:25:51+09:00",
+   "msg": "Flare Tally: Apple Watch 앱(iOS 1.1.0) 소개 섹션·스크린샷, 호환 표 iOS/iPadOS 18+·watchOS 11+, 다운로드·지원 페이지 반영, 영문 번역"
   }
  ]
 }
