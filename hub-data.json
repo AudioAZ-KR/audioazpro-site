@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-19T00:32+09:00",
+ "generated": "2026-09-19T22:14+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -98,21 +98,25 @@
   "tally": {
    "product": "flare-tally-host",
    "version": "1.0",
-   "build": 88,
-   "label": "v1.0 (88)",
-   "pkg": "Flare-Tally-1.0-b88.pkg",
+   "build": 97,
+   "label": "v1.0 (97)",
+   "pkg": "Flare-Tally-1.0-b97.pkg",
    "url": "https://audioazpro.com/downloads.html",
-   "date": "2026-09-18",
-   "note": "스위처 없이 연습하는 스위치 이름을 '테스트 모드'로 바꾸고, 네트워크가 바뀌면 오프라인 안내 주소도 바로 바뀝니다.",
-   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b88/Flare-Tally-1.0-b88.pkg",
-   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b88/Flare-Tally-win-1.0-b88.zip",
-   "win_label": "v1.0 (88) 베타"
+   "date": "2026-09-19",
+   "note": "오프라인 모드 연결을 안정화하고, 테스트 모드에서 연결된 스위처를 실제로 전환(경고 후)할 수 있으며, USB로 연결한 스위처를 스캔 즉시 보여 줍니다.",
+   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b97/Flare-Tally-1.0-b97.pkg",
+   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b97/Flare-Tally-win-1.0-b97.zip",
+   "win_label": "v1.0 (97) 베타"
   },
   "showfile": "v0.6.6",
   "lmaz": null
  },
  "console_version": "1.30.5",
  "commits_live": [
+  {
+   "date": "2026-09-19T00:32:11+09:00",
+   "msg": "System Designer: 장력% 모델 재맞춤(8시리즈 1,432건 실측, 앞숙임·급각도·24통)"
+  },
   {
    "date": "2026-09-18T19:18:04+09:00",
    "msg": "System Designer: 스택 받침 프레임·A 스택 차단·플라잉 서브 위치"
@@ -140,11 +144,12 @@
   {
    "date": "2026-09-18T12:06:51+09:00",
    "msg": "Flare Tally host 1.0 (87) release links"
-  },
-  {
-   "date": "2026-09-18T11:47:44+09:00",
-   "msg": "시스템 디자이너: 리깅 무게·장력을 ArrayCalc 실측과 일치 (원본 audioaz-dnb 80f138a 반영)"
   }
  ],
- "commits_staging": []
+ "commits_staging": [
+  {
+   "date": "2026-09-19T22:14:00+09:00",
+   "msg": "Flare Tally host 1.0 (97) release links"
+  }
+ ]
 }
