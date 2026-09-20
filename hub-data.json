@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-20T03:26+09:00",
+ "generated": "2026-09-20T08:59+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -114,6 +114,10 @@
  "console_version": "1.30.5",
  "commits_live": [
   {
+   "date": "2026-09-20T03:25:51+09:00",
+   "msg": "Flare Tally: Apple Watch 앱(iOS 1.1.0) 소개 섹션·스크린샷, 호환 표 iOS/iPadOS 18+·watchOS 11+, 다운로드·지원 페이지 반영, 영문 번역"
+  },
+  {
    "date": "2026-09-19T22:14:00+09:00",
    "msg": "Flare Tally host 1.0 (97) release links"
   },
@@ -140,16 +144,16 @@
   {
    "date": "2026-09-18T13:23:00+09:00",
    "msg": "System Designer: A 시리즈 최대 4통·40°·무게·부하 모델(ArrayCalc 실측)"
-  },
-  {
-   "date": "2026-09-18T13:04:20+09:00",
-   "msg": "System Designer: XSL·V·Y·J·T·CCL 장력 모델, A 시리즈 ArrayCalc 필수, 좁은 화면 리깅 겹침 수정"
   }
  ],
  "commits_staging": [
   {
-   "date": "2026-09-20T03:25:51+09:00",
-   "msg": "Flare Tally: Apple Watch 앱(iOS 1.1.0) 소개 섹션·스크린샷, 호환 표 iOS/iPadOS 18+·watchOS 11+, 다운로드·지원 페이지 반영, 영문 번역"
+   "date": "2026-09-20T08:59:35+09:00",
+   "msg": "영문 번역 띄어쓰기: 굵은 글씨 앞뒤 조각에 공백 (Available Apps and install …)"
+  },
+  {
+   "date": "2026-09-20T08:58:14+09:00",
+   "msg": "지원 페이지: 애플워치 설정 방법 절 추가(설치·접속·화면 3장·화면 유지·자리 비움·나가기·경로), 문제 해결에 워치 2건, '준비 중' 문장 삭제, 영문 번역"
   }
  ]
 }
