@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-20T11:03+09:00",
+ "generated": "2026-09-20T12:19+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -102,21 +102,25 @@
   "tally": {
    "product": "flare-tally-host",
    "version": "1.0",
-   "build": 97,
-   "label": "v1.0 (97)",
-   "pkg": "Flare-Tally-1.0-b97.pkg",
+   "build": 106,
+   "label": "v1.0 (106)",
+   "pkg": "Flare-Tally-1.0-b106.pkg",
    "url": "https://audioazpro.com/downloads.html",
-   "date": "2026-09-19",
-   "note": "오프라인 모드 연결을 안정화하고, 테스트 모드에서 연결된 스위처를 실제로 전환(경고 후)할 수 있으며, USB로 연결한 스위처를 스캔 즉시 보여 줍니다.",
-   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b97/Flare-Tally-1.0-b97.pkg",
-   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b97/Flare-Tally-win-1.0-b97.zip",
-   "win_label": "v1.0 (97) 베타"
+   "date": "2026-09-20",
+   "note": "스위처 연결 설정을 브랜드별 창으로 정리했습니다. ATEM은 주소만, TSL은 포트만, Roland·AVMatrix는 아이디와 비밀번호, OBS는 포트와 비밀번호를 받습니다. 창의 ? 버튼을 누르면 브랜드별 연결 방법 문서로 갑니다.",
+   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b106/Flare-Tally-1.0-b106.pkg",
+   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b106/Flare-Tally-win-1.0-b106.zip",
+   "win_label": "v1.0 (106) 베타"
   },
   "showfile": "v0.6.6",
   "lmaz": null
  },
  "console_version": "1.30.5",
  "commits_live": [
+  {
+   "date": "2026-09-20T11:03:15+09:00",
+   "msg": "스위처 연결 방법 문서 신설 — 브랜드별(ATEM·OBS·vMix·Roland·AVMatrix·OSEE·TSL·USB) 단계와 영문 화면 그림. 호스트 앱 연결 설정 창의 ? 버튼이 여기로 온다"
+  },
   {
    "date": "2026-09-20T09:30:29+09:00",
    "msg": "지원(Flare) 페이지: '제품이 출시 준비 중' 안내 삭제 — 문의 안내만 남김"
@@ -144,10 +148,6 @@
   {
    "date": "2026-09-18T19:18:04+09:00",
    "msg": "System Designer: 스택 받침 프레임·A 스택 차단·플라잉 서브 위치"
-  },
-  {
-   "date": "2026-09-18T17:21:44+09:00",
-   "msg": "System Designer: 전수 검증 반영(싱글픽 장력·CCL 무게·통합 서브·스택 판정)"
   }
  ],
  "commits_staging": []
