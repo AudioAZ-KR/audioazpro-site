@@ -93,14 +93,14 @@ addSection('crew-dash',
    '<div class="kpis">'
  +   kpi('crew-proj','모집 중 프로젝트','crKOpen','지금 신청 받는 중')
  +   kpi('crew-proj','확인할 신청','crKApplied','확정·거절 대기')
- +   kpi('crew-members','승인 대기 감독','crKPending','가입 후 승인 필요')
+ +   kpi('crew-members','참여 요청','crKPending','Pro 회원 · 승인 필요')
  +   kpi('crew-proj','이번 달 견적','crKQuote','공급가 합계')
  +   kpi('crew-settle','이번 달 인건비','crKPay','페이+실비, 확정 기준')
  +   kpi('crew-settle','미지급 페이','crKUnpaid','지급액 합계')
  + '</div>'
  + '<div class="card"><h2>다가오는 일정 <button class="tbtn" style="margin-left:10px" onclick="crewReload()">새로고침</button></h2><div class="sub">오늘부터 45일 · 확정된 감독 포함</div><div class="cr-wrap" id="crDashUp"></div></div>'
  + '<div class="card"><h2>새 참여 신청</h2><div class="sub">감독이 audioaz.co.kr 에서 남긴 신청 — 바로 확정·거절</div><div class="cr-wrap" id="crDashApps"></div></div>'
- + '<div class="card"><h2>승인 대기 감독</h2><div class="sub">초대 코드로 합류한 감독은 바로 활동 상태입니다. 여기는 예전 방식 가입자만 뜹니다</div><div class="cr-wrap" id="crDashPend"></div></div>');
+ + '<div class="card"><h2>참여 요청 (승인 대기)</h2><div class="sub">초대 코드 없이 들어온 AudioAZ(Pro) 회원의 요청입니다. 승인해야 프로젝트를 볼 수 있고, 승인하면 본인에게 메일이 갑니다</div><div class="cr-wrap" id="crDashPend"></div></div>');
 
 addSection('crew-proj',
    '<div class="toolbar"><button class="btn btn-pri" onclick="crewEditProject()">새 프로젝트</button>'
@@ -262,10 +262,10 @@ function renderDash(){
           +'<td><div class="cr-actions"><button class="tbtn" onclick="crewSetApp(\''+a.id+'\',\'confirmed\')">확정</button><button class="tbtn danger" onclick="crewSetApp(\''+a.id+'\',\'declined\')">거절</button></div></td></tr>'; }).join('') + '</tbody></table>'
     : '<div class="cr-empty">새 신청이 없습니다.</div>';
 
-  document.getElementById('crDashPend').innerHTML = pend.length ? '<table class="cr-t"><thead><tr><th>가입</th><th>이름</th><th>분야</th><th>연락처</th><th>사업자</th><th></th></tr></thead><tbody>'
-    + pend.map(function(x){ return '<tr><td class="cr-date">'+e(fmtDate(x.created_at))+'</td><td><b>'+e(x.name)+'</b><div class="cr-meta">'+e(x.email||'')+'</div></td><td>'+e(x.specialty||'—')+'</td><td class="mono">'+e(x.phone||'—')+'</td><td>'+bizLabel(x)+'</td>'
-        +'<td><div class="cr-actions"><button class="tbtn" onclick="crewSetMember(\''+x.user_id+'\',\'active\')">승인</button><button class="tbtn" onclick="crewOpenMember(\''+x.user_id+'\')">상세</button></div></td></tr>'; }).join('') + '</tbody></table>'
-    : '<div class="cr-empty">승인 대기 중인 감독이 없습니다.</div>';
+  document.getElementById('crDashPend').innerHTML = pend.length ? '<table class="cr-t"><thead><tr><th>요청</th><th>이름</th><th>남긴 말</th><th>연락처</th><th>사업자</th><th></th></tr></thead><tbody>'
+    + pend.map(function(x){ return '<tr><td class="cr-date">'+e(fmtDate(x.created_at))+'</td><td><b>'+e(x.name)+'</b><div class="cr-meta">'+e(x.email||'')+'</div></td><td class="cr-note">'+e(x.career||x.specialty||'—')+'</td><td class="mono">'+e(x.phone||'—')+'</td><td>'+bizLabel(x)+'</td>'
+        +'<td><div class="cr-actions"><button class="tbtn" onclick="crewSetMember(\''+x.user_id+'\',\'active\')">승인</button><button class="tbtn danger" onclick="crewSetMember(\''+x.user_id+'\',\'inactive\')">거절</button><button class="tbtn" onclick="crewOpenMember(\''+x.user_id+'\')">상세</button></div></td></tr>'; }).join('') + '</tbody></table>'
+    : '<div class="cr-empty">대기 중인 참여 요청이 없습니다.</div>';
 }
 function set(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; }
 
