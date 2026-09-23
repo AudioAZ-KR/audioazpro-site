@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-23T17:50+09:00",
+ "generated": "2026-09-24T08:11+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -80,6 +80,10 @@
    "title": "AudioAZ 관리자"
   },
   {
+   "file": "portal/crew-passkey.html",
+   "title": "AudioAZ 크루 패스키"
+  },
+  {
    "file": "portal/forgot.html",
    "title": "비밀번호 찾기"
   },
@@ -118,6 +122,10 @@
  "console_version": "1.31.0",
  "commits_live": [
   {
+   "date": "2026-09-23T17:50:33+09:00",
+   "msg": "관리자 콘솔: 크루 초대 코드 발급·취소·안내문 복사, 탈퇴 상태 표시"
+  },
+  {
    "date": "2026-09-23T14:10:40+09:00",
    "msg": "관리자 콘솔 v1.31.0: Pro/AudioAZ 사업부 탭 — AudioAZ 크루(감독) 현황·프로젝트·견적·페이 정산"
   },
@@ -144,10 +152,6 @@
   {
    "date": "2026-09-20T03:25:51+09:00",
    "msg": "Flare Tally: Apple Watch 앱(iOS 1.1.0) 소개 섹션·스크린샷, 호환 표 iOS/iPadOS 18+·watchOS 11+, 다운로드·지원 페이지 반영, 영문 번역"
-  },
-  {
-   "date": "2026-09-19T22:14:00+09:00",
-   "msg": "Flare Tally host 1.0 (97) release links"
   }
  ],
  "commits_staging": []
