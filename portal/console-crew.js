@@ -9,12 +9,12 @@
 (function(){
 'use strict';
 
-var C = { members:[], madmin:{}, projects:[], padmin:{}, apps:[], pay:{}, loaded:false, busy:false,
+var C = { members:[], madmin:{}, projects:[], padmin:{}, apps:[], pay:{}, invites:[], loaded:false, busy:false,
           openProject:null, openMember:null, editProject:null };
 
 var ST_PROJ = { draft:'작성 중', open:'모집 중', closed:'모집 마감', done:'완료', cancelled:'취소' };
 var ST_APP  = { applied:'신청', confirmed:'확정', declined:'거절', cancelled:'본인 취소' };
-var ST_MEM  = { pending:'승인 대기', active:'활동', inactive:'비활성' };
+var ST_MEM  = { pending:'승인 대기', active:'활동', inactive:'비활성', deleted:'탈퇴' };
 var ST_BILL = { none:'—', quoted:'견적 발송', invoiced:'계산서 발행', paid:'입금 완료' };
 var TAX     = { withholding:'3.3% 원천징수', invoice:'세금계산서', none:'공제 없음' };
 
@@ -100,7 +100,7 @@ addSection('crew-dash',
  + '</div>'
  + '<div class="card"><h2>다가오는 일정 <button class="tbtn" style="margin-left:10px" onclick="crewReload()">새로고침</button></h2><div class="sub">오늘부터 45일 · 확정된 감독 포함</div><div class="cr-wrap" id="crDashUp"></div></div>'
  + '<div class="card"><h2>새 참여 신청</h2><div class="sub">감독이 audioaz.co.kr 에서 남긴 신청 — 바로 확정·거절</div><div class="cr-wrap" id="crDashApps"></div></div>'
- + '<div class="card"><h2>승인 대기 감독</h2><div class="sub">승인해야 프로젝트 목록을 보고 참여할 수 있습니다</div><div class="cr-wrap" id="crDashPend"></div></div>');
+ + '<div class="card"><h2>승인 대기 감독</h2><div class="sub">초대 코드로 합류한 감독은 바로 활동 상태입니다. 여기는 예전 방식 가입자만 뜹니다</div><div class="cr-wrap" id="crDashPend"></div></div>');
 
 addSection('crew-proj',
    '<div class="toolbar"><button class="btn btn-pri" onclick="crewEditProject()">새 프로젝트</button>'
@@ -112,10 +112,14 @@ addSection('crew-proj',
  + '<div class="card" id="crPDetail" style="display:none"></div>');
 
 addSection('crew-members',
-   '<div class="toolbar"><input class="cr-in search" id="crMQ" placeholder="이름·분야·연락처 검색" oninput="crewRenderMembers()" style="max-width:320px;font-family:inherit">'
- + '<select class="cr-in" id="crMF" onchange="crewRenderMembers()" style="width:auto"><option value="">전체</option><option value="pending">승인 대기</option><option value="active">활동</option><option value="inactive">비활성</option></select>'
+   '<div class="card" style="margin-top:0"><h2>초대 코드</h2><div class="sub">감독은 초대 코드가 있어야 가입할 수 있습니다(앱 AudioAZ Crew · 웹 audioaz.co.kr/crew/). 코드 하나 = 한 사람, 30일 유효, 입력하면 바로 활동 상태로 합류.</div>'
+ + '<div class="rowflex"><input class="cr-in" id="crIvLabel" placeholder="누구에게 보낼 코드인지 (예: 홍길동 FOH)" style="max-width:320px;font-family:inherit"><button class="btn btn-pri" onclick="crewNewInvite()">코드 발급</button>'
+ + '<label class="cr-check" style="margin-left:8px"><input type="checkbox" id="crIvAll"> 사용·만료된 코드도 보기</label></div>'
+ + '<div class="cr-wrap" id="crIvList" style="margin-top:12px"></div></div>'
+ + '<div class="toolbar" style="margin-top:18px"><input class="cr-in search" id="crMQ" placeholder="이름·분야·연락처 검색" oninput="crewRenderMembers()" style="max-width:320px;font-family:inherit">'
+ + '<select class="cr-in" id="crMF" onchange="crewRenderMembers()" style="width:auto"><option value="">전체</option><option value="pending">승인 대기</option><option value="active">활동</option><option value="inactive">비활성</option><option value="deleted">탈퇴</option></select>'
  + '<button class="tbtn" onclick="crewReload()">새로고침</button>'
- + '<span class="cr-meta" style="margin-left:auto">가입 주소 audioaz.co.kr/crew/</span></div>'
+ + '<span class="cr-meta" style="margin-left:auto">가입 = 초대 코드 필수</span></div>'
  + '<div class="card" style="margin-top:0"><div class="cr-wrap"><table class="cr-t wide"><thead><tr><th>이름</th><th>분야</th><th>연락처</th><th>사업자</th><th style="text-align:right">기본 일당</th><th>등급</th><th style="text-align:right">확정 참여</th><th>상태</th><th></th></tr></thead><tbody id="crMRows"></tbody></table></div></div>'
  + '<div class="card" id="crMDetail" style="display:none"></div>');
 
@@ -162,7 +166,7 @@ function projMargin(p){
 }
 function stP(s){ var c={open:'g',draft:'d',closed:'a',done:'b',cancelled:'d'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_PROJ[s]||s)+'</span>'; }
 function stA(s){ var c={applied:'a',confirmed:'g',declined:'r',cancelled:'d'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_APP[s]||s)+'</span>'; }
-function stM(s){ var c={pending:'a',active:'g',inactive:'d'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_MEM[s]||s)+'</span>'; }
+function stM(s){ var c={pending:'a',active:'g',inactive:'d',deleted:'r'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_MEM[s]||s)+'</span>'; }
 function bizLabel(m){ return m ? (m.is_business ? '사업자' : '개인') : '—'; }
 function e(v){ return esc(v===null||v===undefined?'':v); }
 function today(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -189,13 +193,15 @@ async function load(){
       sb.from('crew_projects').select('*').order('date_start',{ascending:false}),
       sb.from('crew_project_admin').select('*'),
       sb.from('crew_applications').select('*').order('created_at',{ascending:true}),
-      sb.from('crew_pay').select('*')
+      sb.from('crew_pay').select('*'),
+      sb.from('crew_invites').select('*').order('created_at',{ascending:false}).limit(200)
     ]);
     for (var i=0;i<r.length;i++) if (r[i].error) throw r[i].error;
     C.members=r[0].data||[]; C.projects=r[2].data||[]; C.apps=r[4].data||[];
     C.madmin={}; (r[1].data||[]).forEach(function(x){ C.madmin[x.user_id]=x; });
     C.padmin={}; (r[3].data||[]).forEach(function(x){ C.padmin[x.project_id]=x; });
     C.pay={};    (r[5].data||[]).forEach(function(x){ C.pay[x.application_id]=x; });
+    C.invites=r[6].data||[];
     C.loaded = true;
   }catch(err){ dbErr(err); }
   C.busy = false;
@@ -211,7 +217,7 @@ function curPage(){ var s=document.querySelector('.page.on'); return s ? s.id.re
 function render(p){
   if (p==='crew-dash') renderDash();
   else if (p==='crew-proj') { crewRenderProjects(); if (C.openProject) renderProjectDetail(); }
-  else if (p==='crew-members') { crewRenderMembers(); if (C.openMember) renderMemberDetail(); }
+  else if (p==='crew-members') { renderInvites(); crewRenderMembers(); if (C.openMember) renderMemberDetail(); }
   else if (p==='crew-settle') crewRenderSettle();
 }
 
@@ -432,6 +438,45 @@ window.crewAssign = async function(pid){
 };
 
 /* ── 감독 ──────────────────────────────────────────────────────────────── */
+/* ── 초대 코드 ─────────────────────────────────────────────────────────── */
+function ivState(v){
+  if (v.used_by){ var m=mem(v.used_by); return '<span class="cr-st g"><i></i>사용됨 · '+e(m?m.name:'')+' '+e(fmtDate(v.used_at))+'</span>'; }
+  if (v.revoked) return '<span class="cr-st d"><i></i>취소</span>';
+  if (new Date(v.expires_at) < new Date()) return '<span class="cr-st d"><i></i>만료</span>';
+  return '<span class="cr-st a"><i></i>대기 · '+e(fmtDate(v.expires_at))+'까지</span>';
+}
+function ivLive(v){ return !v.used_by && !v.revoked && new Date(v.expires_at) >= new Date(); }
+function renderInvites(){
+  var box=document.getElementById('crIvList'); if(!box) return;
+  var all=document.getElementById('crIvAll').checked;
+  var rows=C.invites.filter(function(v){ return all || ivLive(v); });
+  box.innerHTML = rows.length ? '<table class="cr-t"><thead><tr><th>코드</th><th>대상</th><th>상태</th><th>발급</th><th></th></tr></thead><tbody>'
+    + rows.map(function(v){ return '<tr><td class="mono" style="font-size:15px;letter-spacing:.12em"><b>'+e(v.code)+'</b></td><td>'+e(v.label||'—')+'</td><td>'+ivState(v)+'</td><td class="cr-date">'+e(fmtDate(v.created_at))+'</td>'
+        +'<td><div class="cr-actions">'+(ivLive(v)?'<button class="tbtn" onclick="crewCopyInvite(\''+e(v.code)+'\')">안내문 복사</button><button class="tbtn danger" onclick="crewRevokeInvite(\''+e(v.code)+'\')">취소</button>':'')+'</div></td></tr>'; }).join('')
+    + '</tbody></table>' : '<div class="cr-empty">'+(all?'발급한 코드가 없습니다.':'쓸 수 있는 코드가 없습니다. [코드 발급]으로 만드세요.')+'</div>';
+}
+function ivCode(){
+  var A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', out='', b=new Uint8Array(8); crypto.getRandomValues(b);
+  for (var i=0;i<8;i++) out+=A[b[i]%A.length]; return out;
+}
+window.crewNewInvite = async function(){
+  var label=(document.getElementById('crIvLabel').value||'').trim()||null, code, r, tries=0;
+  do { code=ivCode(); r=await sb.from('crew_invites').insert({ code:code, label:label }); tries++; } while (r.error && /duplicate|23505/.test(r.error.message) && tries<5);
+  if (r.error) return dbErr(r.error);
+  document.getElementById('crIvLabel').value='';
+  await load(); render('crew-members'); crewCopyInvite(code);
+};
+window.crewCopyInvite = function(code){
+  var t='[오디오에이지 크루 초대]\n초대 코드: '+code+'\n\n아이폰: App Store 에서 "AudioAZ Crew" 설치 → [초대 코드로 가입]\n웹: https://audioaz.co.kr/crew/ → [초대 코드로 가입]\n\n코드는 30일 동안 한 번만 쓸 수 있습니다.';
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){ flash('코드 '+code+' — 안내문을 복사했습니다. 문자·카톡에 붙여 넣으세요.'); }, function(){ prompt('아래 안내문을 복사하세요', t); });
+};
+window.crewRevokeInvite = async function(code){
+  if (!confirm('코드 '+code+' 를 취소합니다. 더 이상 가입에 쓸 수 없습니다.')) return;
+  var r=await sb.from('crew_invites').update({ revoked:true }).eq('code', code); if (r.error) return dbErr(r.error);
+  await load(); render('crew-members');
+};
+document.addEventListener('change', function(ev){ if (ev.target && ev.target.id==='crIvAll') renderInvites(); });
+
 window.crewRenderMembers = function(){
   var q=(document.getElementById('crMQ').value||'').trim().toLowerCase(), f=document.getElementById('crMF').value;
   var rows=C.members.filter(function(m){
@@ -444,7 +489,7 @@ window.crewRenderMembers = function(){
     return '<tr class="'+(C.openMember===m.user_id?'sel':'')+'"><td><b>'+e(m.name)+'</b><div class="cr-meta">'+e(m.email||'')+'</div></td><td>'+e(m.specialty||'—')+'</td><td class="mono">'+e(m.phone||'—')+'</td>'
       +'<td>'+bizLabel(m)+(m.is_business&&m.biz_no?'<div class="cr-meta">'+e(m.biz_no)+'</div>':'')+'</td><td class="cr-num">'+won(ma.day_rate)+'</td><td>'+e(ma.grade||'—')+'</td><td class="cr-num">'+cnt+'</td><td>'+stM(m.status)+'</td>'
       +'<td><div class="cr-actions">'+(m.status==='pending'?'<button class="tbtn" onclick="crewSetMember(\''+m.user_id+'\',\'active\')">승인</button>':'')+'<button class="tbtn" onclick="crewOpenMember(\''+m.user_id+'\')">상세</button></div></td></tr>';
-  }).join('') : '<tr><td colspan="9" class="cr-empty">등록된 감독이 없습니다. audioaz.co.kr/crew/ 주소를 감독들에게 보내 가입을 받으세요.</td></tr>';
+  }).join('') : '<tr><td colspan="9" class="cr-empty">등록된 감독이 없습니다. 위에서 초대 코드를 발급해 감독에게 보내세요.</td></tr>';
 };
 window.crewOpenMember = async function(uid){
   C.openMember = uid;
