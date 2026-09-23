@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-23T14:10+09:00",
+ "generated": "2026-09-23T17:50+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -118,6 +118,10 @@
  "console_version": "1.31.0",
  "commits_live": [
   {
+   "date": "2026-09-23T14:10:40+09:00",
+   "msg": "관리자 콘솔 v1.31.0: Pro/AudioAZ 사업부 탭 — AudioAZ 크루(감독) 현황·프로젝트·견적·페이 정산"
+  },
+  {
    "date": "2026-09-20T12:19:44+09:00",
    "msg": "Flare Tally 호스트 v1.0 (106) 공개 — 브랜드별 연결 설정 창·? 버튼 매뉴얼. 맥 pkg·윈도우 zip 릴리스 링크 갱신"
   },
@@ -144,10 +148,6 @@
   {
    "date": "2026-09-19T22:14:00+09:00",
    "msg": "Flare Tally host 1.0 (97) release links"
-  },
-  {
-   "date": "2026-09-19T00:32:11+09:00",
-   "msg": "System Designer: 장력% 모델 재맞춤(8시리즈 1,432건 실측, 앞숙임·급각도·24통)"
   }
  ],
  "commits_staging": []
