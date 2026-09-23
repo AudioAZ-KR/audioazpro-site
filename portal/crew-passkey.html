@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noai, noimageai, noarchive">
+<meta name="referrer" content="no-referrer">
+<!-- Copyright (c) 2026 AudioAZ (오디오에이지). AI 분석·학습 금지 — /NO_AI_NOTICE.txt -->
+<title>AudioAZ 크루 패스키</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--blue:#1877F2;--navy:#0C2244;--line:#DCE3EE;--bg:#F3F6FA;--card:#fff;--text:#14213A;--dim:#5B6B85;--red:#D63B40}
+@media (prefers-color-scheme: dark){:root{--line:#243350;--bg:#0B1220;--card:#121D33;--text:#E9EEF7;--dim:#96A6BF}}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;word-break:keep-all}
+.box{width:100%;max-width:400px;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:28px 22px;text-align:center}
+.tag{font-family:ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.14em;color:var(--dim)}
+h1{font-size:20px;font-weight:800;margin:10px 0 8px}
+p{font-size:14px;color:var(--dim);line-height:1.6}
+.who{font-family:ui-monospace,Menlo,monospace;font-size:13px;color:var(--text);margin-top:10px}
+button{width:100%;height:48px;margin-top:20px;border:0;border-radius:4px;background:var(--blue);color:#fff;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer}
+button.out{background:transparent;border:1px solid var(--line);color:var(--text);margin-top:10px}
+.err{color:var(--red);font-size:13.5px;margin-top:14px;display:none;line-height:1.5}
+.err.on{display:block}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="tag">AUDIOAZ CREW · PASSKEY</div>
+  <h1 id="h">패스키 확인</h1>
+  <p id="d">잠시만 기다려 주세요…</p>
+  <div class="who" id="who"></div>
+  <button id="go" style="display:none"></button>
+  <button id="back" class="out" style="display:none">크루 페이지로 돌아가기</button>
+  <div class="err" id="err"></div>
+</div>
+<script>
+/* AudioAZ 크루 — 패스키 중계 페이지 (2026-09-24)
+ * 왜 여기(audioazpro.com)에 있나: Supabase 패스키의 RP ID 가 audioazpro.com 하나라서, 패스키 등록·로그인은 이 도메인에서만 된다.
+ *   (RP ID 를 바꾸면 관리자 콘솔 패스키가 전부 무효가 된다.)
+ * 흐름: audioaz.co.kr/crew/ → 여기(#login 또는 #enroll&t=…) → 지문/Face ID → 새 세션 토큰을 #pk_at·pk_rt 로 붙여 crew 페이지로 돌려보낸다.
+ * - 돌아가는 주소는 고정(RETURN). 다른 곳으로 보내지 않는다.
+ * - 이 페이지의 Supabase 클라이언트는 persistSession:false — audioazpro.com 에 로그인 흔적(관리자 세션 포함)을 건드리지 않는다.
+ * - 토큰은 # 뒤(프래그먼트)로만 오간다: 서버 로그·Referer 에 남지 않는다. 받은 쪽은 즉시 주소에서 지운다.
+ */
+var RETURN = 'https://audioaz.co.kr/crew/';
+var sb = window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co','sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_',
+  { auth:{ persistSession:false, autoRefreshToken:false, detectSessionInUrl:false, experimental:{ passkey:true } } });
+function $(i){ return document.getElementById(i); }
+function err(m){ var e=$('err'); e.textContent=m; e.classList.add('on'); }
+function params(){ var o={}; (location.hash||'').replace(/^#/,'').split('&').forEach(function(kv){ var i=kv.indexOf('='); if(i<0){ if(kv) o[kv]=''; return; } o[decodeURIComponent(kv.slice(0,i))]=decodeURIComponent(kv.slice(i+1)); }); return o; }
+function hasPk(){ return !!(window.PublicKeyCredential && sb.auth && typeof sb.auth.signInWithPasskey==='function'); }
+function back(extra){ location.replace(RETURN + (extra ? '#' + extra : '')); }
+function handoff(s){
+  back('pk_at=' + encodeURIComponent(s.access_token) + '&pk_rt=' + encodeURIComponent(s.refresh_token));
+}
+$('back').onclick = function(){ back(''); };
+
+var P = params();
+history.replaceState(null, '', location.pathname);   // 받은 토큰을 주소창에서 바로 지운다
+
+async function doLogin(){
+  $('err').classList.remove('on');
+  try{
+    var r = await sb.auth.signInWithPasskey();
+    if (r.error) return err('패스키 로그인이 안 됐습니다. 이 기기에 패스키가 없으면 크루 페이지에서 [이메일로 로그인 링크 받기]로 들어온 뒤 패스키를 등록하세요. (' + r.error.message + ')');
+    var s = r.data && r.data.session; if (!s) { var g = await sb.auth.getSession(); s = g.data.session; }
+    if (!s) return err('세션을 받지 못했습니다. 다시 시도해 주세요.');
+    handoff(s);
+  }catch(e){ err('패스키 로그인 실패: ' + ((e && e.message) || e)); }
+}
+
+async function doEnroll(){
+  $('err').classList.remove('on');
+  try{
+    var r = await sb.auth.registerPasskey();
+    if (r.error) return err('패스키 등록 실패: ' + r.error.message);
+    // 등록 직후 패스키로 다시 로그인 → 패스키 세션으로 돌아간다(지문 한 번 더)
+    var s = await sb.auth.signInWithPasskey();
+    if (s.error) return err('등록은 됐습니다. 크루 페이지에서 [패스키로 로그인]을 눌러 주세요. (' + s.error.message + ')');
+    var ses = s.data && s.data.session; if (!ses) { var g = await sb.auth.getSession(); ses = g.data.session; }
+    if (ses) handoff(ses); else back('pk_enrolled=1');
+  }catch(e){ err('패스키 등록 실패: ' + ((e && e.message) || e)); }
+}
+
+(async function(){
+  $('back').style.display = 'block';
+  if (!hasPk()) { $('h').textContent = '패스키를 쓸 수 없는 브라우저'; $('d').textContent = '이 브라우저는 패스키를 지원하지 않습니다. 사파리·크롬 최신판에서 열거나, 크루 페이지에서 이메일 로그인 링크를 쓰세요.'; return; }
+  if ('enroll' in P && P.t && P.r) {
+    var ss = await sb.auth.setSession({ access_token:P.t, refresh_token:P.r });
+    if (ss.error || !ss.data || !ss.data.user) { $('h').textContent='패스키 등록'; $('d').textContent='로그인이 만료됐습니다.'; return err('크루 페이지에서 다시 로그인한 뒤 등록해 주세요.'); }
+    $('h').textContent = '이 기기에 패스키 등록';
+    $('d').textContent = '다음부터 비밀번호나 메일 없이 지문·Face ID 로 바로 로그인합니다. 아이폰·맥은 iCloud 로 패스키가 함께 옮겨 갑니다.';
+    $('who').textContent = ss.data.user.email || '';
+    $('go').textContent = '이 계정에 패스키 등록'; $('go').style.display = 'block'; $('go').onclick = doEnroll;
+    return;
+  }
+  // 기본: 로그인
+  $('h').textContent = '패스키로 로그인';
+  $('d').textContent = '버튼을 누르고 지문·Face ID 로 확인하면 크루 페이지로 돌아갑니다.';
+  $('go').textContent = '패스키로 로그인'; $('go').style.display = 'block'; $('go').onclick = doLogin;
+})();
+</script>
+</body>
+</html>
