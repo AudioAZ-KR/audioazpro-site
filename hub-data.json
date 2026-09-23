@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-20T12:19+09:00",
+ "generated": "2026-09-23T14:10+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -115,8 +115,12 @@
   "showfile": "v0.6.6",
   "lmaz": null
  },
- "console_version": "1.30.5",
+ "console_version": "1.31.0",
  "commits_live": [
+  {
+   "date": "2026-09-20T12:19:44+09:00",
+   "msg": "Flare Tally 호스트 v1.0 (106) 공개 — 브랜드별 연결 설정 창·? 버튼 매뉴얼. 맥 pkg·윈도우 zip 릴리스 링크 갱신"
+  },
   {
    "date": "2026-09-20T11:03:15+09:00",
    "msg": "스위처 연결 방법 문서 신설 — 브랜드별(ATEM·OBS·vMix·Roland·AVMatrix·OSEE·TSL·USB) 단계와 영문 화면 그림. 호스트 앱 연결 설정 창의 ? 버튼이 여기로 온다"
@@ -144,10 +148,6 @@
   {
    "date": "2026-09-19T00:32:11+09:00",
    "msg": "System Designer: 장력% 모델 재맞춤(8시리즈 1,432건 실측, 앞숙임·급각도·24통)"
-  },
-  {
-   "date": "2026-09-18T19:18:04+09:00",
-   "msg": "System Designer: 스택 받침 프레임·A 스택 차단·플라잉 서브 위치"
   }
  ],
  "commits_staging": []
