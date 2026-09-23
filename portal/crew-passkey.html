@@ -53,12 +53,22 @@ function err(m){ var e=$('err'); e.textContent=m; e.classList.add('on'); }
 function params(){ var o={}; (location.hash||'').replace(/^#/,'').split('&').forEach(function(kv){ var i=kv.indexOf('='); if(i<0){ if(kv) o[kv]=''; return; } o[decodeURIComponent(kv.slice(0,i))]=decodeURIComponent(kv.slice(i+1)); }); return o; }
 function hasPk(){ return !!(window.PublicKeyCredential && sb.auth && typeof sb.auth.signInWithPasskey==='function'); }
 function back(extra){ location.replace(RETURN + (extra ? '#' + extra : '')); }
-function handoff(s){
-  back('pk_at=' + encodeURIComponent(s.access_token) + '&pk_rt=' + encodeURIComponent(s.refresh_token));
+/* 관리자 계정은 넘기지 않는다: 관리자 패스키로 들어온 세션은 콘솔 권한(is_admin_uid)을 가지므로
+ * co.kr 저장소에 남으면 위험하다(자동 로그아웃도 없음). 확인이 안 되면(오류) 넘기지 않는다. */
+async function handoff(s){
+  var u = s.user && s.user.id;
+  var pr = u ? await sb.from('profiles').select('is_admin').eq('id', u).maybeSingle() : { error:true };
+  if (pr.error || (pr.data && pr.data.is_admin)) {
+    try { await sb.auth.signOut({ scope:'local' }); } catch(_) {}
+    return err(pr.error ? '계정 확인에 실패했습니다. 잠시 후 다시 시도해 주세요.' : '관리자 계정은 크루 페이지에서 쓸 수 없습니다. 감독용 계정의 패스키를 골라 주세요. (관리자는 콘솔을 쓰세요)');
+  }
+  back('pk_at=' + encodeURIComponent(s.access_token) + '&pk_rt=' + encodeURIComponent(s.refresh_token) + '&n=' + encodeURIComponent(NONCE));
 }
 $('back').onclick = function(){ back(''); };
 
 var P = params();
+// 크루 페이지가 만든 1회용 값 — 돌아갈 때 그대로 붙여, 크루 페이지가 '내가 보낸 요청의 답'인지 확인한다(로그인 CSRF 방지)
+var NONCE = /^[A-Za-z0-9]{16,64}$/.test(P.n||'') ? P.n : '';
 history.replaceState(null, '', location.pathname);   // 받은 토큰을 주소창에서 바로 지운다
 
 async function doLogin(){
@@ -68,7 +78,7 @@ async function doLogin(){
     if (r.error) return err('패스키 로그인이 안 됐습니다. 이 기기에 패스키가 없으면 크루 페이지에서 [이메일로 로그인 링크 받기]로 들어온 뒤 패스키를 등록하세요. (' + r.error.message + ')');
     var s = r.data && r.data.session; if (!s) { var g = await sb.auth.getSession(); s = g.data.session; }
     if (!s) return err('세션을 받지 못했습니다. 다시 시도해 주세요.');
-    handoff(s);
+    await handoff(s);
   }catch(e){ err('패스키 로그인 실패: ' + ((e && e.message) || e)); }
 }
 
@@ -81,12 +91,13 @@ async function doEnroll(){
     var s = await sb.auth.signInWithPasskey();
     if (s.error) return err('등록은 됐습니다. 크루 페이지에서 [패스키로 로그인]을 눌러 주세요. (' + s.error.message + ')');
     var ses = s.data && s.data.session; if (!ses) { var g = await sb.auth.getSession(); ses = g.data.session; }
-    if (ses) handoff(ses); else back('pk_enrolled=1');
+    if (ses) await handoff(ses); else back('pk_enrolled=1');
   }catch(e){ err('패스키 등록 실패: ' + ((e && e.message) || e)); }
 }
 
 (async function(){
   $('back').style.display = 'block';
+  if (!NONCE) { $('h').textContent = '크루 페이지에서 시작해 주세요'; $('d').textContent = 'audioaz.co.kr/crew 의 [패스키로 로그인] 버튼으로 들어와야 합니다.'; return; }
   if (!hasPk()) { $('h').textContent = '패스키를 쓸 수 없는 브라우저'; $('d').textContent = '이 브라우저는 패스키를 지원하지 않습니다. 사파리·크롬 최신판에서 열거나, 크루 페이지에서 이메일 로그인 링크를 쓰세요.'; return; }
   if ('enroll' in P && P.t && P.r) {
     var ss = await sb.auth.setSession({ access_token:P.t, refresh_token:P.r });
