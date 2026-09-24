@@ -100,6 +100,7 @@ addSection('crew-dash',
  +   kpi('crew-settle','미지급 페이','crKUnpaid','지급액 합계')
  + '</div>'
  + '<div class="card"><h2>다가오는 일정 <button class="tbtn" style="margin-left:10px" onclick="crewReload()">새로고침</button></h2><div class="sub">오늘부터 45일 · 확정된 감독 포함</div><div class="cr-wrap" id="crDashUp"></div></div>'
+ + '<div class="card"><h2>내 캘린더 연동</h2><div class="sub">모든 프로젝트(비공개·예정·작성 중 포함, 취소 제외)가 사장님 캘린더에 들어갑니다. 확정 감독 이름·신청 수도 메모에 표시 — 견적·페이 금액은 넣지 않습니다(주소만 알면 열리므로). 1시간마다 갱신.</div><div id="crFeed" class="rowflex"></div></div>'
  + '<div class="card"><h2>새 참여 신청</h2><div class="sub">감독이 audioaz.co.kr 에서 남긴 신청 — 바로 확정·거절</div><div class="cr-wrap" id="crDashApps"></div></div>'
  + '<div class="card"><h2>참여 요청 (승인 대기)</h2><div class="sub">초대 코드 없이 들어온 AudioAZ(Pro) 회원의 요청입니다. 승인해야 프로젝트를 볼 수 있고, 승인하면 본인에게 메일이 갑니다</div><div class="cr-wrap" id="crDashPend"></div></div>');
 
@@ -202,7 +203,8 @@ async function load(){
       sb.from('crew_applications').select('*').order('created_at',{ascending:true}),
       sb.from('crew_pay').select('*'),
       sb.from('crew_invites').select('*').order('created_at',{ascending:false}).limit(200),
-      sb.from('crew_text_presets').select('*').order('title')
+      sb.from('crew_text_presets').select('*').order('title'),
+      sb.from('crew_admin_feed').select('token').eq('id',1).maybeSingle()
     ]);
     for (var i=0;i<r.length;i++) if (r[i].error) throw r[i].error;
     C.members=r[0].data||[]; C.projects=r[2].data||[]; C.apps=r[4].data||[];
@@ -211,6 +213,7 @@ async function load(){
     C.pay={};    (r[5].data||[]).forEach(function(x){ C.pay[x.application_id]=x; });
     C.invites=r[6].data||[];
     C.presets=r[7].data||[];
+    C.feed=(r[8].data&&r[8].data.token)||null;
     C.loaded = true;
   }catch(err){ dbErr(err); }
   C.busy = false;
@@ -243,6 +246,7 @@ window.crewEnter = async function(p){
 
 /* ── 크루 현황 ─────────────────────────────────────────────────────────── */
 function renderDash(){
+  renderFeed();
   var t=today(), m=ym(t);
   var applied = C.apps.filter(function(a){ var p=proj(a.project_id); return a.status==='applied' && p && p.status!=='cancelled'; });
   var pend = C.members.filter(function(x){ return x.status==='pending'; });
@@ -276,6 +280,22 @@ function renderDash(){
         +'<td><div class="cr-actions"><button class="tbtn" onclick="crewSetMember(\''+x.user_id+'\',\'active\')">승인</button><button class="tbtn danger" onclick="crewSetMember(\''+x.user_id+'\',\'inactive\')">거절</button><button class="tbtn" onclick="crewOpenMember(\''+x.user_id+'\')">상세</button></div></td></tr>'; }).join('') + '</tbody></table>'
     : '<div class="cr-empty">대기 중인 참여 요청이 없습니다.</div>';
 }
+var ICAL='https://lkbbenyvchddsjsihofv.supabase.co/functions/v1/crew-ical';
+function renderFeed(){
+  var box=document.getElementById('crFeed'); if(!box) return;
+  if (!C.feed){ box.innerHTML='<span class="cr-meta">연동 주소를 불러오지 못했습니다.</span>'; return; }
+  var https=ICAL+'?a='+C.feed, webcal=https.replace(/^https:/,'webcal:');
+  box.innerHTML='<a class="btn btn-pri" style="text-decoration:none" href="'+e(webcal)+'">아이폰·맥 캘린더에 연동</a>'
+    +'<a class="btn btn-out" style="text-decoration:none" target="_blank" rel="noopener" href="'+e('https://calendar.google.com/calendar/r?cid='+encodeURIComponent(webcal))+'">구글 캘린더에 연동</a>'
+    +'<button class="tbtn" onclick="crewFeedCopy()">주소 복사</button><button class="tbtn danger" onclick="crewFeedReset()">주소 새로 만들기</button>';
+}
+window.crewFeedCopy = function(){ var t=ICAL+'?a='+C.feed; (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){ flash('캘린더 주소를 복사했습니다. 남에게 보내지 마세요.'); },function(){ prompt('캘린더 주소', t); }); };
+window.crewFeedReset = async function(){
+  if (!confirm('캘린더 주소를 새로 만듭니다. 지금 연동된 캘린더는 더 이상 갱신되지 않으니 새 주소로 다시 연동해야 합니다.')) return;
+  var nt=crypto.randomUUID?crypto.randomUUID():null; if(!nt){ flash('이 브라우저에서는 새 주소를 만들 수 없습니다.', true); return; }
+  var r=await sb.from('crew_admin_feed').update({ token:nt, updated_at:new Date().toISOString() }).eq('id',1); if (r.error) return dbErr(r.error);
+  C.feed=nt; renderFeed(); flash('새 주소를 만들었습니다. 캘린더에 다시 연동해 주세요.');
+};
 function set(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; }
 
 /* ── 프로젝트 목록 ─────────────────────────────────────────────────────── */
