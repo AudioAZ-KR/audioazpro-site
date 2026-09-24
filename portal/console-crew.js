@@ -169,7 +169,8 @@ function projMargin(p){
   var pa=C.padmin[p.id]||{}; if (pa.quote_krw===null||pa.quote_krw===undefined) return null;
   return n(pa.quote_krw) - projCost(p.id) - n(pa.other_cost_krw);
 }
-function tentTag(p){ return (p && p.is_private ? ' <span class="cr-st r" style="margin-left:6px;vertical-align:middle" title="감독에게 보이지 않음"><i></i>비공개</span>' : '') + (p && p.is_tentative ? ' <span class="cr-st a" style="margin-left:6px;vertical-align:middle" title="임시 픽스 — 변동·취소 가능"><i></i>예정</span>' : ''); }
+function travelTag(p){ return p ? (p.depart_day_before?' <span class="cr-meta" style="margin-left:6px">전날 출발</span>':'')+(p.return_day_after?' <span class="cr-meta" style="margin-left:6px">다음날 복귀</span>':'') : ''; }
+function tentTag(p){ return travelTag(p)+(p && p.is_private ? ' <span class="cr-st r" style="margin-left:6px;vertical-align:middle" title="감독에게 보이지 않음"><i></i>비공개</span>' : '') + (p && p.is_tentative ? ' <span class="cr-st a" style="margin-left:6px;vertical-align:middle" title="임시 픽스 — 변동·취소 가능"><i></i>예정</span>' : ''); }
 function stP(s){ var c={open:'g',draft:'d',closed:'a',done:'b',cancelled:'d'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_PROJ[s]||s)+'</span>'; }
 function stA(s){ var c={applied:'a',confirmed:'g',declined:'r',cancelled:'d'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_APP[s]||s)+'</span>'; }
 function stM(s){ var c={pending:'a',active:'g',inactive:'d',deleted:'r'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_MEM[s]||s)+'</span>'; }
@@ -309,6 +310,9 @@ window.crewEditProject = function(id){
   box.innerHTML = '<h2>'+(p?'프로젝트 수정':'새 프로젝트')+'</h2><div class="sub">위 칸은 감독에게 보이는 정보, 아래 [관리자 전용]은 사장님만 봅니다.</div>'
     + '<div class="grid2">'+fld('title','프로젝트명 *',p&&p.title,'text','예: ○○ 콘서트 SR')+fld('venue','장소',p&&p.venue,'text','예: 세종문화회관 대극장')+'</div>'
     + '<div class="cr-grid3">'+fld('date_start','시작일 *',p&&p.date_start,'date')+fld('date_end','종료일 (하루면 비움)',p&&p.date_end,'date')+fld('call_time','콜타임',p&&p.call_time,'text','예: 08:00 로드인')+'</div>'
+    + '<div class="rowflex" style="margin:-2px 0 14px;gap:18px"><label class="cr-check"><input type="checkbox" id="crE_depart"'+(p&&p.depart_day_before?' checked':'')+'> 전날 출발 (지방)</label>'
+    + '<label class="cr-check"><input type="checkbox" id="crE_return"'+(p&&p.return_day_after?' checked':'')+'> 다음날 복귀</label>'
+    + '<span class="cr-meta">감독 화면·캘린더에 이동일까지 표시 (기본 일당 자동 계산은 공연일 기준)</span></div>'
     + '<div class="grid2">'+fld('roles','모집 포지션',p&&p.roles,'text','예: FOH 1, 모니터 1, 시스템 1')+fld('headcount','모집 인원',p&&p.headcount,'number')+'</div>'
     + '<div class="field"><label>상세 내용 (모집 중이면 모든 감독에게 보임)</label><textarea id="crE_description" rows="5" placeholder="장비 구성, 복장, 식사, 리허설 일정 등">'+e(p&&p.description)+'</textarea></div>'
     + presetBar('description')
@@ -464,7 +468,8 @@ function v(k){ var el=document.getElementById('crE_'+k); return el ? el.value.tr
 function numOrNull(s){ s=String(s).replace(/[^\d-]/g,''); return s===''?null:Number(s); }
 window.crewSaveProject = async function(){
   var row = { title:v('title'), venue:v('venue')||null, date_start:v('date_start'), date_end:v('date_end')||null, call_time:v('call_time')||null,
-              roles:v('roles')||null, headcount:numOrNull(v('headcount')), description:v('description')||null, status:v('status'), is_tentative:(document.querySelector('input[name=crE_tent]:checked')||{}).value==='1', is_private:(document.querySelector('input[name=crE_priv]:checked')||{}).value==='1' };
+              roles:v('roles')||null, headcount:numOrNull(v('headcount')), description:v('description')||null, status:v('status'), is_tentative:(document.querySelector('input[name=crE_tent]:checked')||{}).value==='1', is_private:(document.querySelector('input[name=crE_priv]:checked')||{}).value==='1',
+              depart_day_before:document.getElementById('crE_depart').checked, return_day_after:document.getElementById('crE_return').checked };
   if (!row.title || !row.date_start){ flash('프로젝트명과 시작일은 필수입니다.', true); return; }
   if (row.date_end && row.date_end < row.date_start){ flash('종료일이 시작일보다 빠릅니다.', true); return; }
   row.updated_at = new Date().toISOString();
