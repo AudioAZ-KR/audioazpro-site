@@ -195,6 +195,13 @@ document.addEventListener('input', function(ev){
   var f=fmtPhone(t.value); if (f!==t.value){ t.value=f; try{ t.setSelectionRange(f.length,f.length); }catch(_){} }
 });
 window.fmtPhone=fmtPhone;
+/* 사업자등록번호 자동 하이픈 (1234567890 → 123-45-67890) */
+function fmtBizNo(v){ var d=String(v||'').replace(/\D/g,'').slice(0,10); if(d.length<=3) return d; if(d.length<=5) return d.slice(0,3)+'-'+d.slice(3); return d.slice(0,3)+'-'+d.slice(3,5)+'-'+d.slice(5); }
+document.addEventListener('input', function(ev){
+  var t=ev.target; if (!t || !t.matches || !t.matches('input[data-bizno]')) return;
+  var f=fmtBizNo(t.value); if (f!==t.value){ t.value=f; try{ t.setSelectionRange(f.length,f.length); }catch(_){} }
+});
+window.fmtBizNo=fmtBizNo;
 /* ── 감독 제출 서류 (안전교육 이수증·신분증·통장 사본·기타) ── */
 var DOC_KIND={ safety:'안전교육', id:'신분증', bank:'통장', other:'기타' };
 function docsOf(uid){ return (C.docs||[]).filter(function(d){ return d.user_id===uid; }); }
@@ -806,7 +813,7 @@ window.crewRenderMembers = function(){
   document.getElementById('crMRows').innerHTML = rows.length ? rows.map(function(m){
     var ma=C.madmin[m.user_id]||{}, cnt=C.apps.filter(function(a){ return a.user_id===m.user_id && a.status==='confirmed'; }).length;
     return '<tr class="'+(C.openMember===m.user_id?'sel':'')+'"><td><b>'+e(m.name)+'</b><div class="cr-meta">'+e(m.email||'')+'</div></td><td>'+e(m.specialty||'—')+'</td><td class="mono">'+e(fmtPhone(m.phone)||m.phone||'—')+'</td>'
-      +'<td>'+bizLabel(m)+(m.is_business&&m.biz_no?'<div class="cr-meta">'+e(m.biz_no)+'</div>':'')+'</td><td class="cr-num">'+won(ma.day_rate)+'</td><td>'+e(ma.grade||'—')+'</td><td class="cr-num">'+cnt+'</td><td>'+docBadges(m.user_id)+'</td><td>'+stM(m.status)+'</td>'
+      +'<td>'+bizLabel(m)+(m.is_business&&m.biz_no?'<div class="cr-meta">'+e(fmtBizNo(m.biz_no)||m.biz_no)+'</div>':'')+'</td><td class="cr-num">'+won(ma.day_rate)+'</td><td>'+e(ma.grade||'—')+'</td><td class="cr-num">'+cnt+'</td><td>'+docBadges(m.user_id)+'</td><td>'+stM(m.status)+'</td>'
       +'<td><div class="cr-actions">'+(m.status==='pending'?'<button class="tbtn" onclick="crewSetMember(\''+m.user_id+'\',\'active\')">승인</button>':'')+'<button class="tbtn" onclick="crewOpenMember(\''+m.user_id+'\')">상세</button></div></td></tr>';
   }).join('') : '<tr><td colspan="10" class="cr-empty">등록된 감독이 없습니다. 위에서 초대 코드를 발급해 감독에게 보내세요.</td></tr>';
 };
@@ -822,7 +829,7 @@ function renderMemberDetail(){
   var hist=C.apps.filter(function(a){ return a.user_id===m.user_id; }).map(function(a){ return {a:a,p:proj(a.project_id)||{}}; })
                  .sort(function(x,y){ return (x.p.date_start||'')<(y.p.date_start||'')?1:-1; });
   var sumNet=0, sumUnpaid=0; hist.forEach(function(h){ if(h.a.status!=='confirmed') return; var c=calcPay(C.pay[h.a.id]); sumNet+=c.net; if(!(C.pay[h.a.id]||{}).paid) sumUnpaid+=c.net; });
-  function f(k,l,val,type){ return '<div class="field"><label>'+l+'</label><input id="crM_'+k+'" type="'+(type||'text')+'"'+(type==='number'?' step="any"':'')+' value="'+e(val)+'"></div>'; }
+  function f(k,l,val,type){ return '<div class="field"><label>'+l+'</label><input id="crM_'+k+'"'+(k==='biz_no'?' data-bizno':'')+' type="'+(type||'text')+'"'+(type==='number'?' step="any"':'')+' value="'+e(val)+'"></div>'; }
   box.innerHTML = '<h2>'+e(m.name)+' <span class="cr-meta" style="font-weight:400;margin-left:8px">'+e(m.email||'')+' · 가입 '+e(fmtDate(m.created_at))+'</span></h2>'
     + '<div class="sub">'+stM(m.status)+'</div>'
     + '<div class="rowflex" style="margin-bottom:6px">'
@@ -832,7 +839,7 @@ function renderMemberDetail(){
     + '<div class="cr-sec">감독이 입력한 정보 (필요하면 사장님이 고칠 수 있음)</div>'
     + '<div class="grid2">'+f('name','이름',m.name)+f('phone','연락처',fmtPhone(m.phone)||m.phone,'tel')+'</div>'
     + '<div class="grid2">'+f('specialty','주 분야',m.specialty)+'<div class="field"><label>구분</label><select id="crM_is_business"><option value="0"'+(m.is_business?'':' selected')+'>개인 (3.3% 원천징수)</option><option value="1"'+(m.is_business?' selected':'')+'>사업자 (세금계산서)</option></select></div></div>'
-    + '<div class="grid2">'+f('biz_name','상호',m.biz_name)+f('biz_no','사업자등록번호',m.biz_no)+'</div>'
+    + '<div class="grid2">'+f('biz_name','상호',m.biz_name)+f('biz_no','사업자등록번호',fmtBizNo(m.biz_no)||m.biz_no)+'</div>'
     + '<div class="cr-grid3">'+f('bank_name','은행',m.bank_name)+f('bank_account','계좌번호',m.bank_account)+f('bank_holder','예금주',m.bank_holder)+'</div>'
     + '<div class="field"><label>경력 소개</label><textarea id="crM_career" rows="3">'+e(m.career)+'</textarea></div>'
     + '<div class="cr-sec">관리자 전용 — 감독에게 보이지 않음</div>'
@@ -895,7 +902,7 @@ window.crewRenderSettle = function(){
   document.getElementById('crSRows').innerHTML = rows.length ? rows.map(function(r){
     var c=calcPay(r.py), tt=r.py.tax_type||'withholding';
     return '<tr><td class="cr-date">'+e(dRange(r.p))+'</td><td><a style="cursor:pointer;text-decoration:underline" onclick="crewOpenProject(\''+r.p.id+'\')">'+e(r.p.title)+'</a></td>'
-      +'<td><b>'+e(r.m.name)+'</b></td><td style="font-size:12.5px">'+TAX[tt]+(r.m.is_business&&r.m.biz_no?'<div class="cr-meta">'+e(r.m.biz_no)+'</div>':'')+'</td>'
+      +'<td><b>'+e(r.m.name)+'</b></td><td style="font-size:12.5px">'+TAX[tt]+(r.m.is_business&&r.m.biz_no?'<div class="cr-meta">'+e(fmtBizNo(r.m.biz_no)||r.m.biz_no)+'</div>':'')+'</td>'
       +'<td class="cr-num">'+won(r.py.pay_krw)+'</td><td class="cr-num">'+(c.extra?won(c.extra):'—')+'</td>'
       +'<td class="cr-num">'+(c.tax?'−'+won(c.tax):(c.vat?'+'+won(c.vat):'—'))+'</td><td class="cr-num"><b>'+won(c.net)+'</b></td>'
       +'<td style="font-size:12.5px">'+(r.m.bank_account?e(r.m.bank_name||'')+' <span class="mono">'+e(r.m.bank_account)+'</span>'+(r.m.bank_holder&&r.m.bank_holder!==r.m.name?' <span class="cr-meta">('+e(r.m.bank_holder)+')</span>':''):'<span class="cr-meta">미등록</span>')+'</td>'
@@ -913,7 +920,7 @@ window.crewSettleCsv = function(){
   var rows=settleRows();
   var head=['날짜','프로젝트','감독','구분','사업자등록번호','페이(세전,원)','실비(원)','원천세(원)','VAT(원)','지급액(원)','은행','계좌번호','예금주','지급','지급일'];
   var lines=[head].concat(rows.map(function(r){ var c=calcPay(r.py), tt=r.py.tax_type||'withholding';
-    return [dRange(r.p), r.p.title, r.m.name, TAX[tt], r.m.biz_no||'', c.pay, c.extra, c.tax, c.vat, c.net, r.m.bank_name||'', r.m.bank_account||'', r.m.bank_holder||'', r.py.paid?'Y':'N', r.py.paid_at||'']; }));
+    return [dRange(r.p), r.p.title, r.m.name, TAX[tt], fmtBizNo(r.m.biz_no)||r.m.biz_no||'', c.pay, c.extra, c.tax, c.vat, c.net, r.m.bank_name||'', r.m.bank_account||'', r.m.bank_holder||'', r.py.paid?'Y':'N', r.py.paid_at||'']; }));
   var csv='﻿'+lines.map(function(l){ return l.map(function(x){ x=String(x===null||x===undefined?'':x); if (typeof x==='string' && /^[=+\-@\t\r]/.test(x) && isNaN(Number(x))) x="'"+x; return /[",\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x; }).join(','); }).join('\r\n');
   var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
   a.download='audioaz-crew-pay-'+(document.getElementById('crSM').value||'all')+'.csv'; document.body.appendChild(a); a.click(); a.remove();
