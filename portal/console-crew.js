@@ -41,6 +41,7 @@ var css = ''
  + '.cr-meta{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--dim)}'
  + '.cr-kv{display:grid;grid-template-columns:120px 1fr;gap:6px 14px;font-size:13.5px}.cr-kv dt{color:var(--dim);font-size:12.5px}'
  + '.cr-sec{font-size:12px;font-weight:800;color:var(--dim);letter-spacing:.06em;margin:18px 0 8px;padding-top:14px;border-top:1px solid var(--line)}'
+ + '.cr-seg{display:flex;border:1px solid var(--line);border-radius:5px;overflow:hidden;max-width:360px}.cr-seg label{flex:1;display:flex;align-items:center;justify-content:center;height:40px;cursor:pointer;font-size:13.5px;font-weight:700;color:var(--dim);background:#0E1A2E}.cr-seg label+label{border-left:1px solid var(--line)}.cr-seg input{display:none}.cr-seg label:has(input:checked){background:#E9EEF7;color:#081729}'
  + '.cr-check{display:flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer}'
  + '.cr-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}@media(max-width:760px){.cr-grid3{grid-template-columns:1fr}}'
  + '.cr-empty{padding:26px 8px;text-align:center;color:var(--dim);font-size:13.5px}'
@@ -168,6 +169,7 @@ function projMargin(p){
   var pa=C.padmin[p.id]||{}; if (pa.quote_krw===null||pa.quote_krw===undefined) return null;
   return n(pa.quote_krw) - projCost(p.id) - n(pa.other_cost_krw);
 }
+function tentTag(p){ return p && p.is_tentative ? ' <span class="cr-st a" style="margin-left:6px;vertical-align:middle" title="임시 픽스 — 변동·취소 가능"><i></i>예정</span>' : ''; }
 function stP(s){ var c={open:'g',draft:'d',closed:'a',done:'b',cancelled:'d'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_PROJ[s]||s)+'</span>'; }
 function stA(s){ var c={applied:'a',confirmed:'g',declined:'r',cancelled:'d'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_APP[s]||s)+'</span>'; }
 function stM(s){ var c={pending:'a',active:'g',inactive:'d',deleted:'r'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_MEM[s]||s)+'</span>'; }
@@ -256,7 +258,7 @@ function renderDash(){
                      .sort(function(a,b){ return a.date_start<b.date_start?-1:1; });
   document.getElementById('crDashUp').innerHTML = up.length ? '<table class="cr-t"><thead><tr><th>날짜</th><th>프로젝트</th><th>장소</th><th>상태</th><th>확정 감독</th><th>신청</th></tr></thead><tbody>'
     + up.map(function(p){ var as=appsOf(p.id), cf=as.filter(function(a){return a.status==='confirmed';}), ap=as.filter(function(a){return a.status==='applied';});
-        return '<tr style="cursor:pointer" onclick="crewOpenProject(\''+p.id+'\')"><td class="cr-date">'+e(dRange(p))+'</td><td><b>'+e(p.title)+'</b>'+(p.call_time?'<div class="cr-meta">콜 '+e(p.call_time)+'</div>':'')+'</td><td>'+e(p.venue||'—')+'</td><td>'+stP(p.status)+'</td>'
+        return '<tr style="cursor:pointer" onclick="crewOpenProject(\''+p.id+'\')"><td class="cr-date">'+e(dRange(p))+'</td><td><b>'+e(p.title)+'</b>'+tentTag(p)+(p.call_time?'<div class="cr-meta">콜 '+e(p.call_time)+'</div>':'')+'</td><td>'+e(p.venue||'—')+'</td><td>'+stP(p.status)+'</td>'
           +'<td>'+(cf.length?cf.map(function(a){ var x=mem(a.user_id); return e(x?x.name:'?'); }).join(', '):'<span class="cr-meta">없음</span>')+(p.headcount?' <span class="cr-meta">/ '+p.headcount+'명</span>':'')+'</td>'
           +'<td class="cr-num">'+ap.length+'</td></tr>'; }).join('') + '</tbody></table>'
     : '<div class="cr-empty">예정된 일정이 없습니다.</div>';
@@ -289,7 +291,7 @@ window.crewRenderProjects = function(){
   document.getElementById('crPRows').innerHTML = rows.length ? rows.map(function(p){
     var as=appsOf(p.id), ap=as.filter(function(a){return a.status==='applied'||a.status==='confirmed';}).length, cf=as.filter(function(a){return a.status==='confirmed';}).length;
     var pa=C.padmin[p.id]||{}, cost=projCost(p.id), mg=projMargin(p);
-    return '<tr class="'+(C.openProject===p.id?'sel':'')+'"><td class="cr-date">'+e(dRange(p))+'</td><td><b>'+e(p.title)+'</b>'+(pa.client_name?'<div class="cr-meta">'+e(pa.client_name)+'</div>':'')+'</td><td>'+e(p.venue||'—')+'</td><td>'+stP(p.status)+'</td>'
+    return '<tr class="'+(C.openProject===p.id?'sel':'')+'"><td class="cr-date">'+e(dRange(p))+'</td><td><b>'+e(p.title)+'</b>'+tentTag(p)+(pa.client_name?'<div class="cr-meta">'+e(pa.client_name)+'</div>':'')+'</td><td>'+e(p.venue||'—')+'</td><td>'+stP(p.status)+'</td>'
       +'<td class="cr-num">'+ap+' / '+cf+(p.headcount?' <span class="cr-meta">('+p.headcount+')</span>':'')+'</td>'
       +'<td class="cr-num">'+won(pa.quote_krw)+'</td><td class="cr-num">'+won(cost)+'</td>'
       +'<td class="cr-num '+(mg===null?'':(mg<0?'cr-neg':''))+'">'+(mg===null?'—':won(mg))+'</td><td style="font-size:12.5px">'+(ST_BILL[pa.bill_status||'none'])+'</td>'
@@ -310,7 +312,11 @@ window.crewEditProject = function(id){
     + '<div class="grid2">'+fld('roles','모집 포지션',p&&p.roles,'text','예: FOH 1, 모니터 1, 시스템 1')+fld('headcount','모집 인원',p&&p.headcount,'number')+'</div>'
     + '<div class="field"><label>상세 내용 (모집 중이면 모든 감독에게 보임)</label><textarea id="crE_description" rows="5" placeholder="장비 구성, 복장, 식사, 리허설 일정 등">'+e(p&&p.description)+'</textarea></div>'
     + presetBar('description')
-    + '<div class="field" style="max-width:260px"><label>상태</label><select id="crE_status">'+['draft','open','closed','done','cancelled'].map(function(s){ return '<option value="'+s+'"'+(((p&&p.status)||'open')===s?' selected':'')+'>'+ST_PROJ[s]+(s==='draft'?' (감독에게 안 보임)':'')+'</option>'; }).join('')+'</select></div>'
+    + '<div class="grid2"><div class="field"><label>모집 상태</label><select id="crE_status">'+['draft','open','closed','done','cancelled'].map(function(s){ return '<option value="'+s+'"'+(((p&&p.status)||'open')===s?' selected':'')+'>'+ST_PROJ[s]+(s==='draft'?' (감독에게 안 보임)':'')+'</option>'; }).join('')+'</select></div>'
+    + '<div class="field"><label>일정 상태</label><div class="cr-seg">'
+    +   '<label><input type="radio" name="crE_tent" value="0"'+(p&&p.is_tentative?'':' checked')+'><span>확정</span></label>'
+    +   '<label><input type="radio" name="crE_tent" value="1"'+(p&&p.is_tentative?' checked':'')+'><span>예정 (임시 픽스)</span></label></div>'
+    +   '<div class="cr-meta" style="margin-top:6px">예정이면 감독 화면에 "일정이 바뀌거나 취소될 수 있음"이 표시됩니다</div></div></div>'
     + '<div class="cr-sec">확정자 전용 — 이 프로젝트에 확정된 감독만 봄 (큐시트·링크·스탭 전달사항)</div>'
     + '<div class="field"><label>스탭 전달사항</label><textarea id="crE_privnotes" rows="5" placeholder="집합 장소 상세, 주차, 연락처, 동선, 무전 채널 등">'+(p?'':'')+'</textarea></div>'
     + presetBar('privnotes')
@@ -454,7 +460,7 @@ function v(k){ var el=document.getElementById('crE_'+k); return el ? el.value.tr
 function numOrNull(s){ s=String(s).replace(/[^\d-]/g,''); return s===''?null:Number(s); }
 window.crewSaveProject = async function(){
   var row = { title:v('title'), venue:v('venue')||null, date_start:v('date_start'), date_end:v('date_end')||null, call_time:v('call_time')||null,
-              roles:v('roles')||null, headcount:numOrNull(v('headcount')), description:v('description')||null, status:v('status') };
+              roles:v('roles')||null, headcount:numOrNull(v('headcount')), description:v('description')||null, status:v('status'), is_tentative:(document.querySelector('input[name=crE_tent]:checked')||{}).value==='1' };
   if (!row.title || !row.date_start){ flash('프로젝트명과 시작일은 필수입니다.', true); return; }
   if (row.date_end && row.date_end < row.date_start){ flash('종료일이 시작일보다 빠릅니다.', true); return; }
   row.updated_at = new Date().toISOString();
@@ -500,7 +506,7 @@ function renderProjectDetail(){
   as.sort(function(a,b){ return (order[a.status]-order[b.status]) || (a.created_at<b.created_at?-1:1); });
   var assigned = {}; as.forEach(function(a){ assigned[a.user_id]=1; });
   var addable = C.members.filter(function(m){ return m.status==='active' && !assigned[m.user_id]; });
-  box.innerHTML = '<h2>'+e(p.title)+' <span class="cr-meta" style="font-weight:400;margin-left:8px">'+e(dRange(p))+' · '+days(p)+'일'+(p.venue?' · '+e(p.venue):'')+'</span>'
+ box.innerHTML = '<h2>'+e(p.title)+tentTag(p)+' <span class="cr-meta" style="font-weight:400;margin-left:8px">'+e(dRange(p))+' · '+days(p)+'일'+(p.venue?' · '+e(p.venue):'')+'</span>'
     + '<button class="tbtn" style="float:right" onclick="crewEditProject(\''+p.id+'\')">프로젝트 수정</button></h2>'
     + '<div class="sub">'+stP(p.status)+(p.roles?' &nbsp; 모집: '+e(p.roles):'')+(p.call_time?' &nbsp; 콜: '+e(p.call_time):'')+(pa.client_name?' &nbsp; 클라이언트: '+e(pa.client_name)+(pa.client_contact?' ('+e(pa.client_contact)+')':''):'')+'</div>'
     + '<div class="cr-sum">'
