@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-24T11:00+09:00",
+ "generated": "2026-09-24T11:02+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -106,21 +106,25 @@
   "tally": {
    "product": "flare-tally-host",
    "version": "1.0",
-   "build": 106,
-   "label": "v1.0 (106)",
-   "pkg": "Flare-Tally-1.0-b106.pkg",
+   "build": 107,
+   "label": "v1.0 (107)",
+   "pkg": "Flare-Tally-1.0-b107.pkg",
    "url": "https://audioazpro.com/downloads.html",
-   "date": "2026-09-20",
-   "note": "스위처 연결 설정을 브랜드별 창으로 정리했습니다. ATEM은 주소만, TSL은 포트만, Roland·AVMatrix는 아이디와 비밀번호, OBS는 포트와 비밀번호를 받습니다. 창의 ? 버튼을 누르면 브랜드별 연결 방법 문서로 갑니다.",
-   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b106/Flare-Tally-1.0-b106.pkg",
-   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b106/Flare-Tally-win-1.0-b106.zip",
-   "win_label": "v1.0 (106) 베타"
+   "date": "2026-09-24",
+   "note": "스위처 연결 설정 창의 [연결 방법] 버튼이 브랜드별 연결 방법 문서로 이어집니다. 주소 칸에 보이던 스위처 비밀번호를 감추고, 테스트 모드를 끌 때 온라인 표시가 잠깐 빨갛게 보이던 오류를 고쳤습니다.",
+   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b107/Flare-Tally-1.0-b107.pkg",
+   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b107/Flare-Tally-win-1.0-b107.zip",
+   "win_label": "v1.0 (107) 베타"
   },
   "showfile": "v0.6.6",
   "lmaz": null
  },
  "console_version": "1.31.0",
  "commits_live": [
+  {
+   "date": "2026-09-24T11:00:23+09:00",
+   "msg": "관리자 콘솔 AudioAZ: 사업자등록번호 자동 하이픈"
+  },
   {
    "date": "2026-09-24T10:46:25+09:00",
    "msg": "관리자 콘솔 AudioAZ: 전화번호 자동 하이픈(입력·표시)"
@@ -148,10 +152,6 @@
   {
    "date": "2026-09-24T09:54:16+09:00",
    "msg": "관리자 콘솔 AudioAZ: 전날 출발(지방)·다음날 복귀 옵션"
-  },
-  {
-   "date": "2026-09-24T09:42:47+09:00",
-   "msg": "관리자 콘솔 AudioAZ: 프로젝트 비공개(나만 보기) + 예정→확정·취소 알림 안내"
   }
  ],
  "commits_staging": []
