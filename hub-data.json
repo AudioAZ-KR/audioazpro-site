@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-24T11:02+09:00",
+ "generated": "2026-09-24T11:33+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -106,21 +106,25 @@
   "tally": {
    "product": "flare-tally-host",
    "version": "1.0",
-   "build": 107,
-   "label": "v1.0 (107)",
-   "pkg": "Flare-Tally-1.0-b107.pkg",
+   "build": 108,
+   "label": "v1.0 (108)",
+   "pkg": "Flare-Tally-1.0-b108.pkg",
    "url": "https://audioazpro.com/downloads.html",
    "date": "2026-09-24",
-   "note": "스위처 연결 설정 창의 [연결 방법] 버튼이 브랜드별 연결 방법 문서로 이어집니다. 주소 칸에 보이던 스위처 비밀번호를 감추고, 테스트 모드를 끌 때 온라인 표시가 잠깐 빨갛게 보이던 오류를 고쳤습니다.",
-   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b107/Flare-Tally-1.0-b107.pkg",
-   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b107/Flare-Tally-win-1.0-b107.zip",
-   "win_label": "v1.0 (107) 베타"
+   "note": "경고·확인 창이 앱 언어로 나옵니다. 맥 기본 대화상자는 버튼이 항상 영어(Yes/No)였는데, 이제 테스트 모드 경고와 종료 확인이 예·아니오·취소로 표시됩니다.",
+   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b108/Flare-Tally-1.0-b108.pkg",
+   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b108/Flare-Tally-win-1.0-b108.zip",
+   "win_label": "v1.0 (108) 베타"
   },
   "showfile": "v0.6.6",
   "lmaz": null
  },
  "console_version": "1.31.0",
  "commits_live": [
+  {
+   "date": "2026-09-24T11:02:53+09:00",
+   "msg": "Flare Tally 호스트 v1.0 (107) 공개 — 앱 안 '연결 방법' 버튼·비밀번호 가림·온라인 표시 오류 수정. 맥 pkg·윈도우 zip 릴리스 링크 갱신"
+  },
   {
    "date": "2026-09-24T11:00:23+09:00",
    "msg": "관리자 콘솔 AudioAZ: 사업자등록번호 자동 하이픈"
@@ -148,10 +152,6 @@
   {
    "date": "2026-09-24T09:58:50+09:00",
    "msg": "관리자 콘솔 AudioAZ: 사장님 캘린더 연동(전체 프로젝트, 비공개 포함 · 금액 제외)"
-  },
-  {
-   "date": "2026-09-24T09:54:16+09:00",
-   "msg": "관리자 콘솔 AudioAZ: 전날 출발(지방)·다음날 복귀 옵션"
   }
  ],
  "commits_staging": []
