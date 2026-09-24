@@ -114,10 +114,15 @@ addSection('crew-proj',
  + '<div class="card" id="crPDetail" style="display:none"></div>');
 
 addSection('crew-members',
-   '<div class="card" style="margin-top:0"><h2>초대 코드</h2><div class="sub">감독은 초대 코드가 있어야 가입할 수 있습니다(앱 AudioAZ Crew · 웹 audioaz.co.kr/crew/). 코드 하나 = 한 사람, 30일 유효, 입력하면 바로 활동 상태로 합류.</div>'
- + '<div class="rowflex"><input class="cr-in" id="crIvLabel" placeholder="누구에게 보낼 코드인지 (예: 홍길동 FOH)" style="max-width:320px;font-family:inherit"><button class="btn btn-pri" onclick="crewNewInvite()">코드 발급</button>'
- + '<label class="cr-check" style="margin-left:8px"><input type="checkbox" id="crIvAll"> 사용·만료된 코드도 보기</label></div>'
- + '<div class="cr-wrap" id="crIvList" style="margin-top:12px"></div></div>'
+   '<div class="card" style="margin-top:0"><h2>초대 코드</h2><div class="sub">감독은 초대 코드가 있어야 가입할 수 있습니다(웹 audioaz.co.kr/crew/). 코드 문구·사용 횟수·만료일을 직접 정하고 언제든 바꿀 수 있습니다. 여러 번 쓰는 코드는 아는 사람 누구나 가입하니, 퍼졌다 싶으면 바꾸거나 중지하세요.</div>'
+ + '<div class="rowflex" style="align-items:flex-end;gap:10px">'
+ +   '<div class="field" style="margin:0"><label>코드 (영문·숫자·-, 6~32자)</label><input class="cr-in" id="crIvCode" placeholder="비우면 자동 생성" style="width:190px;text-transform:uppercase;letter-spacing:.08em"></div>'
+ +   '<div class="field" style="margin:0"><label>메모</label><input class="cr-in" id="crIvLabel" placeholder="예: 2026 가을 크루 공용" style="width:220px;font-family:inherit"></div>'
+ +   '<div class="field" style="margin:0"><label>사용 횟수</label><input class="cr-in" id="crIvMax" type="number" min="1" placeholder="빈칸 = 무제한" style="width:120px"></div>'
+ +   '<div class="field" style="margin:0"><label>만료일</label><input class="cr-in" id="crIvExp" type="date" style="width:150px"></div>'
+ +   '<button class="btn btn-pri" onclick="crewNewInvite()">코드 만들기</button></div>'
+ + '<label class="cr-check" style="margin-top:12px"><input type="checkbox" id="crIvAll"> 중지·만료·다 쓴 코드도 보기</label>'
+ + '<div class="cr-wrap" id="crIvList" style="margin-top:10px"></div></div>'
  + '<div class="toolbar" style="margin-top:18px"><input class="cr-in search" id="crMQ" placeholder="이름·분야·연락처 검색" oninput="crewRenderMembers()" style="max-width:320px;font-family:inherit">'
  + '<select class="cr-in" id="crMF" onchange="crewRenderMembers()" style="width:auto"><option value="">전체</option><option value="pending">승인 대기</option><option value="active">활동</option><option value="inactive">비활성</option><option value="deleted">탈퇴</option></select>'
  + '<button class="tbtn" onclick="crewReload()">새로고침</button>'
@@ -204,7 +209,8 @@ async function load(){
       sb.from('crew_pay').select('*'),
       sb.from('crew_invites').select('*').order('created_at',{ascending:false}).limit(200),
       sb.from('crew_text_presets').select('*').order('title'),
-      sb.from('crew_admin_feed').select('token').eq('id',1).maybeSingle()
+      sb.from('crew_admin_feed').select('token').eq('id',1).maybeSingle(),
+      sb.from('crew_invite_uses').select('invite_id,user_id,used_at').order('used_at',{ascending:false}).limit(1000)
     ]);
     for (var i=0;i<r.length;i++) if (r[i].error) throw r[i].error;
     C.members=r[0].data||[]; C.projects=r[2].data||[]; C.apps=r[4].data||[];
@@ -214,6 +220,7 @@ async function load(){
     C.invites=r[6].data||[];
     C.presets=r[7].data||[];
     C.feed=(r[8].data&&r[8].data.token)||null;
+    C.inviteUses=r[9].data||[];
     C.loaded = true;
   }catch(err){ dbErr(err); }
   C.busy = false;
@@ -611,42 +618,85 @@ window.crewAssign = async function(pid){
 };
 
 /* ── 감독 ──────────────────────────────────────────────────────────────── */
-/* ── 초대 코드 ─────────────────────────────────────────────────────────── */
+/* ── 초대 코드 (사장님이 문구·횟수·만료를 정하고 바꿀 수 있음, 2026-09-24) ──────────── */
+var IV_RE=/^[A-Z0-9-]{6,32}$/;
+function ivExpired(v){ return v.expires_at && new Date(v.expires_at) < new Date(); }
+function ivFull(v){ return v.max_uses!=null && v.use_count>=v.max_uses; }
+function ivLive(v){ return !v.revoked && !ivExpired(v) && !ivFull(v); }
 function ivState(v){
-  if (v.used_by){ var m=mem(v.used_by); return '<span class="cr-st g"><i></i>사용됨 · '+e(m?m.name:'')+' '+e(fmtDate(v.used_at))+'</span>'; }
-  if (v.revoked) return '<span class="cr-st d"><i></i>취소</span>';
-  if (new Date(v.expires_at) < new Date()) return '<span class="cr-st d"><i></i>만료</span>';
-  return '<span class="cr-st a"><i></i>대기 · '+e(fmtDate(v.expires_at))+'까지</span>';
+  if (v.revoked) return '<span class="cr-st d"><i></i>중지</span>';
+  if (ivExpired(v)) return '<span class="cr-st d"><i></i>만료</span>';
+  if (ivFull(v)) return '<span class="cr-st b"><i></i>다 씀</span>';
+  return '<span class="cr-st g"><i></i>사용 가능</span>';
 }
-function ivLive(v){ return !v.used_by && !v.revoked && new Date(v.expires_at) >= new Date(); }
+function ivUsers(v){ return (C.inviteUses||[]).filter(function(u){ return u.invite_id===v.id; }); }
+function ivDate(ts){ return ts ? fmtDate(ts) : '무기한'; }
+var IV_EDIT=null, IV_OPEN={};
 function renderInvites(){
   var box=document.getElementById('crIvList'); if(!box) return;
   var all=document.getElementById('crIvAll').checked;
   var rows=C.invites.filter(function(v){ return all || ivLive(v); });
-  box.innerHTML = rows.length ? '<table class="cr-t"><thead><tr><th>코드</th><th>대상</th><th>상태</th><th>발급</th><th></th></tr></thead><tbody>'
-    + rows.map(function(v){ return '<tr><td class="mono" style="font-size:15px;letter-spacing:.12em"><b>'+e(v.code)+'</b></td><td>'+e(v.label||'—')+'</td><td>'+ivState(v)+'</td><td class="cr-date">'+e(fmtDate(v.created_at))+'</td>'
-        +'<td><div class="cr-actions">'+(ivLive(v)?'<button class="tbtn" onclick="crewCopyInvite(\''+e(v.code)+'\')">안내문 복사</button><button class="tbtn danger" onclick="crewRevokeInvite(\''+e(v.code)+'\')">취소</button>':'')+'</div></td></tr>'; }).join('')
-    + '</tbody></table>' : '<div class="cr-empty">'+(all?'발급한 코드가 없습니다.':'쓸 수 있는 코드가 없습니다. [코드 발급]으로 만드세요.')+'</div>';
+  box.innerHTML = rows.length ? '<table class="cr-t"><thead><tr><th>코드</th><th>메모</th><th>사용</th><th>만료</th><th>상태</th><th></th></tr></thead><tbody>'
+    + rows.map(function(v){
+        var us=ivUsers(v);
+        if (IV_EDIT===v.id) return '<tr class="sel"><td><input class="cr-in" id="ivE_code" value="'+e(v.code)+'" style="width:170px;text-transform:uppercase;letter-spacing:.08em"></td>'
+          +'<td><input class="cr-in" id="ivE_label" value="'+e(v.label||'')+'" style="font-family:inherit;min-width:160px"></td>'
+          +'<td><input class="cr-in" id="ivE_max" type="number" min="1" value="'+(v.max_uses==null?'':v.max_uses)+'" placeholder="무제한" style="width:90px"><div class="cr-meta">지금까지 '+v.use_count+'명</div></td>'
+          +'<td><input class="cr-in" id="ivE_exp" type="date" value="'+(v.expires_at?String(v.expires_at).slice(0,10):'')+'" style="width:140px"></td>'
+          +'<td>'+ivState(v)+'</td>'
+          +'<td><div class="cr-actions"><button class="tbtn" onclick="crewSaveInvite(\''+v.id+'\')">저장</button><button class="tbtn" onclick="crewEditInvite(null)">취소</button></div></td></tr>';
+        return '<tr><td class="mono" style="font-size:14.5px;letter-spacing:.08em"><b>'+e(v.code)+'</b></td><td>'+e(v.label||'—')+'</td>'
+          +'<td class="cr-num" style="text-align:left">'+(us.length?'<a style="cursor:pointer;text-decoration:underline" onclick="crewIvUsers(\''+v.id+'\')">'+v.use_count+'명</a>':v.use_count+'명')+' / '+(v.max_uses==null?'무제한':v.max_uses+'명')+'</td>'
+          +'<td class="cr-date">'+e(ivDate(v.expires_at))+'</td><td>'+ivState(v)+'</td>'
+          +'<td><div class="cr-actions"><button class="tbtn" onclick="crewCopyInvite(\''+v.id+'\')">안내문 복사</button><button class="tbtn" onclick="crewEditInvite(\''+v.id+'\')">수정</button>'
+          +(v.revoked?'<button class="tbtn" onclick="crewToggleInvite(\''+v.id+'\',false)">다시 켜기</button>':'<button class="tbtn danger" onclick="crewToggleInvite(\''+v.id+'\',true)">중지</button>')+'</div></td></tr>'
+          +(IV_OPEN[v.id]&&us.length?'<tr><td colspan="6" class="cr-note" style="max-width:none;padding-top:0">이 코드로 들어온 감독: '+us.map(function(u){ var m=mem(u.user_id); return e(m?m.name:'(탈퇴)')+' <span class="cr-meta">'+e(fmtDate(u.used_at))+'</span>'; }).join(' · ')+'</td></tr>':'');
+      }).join('')
+    + '</tbody></table>' : '<div class="cr-empty">'+(all?'만든 코드가 없습니다.':'쓸 수 있는 코드가 없습니다. 위에서 [코드 만들기]로 만드세요.')+'</div>';
 }
 function ivCode(){
   var A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', out='', b=new Uint8Array(8); crypto.getRandomValues(b);
   for (var i=0;i<8;i++) out+=A[b[i]%A.length]; return out;
 }
+function ivNorm(s){ return String(s||'').trim().toUpperCase().replace(/\s+/g,'-'); }
+function ivExpTs(d){ return d ? new Date(d+'T23:59:59+09:00').toISOString() : null; }   // 그날 밤 12시(한국 시간)까지
+function ivErr(err){ if (/duplicate|23505|crew_invites_code_key/i.test(err.message||'')) return flash('이미 있는 코드입니다. 다른 문구로 정해 주세요.', true); if (/crew_invites_code_check/i.test(err.message||'')) return flash('코드는 영문·숫자·하이픈(-) 6~32자로 정해 주세요.', true); dbErr(err); }
 window.crewNewInvite = async function(){
-  var label=(document.getElementById('crIvLabel').value||'').trim()||null, code, r, tries=0;
-  do { code=ivCode(); r=await sb.from('crew_invites').insert({ code:code, label:label }); tries++; } while (r.error && /duplicate|23505/.test(r.error.message) && tries<5);
-  if (r.error) return dbErr(r.error);
-  document.getElementById('crIvLabel').value='';
-  await load(); render('crew-members'); crewCopyInvite(code);
-};
-window.crewCopyInvite = function(code){
-  var t='[오디오에이지 크루 초대]\n초대 코드: '+code+'\n\n아이폰: App Store 에서 "AudioAZ Crew" 설치 → [초대 코드로 가입]\n웹: https://audioaz.co.kr/crew/ → [초대 코드로 가입]\n\n코드는 30일 동안 한 번만 쓸 수 있습니다.';
-  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){ flash('코드 '+code+' — 안내문을 복사했습니다. 문자·카톡에 붙여 넣으세요.'); }, function(){ prompt('아래 안내문을 복사하세요', t); });
-};
-window.crewRevokeInvite = async function(code){
-  if (!confirm('코드 '+code+' 를 취소합니다. 더 이상 가입에 쓸 수 없습니다.')) return;
-  var r=await sb.from('crew_invites').update({ revoked:true }).eq('code', code); if (r.error) return dbErr(r.error);
+  var code=ivNorm(document.getElementById('crIvCode').value), label=(document.getElementById('crIvLabel').value||'').trim()||null;
+  var max=document.getElementById('crIvMax').value, exp=document.getElementById('crIvExp').value;
+  if (code && !IV_RE.test(code)) return flash('코드는 영문·숫자·하이픈(-) 6~32자로 정해 주세요.', true);
+  var row={ label:label, max_uses:max?Math.max(1,parseInt(max,10)):null, expires_at:ivExpTs(exp) }, r, tries=0;
+  if (code){ row.code=code; r=await sb.from('crew_invites').insert(row); }
+  else do { row.code=ivCode(); r=await sb.from('crew_invites').insert(row); tries++; } while (r.error && /duplicate|23505/.test(r.error.message) && tries<5);
+  if (r.error) return ivErr(r.error);
+  ['crIvCode','crIvLabel','crIvMax','crIvExp'].forEach(function(id){ document.getElementById(id).value=''; });
   await load(); render('crew-members');
+  var nv=C.invites.filter(function(v){ return v.code===row.code; })[0]; if (nv) crewCopyInvite(nv.id);
+};
+window.crewEditInvite = function(id){ IV_EDIT=id; renderInvites(); var el=document.getElementById('ivE_code'); if(el) el.focus(); };
+window.crewSaveInvite = async function(id){
+  var v=C.invites.filter(function(x){ return x.id===id; })[0]; if(!v) return;
+  var code=ivNorm(document.getElementById('ivE_code').value), max=document.getElementById('ivE_max').value, exp=document.getElementById('ivE_exp').value;
+  if (!IV_RE.test(code) && code!==v.code) return flash('코드는 영문·숫자·하이픈(-) 6~32자로 정해 주세요.', true);
+  var mx=max?Math.max(1,parseInt(max,10)):null;
+  if (mx!=null && mx<v.use_count) return flash('이미 '+v.use_count+'명이 썼습니다. 사용 횟수는 '+v.use_count+' 이상으로 정해 주세요.', true);
+  if (code!==v.code && !confirm('코드를 '+v.code+' → '+code+' 로 바꿉니다. 옛 코드는 바로 쓸 수 없게 됩니다.')) return;
+  var r=await sb.from('crew_invites').update({ code:code, label:(document.getElementById('ivE_label').value||'').trim()||null, max_uses:mx, expires_at:ivExpTs(exp), updated_at:new Date().toISOString() }).eq('id', id);
+  if (r.error) return ivErr(r.error);
+  IV_EDIT=null; flash('저장했습니다.'); await load(); render('crew-members');
+};
+window.crewToggleInvite = async function(id, stop){
+  var v=C.invites.filter(function(x){ return x.id===id; })[0]; if(!v) return;
+  if (stop && !confirm('코드 '+v.code+' 를 중지합니다. 다시 켤 때까지 가입에 쓸 수 없습니다.')) return;
+  var r=await sb.from('crew_invites').update({ revoked:!!stop, updated_at:new Date().toISOString() }).eq('id', id); if (r.error) return dbErr(r.error);
+  await load(); render('crew-members');
+};
+window.crewIvUsers = function(id){ IV_OPEN[id]=!IV_OPEN[id]; renderInvites(); };
+window.crewCopyInvite = function(id){
+  var v=C.invites.filter(function(x){ return x.id===id; })[0]; if(!v) return;
+  var lim=[v.max_uses==null?'':'선착순 '+v.max_uses+'명', v.expires_at?fmtDate(v.expires_at)+'까지':''].filter(Boolean).join(' · ');
+  var t='[오디오에이지 크루 초대]\n초대 코드: '+v.code+'\n\nhttps://audioaz.co.kr/crew/ 에서 [초대 코드로 가입]을 누르고 코드를 입력하세요.'+(lim?'\n('+lim+')':'');
+  (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){ flash('코드 '+v.code+' — 안내문을 복사했습니다. 문자·카톡에 붙여 넣으세요.'); }, function(){ prompt('아래 안내문을 복사하세요', t); });
 };
 document.addEventListener('change', function(ev){ if (ev.target && ev.target.id==='crIvAll') renderInvites(); });
 
