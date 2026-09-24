@@ -86,7 +86,11 @@ async function doEnroll(){
   $('err').classList.remove('on');
   try{
     var r = await sb.auth.registerPasskey();
-    if (r.error) return err('패스키 등록 실패: ' + r.error.message);
+    if (r.error) {
+      if (/previously registered|already registered|InvalidStateError/i.test(r.error.message||''))
+        return err('이 기기에는 이미 이 계정의 패스키가 있습니다. 크루 페이지로 돌아가 [패스키로 로그인]을 눌러 주세요.');
+      return err('패스키 등록 실패: ' + r.error.message);
+    }
     // 등록 직후 패스키로 다시 로그인 → 패스키 세션으로 돌아간다(지문 한 번 더)
     var s = await sb.auth.signInWithPasskey();
     if (s.error) return err('등록은 됐습니다. 크루 페이지에서 [패스키로 로그인]을 눌러 주세요. (' + s.error.message + ')');
@@ -102,6 +106,14 @@ async function doEnroll(){
   if ('enroll' in P && P.t && P.r) {
     var ss = await sb.auth.setSession({ access_token:P.t, refresh_token:P.r });
     if (ss.error || !ss.data || !ss.data.user) { $('h').textContent='패스키 등록'; $('d').textContent='로그인이 만료됐습니다.'; return err('크루 페이지에서 다시 로그인한 뒤 등록해 주세요.'); }
+    // 관리자 계정은 크루 패스키를 쓰지 않는다(넘겨받아도 handoff 에서 막힘) — 버튼을 아예 보여 주지 않는다
+    var ad = await sb.from('profiles').select('is_admin').eq('id', ss.data.user.id).maybeSingle();
+    if (ad.error || (ad.data && ad.data.is_admin)) {
+      $('h').textContent = '관리자 계정입니다';
+      $('d').textContent = ad.error ? '계정 확인에 실패했습니다. 잠시 후 다시 시도해 주세요.' : '관리자 계정은 크루 패스키를 쓸 수 없습니다(관리자 권한이 크루 페이지로 넘어가지 않게). 크루 기능 시험은 다른 이메일로 가입해 주세요.';
+      $('who').textContent = ss.data.user.email || '';
+      return;
+    }
     $('h').textContent = '이 기기에 패스키 등록';
     $('d').textContent = '다음부터 비밀번호나 메일 없이 지문·Face ID 로 바로 로그인합니다. 아이폰·맥은 iCloud 로 패스키가 함께 옮겨 갑니다.';
     $('who').textContent = ss.data.user.email || '';
