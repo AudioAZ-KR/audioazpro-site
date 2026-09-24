@@ -169,7 +169,7 @@ function projMargin(p){
   var pa=C.padmin[p.id]||{}; if (pa.quote_krw===null||pa.quote_krw===undefined) return null;
   return n(pa.quote_krw) - projCost(p.id) - n(pa.other_cost_krw);
 }
-function tentTag(p){ return p && p.is_tentative ? ' <span class="cr-st a" style="margin-left:6px;vertical-align:middle" title="임시 픽스 — 변동·취소 가능"><i></i>예정</span>' : ''; }
+function tentTag(p){ return (p && p.is_private ? ' <span class="cr-st r" style="margin-left:6px;vertical-align:middle" title="감독에게 보이지 않음"><i></i>비공개</span>' : '') + (p && p.is_tentative ? ' <span class="cr-st a" style="margin-left:6px;vertical-align:middle" title="임시 픽스 — 변동·취소 가능"><i></i>예정</span>' : ''); }
 function stP(s){ var c={open:'g',draft:'d',closed:'a',done:'b',cancelled:'d'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_PROJ[s]||s)+'</span>'; }
 function stA(s){ var c={applied:'a',confirmed:'g',declined:'r',cancelled:'d'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_APP[s]||s)+'</span>'; }
 function stM(s){ var c={pending:'a',active:'g',inactive:'d',deleted:'r'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_MEM[s]||s)+'</span>'; }
@@ -316,7 +316,11 @@ window.crewEditProject = function(id){
     + '<div class="field"><label>일정 상태</label><div class="cr-seg">'
     +   '<label><input type="radio" name="crE_tent" value="0"'+(p&&p.is_tentative?'':' checked')+'><span>확정</span></label>'
     +   '<label><input type="radio" name="crE_tent" value="1"'+(p&&p.is_tentative?' checked':'')+'><span>예정 (임시 픽스)</span></label></div>'
-    +   '<div class="cr-meta" style="margin-top:6px">예정이면 감독 화면에 "일정이 바뀌거나 취소될 수 있음"이 표시됩니다</div></div></div>'
+    +   '<div class="cr-meta" style="margin-top:6px">예정이면 감독 화면에 "일정이 바뀌거나 취소될 수 있음"이 표시됩니다. 예정→확정·취소 시 참여 감독에게 메일</div></div></div>'
+    + '<div class="field"><label>공개 범위</label><div class="cr-seg">'
+    +   '<label><input type="radio" name="crE_priv" value="0"'+(p&&p.is_private?'':' checked')+'><span>공개</span></label>'
+    +   '<label><input type="radio" name="crE_priv" value="1"'+(p&&p.is_private?' checked':'')+'><span>비공개 (나만 보기)</span></label></div>'
+    +   '<div class="cr-meta" style="margin-top:6px">비공개면 신청·확정된 감독도 이 프로젝트와 자료를 볼 수 없고, 알림 메일도 나가지 않습니다</div></div>'
     + '<div class="cr-sec">확정자 전용 — 이 프로젝트에 확정된 감독만 봄 (큐시트·링크·스탭 전달사항)</div>'
     + '<div class="field"><label>스탭 전달사항</label><textarea id="crE_privnotes" rows="5" placeholder="집합 장소 상세, 주차, 연락처, 동선, 무전 채널 등">'+(p?'':'')+'</textarea></div>'
     + presetBar('privnotes')
@@ -460,7 +464,7 @@ function v(k){ var el=document.getElementById('crE_'+k); return el ? el.value.tr
 function numOrNull(s){ s=String(s).replace(/[^\d-]/g,''); return s===''?null:Number(s); }
 window.crewSaveProject = async function(){
   var row = { title:v('title'), venue:v('venue')||null, date_start:v('date_start'), date_end:v('date_end')||null, call_time:v('call_time')||null,
-              roles:v('roles')||null, headcount:numOrNull(v('headcount')), description:v('description')||null, status:v('status'), is_tentative:(document.querySelector('input[name=crE_tent]:checked')||{}).value==='1' };
+              roles:v('roles')||null, headcount:numOrNull(v('headcount')), description:v('description')||null, status:v('status'), is_tentative:(document.querySelector('input[name=crE_tent]:checked')||{}).value==='1', is_private:(document.querySelector('input[name=crE_priv]:checked')||{}).value==='1' };
   if (!row.title || !row.date_start){ flash('프로젝트명과 시작일은 필수입니다.', true); return; }
   if (row.date_end && row.date_end < row.date_start){ flash('종료일이 시작일보다 빠릅니다.', true); return; }
   row.updated_at = new Date().toISOString();
