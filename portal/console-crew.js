@@ -352,7 +352,10 @@ window.crewEditProject = function(id){
     +   '<label><input type="radio" name="crE_priv" value="0"'+(p&&p.is_private?'':' checked')+'><span>공개</span></label>'
     +   '<label><input type="radio" name="crE_priv" value="1"'+(p&&p.is_private?' checked':'')+'><span>비공개 (나만 보기)</span></label></div>'
     +   '<div class="cr-meta" style="margin-top:6px">비공개면 신청·확정된 감독도 이 프로젝트와 자료를 볼 수 없고, 알림 메일도 나가지 않습니다</div></div>'
-    + '<div class="cr-sec">확정자 전용 — 이 프로젝트에 확정된 감독만 봄 (큐시트·링크·스탭 전달사항)</div>'
+    + '<div class="cr-sec">확정자 전용 — 이 프로젝트에 확정된 감독만 봄 (현장 담당자·큐시트·링크·스탭 전달사항)</div>'
+    + '<div class="cr-grid3"><div class="field"><label>현장 담당자</label><input id="crE_cname" placeholder="예: 김형준"></div>'
+    + '<div class="field"><label>직급</label><input id="crE_ctitle" placeholder="예: 대표 · 팀장"></div>'
+    + '<div class="field"><label>담당자 연락처</label><input id="crE_cphone" type="tel" placeholder="010-0000-0000"></div></div>'
     + '<div class="field"><label>스탭 전달사항</label><textarea id="crE_privnotes" rows="5" placeholder="집합 장소 상세, 주차, 연락처, 동선, 무전 채널 등">'+(p?'':'')+'</textarea></div>'
     + presetBar('privnotes')
     + (p ? '<div id="crPFiles" class="cr-empty" style="text-align:left;padding:4px 0">자료 불러오는 중…</div>'
@@ -368,19 +371,27 @@ window.crewEditProject = function(id){
   box.style.display='block'; box.scrollIntoView({behavior:'smooth',block:'start'});
   document.getElementById('crE_title').focus();
   C.priv = p ? null : { notes:'', files:[] };
-  if (p) loadPrivate(p.id);
+  if (p) loadPrivate(p.id); else prefillContact();
 };
 
 /* ── 확정자 전용 자료 (관리자) ──────────────────────────────────────────── */
+async function prefillContact(){   // 새 프로젝트·담당자 빈 프로젝트: 가장 최근에 쓴 담당자를 미리 채운다
+  var r=await sb.from('crew_project_private').select('contact_name,contact_title,contact_phone').not('contact_name','is',null).order('updated_at',{ascending:false}).limit(1);
+  var d=(r.data||[])[0]; if(!d) return;
+  [['crE_cname',d.contact_name],['crE_ctitle',d.contact_title],['crE_cphone',d.contact_phone]].forEach(function(x){ var el=document.getElementById(x[0]); if (el && !el.value) el.value=x[1]||''; });
+}
 async function loadPrivate(pid){
   var r = await Promise.all([
-    sb.from('crew_project_private').select('notes').eq('project_id', pid).maybeSingle(),
+    sb.from('crew_project_private').select('notes,contact_name,contact_title,contact_phone').eq('project_id', pid).maybeSingle(),
     sb.from('crew_project_files').select('*').eq('project_id', pid).order('sort').order('created_at')
   ]);
   if (C.editProject !== pid) return;
   if (r[0].error || r[1].error) { var b=document.getElementById('crPFiles'); if(b) b.textContent='자료를 불러오지 못했습니다: '+((r[0].error||r[1].error).message); return; }
-  C.priv = { notes:(r[0].data&&r[0].data.notes)||'', files:r[1].data||[] };
+  var d0=r[0].data||{};
+  C.priv = { notes:d0.notes||'', contact:[d0.contact_name||'', d0.contact_title||'', d0.contact_phone||''], files:r[1].data||[] };
   var ta=document.getElementById('crE_privnotes'); if (ta && !ta.value) ta.value=C.priv.notes;
+  if (!d0.contact_name && !d0.contact_phone) prefillContact();
+  else [['crE_cname',0],['crE_ctitle',1],['crE_cphone',2]].forEach(function(x){ var el=document.getElementById(x[0]); if (el && !el.value) el.value=C.priv.contact[x[1]]; });
   renderPrivFiles(pid);
 }
 function fmtSize(b){ if(!b) return ''; return b>=1048576 ? (b/1048576).toFixed(1)+'MB' : Math.max(1,Math.round(b/1024))+'KB'; }
@@ -511,7 +522,9 @@ window.crewSaveProject = async function(){
     r = await sb.from('crew_project_admin').upsert(adm); if (r.error) throw r.error;
     if (C.priv) {   // 불러오기 끝난 뒤(또는 새 프로젝트)만 저장 — 아직 못 읽었는데 빈 칸으로 덮어쓰지 않게
       var pn=(document.getElementById('crE_privnotes').value||'').trim();
-      if (pn || C.priv.notes){ r = await sb.from('crew_project_private').upsert({ project_id:id, notes:pn||null, updated_at:new Date().toISOString() }); if (r.error) throw r.error; }
+      var cn=(document.getElementById('crE_cname').value||'').trim(), ct=(document.getElementById('crE_ctitle').value||'').trim(), cp=(document.getElementById('crE_cphone').value||'').trim();
+      var had = C.priv.notes || (C.priv.contact && C.priv.contact.join(''));
+      if (pn || cn || ct || cp || had){ r = await sb.from('crew_project_private').upsert({ project_id:id, notes:pn||null, contact_name:cn||null, contact_title:ct||null, contact_phone:cp||null, updated_at:new Date().toISOString() }); if (r.error) throw r.error; }
     }
     flash(C.editProject ? '저장했습니다.' : '등록했습니다.'+(row.status==='open'?' 감독 페이지에 바로 보입니다.':''));
     crewCloseEdit(); await load(); C.openProject = id; render('crew-proj');
