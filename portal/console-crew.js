@@ -128,7 +128,7 @@ addSection('crew-settle',
  + '<select class="cr-in" id="crSF" onchange="crewRenderSettle()" style="width:auto"><option value="">전체</option><option value="unpaid">미지급만</option><option value="paid">지급 완료만</option></select>'
  + '<button class="tbtn" onclick="crewSettleCsv()">CSV 내려받기</button><button class="tbtn" onclick="crewReload()">새로고침</button></div>'
  + '<div class="cr-sum" id="crSSum"></div>'
- + '<div class="card" style="margin-top:0"><div class="sub">확정된 참여만 표시. 원천징수 = 소득세 3% + 지방소득세 0.3%(10원 미만 절사). 세금계산서는 페이에 부가세 10%를 더해 지급.</div>'
+ + '<div class="card" style="margin-top:0"><div class="sub">확정된 참여만 표시. 금액 단위 만원(CSV 는 이체용으로 원 단위). 원천징수 = 소득세 3% + 지방소득세 0.3%(10원 미만 절사). 세금계산서는 페이에 부가세 10%를 더해 지급.</div>'
  + '<div class="cr-wrap"><table class="cr-t wide"><thead><tr><th>날짜</th><th>프로젝트</th><th>감독</th><th>구분</th><th style="text-align:right">페이(세전)</th><th style="text-align:right">실비</th><th style="text-align:right">공제 / VAT</th><th style="text-align:right">지급액</th><th>계좌</th><th>지급</th></tr></thead><tbody id="crSRows"></tbody></table></div></div>');
 
 function kpi(go, l, id, d){
@@ -137,7 +137,11 @@ function kpi(go, l, id, d){
 
 /* ── 계산 ──────────────────────────────────────────────────────────────── */
 function n(v){ v = Number(v); return isFinite(v) ? v : 0; }
-function won(v){ return (v===null||v===undefined||v==='') ? '—' : n(v).toLocaleString('ko-KR'); }
+/* 금액은 만원 단위로 보여 준다(사장님 지시 2026-09-24). DB 는 원 그대로. 원천세 등으로 끝자리가 생기면 소수 4자리까지 정확히(69.69만). */
+function won(v){ return (v===null||v===undefined||v==='') ? '—' : manStr(n(v))+'만'; }
+function manStr(w){ return (Math.round(w)/10000).toLocaleString('ko-KR',{maximumFractionDigits:4}); }
+function toMan(w){ return (w===null||w===undefined||w==='') ? '' : String(Math.round(n(w))/10000); }
+function manToWon(s){ s=String(s===null||s===undefined?'':s).replace(/[^\d.\-]/g,''); if(s===''||s==='-'||s==='.') return null; var f=parseFloat(s); return isFinite(f)?Math.round(f*10000):null; }
 function trunc10(v){ return Math.floor(v/10)*10; }
 function calcPay(p){
   var pay=n(p&&p.pay_krw), extra=n(p&&p.extra_krw), t=(p&&p.tax_type)||'withholding', tax=0, vat=0;
@@ -297,7 +301,7 @@ window.crewEditProject = function(id){
   C.editProject = id || null;
   if (curPage()!=='crew-proj') azShow('crew-proj', true);
   var box = document.getElementById('crPEdit');
-  function fld(k,l,v,type,ph){ return '<div class="field"><label>'+l+'</label><input id="crE_'+k+'" type="'+(type||'text')+'" value="'+e(v)+'" placeholder="'+e(ph||'')+'"></div>'; }
+  function fld(k,l,v,type,ph){ return '<div class="field"><label>'+l+'</label><input id="crE_'+k+'" type="'+(type||'text')+'"'+(type==='number'?' step="any"':'')+' value="'+e(v)+'" placeholder="'+e(ph||'')+'"></div>'; }
   box.innerHTML = '<h2>'+(p?'프로젝트 수정':'새 프로젝트')+'</h2><div class="sub">위 칸은 감독에게 보이는 정보, 아래 [관리자 전용]은 사장님만 봅니다.</div>'
     + '<div class="grid2">'+fld('title','프로젝트명 *',p&&p.title,'text','예: ○○ 콘서트 SR')+fld('venue','장소',p&&p.venue,'text','예: 세종문화회관 대극장')+'</div>'
     + '<div class="cr-grid3">'+fld('date_start','시작일 *',p&&p.date_start,'date')+fld('date_end','종료일 (하루면 비움)',p&&p.date_end,'date')+fld('call_time','콜타임',p&&p.call_time,'text','예: 08:00 로드인')+'</div>'
@@ -306,7 +310,7 @@ window.crewEditProject = function(id){
     + '<div class="field" style="max-width:260px"><label>상태</label><select id="crE_status">'+['draft','open','closed','done','cancelled'].map(function(s){ return '<option value="'+s+'"'+(((p&&p.status)||'open')===s?' selected':'')+'>'+ST_PROJ[s]+(s==='draft'?' (감독에게 안 보임)':'')+'</option>'; }).join('')+'</select></div>'
     + '<div class="cr-sec">관리자 전용 — 감독에게 보이지 않음</div>'
     + '<div class="grid2">'+fld('client_name','클라이언트',pa.client_name)+fld('client_contact','클라이언트 연락처',pa.client_contact)+'</div>'
-    + '<div class="cr-grid3">'+fld('quote_krw','견적 금액 (공급가, 원)',pa.quote_krw,'number')+fld('other_cost_krw','기타 비용 (장비·운송·숙박, 원)',pa.other_cost_krw,'number')
+    + '<div class="cr-grid3">'+fld('quote_krw','견적 금액 (공급가, 만원)',toMan(pa.quote_krw),'number','예: 800')+fld('other_cost_krw','기타 비용 (장비·운송·숙박, 만원)',toMan(pa.other_cost_krw),'number','예: 250')
     + '<div class="field"><label>청구 상태</label><select id="crE_bill_status">'+Object.keys(ST_BILL).map(function(s){ return '<option value="'+s+'"'+((pa.bill_status||'none')===s?' selected':'')+'>'+(s==='none'?'미청구':ST_BILL[s])+'</option>'; }).join('')+'</select></div></div>'
     + '<label class="cr-check" style="margin-bottom:12px"><input type="checkbox" id="crE_quote_vat"'+(pa.quote_vat===false?'':' checked')+'> 부가세 별도 청구 (견적 금액 + 10%)</label>'
     + '<div class="field"><label>관리 메모</label><textarea id="crE_memo" rows="2">'+e(pa.memo)+'</textarea></div>'
@@ -324,8 +328,8 @@ window.crewSaveProject = async function(){
   if (!row.title || !row.date_start){ flash('프로젝트명과 시작일은 필수입니다.', true); return; }
   if (row.date_end && row.date_end < row.date_start){ flash('종료일이 시작일보다 빠릅니다.', true); return; }
   row.updated_at = new Date().toISOString();
-  var adm = { client_name:v('client_name')||null, client_contact:v('client_contact')||null, quote_krw:numOrNull(v('quote_krw')),
-              other_cost_krw:numOrNull(v('other_cost_krw')), bill_status:v('bill_status'), quote_vat:document.getElementById('crE_quote_vat').checked,
+  var adm = { client_name:v('client_name')||null, client_contact:v('client_contact')||null, quote_krw:manToWon(v('quote_krw')),
+              other_cost_krw:manToWon(v('other_cost_krw')), bill_status:v('bill_status'), quote_vat:document.getElementById('crE_quote_vat').checked,
               memo:v('memo')||null, updated_at:new Date().toISOString() };
   try{
     var id = C.editProject, r;
@@ -374,7 +378,7 @@ function renderProjectDetail(){
     +   '<div><div class="l">청구 상태</div><div class="v" style="font-family:inherit;font-size:14px">'+(pa.bill_status&&pa.bill_status!=='none'?ST_BILL[pa.bill_status]:'미청구')+'</div></div>'
     + '</div>'
     + (pa.memo?'<div class="note" style="margin:-6px 0 12px">메모: '+e(pa.memo)+'</div>':'')
-    + '<div class="cr-wrap"><table class="cr-t wide"><thead><tr><th>감독</th><th>희망 포지션 · 남긴 말</th><th>상태</th><th style="min-width:110px">페이 (세전)</th><th style="min-width:96px">실비</th><th>구분</th><th style="text-align:right">지급액</th><th>지급</th><th></th></tr></thead><tbody>'
+    + '<div class="cr-wrap"><table class="cr-t wide"><thead><tr><th>감독</th><th>희망 포지션 · 남긴 말</th><th>상태</th><th style="min-width:110px">페이 (세전, 만원)</th><th style="min-width:96px">실비 (만원)</th><th>구분</th><th style="text-align:right">지급액</th><th>지급</th><th></th></tr></thead><tbody>'
     + (as.length ? as.map(function(a){
         var x=mem(a.user_id)||{}, py=C.pay[a.id]||{}, ma=C.madmin[a.user_id]||{}, conf=a.status==='confirmed';
         var defPay = (py.pay_krw===null||py.pay_krw===undefined) && ma.day_rate ? n(ma.day_rate)*days(p) : py.pay_krw;
@@ -383,8 +387,8 @@ function renderProjectDetail(){
         return '<tr data-app="'+a.id+'"><td><a style="cursor:pointer;text-decoration:underline" onclick="crewOpenMember(\''+a.user_id+'\')"><b>'+e(x.name||'?')+'</b></a><div class="cr-meta">'+e(x.specialty||'')+' · '+bizLabel(x)+(ma.day_rate?' · 일당 '+won(ma.day_rate):'')+'</div></td>'
           +'<td class="cr-note">'+(a.role?'<b>'+e(a.role)+'</b>\n':'')+e(a.note||'')+'</td><td>'+stA(a.status)+'</td>'
           +(conf
-            ? '<td><input class="cr-in" inputmode="numeric" data-k="pay_krw" value="'+e(defPay===null||defPay===undefined?'':defPay)+'" oninput="crewRowCalc(this)"></td>'
-             +'<td><input class="cr-in" inputmode="numeric" data-k="extra_krw" value="'+e(py.extra_krw===null||py.extra_krw===undefined?'':py.extra_krw)+'" oninput="crewRowCalc(this)"></td>'
+            ? '<td><input class="cr-in" inputmode="decimal" data-k="pay_krw" placeholder="예: 35" value="'+e(toMan(defPay))+'" oninput="crewRowCalc(this)"></td>'
+             +'<td><input class="cr-in" inputmode="decimal" data-k="extra_krw" placeholder="예: 3" value="'+e(toMan(py.extra_krw))+'" oninput="crewRowCalc(this)"></td>'
              +'<td><select class="cr-in" data-k="tax_type" onchange="crewRowCalc(this)">'+Object.keys(TAX).map(function(k){ return '<option value="'+k+'"'+(tt===k?' selected':'')+'>'+TAX[k]+'</option>'; }).join('')+'</select></td>'
              +'<td class="cr-num" data-net>'+won(c.net)+'</td>'
              +'<td><label class="cr-check"><input type="checkbox" data-k="paid"'+(py.paid?' checked':'')+'> <span class="cr-meta">'+e(py.paid_at||'')+'</span></label></td>'
@@ -404,14 +408,14 @@ function renderProjectDetail(){
 }
 window.crewRowCalc = function(el){
   var tr=el.closest('tr'); var g=function(k){ var x=tr.querySelector('[data-k="'+k+'"]'); return x?x.value:''; };
-  var c=calcPay({pay_krw:numOrNull(g('pay_krw')), extra_krw:numOrNull(g('extra_krw')), tax_type:g('tax_type')});
+  var c=calcPay({pay_krw:manToWon(g('pay_krw')), extra_krw:manToWon(g('extra_krw')), tax_type:g('tax_type')});
   tr.querySelector('[data-net]').textContent=won(c.net);
 };
 window.crewSavePay = async function(appId){
   var tr=document.querySelector('tr[data-app="'+appId+'"]'); if(!tr) return;
   var g=function(k){ var x=tr.querySelector('[data-k="'+k+'"]'); return x?x.value:''; };
   var paid=tr.querySelector('[data-k="paid"]').checked, old=C.pay[appId]||{};
-  var row={ application_id:appId, pay_krw:numOrNull(g('pay_krw')), extra_krw:numOrNull(g('extra_krw')), tax_type:g('tax_type'),
+  var row={ application_id:appId, pay_krw:manToWon(g('pay_krw')), extra_krw:manToWon(g('extra_krw')), tax_type:g('tax_type'),
             paid:paid, paid_at: paid ? (old.paid_at||today()) : null, updated_at:new Date().toISOString() };
   var r=await sb.from('crew_pay').upsert(row); if (r.error) return dbErr(r.error);
   flash('페이를 저장했습니다.'); await load(); render(curPage());
@@ -503,7 +507,7 @@ function renderMemberDetail(){
   var hist=C.apps.filter(function(a){ return a.user_id===m.user_id; }).map(function(a){ return {a:a,p:proj(a.project_id)||{}}; })
                  .sort(function(x,y){ return (x.p.date_start||'')<(y.p.date_start||'')?1:-1; });
   var sumNet=0, sumUnpaid=0; hist.forEach(function(h){ if(h.a.status!=='confirmed') return; var c=calcPay(C.pay[h.a.id]); sumNet+=c.net; if(!(C.pay[h.a.id]||{}).paid) sumUnpaid+=c.net; });
-  function f(k,l,val,type){ return '<div class="field"><label>'+l+'</label><input id="crM_'+k+'" type="'+(type||'text')+'" value="'+e(val)+'"></div>'; }
+  function f(k,l,val,type){ return '<div class="field"><label>'+l+'</label><input id="crM_'+k+'" type="'+(type||'text')+'"'+(type==='number'?' step="any"':'')+' value="'+e(val)+'"></div>'; }
   box.innerHTML = '<h2>'+e(m.name)+' <span class="cr-meta" style="font-weight:400;margin-left:8px">'+e(m.email||'')+' · 가입 '+e(fmtDate(m.created_at))+'</span></h2>'
     + '<div class="sub">'+stM(m.status)+'</div>'
     + '<div class="rowflex" style="margin-bottom:6px">'
@@ -517,7 +521,7 @@ function renderMemberDetail(){
     + '<div class="cr-grid3">'+f('bank_name','은행',m.bank_name)+f('bank_account','계좌번호',m.bank_account)+f('bank_holder','예금주',m.bank_holder)+'</div>'
     + '<div class="field"><label>경력 소개</label><textarea id="crM_career" rows="3">'+e(m.career)+'</textarea></div>'
     + '<div class="cr-sec">관리자 전용 — 감독에게 보이지 않음</div>'
-    + '<div class="grid2">'+f('day_rate','기본 일당 (원) — 확정 시 페이 자동 입력',ma.day_rate,'number')+f('grade','등급 / 포지션',ma.grade)+'</div>'
+    + '<div class="grid2">'+f('day_rate','기본 일당 (만원) — 확정 시 페이 자동 입력',toMan(ma.day_rate),'number')+f('grade','등급 / 포지션',ma.grade)+'</div>'
     + '<div class="field"><label>관리 메모</label><textarea id="crM_memo" rows="2">'+e(ma.memo)+'</textarea></div>'
     + '<div class="rowflex"><button class="btn btn-pri" onclick="crewSaveMember(\''+m.user_id+'\')">저장</button><button class="btn btn-out" onclick="crewCloseMember()">닫기</button></div>'
     + '<div class="cr-sec">참여 기록 · 지급액 합계 '+won(sumNet)+'원 · 미지급 '+won(sumUnpaid)+'원</div>'
@@ -536,7 +540,7 @@ window.crewSaveMember = async function(uid){
             bank_holder:g('bank_holder')||null, career:g('career')||null };
   if (!row.name){ flash('이름은 비울 수 없습니다.', true); return; }
   var r=await sb.from('crew_members').update(row).eq('user_id', uid); if (r.error) return dbErr(r.error);
-  r=await sb.from('crew_member_admin').upsert({ user_id:uid, day_rate:numOrNull(g('day_rate')), grade:g('grade')||null, memo:g('memo')||null, updated_at:new Date().toISOString() });
+  r=await sb.from('crew_member_admin').upsert({ user_id:uid, day_rate:manToWon(g('day_rate')), grade:g('grade')||null, memo:g('memo')||null, updated_at:new Date().toISOString() });
   if (r.error) return dbErr(r.error);
   flash('저장했습니다.'); await load(); render('crew-members');
 };
@@ -591,7 +595,7 @@ window.crewTogglePaid = async function(appId, on){
 };
 window.crewSettleCsv = function(){
   var rows=settleRows();
-  var head=['날짜','프로젝트','감독','구분','사업자등록번호','페이(세전)','실비','원천세','VAT','지급액','은행','계좌번호','예금주','지급','지급일'];
+  var head=['날짜','프로젝트','감독','구분','사업자등록번호','페이(세전,원)','실비(원)','원천세(원)','VAT(원)','지급액(원)','은행','계좌번호','예금주','지급','지급일'];
   var lines=[head].concat(rows.map(function(r){ var c=calcPay(r.py), tt=r.py.tax_type||'withholding';
     return [dRange(r.p), r.p.title, r.m.name, TAX[tt], r.m.biz_no||'', c.pay, c.extra, c.tax, c.vat, c.net, r.m.bank_name||'', r.m.bank_account||'', r.m.bank_holder||'', r.py.paid?'Y':'N', r.py.paid_at||'']; }));
   var csv='﻿'+lines.map(function(l){ return l.map(function(x){ x=String(x===null||x===undefined?'':x); if (typeof x==='string' && /^[=+\-@\t\r]/.test(x) && isNaN(Number(x))) x="'"+x; return /[",\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x; }).join(','); }).join('\r\n');
