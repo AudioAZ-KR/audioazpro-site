@@ -177,7 +177,7 @@ function projMargin(p){
 }
 function travelTag(p){ return p ? (p.depart_day_before?' <span class="cr-meta" style="margin-left:6px">전날 출발</span>':'')+(p.return_day_after?' <span class="cr-meta" style="margin-left:6px">다음날 복귀</span>':'') : ''; }
 function tentTag(p){ return travelTag(p)+(p && p.is_private ? ' <span class="cr-st r" style="margin-left:6px;vertical-align:middle" title="감독에게 보이지 않음"><i></i>비공개</span>' : '') + (p && p.is_tentative ? ' <span class="cr-st a" style="margin-left:6px;vertical-align:middle" title="임시 픽스 — 변동·취소 가능"><i></i>예정</span>' : ''); }
-function stP(s){ var c={open:'g',draft:'d',closed:'a',done:'b',cancelled:'d'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_PROJ[s]||s)+'</span>'; }
+function stP(s, p){ var c={open:'g',draft:'d',closed:'a',done:'b',cancelled:'d'}[s]||'d'; var t=(s==='closed'&&p&&p.auto_closed)?'정원 마감':(ST_PROJ[s]||s); return '<span class="cr-st '+c+'"><i></i>'+t+'</span>'; }
 function stA(s){ var c={applied:'a',confirmed:'g',declined:'r',cancelled:'d'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_APP[s]||s)+'</span>'; }
 function stM(s){ var c={pending:'a',active:'g',inactive:'d',deleted:'r'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_MEM[s]||s)+'</span>'; }
 /* 전화번호 자동 하이픈 (01035470502 → 010-3547-0502, 02·지역번호·1588 대표번호 포함) */
@@ -318,7 +318,7 @@ function renderDash(){
                      .sort(function(a,b){ return a.date_start<b.date_start?-1:1; });
   document.getElementById('crDashUp').innerHTML = up.length ? '<table class="cr-t"><thead><tr><th>날짜</th><th>프로젝트</th><th>장소</th><th>상태</th><th>확정 감독</th><th>신청</th></tr></thead><tbody>'
     + up.map(function(p){ var as=appsOf(p.id), cf=as.filter(function(a){return a.status==='confirmed';}), ap=as.filter(function(a){return a.status==='applied';});
-        return '<tr style="cursor:pointer" onclick="crewOpenProject(\''+p.id+'\')"><td class="cr-date">'+e(dRange(p))+'</td><td><b>'+e(p.title)+'</b>'+tentTag(p)+(p.call_time?'<div class="cr-meta">콜 '+e(p.call_time)+'</div>':'')+'</td><td>'+e(p.venue||'—')+'</td><td>'+stP(p.status)+'</td>'
+        return '<tr style="cursor:pointer" onclick="crewOpenProject(\''+p.id+'\')"><td class="cr-date">'+e(dRange(p))+'</td><td><b>'+e(p.title)+'</b>'+tentTag(p)+(p.call_time?'<div class="cr-meta">콜 '+e(p.call_time)+'</div>':'')+'</td><td>'+e(p.venue||'—')+'</td><td>'+stP(p.status,p)+'</td>'
           +'<td>'+(cf.length?cf.map(function(a){ var x=mem(a.user_id); return e(x?x.name:'?'); }).join(', '):'<span class="cr-meta">없음</span>')+(p.headcount?' <span class="cr-meta">/ '+p.headcount+'명</span>':'')+'</td>'
           +'<td class="cr-num">'+ap.length+'</td></tr>'; }).join('') + '</tbody></table>'
     : '<div class="cr-empty">예정된 일정이 없습니다.</div>';
@@ -367,7 +367,7 @@ window.crewRenderProjects = function(){
   document.getElementById('crPRows').innerHTML = rows.length ? rows.map(function(p){
     var as=appsOf(p.id), ap=as.filter(function(a){return a.status==='applied'||a.status==='confirmed';}).length, cf=as.filter(function(a){return a.status==='confirmed';}).length;
     var pa=C.padmin[p.id]||{}, cost=projCost(p.id), mg=projMargin(p);
-    return '<tr class="'+(C.openProject===p.id?'sel':'')+'"><td class="cr-date">'+e(dRange(p))+'</td><td><b>'+e(p.title)+'</b>'+tentTag(p)+(pa.client_name?'<div class="cr-meta">'+e(pa.client_name)+'</div>':'')+'</td><td>'+e(p.venue||'—')+'</td><td>'+stP(p.status)+'</td>'
+    return '<tr class="'+(C.openProject===p.id?'sel':'')+'"><td class="cr-date">'+e(dRange(p))+'</td><td><b>'+e(p.title)+'</b>'+tentTag(p)+(pa.client_name?'<div class="cr-meta">'+e(pa.client_name)+'</div>':'')+'</td><td>'+e(p.venue||'—')+'</td><td>'+stP(p.status,p)+'</td>'
       +'<td class="cr-num">'+ap+' / '+cf+(p.headcount?' <span class="cr-meta">('+p.headcount+')</span>':'')+'</td>'
       +'<td class="cr-num">'+won(pa.quote_krw)+'</td><td class="cr-num">'+won(cost)+'</td>'
       +'<td class="cr-num '+(mg===null?'':(mg<0?'cr-neg':''))+'">'+(mg===null?'—':won(mg))+'</td><td style="font-size:12.5px">'+(ST_BILL[pa.bill_status||'none'])+'</td>'
@@ -389,6 +389,7 @@ window.crewEditProject = function(id){
     + '<label class="cr-check"><input type="checkbox" id="crE_return"'+(p&&p.return_day_after?' checked':'')+'> 다음날 복귀</label>'
     + '<span class="cr-meta">감독 화면·캘린더에 이동일까지 표시 (기본 일당 자동 계산은 공연일 기준)</span></div>'
     + '<div class="grid2">'+fld('roles','모집 포지션',p&&p.roles,'text','예: FOH 1, 모니터 1, 시스템 1')+fld('headcount','모집 인원',p&&p.headcount,'number')+'</div>'
+    + '<div class="cr-meta" style="margin:-4px 0 10px">확정 인원이 모집 인원에 차면 자동으로 \'정원 마감\'되어 새 신청이 막힙니다. 확정이 취소되면 다시 모집 중으로 열립니다. 더 받으려면 모집 인원을 늘리세요.</div>'
     + '<div class="field"><label>상세 내용 (모집 중이면 모든 감독에게 보임)</label><textarea id="crE_description" rows="5" placeholder="장비 구성, 복장, 식사, 리허설 일정 등">'+e(p&&p.description)+'</textarea></div>'
     + presetBar('description')
     + '<div class="grid2"><div class="field"><label>모집 상태</label><select id="crE_status">'+['draft','open','closed','done','cancelled'].map(function(s){ return '<option value="'+s+'"'+(((p&&p.status)||'open')===s?' selected':'')+'>'+ST_PROJ[s]+(s==='draft'?' (감독에게 안 보임)':'')+'</option>'; }).join('')+'</select></div>'
@@ -647,7 +648,7 @@ function renderProjectDetail(){
   var addable = C.members.filter(function(m){ return m.status==='active' && !assigned[m.user_id]; });
  box.innerHTML = '<h2>'+e(p.title)+tentTag(p)+' <span class="cr-meta" style="font-weight:400;margin-left:8px">'+e(dRange(p))+' · '+days(p)+'일'+(p.venue?' · '+e(p.venue):'')+'</span>'
     + '<button class="tbtn" style="float:right" onclick="crewEditProject(\''+p.id+'\')">프로젝트 수정</button></h2>'
-    + '<div class="sub">'+stP(p.status)+(p.roles?' &nbsp; 모집: '+e(p.roles):'')+(p.call_time?' &nbsp; 콜: '+e(p.call_time):'')+(pa.client_name?' &nbsp; 클라이언트: '+e(pa.client_name)+(pa.client_contact?' ('+e(pa.client_contact)+')':''):'')+'</div>'
+    + '<div class="sub">'+stP(p.status,p)+(p.roles?' &nbsp; 모집: '+e(p.roles):'')+(p.call_time?' &nbsp; 콜: '+e(p.call_time):'')+(pa.client_name?' &nbsp; 클라이언트: '+e(pa.client_name)+(pa.client_contact?' ('+e(pa.client_contact)+')':''):'')+'</div>'
     + '<div class="cr-sum">'
     +   '<div><div class="l">견적 (공급가)</div><div class="v">'+won(q)+'</div></div>'
     +   '<div><div class="l">청구 총액'+(pa.quote_vat===false?'':' (VAT 포함)')+'</div><div class="v">'+(q===null||q===undefined?'—':won(n(q)+vatQ))+'</div></div>'
