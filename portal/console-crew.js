@@ -127,7 +127,7 @@ addSection('crew-members',
  + '<select class="cr-in" id="crMF" onchange="crewRenderMembers()" style="width:auto"><option value="">전체</option><option value="pending">승인 대기</option><option value="active">활동</option><option value="inactive">비활성</option><option value="deleted">탈퇴</option></select>'
  + '<button class="tbtn" onclick="crewReload()">새로고침</button>'
  + '<span class="cr-meta" style="margin-left:auto">가입 = 초대 코드 필수</span></div>'
- + '<div class="card" style="margin-top:0"><div class="cr-wrap"><table class="cr-t wide"><thead><tr><th>이름</th><th>분야</th><th>연락처</th><th>사업자</th><th style="text-align:right">기본 일당</th><th>등급</th><th style="text-align:right">확정 참여</th><th>상태</th><th></th></tr></thead><tbody id="crMRows"></tbody></table></div></div>'
+ + '<div class="card" style="margin-top:0"><div class="cr-wrap"><table class="cr-t wide"><thead><tr><th>이름</th><th>분야</th><th>연락처</th><th>사업자</th><th style="text-align:right">기본 일당</th><th>등급</th><th style="text-align:right">확정 참여</th><th>서류</th><th>상태</th><th></th></tr></thead><tbody id="crMRows"></tbody></table></div></div>'
  + '<div class="card" id="crMDetail" style="display:none"></div>');
 
 addSection('crew-settle',
@@ -180,6 +180,28 @@ function tentTag(p){ return travelTag(p)+(p && p.is_private ? ' <span class="cr-
 function stP(s){ var c={open:'g',draft:'d',closed:'a',done:'b',cancelled:'d'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_PROJ[s]||s)+'</span>'; }
 function stA(s){ var c={applied:'a',confirmed:'g',declined:'r',cancelled:'d'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_APP[s]||s)+'</span>'; }
 function stM(s){ var c={pending:'a',active:'g',inactive:'d',deleted:'r'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_MEM[s]||s)+'</span>'; }
+/* ── 감독 제출 서류 (안전교육 이수증·신분증·통장 사본·기타) ── */
+var DOC_KIND={ safety:'안전교육', id:'신분증', bank:'통장', other:'기타' };
+function docsOf(uid){ return (C.docs||[]).filter(function(d){ return d.user_id===uid; }); }
+function docBadges(uid){
+  var ds=docsOf(uid);
+  return ['safety','id','bank'].map(function(k){ var ok=ds.some(function(d){ return d.kind===k; });
+    return '<span class="cr-st '+(ok?'g':'d')+'" style="margin-right:6px" title="'+DOC_KIND[k]+(ok?' 제출':' 미제출')+'"><i></i>'+DOC_KIND[k]+'</span>'; }).join('');
+}
+function docList(uid){
+  var ds=docsOf(uid);
+  if (!ds.length) return '<div class="cr-empty" style="text-align:left;padding:4px 0">아직 제출한 서류가 없습니다.</div>';
+  return '<table class="cr-t"><tbody>'+ds.map(function(d){
+    return '<tr><td style="width:90px"><span class="cr-st b"><i></i>'+(DOC_KIND[d.kind]||d.kind)+'</span></td><td><b>'+e(d.title)+'</b><div class="cr-meta">'+(d.size_bytes?(d.size_bytes>=1048576?(d.size_bytes/1048576).toFixed(1)+'MB':Math.max(1,Math.round(d.size_bytes/1024))+'KB'):'')+' · '+e(fmtDateTime(d.created_at))+'</div></td>'
+      +'<td style="width:90px"><button class="tbtn" onclick="crewOpenDoc(\''+d.id+'\')">열기</button></td></tr>'; }).join('')+'</tbody></table>';
+}
+window.crewOpenDoc = async function(id){
+  var d=(C.docs||[]).filter(function(x){ return x.id===id; })[0]; if(!d) return;
+  var w=window.open('', '_blank');
+  var r=await sb.storage.from('crew-docs').createSignedUrl(d.storage_path, 120);
+  if (r.error){ if(w) w.close(); return dbErr(r.error); }
+  if (w) w.location=r.data.signedUrl; else window.open(r.data.signedUrl,'_blank','noopener');
+};
 function bizLabel(m){ return m ? (m.is_business ? '사업자' : '개인') : '—'; }
 function e(v){ return esc(v===null||v===undefined?'':v); }
 function today(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -211,7 +233,8 @@ async function load(){
       sb.from('crew_text_presets').select('*').order('title'),
       sb.from('crew_admin_feed').select('token').eq('id',1).maybeSingle(),
       sb.from('crew_invite_uses').select('invite_id,user_id,used_at').order('used_at',{ascending:false}).limit(1000),
-      sb.from('crew_contact_presets').select('*').order('name')
+      sb.from('crew_contact_presets').select('*').order('name'),
+      sb.from('crew_member_docs').select('id,user_id,kind,title,storage_path,size_bytes,created_at').order('created_at',{ascending:false})
     ]);
     for (var i=0;i<r.length;i++) if (r[i].error) throw r[i].error;
     C.members=r[0].data||[]; C.projects=r[2].data||[]; C.apps=r[4].data||[];
@@ -223,6 +246,7 @@ async function load(){
     C.feed=(r[8].data&&r[8].data.token)||null;
     C.inviteUses=r[9].data||[];
     C.contacts=r[10].data||[];
+    C.docs=r[11].data||[];
     C.loaded = true;
   }catch(err){ dbErr(err); }
   C.busy = false;
@@ -767,9 +791,9 @@ window.crewRenderMembers = function(){
   document.getElementById('crMRows').innerHTML = rows.length ? rows.map(function(m){
     var ma=C.madmin[m.user_id]||{}, cnt=C.apps.filter(function(a){ return a.user_id===m.user_id && a.status==='confirmed'; }).length;
     return '<tr class="'+(C.openMember===m.user_id?'sel':'')+'"><td><b>'+e(m.name)+'</b><div class="cr-meta">'+e(m.email||'')+'</div></td><td>'+e(m.specialty||'—')+'</td><td class="mono">'+e(m.phone||'—')+'</td>'
-      +'<td>'+bizLabel(m)+(m.is_business&&m.biz_no?'<div class="cr-meta">'+e(m.biz_no)+'</div>':'')+'</td><td class="cr-num">'+won(ma.day_rate)+'</td><td>'+e(ma.grade||'—')+'</td><td class="cr-num">'+cnt+'</td><td>'+stM(m.status)+'</td>'
+      +'<td>'+bizLabel(m)+(m.is_business&&m.biz_no?'<div class="cr-meta">'+e(m.biz_no)+'</div>':'')+'</td><td class="cr-num">'+won(ma.day_rate)+'</td><td>'+e(ma.grade||'—')+'</td><td class="cr-num">'+cnt+'</td><td>'+docBadges(m.user_id)+'</td><td>'+stM(m.status)+'</td>'
       +'<td><div class="cr-actions">'+(m.status==='pending'?'<button class="tbtn" onclick="crewSetMember(\''+m.user_id+'\',\'active\')">승인</button>':'')+'<button class="tbtn" onclick="crewOpenMember(\''+m.user_id+'\')">상세</button></div></td></tr>';
-  }).join('') : '<tr><td colspan="9" class="cr-empty">등록된 감독이 없습니다. 위에서 초대 코드를 발급해 감독에게 보내세요.</td></tr>';
+  }).join('') : '<tr><td colspan="10" class="cr-empty">등록된 감독이 없습니다. 위에서 초대 코드를 발급해 감독에게 보내세요.</td></tr>';
 };
 window.crewOpenMember = async function(uid){
   C.openMember = uid;
@@ -800,6 +824,7 @@ function renderMemberDetail(){
     + '<div class="grid2">'+f('day_rate','기본 일당 (만원) — 확정 시 페이 자동 입력',toMan(ma.day_rate),'number')+f('grade','등급 / 포지션',ma.grade)+'</div>'
     + '<div class="field"><label>관리 메모</label><textarea id="crM_memo" rows="2">'+e(ma.memo)+'</textarea></div>'
     + '<div class="rowflex"><button class="btn btn-pri" onclick="crewSaveMember(\''+m.user_id+'\')">저장</button><button class="btn btn-out" onclick="crewCloseMember()">닫기</button></div>'
+    + '<div class="cr-sec">제출 서류 (본인·관리자만 볼 수 있음)</div>'+docList(m.user_id)
     + '<div class="cr-sec">참여 기록 · 지급액 합계 '+won(sumNet)+'원 · 미지급 '+won(sumUnpaid)+'원</div>'
     + (hist.length ? '<div class="cr-wrap"><table class="cr-t"><thead><tr><th>날짜</th><th>프로젝트</th><th>상태</th><th style="text-align:right">페이</th><th style="text-align:right">지급액</th><th>지급</th></tr></thead><tbody>'
       + hist.map(function(h){ var py=C.pay[h.a.id]||{}, c=calcPay(py), conf=h.a.status==='confirmed';
