@@ -210,7 +210,8 @@ async function load(){
       sb.from('crew_invites').select('*').order('created_at',{ascending:false}).limit(200),
       sb.from('crew_text_presets').select('*').order('title'),
       sb.from('crew_admin_feed').select('token').eq('id',1).maybeSingle(),
-      sb.from('crew_invite_uses').select('invite_id,user_id,used_at').order('used_at',{ascending:false}).limit(1000)
+      sb.from('crew_invite_uses').select('invite_id,user_id,used_at').order('used_at',{ascending:false}).limit(1000),
+      sb.from('crew_contact_presets').select('*').order('name')
     ]);
     for (var i=0;i<r.length;i++) if (r[i].error) throw r[i].error;
     C.members=r[0].data||[]; C.projects=r[2].data||[]; C.apps=r[4].data||[];
@@ -221,6 +222,7 @@ async function load(){
     C.presets=r[7].data||[];
     C.feed=(r[8].data&&r[8].data.token)||null;
     C.inviteUses=r[9].data||[];
+    C.contacts=r[10].data||[];
     C.loaded = true;
   }catch(err){ dbErr(err); }
   C.busy = false;
@@ -356,6 +358,7 @@ window.crewEditProject = function(id){
     + '<div class="cr-grid3"><div class="field"><label>현장 담당자</label><input id="crE_cname" placeholder="예: 김형준"></div>'
     + '<div class="field"><label>직급</label><input id="crE_ctitle" placeholder="예: 대표 · 팀장"></div>'
     + '<div class="field"><label>담당자 연락처</label><input id="crE_cphone" type="tel" placeholder="010-0000-0000"></div></div>'
+    + contactBar()
     + '<div class="field"><label>스탭 전달사항</label><textarea id="crE_privnotes" rows="5" placeholder="집합 장소 상세, 주차, 연락처, 동선, 무전 채널 등">'+(p?'':'')+'</textarea></div>'
     + presetBar('privnotes')
     + (p ? '<div id="crPFiles" class="cr-empty" style="text-align:left;padding:4px 0">자료 불러오는 중…</div>'
@@ -375,6 +378,47 @@ window.crewEditProject = function(id){
 };
 
 /* ── 확정자 전용 자료 (관리자) ──────────────────────────────────────────── */
+/* ── 현장 담당자 프리셋 (관리자 전용) ── */
+function contactOpts(){ return '<option value="">담당자 불러오기…</option>'+(C.contacts||[]).map(function(x){ return '<option value="'+x.id+'">'+e(x.name)+(x.title?' · '+e(x.title):'')+(x.phone?' · '+e(x.phone):'')+'</option>'; }).join(''); }
+function contactBar(){
+  return '<div class="rowflex" style="margin:-4px 0 14px"><select class="cr-in" id="crCP" style="width:auto;max-width:300px;font-family:inherit" onchange="crewContactUse()">'+contactOpts()+'</select>'
+    + '<button class="tbtn" type="button" onclick="crewContactSave()">지금 담당자를 프리셋으로 저장</button>'
+    + '<button class="tbtn" type="button" onclick="crewContactManage()">담당자 관리</button></div>'
+    + '<div id="crCPM" style="display:none;margin:-6px 0 14px"></div>';
+}
+function contactVals(){ return { name:(document.getElementById('crE_cname').value||'').trim(), title:(document.getElementById('crE_ctitle').value||'').trim(), phone:(document.getElementById('crE_cphone').value||'').trim() }; }
+async function reloadContacts(){ var r=await sb.from('crew_contact_presets').select('*').order('name'); if(!r.error) C.contacts=r.data||[]; var sel=document.getElementById('crCP'); if(sel) sel.innerHTML=contactOpts(); var m=document.getElementById('crCPM'); if(m && m.style.display!=='none') crewContactManage(true); }
+window.crewContactUse = function(){
+  var id=document.getElementById('crCP').value; if(!id) return;
+  var c=(C.contacts||[]).filter(function(x){ return x.id===id; })[0]; if(!c) return;
+  document.getElementById('crE_cname').value=c.name||''; document.getElementById('crE_ctitle').value=c.title||''; document.getElementById('crE_cphone').value=c.phone||'';
+  document.getElementById('crCP').value=''; flash(c.name+' 담당자를 넣었습니다.');
+};
+window.crewContactSave = async function(){
+  var v=contactVals(); if(!v.name){ flash('담당자 이름을 먼저 적어 주세요.', true); return; }
+  var same=(C.contacts||[]).filter(function(x){ return x.name===v.name && (x.title||'')===v.title; })[0], r;
+  if (same){ if(!confirm(v.name+(v.title?' '+v.title:'')+' 프리셋이 이미 있습니다. 연락처를 지금 값으로 바꿀까요?')) return;
+    r=await sb.from('crew_contact_presets').update({ phone:v.phone||null, updated_at:new Date().toISOString() }).eq('id', same.id); }
+  else r=await sb.from('crew_contact_presets').insert({ name:v.name, title:v.title||null, phone:v.phone||null });
+  if (r.error) return dbErr(r.error);
+  flash('담당자 프리셋을 저장했습니다.'); reloadContacts();
+};
+window.crewContactManage = function(keep){
+  var box=document.getElementById('crCPM'); if(!box) return;
+  if (!keep && box.style.display!=='none'){ box.style.display='none'; return; }
+  box.style.display='block';
+  box.innerHTML=(C.contacts||[]).length ? '<table class="cr-t"><tbody>'+C.contacts.map(function(x){
+      return '<tr><td><b>'+e(x.name)+'</b> <span class="cr-meta">'+e(x.title||'')+'</span></td><td class="mono">'+e(x.phone||'—')+'</td>'
+        +'<td style="width:80px"><button class="tbtn danger" type="button" onclick="crewContactDel(\''+x.id+'\')">삭제</button></td></tr>'; }).join('')+'</tbody></table>'
+      +'<p class="note" style="margin-top:6px">연락처를 고치려면: 불러와서 번호를 고친 뒤 [지금 담당자를 프리셋으로 저장].</p>'
+    : '<p class="note" style="margin:0">저장된 담당자가 없습니다. 담당자를 적고 [지금 담당자를 프리셋으로 저장]을 누르세요.</p>';
+};
+window.crewContactDel = async function(id){
+  var c=(C.contacts||[]).filter(function(x){ return x.id===id; })[0]; if(!c) return;
+  if (!confirm('담당자 프리셋 "'+c.name+'" 을(를) 삭제합니다. 이미 저장된 프로젝트의 담당자는 그대로 남습니다.')) return;
+  var r=await sb.from('crew_contact_presets').delete().eq('id', id); if (r.error) return dbErr(r.error);
+  reloadContacts();
+};
 async function prefillContact(){   // 새 프로젝트·담당자 빈 프로젝트: 가장 최근에 쓴 담당자를 미리 채운다
   var r=await sb.from('crew_project_private').select('contact_name,contact_title,contact_phone').not('contact_name','is',null).order('updated_at',{ascending:false}).limit(1);
   var d=(r.data||[])[0]; if(!d) return;
