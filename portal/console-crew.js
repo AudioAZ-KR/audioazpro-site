@@ -116,7 +116,7 @@ addSection('crew-proj',
 addSection('crew-members',
    '<div class="card" style="margin-top:0"><h2>초대 코드</h2><div class="sub">감독은 초대 코드가 있어야 가입할 수 있습니다(웹 audioaz.co.kr/crew/). 코드 문구·사용 횟수·만료일을 직접 정하고 언제든 바꿀 수 있습니다. 여러 번 쓰는 코드는 아는 사람 누구나 가입하니, 퍼졌다 싶으면 바꾸거나 중지하세요.</div>'
  + '<div class="rowflex" style="align-items:flex-end;gap:10px">'
- +   '<div class="field" style="margin:0"><label>코드 (영문·숫자·-, 6~32자)</label><input class="cr-in" id="crIvCode" placeholder="비우면 자동 생성" style="width:190px;text-transform:uppercase;letter-spacing:.08em"></div>'
+ +   '<div class="field" style="margin:0"><label>코드 (영문·숫자·-, 32자까지 · 짧은 코드는 횟수·기한을 걸어 두세요)</label><input class="cr-in" id="crIvCode" placeholder="비우면 자동 생성" style="width:220px;text-transform:uppercase;letter-spacing:.08em"></div>'
  +   '<div class="field" style="margin:0"><label>메모</label><input class="cr-in" id="crIvLabel" placeholder="예: 2026 가을 크루 공용" style="width:220px;font-family:inherit"></div>'
  +   '<div class="field" style="margin:0"><label>사용 횟수</label><input class="cr-in" id="crIvMax" type="number" min="1" placeholder="빈칸 = 무제한" style="width:120px"></div>'
  +   '<div class="field" style="margin:0"><label>만료일</label><input class="cr-in" id="crIvExp" type="date" style="width:150px"></div>'
@@ -723,7 +723,7 @@ window.crewAssign = async function(pid){
 
 /* ── 감독 ──────────────────────────────────────────────────────────────── */
 /* ── 초대 코드 (사장님이 문구·횟수·만료를 정하고 바꿀 수 있음, 2026-09-24) ──────────── */
-var IV_RE=/^[A-Z0-9-]{6,32}$/;
+var IV_RE=/^[A-Z0-9-]{1,32}$/;
 function ivExpired(v){ return v.expires_at && new Date(v.expires_at) < new Date(); }
 function ivFull(v){ return v.max_uses!=null && v.use_count>=v.max_uses; }
 function ivLive(v){ return !v.revoked && !ivExpired(v) && !ivFull(v); }
@@ -764,11 +764,11 @@ function ivCode(){
 }
 function ivNorm(s){ return String(s||'').trim().toUpperCase().replace(/\s+/g,'-'); }
 function ivExpTs(d){ return d ? new Date(d+'T23:59:59+09:00').toISOString() : null; }   // 그날 밤 12시(한국 시간)까지
-function ivErr(err){ if (/duplicate|23505|crew_invites_code_key/i.test(err.message||'')) return flash('이미 있는 코드입니다. 다른 문구로 정해 주세요.', true); if (/crew_invites_code_check/i.test(err.message||'')) return flash('코드는 영문·숫자·하이픈(-) 6~32자로 정해 주세요.', true); dbErr(err); }
+function ivErr(err){ if (/duplicate|23505|crew_invites_code_key/i.test(err.message||'')) return flash('이미 있는 코드입니다. 다른 문구로 정해 주세요.', true); if (/crew_invites_code_check/i.test(err.message||'')) return flash('코드는 영문·숫자·하이픈(-)으로 32자 안에서 정해 주세요. (예: 4827, AZ-2026)', true); dbErr(err); }
 window.crewNewInvite = async function(){
   var code=ivNorm(document.getElementById('crIvCode').value), label=(document.getElementById('crIvLabel').value||'').trim()||null;
   var max=document.getElementById('crIvMax').value, exp=document.getElementById('crIvExp').value;
-  if (code && !IV_RE.test(code)) return flash('코드는 영문·숫자·하이픈(-) 6~32자로 정해 주세요.', true);
+  if (code && !IV_RE.test(code)) return flash('코드는 영문·숫자·하이픈(-)으로 32자 안에서 정해 주세요. (예: 4827, AZ-2026)', true);
   var row={ label:label, max_uses:max?Math.max(1,parseInt(max,10)):null, expires_at:ivExpTs(exp) }, r, tries=0;
   if (code){ row.code=code; r=await sb.from('crew_invites').insert(row); }
   else do { row.code=ivCode(); r=await sb.from('crew_invites').insert(row); tries++; } while (r.error && /duplicate|23505/.test(r.error.message) && tries<5);
@@ -781,7 +781,7 @@ window.crewEditInvite = function(id){ IV_EDIT=id; renderInvites(); var el=docume
 window.crewSaveInvite = async function(id){
   var v=C.invites.filter(function(x){ return x.id===id; })[0]; if(!v) return;
   var code=ivNorm(document.getElementById('ivE_code').value), max=document.getElementById('ivE_max').value, exp=document.getElementById('ivE_exp').value;
-  if (!IV_RE.test(code) && code!==v.code) return flash('코드는 영문·숫자·하이픈(-) 6~32자로 정해 주세요.', true);
+  if (!IV_RE.test(code) && code!==v.code) return flash('코드는 영문·숫자·하이픈(-)으로 32자 안에서 정해 주세요. (예: 4827, AZ-2026)', true);
   var mx=max?Math.max(1,parseInt(max,10)):null;
   if (mx!=null && mx<v.use_count) return flash('이미 '+v.use_count+'명이 썼습니다. 사용 횟수는 '+v.use_count+' 이상으로 정해 주세요.', true);
   if (code!==v.code && !confirm('코드를 '+v.code+' → '+code+' 로 바꿉니다. 옛 코드는 바로 쓸 수 없게 됩니다.')) return;
