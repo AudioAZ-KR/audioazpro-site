@@ -180,6 +180,21 @@ function tentTag(p){ return travelTag(p)+(p && p.is_private ? ' <span class="cr-
 function stP(s){ var c={open:'g',draft:'d',closed:'a',done:'b',cancelled:'d'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_PROJ[s]||s)+'</span>'; }
 function stA(s){ var c={applied:'a',confirmed:'g',declined:'r',cancelled:'d'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_APP[s]||s)+'</span>'; }
 function stM(s){ var c={pending:'a',active:'g',inactive:'d',deleted:'r'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_MEM[s]||s)+'</span>'; }
+/* 전화번호 자동 하이픈 (01035470502 → 010-3547-0502, 02·지역번호·1588 대표번호 포함) */
+function fmtPhone(v){
+  var d=String(v||'').replace(/\D/g,'').slice(0,12); if(!d) return '';
+  if (/^02/.test(d)){ if(d.length<=2) return d; if(d.length<=5) return d.slice(0,2)+'-'+d.slice(2); if(d.length<=9) return d.slice(0,2)+'-'+d.slice(2,5)+'-'+d.slice(5); return d.slice(0,2)+'-'+d.slice(2,6)+'-'+d.slice(6,10); }
+  if (/^1[5689]/.test(d)){ return d.length<=4 ? d : d.slice(0,4)+'-'+d.slice(4,8); }
+  if (/^050/.test(d) && d.length>11) return d.slice(0,4)+'-'+d.slice(4,8)+'-'+d.slice(8,12);
+  if (d.length<=3) return d; if (d.length<=6) return d.slice(0,3)+'-'+d.slice(3);
+  if (d.length<=10) return d.slice(0,3)+'-'+d.slice(3,6)+'-'+d.slice(6);
+  return d.slice(0,3)+'-'+d.slice(3,7)+'-'+d.slice(7,11);
+}
+document.addEventListener('input', function(ev){
+  var t=ev.target; if (!t || !t.matches || !t.matches('input[type=tel],input[data-phone]')) return;
+  var f=fmtPhone(t.value); if (f!==t.value){ t.value=f; try{ t.setSelectionRange(f.length,f.length); }catch(_){} }
+});
+window.fmtPhone=fmtPhone;
 /* ── 감독 제출 서류 (안전교육 이수증·신분증·통장 사본·기타) ── */
 var DOC_KIND={ safety:'안전교육', id:'신분증', bank:'통장', other:'기타' };
 function docsOf(uid){ return (C.docs||[]).filter(function(d){ return d.user_id===uid; }); }
@@ -309,7 +324,7 @@ function renderDash(){
     : '<div class="cr-empty">새 신청이 없습니다.</div>';
 
   document.getElementById('crDashPend').innerHTML = pend.length ? '<table class="cr-t"><thead><tr><th>요청</th><th>이름</th><th>남긴 말</th><th>연락처</th><th>사업자</th><th></th></tr></thead><tbody>'
-    + pend.map(function(x){ return '<tr><td class="cr-date">'+e(fmtDate(x.created_at))+'</td><td><b>'+e(x.name)+'</b><div class="cr-meta">'+e(x.email||'')+'</div></td><td class="cr-note">'+e(x.career||x.specialty||'—')+'</td><td class="mono">'+e(x.phone||'—')+'</td><td>'+bizLabel(x)+'</td>'
+    + pend.map(function(x){ return '<tr><td class="cr-date">'+e(fmtDate(x.created_at))+'</td><td><b>'+e(x.name)+'</b><div class="cr-meta">'+e(x.email||'')+'</div></td><td class="cr-note">'+e(x.career||x.specialty||'—')+'</td><td class="mono">'+e(fmtPhone(x.phone)||x.phone||'—')+'</td><td>'+bizLabel(x)+'</td>'
         +'<td><div class="cr-actions"><button class="tbtn" onclick="crewSetMember(\''+x.user_id+'\',\'active\')">승인</button><button class="tbtn danger" onclick="crewSetMember(\''+x.user_id+'\',\'inactive\')">거절</button><button class="tbtn" onclick="crewOpenMember(\''+x.user_id+'\')">상세</button></div></td></tr>'; }).join('') + '</tbody></table>'
     : '<div class="cr-empty">대기 중인 참여 요청이 없습니다.</div>';
 }
@@ -403,7 +418,7 @@ window.crewEditProject = function(id){
 
 /* ── 확정자 전용 자료 (관리자) ──────────────────────────────────────────── */
 /* ── 현장 담당자 프리셋 (관리자 전용) ── */
-function contactOpts(){ return '<option value="">담당자 불러오기…</option>'+(C.contacts||[]).map(function(x){ return '<option value="'+x.id+'">'+e(x.name)+(x.title?' · '+e(x.title):'')+(x.phone?' · '+e(x.phone):'')+'</option>'; }).join(''); }
+function contactOpts(){ return '<option value="">담당자 불러오기…</option>'+(C.contacts||[]).map(function(x){ return '<option value="'+x.id+'">'+e(x.name)+(x.title?' · '+e(x.title):'')+(x.phone?' · '+e(fmtPhone(x.phone)||x.phone):'')+'</option>'; }).join(''); }
 function contactBar(){
   return '<div class="rowflex" style="margin:-4px 0 14px"><select class="cr-in" id="crCP" style="width:auto;max-width:300px;font-family:inherit" onchange="crewContactUse()">'+contactOpts()+'</select>'
     + '<button class="tbtn" type="button" onclick="crewContactSave()">지금 담당자를 프리셋으로 저장</button>'
@@ -415,7 +430,7 @@ async function reloadContacts(){ var r=await sb.from('crew_contact_presets').sel
 window.crewContactUse = function(){
   var id=document.getElementById('crCP').value; if(!id) return;
   var c=(C.contacts||[]).filter(function(x){ return x.id===id; })[0]; if(!c) return;
-  document.getElementById('crE_cname').value=c.name||''; document.getElementById('crE_ctitle').value=c.title||''; document.getElementById('crE_cphone').value=c.phone||'';
+  document.getElementById('crE_cname').value=c.name||''; document.getElementById('crE_ctitle').value=c.title||''; document.getElementById('crE_cphone').value=fmtPhone(c.phone)||c.phone||'';
   document.getElementById('crCP').value=''; flash(c.name+' 담당자를 넣었습니다.');
 };
 window.crewContactSave = async function(){
@@ -432,7 +447,7 @@ window.crewContactManage = function(keep){
   if (!keep && box.style.display!=='none'){ box.style.display='none'; return; }
   box.style.display='block';
   box.innerHTML=(C.contacts||[]).length ? '<table class="cr-t"><tbody>'+C.contacts.map(function(x){
-      return '<tr><td><b>'+e(x.name)+'</b> <span class="cr-meta">'+e(x.title||'')+'</span></td><td class="mono">'+e(x.phone||'—')+'</td>'
+      return '<tr><td><b>'+e(x.name)+'</b> <span class="cr-meta">'+e(x.title||'')+'</span></td><td class="mono">'+e(fmtPhone(x.phone)||x.phone||'—')+'</td>'
         +'<td style="width:80px"><button class="tbtn danger" type="button" onclick="crewContactDel(\''+x.id+'\')">삭제</button></td></tr>'; }).join('')+'</tbody></table>'
       +'<p class="note" style="margin-top:6px">연락처를 고치려면: 불러와서 번호를 고친 뒤 [지금 담당자를 프리셋으로 저장].</p>'
     : '<p class="note" style="margin:0">저장된 담당자가 없습니다. 담당자를 적고 [지금 담당자를 프리셋으로 저장]을 누르세요.</p>';
@@ -790,7 +805,7 @@ window.crewRenderMembers = function(){
   });
   document.getElementById('crMRows').innerHTML = rows.length ? rows.map(function(m){
     var ma=C.madmin[m.user_id]||{}, cnt=C.apps.filter(function(a){ return a.user_id===m.user_id && a.status==='confirmed'; }).length;
-    return '<tr class="'+(C.openMember===m.user_id?'sel':'')+'"><td><b>'+e(m.name)+'</b><div class="cr-meta">'+e(m.email||'')+'</div></td><td>'+e(m.specialty||'—')+'</td><td class="mono">'+e(m.phone||'—')+'</td>'
+    return '<tr class="'+(C.openMember===m.user_id?'sel':'')+'"><td><b>'+e(m.name)+'</b><div class="cr-meta">'+e(m.email||'')+'</div></td><td>'+e(m.specialty||'—')+'</td><td class="mono">'+e(fmtPhone(m.phone)||m.phone||'—')+'</td>'
       +'<td>'+bizLabel(m)+(m.is_business&&m.biz_no?'<div class="cr-meta">'+e(m.biz_no)+'</div>':'')+'</td><td class="cr-num">'+won(ma.day_rate)+'</td><td>'+e(ma.grade||'—')+'</td><td class="cr-num">'+cnt+'</td><td>'+docBadges(m.user_id)+'</td><td>'+stM(m.status)+'</td>'
       +'<td><div class="cr-actions">'+(m.status==='pending'?'<button class="tbtn" onclick="crewSetMember(\''+m.user_id+'\',\'active\')">승인</button>':'')+'<button class="tbtn" onclick="crewOpenMember(\''+m.user_id+'\')">상세</button></div></td></tr>';
   }).join('') : '<tr><td colspan="10" class="cr-empty">등록된 감독이 없습니다. 위에서 초대 코드를 발급해 감독에게 보내세요.</td></tr>';
@@ -815,7 +830,7 @@ function renderMemberDetail(){
     + (m.status==='active'?'<button class="btn btn-out" onclick="crewSetMember(\''+m.user_id+'\',\'inactive\')">비활성으로</button>':'')
     + (m.status==='inactive'?'':'')+'</div>'
     + '<div class="cr-sec">감독이 입력한 정보 (필요하면 사장님이 고칠 수 있음)</div>'
-    + '<div class="grid2">'+f('name','이름',m.name)+f('phone','연락처',m.phone)+'</div>'
+    + '<div class="grid2">'+f('name','이름',m.name)+f('phone','연락처',fmtPhone(m.phone)||m.phone,'tel')+'</div>'
     + '<div class="grid2">'+f('specialty','주 분야',m.specialty)+'<div class="field"><label>구분</label><select id="crM_is_business"><option value="0"'+(m.is_business?'':' selected')+'>개인 (3.3% 원천징수)</option><option value="1"'+(m.is_business?' selected':'')+'>사업자 (세금계산서)</option></select></div></div>'
     + '<div class="grid2">'+f('biz_name','상호',m.biz_name)+f('biz_no','사업자등록번호',m.biz_no)+'</div>'
     + '<div class="cr-grid3">'+f('bank_name','은행',m.bank_name)+f('bank_account','계좌번호',m.bank_account)+f('bank_holder','예금주',m.bank_holder)+'</div>'
