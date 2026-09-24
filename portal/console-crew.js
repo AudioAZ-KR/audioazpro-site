@@ -9,7 +9,7 @@
 (function(){
 'use strict';
 
-var C = { members:[], madmin:{}, projects:[], padmin:{}, apps:[], pay:{}, invites:[], loaded:false, busy:false,
+var C = { members:[], madmin:{}, projects:[], padmin:{}, apps:[], pay:{}, invites:[], presets:[], priv:null, loaded:false, busy:false,
           openProject:null, openMember:null, editProject:null };
 
 var ST_PROJ = { draft:'작성 중', open:'모집 중', closed:'모집 마감', done:'완료', cancelled:'취소' };
@@ -198,7 +198,8 @@ async function load(){
       sb.from('crew_project_admin').select('*'),
       sb.from('crew_applications').select('*').order('created_at',{ascending:true}),
       sb.from('crew_pay').select('*'),
-      sb.from('crew_invites').select('*').order('created_at',{ascending:false}).limit(200)
+      sb.from('crew_invites').select('*').order('created_at',{ascending:false}).limit(200),
+      sb.from('crew_text_presets').select('*').order('title')
     ]);
     for (var i=0;i<r.length;i++) if (r[i].error) throw r[i].error;
     C.members=r[0].data||[]; C.projects=r[2].data||[]; C.apps=r[4].data||[];
@@ -206,6 +207,7 @@ async function load(){
     C.padmin={}; (r[3].data||[]).forEach(function(x){ C.padmin[x.project_id]=x; });
     C.pay={};    (r[5].data||[]).forEach(function(x){ C.pay[x.application_id]=x; });
     C.invites=r[6].data||[];
+    C.presets=r[7].data||[];
     C.loaded = true;
   }catch(err){ dbErr(err); }
   C.busy = false;
@@ -306,8 +308,14 @@ window.crewEditProject = function(id){
     + '<div class="grid2">'+fld('title','프로젝트명 *',p&&p.title,'text','예: ○○ 콘서트 SR')+fld('venue','장소',p&&p.venue,'text','예: 세종문화회관 대극장')+'</div>'
     + '<div class="cr-grid3">'+fld('date_start','시작일 *',p&&p.date_start,'date')+fld('date_end','종료일 (하루면 비움)',p&&p.date_end,'date')+fld('call_time','콜타임',p&&p.call_time,'text','예: 08:00 로드인')+'</div>'
     + '<div class="grid2">'+fld('roles','모집 포지션',p&&p.roles,'text','예: FOH 1, 모니터 1, 시스템 1')+fld('headcount','모집 인원',p&&p.headcount,'number')+'</div>'
-    + '<div class="field"><label>상세 내용 (감독에게 보임)</label><textarea id="crE_description" rows="4" placeholder="장비 구성, 복장, 식사, 리허설 일정 등">'+e(p&&p.description)+'</textarea></div>'
+    + '<div class="field"><label>상세 내용 (모집 중이면 모든 감독에게 보임)</label><textarea id="crE_description" rows="5" placeholder="장비 구성, 복장, 식사, 리허설 일정 등">'+e(p&&p.description)+'</textarea></div>'
+    + presetBar('description')
     + '<div class="field" style="max-width:260px"><label>상태</label><select id="crE_status">'+['draft','open','closed','done','cancelled'].map(function(s){ return '<option value="'+s+'"'+(((p&&p.status)||'open')===s?' selected':'')+'>'+ST_PROJ[s]+(s==='draft'?' (감독에게 안 보임)':'')+'</option>'; }).join('')+'</select></div>'
+    + '<div class="cr-sec">확정자 전용 — 이 프로젝트에 확정된 감독만 봄 (큐시트·링크·스탭 전달사항)</div>'
+    + '<div class="field"><label>스탭 전달사항</label><textarea id="crE_privnotes" rows="5" placeholder="집합 장소 상세, 주차, 연락처, 동선, 무전 채널 등">'+(p?'':'')+'</textarea></div>'
+    + presetBar('privnotes')
+    + (p ? '<div id="crPFiles" class="cr-empty" style="text-align:left;padding:4px 0">자료 불러오는 중…</div>'
+         : '<p class="note" style="margin-top:0">파일·링크는 프로젝트를 먼저 등록한 뒤 [수정]에서 올릴 수 있습니다. 전달사항은 지금 적어도 함께 저장됩니다.</p>')
     + '<div class="cr-sec">관리자 전용 — 감독에게 보이지 않음</div>'
     + '<div class="grid2">'+fld('client_name','클라이언트',pa.client_name)+fld('client_contact','클라이언트 연락처',pa.client_contact)+'</div>'
     + '<div class="cr-grid3">'+fld('quote_krw','견적 금액 (공급가, 만원)',toMan(pa.quote_krw),'number','예: 800')+fld('other_cost_krw','기타 비용 (장비·운송·숙박, 만원)',toMan(pa.other_cost_krw),'number','예: 250')
@@ -318,6 +326,128 @@ window.crewEditProject = function(id){
     + (p?'<button class="tbtn danger" style="margin-left:auto" onclick="crewDeleteProject(\''+p.id+'\')">프로젝트 삭제</button>':'')+'</div>';
   box.style.display='block'; box.scrollIntoView({behavior:'smooth',block:'start'});
   document.getElementById('crE_title').focus();
+  C.priv = p ? null : { notes:'', files:[] };
+  if (p) loadPrivate(p.id);
+};
+
+/* ── 확정자 전용 자료 (관리자) ──────────────────────────────────────────── */
+async function loadPrivate(pid){
+  var r = await Promise.all([
+    sb.from('crew_project_private').select('notes').eq('project_id', pid).maybeSingle(),
+    sb.from('crew_project_files').select('*').eq('project_id', pid).order('sort').order('created_at')
+  ]);
+  if (C.editProject !== pid) return;
+  if (r[0].error || r[1].error) { var b=document.getElementById('crPFiles'); if(b) b.textContent='자료를 불러오지 못했습니다: '+((r[0].error||r[1].error).message); return; }
+  C.priv = { notes:(r[0].data&&r[0].data.notes)||'', files:r[1].data||[] };
+  var ta=document.getElementById('crE_privnotes'); if (ta && !ta.value) ta.value=C.priv.notes;
+  renderPrivFiles(pid);
+}
+function fmtSize(b){ if(!b) return ''; return b>=1048576 ? (b/1048576).toFixed(1)+'MB' : Math.max(1,Math.round(b/1024))+'KB'; }
+function renderPrivFiles(pid){
+  var box=document.getElementById('crPFiles'); if(!box || !C.priv) return;
+  var fs=C.priv.files;
+  box.className=''; box.style.cssText='';
+  box.innerHTML = '<div class="field" style="margin-bottom:6px"><label>자료 (파일·링크)</label></div>'
+    + (fs.length ? '<table class="cr-t" style="margin-bottom:10px"><tbody>' + fs.map(function(f){
+        return '<tr><td style="width:56px"><span class="cr-st '+(f.kind==='file'?'b':'g')+'"><i></i>'+(f.kind==='file'?'파일':'링크')+'</span></td>'
+          +'<td><b>'+e(f.title)+'</b>'+(f.kind==='link'?'<div class="cr-meta" style="word-break:break-all">'+e(f.url)+'</div>':'<div class="cr-meta">'+fmtSize(f.size_bytes)+'</div>')+'</td>'
+          +'<td style="width:150px"><div class="cr-actions"><button class="tbtn" onclick="crewOpenFile(\''+f.id+'\')">열기</button><button class="tbtn danger" onclick="crewDelFile(\''+f.id+'\')">삭제</button></div></td></tr>';
+      }).join('') + '</tbody></table>' : '<p class="note" style="margin:0 0 10px">아직 올린 자료가 없습니다.</p>')
+    + '<div class="rowflex" style="margin-bottom:8px"><label class="tbtn" style="display:inline-flex;align-items:center;cursor:pointer">파일 올리기<input type="file" multiple style="display:none" onchange="crewUpload(this)"></label>'
+    + '<span class="cr-meta">PDF·엑셀·이미지·오디오 등, 파일당 50MB까지</span></div>'
+    + '<div class="rowflex"><input class="cr-in" id="crLinkT" placeholder="링크 이름 (예: 큐시트 구글시트)" style="max-width:220px;font-family:inherit"><input class="cr-in" id="crLinkU" placeholder="https://…" style="max-width:320px"><button class="tbtn" onclick="crewAddLink()">링크 추가</button></div>';
+}
+function privFile(id){ return (C.priv&&C.priv.files||[]).filter(function(f){ return f.id===id; })[0]; }
+window.crewUpload = async function(input){
+  var pid=C.editProject; if(!pid || !input.files.length) return;
+  var files=Array.prototype.slice.call(input.files); input.value='';
+  for (var i=0;i<files.length;i++){
+    var f=files[i];
+    if (f.size > 52428800){ flash(f.name+' — 50MB 를 넘어 올릴 수 없습니다.', true); continue; }
+    var ext=(f.name.match(/\.([A-Za-z0-9]{1,8})$/)||['',''])[1].toLowerCase();
+    // 저장 경로는 영문·숫자만(한글 파일명은 스토리지 키로 못 씀). 원래 이름은 title 로 보관 → 받을 때 그 이름으로 저장됨
+    var path=pid+'/'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+(ext?'.'+ext:'');
+    flash(f.name+' 올리는 중…');
+    var up=await sb.storage.from('crew-files').upload(path, f, { contentType:f.type||'application/octet-stream', upsert:false });
+    if (up.error){ dbErr(up.error); continue; }
+    var r=await sb.from('crew_project_files').insert({ project_id:pid, kind:'file', title:f.name, storage_path:path, size_bytes:f.size, sort:(C.priv.files.length) });
+    if (r.error){ await sb.storage.from('crew-files').remove([path]); dbErr(r.error); continue; }
+  }
+  flash('올렸습니다. 확정된 감독에게만 보입니다.');
+  loadPrivate(pid);
+};
+window.crewAddLink = async function(){
+  var pid=C.editProject, t=(document.getElementById('crLinkT').value||'').trim(), u=(document.getElementById('crLinkU').value||'').trim();
+  if (!/^https?:\/\//i.test(u)){ flash('링크는 http:// 또는 https:// 로 시작해야 합니다.', true); return; }
+  var r=await sb.from('crew_project_files').insert({ project_id:pid, kind:'link', title:t||u, url:u, sort:(C.priv.files.length) });
+  if (r.error) return dbErr(r.error);
+  loadPrivate(pid);
+};
+window.crewOpenFile = async function(id){
+  var f=privFile(id); if(!f) return;
+  if (f.kind==='link'){ window.open(f.url,'_blank','noopener'); return; }
+  var r=await sb.storage.from('crew-files').createSignedUrl(f.storage_path, 120, { download:f.title });
+  if (r.error) return dbErr(r.error);
+  window.open(r.data.signedUrl,'_blank','noopener');
+};
+window.crewDelFile = async function(id){
+  var f=privFile(id); if(!f) return;
+  if (!confirm('"'+f.title+'" 을(를) 삭제합니다.')) return;
+  if (f.kind==='file'){ var d=await sb.storage.from('crew-files').remove([f.storage_path]); if (d.error) return dbErr(d.error); }
+  var r=await sb.from('crew_project_files').delete().eq('id', id); if (r.error) return dbErr(r.error);
+  loadPrivate(C.editProject);
+};
+
+/* ── 텍스트 프리셋 (상세 내용·스탭 전달사항에 자주 쓰는 문구) ───────────── */
+function presetBar(target){
+  return '<div class="rowflex" style="margin:-4px 0 14px"><select class="cr-in" id="crPS_'+target+'" style="width:auto;max-width:260px;font-family:inherit">'
+    + '<option value="">프리셋 불러오기…</option>'+C.presets.map(function(x){ return '<option value="'+x.id+'">'+e(x.title)+'</option>'; }).join('')+'</select>'
+    + '<button class="tbtn" type="button" onclick="crewPresetInsert(\''+target+'\')">넣기</button>'
+    + '<button class="tbtn" type="button" onclick="crewPresetSave(\''+target+'\')">지금 내용을 프리셋으로 저장</button>'
+    + '<button class="tbtn" type="button" onclick="crewPresetManage(\''+target+'\')">프리셋 관리</button></div>'
+    + '<div id="crPM_'+target+'" style="display:none;margin:-6px 0 14px"></div>';
+}
+function refreshPresetBars(){
+  ['description','privnotes'].forEach(function(t){
+    var sel=document.getElementById('crPS_'+t); if(!sel) return;
+    sel.innerHTML='<option value="">프리셋 불러오기…</option>'+C.presets.map(function(x){ return '<option value="'+x.id+'">'+e(x.title)+'</option>'; }).join('');
+    var pm=document.getElementById('crPM_'+t); if (pm && pm.style.display!=='none') crewPresetManage(t, true);
+  });
+}
+async function reloadPresets(){ var r=await sb.from('crew_text_presets').select('*').order('title'); if(!r.error) C.presets=r.data||[]; refreshPresetBars(); }
+window.crewPresetInsert = function(target){
+  var id=document.getElementById('crPS_'+target).value; if(!id){ flash('불러올 프리셋을 고르세요.', true); return; }
+  var pr=C.presets.filter(function(x){ return x.id===id; })[0]; if(!pr) return;
+  var ta=document.getElementById('crE_'+target);
+  ta.value = ta.value.trim() ? ta.value.replace(/\s+$/,'')+'\n\n'+pr.body : pr.body;
+  ta.focus(); flash('"'+pr.title+'" 을(를) 넣었습니다. 필요한 부분만 고쳐 쓰세요.');
+};
+window.crewPresetSave = async function(target){
+  var body=(document.getElementById('crE_'+target).value||'').trim();
+  if (!body){ flash('저장할 내용이 비어 있습니다.', true); return; }
+  var title=prompt('프리셋 이름 (예: 야외 공연 준비물, 복장 안내)'); if(!title) return; title=title.trim(); if(!title) return;
+  var same=C.presets.filter(function(x){ return x.title===title; })[0], r;
+  if (same){ if(!confirm('"'+title+'" 프리셋이 이미 있습니다. 지금 내용으로 바꿀까요?')) return;
+    r=await sb.from('crew_text_presets').update({ body:body, updated_at:new Date().toISOString() }).eq('id', same.id); }
+  else r=await sb.from('crew_text_presets').insert({ title:title, body:body });
+  if (r.error) return dbErr(r.error);
+  flash('프리셋 "'+title+'" 을(를) 저장했습니다.'); reloadPresets();
+};
+window.crewPresetManage = function(target, keep){
+  var box=document.getElementById('crPM_'+target); if(!box) return;
+  if (!keep && box.style.display!=='none'){ box.style.display='none'; return; }
+  box.style.display='block';
+  box.innerHTML = C.presets.length ? '<table class="cr-t"><tbody>'+C.presets.map(function(x){
+      return '<tr><td style="width:200px"><b>'+e(x.title)+'</b></td><td class="cr-note" style="max-width:none">'+e(x.body.length>120?x.body.slice(0,120)+'…':x.body)+'</td>'
+        +'<td style="width:80px"><button class="tbtn danger" type="button" onclick="crewPresetDel(\''+x.id+'\',\''+target+'\')">삭제</button></td></tr>'; }).join('')+'</tbody></table>'
+      +'<p class="note" style="margin-top:6px">고치려면: 불러와서 내용을 고친 뒤 같은 이름으로 [지금 내용을 프리셋으로 저장].</p>'
+    : '<p class="note" style="margin:0">저장된 프리셋이 없습니다. 내용을 적고 [지금 내용을 프리셋으로 저장]을 누르세요.</p>';
+};
+window.crewPresetDel = async function(id, target){
+  var pr=C.presets.filter(function(x){ return x.id===id; })[0]; if(!pr) return;
+  if (!confirm('프리셋 "'+pr.title+'" 을(를) 삭제합니다.')) return;
+  var r=await sb.from('crew_text_presets').delete().eq('id', id); if (r.error) return dbErr(r.error);
+  await reloadPresets(); crewPresetManage(target, true);
 };
 window.crewCloseEdit = function(){ document.getElementById('crPEdit').style.display='none'; C.editProject=null; };
 function v(k){ var el=document.getElementById('crE_'+k); return el ? el.value.trim() : ''; }
@@ -337,6 +467,10 @@ window.crewSaveProject = async function(){
     else { r = await sb.from('crew_projects').insert(row).select('id').single(); if (r.error) throw r.error; id = r.data.id; }
     adm.project_id = id;
     r = await sb.from('crew_project_admin').upsert(adm); if (r.error) throw r.error;
+    if (C.priv) {   // 불러오기 끝난 뒤(또는 새 프로젝트)만 저장 — 아직 못 읽었는데 빈 칸으로 덮어쓰지 않게
+      var pn=(document.getElementById('crE_privnotes').value||'').trim();
+      if (pn || C.priv.notes){ r = await sb.from('crew_project_private').upsert({ project_id:id, notes:pn||null, updated_at:new Date().toISOString() }); if (r.error) throw r.error; }
+    }
     flash(C.editProject ? '저장했습니다.' : '등록했습니다.'+(row.status==='open'?' 감독 페이지에 바로 보입니다.':''));
     crewCloseEdit(); await load(); C.openProject = id; render('crew-proj');
   }catch(err){ dbErr(err); }
