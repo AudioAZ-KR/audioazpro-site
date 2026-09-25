@@ -9,6 +9,9 @@
   // 2026-09-25: 대체 결제사 **레몬스퀴지 스토어 승인·라이브** → EN 모드 재개.
   var EN_LIVE = true;
   var EN_ENABLED = EN_LIVE || !/^(www\.)?audioazpro\.com$/.test(location.hostname);
+  // ?lang=en|kr — 다른 주소(결제사 복귀 등)에서 넘어와도 언어·결제 모드 유지
+  try{ var qp=new URLSearchParams(location.search).get('lang');
+    if(EN_ENABLED && (qp==='en'||qp==='kr')){ localStorage.setItem('az_lang',qp); localStorage.setItem('az_pay_mode', qp==='en'?'intl':'kr'); } }catch(_){}
   function lang(){ if(!EN_ENABLED) return 'kr';
     try{ var l=localStorage.getItem('az_lang'); if(l==='kr'||l==='en') return l; }catch(_){}
     return ((navigator.language||'').toLowerCase().indexOf('ko')===0) ? 'kr' : 'en'; }
@@ -42,10 +45,12 @@
     var w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT, { acceptNode:function(n){
       if(n.nodeType===1){ var tg=n.tagName; if(tg==='SCRIPT'||tg==='STYLE'||tg==='NOSCRIPT') return NodeFilter.FILTER_REJECT; if(n.hasAttribute&&n.hasAttribute('data-i18n-skip')) return NodeFilter.FILTER_REJECT; return NodeFilter.FILTER_ACCEPT; }
       return NodeFilter.FILTER_ACCEPT; } });
+    function attrs(el){ for(var i=0;i<ATTRS.length;i++){ var a=ATTRS[i]; if(el.hasAttribute&&el.hasAttribute(a)){ var v=tr(el.getAttribute(a)); if(v!=null) el.setAttribute(a,v); } } }
+    if(root.nodeType===1) attrs(root);   // 새로 끼운 요소 자신(예: 메모 입력칸 placeholder)도 번역 — TreeWalker 는 루트를 건너뛴다
     var n; var texts=[];
     while((n=w.nextNode())){
       if(n.nodeType===3){ if(KO.test(n.nodeValue)) texts.push(n); }
-      else { for(var i=0;i<ATTRS.length;i++){ var a=ATTRS[i]; if(n.hasAttribute&&n.hasAttribute(a)){ var v=tr(n.getAttribute(a)); if(v!=null) n.setAttribute(a,v); } } }
+      else attrs(n);
     }
     texts.forEach(function(t){ var v=tr(t.nodeValue); if(v!=null) t.nodeValue=v; });
     var m=document.querySelector('meta[name="description"]'); if(m){ var mv=tr(m.getAttribute('content')||''); if(mv!=null) m.setAttribute('content',mv); }
@@ -97,13 +102,25 @@
     wrap.appendChild(b('kr','한국어')); wrap.appendChild(b('en','English'));
     f.appendChild(wrap);
   }
+  // 깜빡임 방지: 각 페이지 <head> 의 짧은 스크립트가 EN 이면 html.az-i18n-wait 로 본문을 숨겨 두고,
+  // 여기서 번역을 마친 뒤 공개한다. 사전은 localStorage 에 두어 두 번째 페이지부터는 네트워크를 기다리지 않는다.
+  function reveal(){ document.documentElement.classList.remove('az-i18n-wait'); }
+  var CK='az_i18n_en';
+  function start(d){
+    DICT=d; KEYS=null; patchAlerts(); walk(document.body); mountSwitch(); mountFooterSwitch(); legalNote(); reveal();
+    new MutationObserver(function(ms){ ms.forEach(function(m){ m.addedNodes.forEach(function(n){ if(n.nodeType===1) walk(n); else if(n.nodeType===3&&KO.test(n.nodeValue)&&!(n.parentElement&&n.parentElement.closest('[data-i18n-skip]'))){ var v=tr(n.nodeValue); if(v!=null) n.nodeValue=v; } }); }); }).observe(document.body,{childList:true,subtree:true});
+  }
   function apply(){
-    if(lang()!=='en'){ mountSwitch(); mountFooterSwitch(); return; }
+    if(lang()!=='en'){ reveal(); mountSwitch(); mountFooterSwitch(); return; }
     document.documentElement.setAttribute('lang','en');
-    fetch('/i18n/en.json',{cache:'no-cache'}).then(function(r){return r.json();}).then(function(d){
-      DICT=d; patchAlerts(); walk(document.body); mountSwitch(); mountFooterSwitch(); legalNote();
-      new MutationObserver(function(ms){ ms.forEach(function(m){ m.addedNodes.forEach(function(n){ if(n.nodeType===1) walk(n); else if(n.nodeType===3&&KO.test(n.nodeValue)&&!(n.parentElement&&n.parentElement.closest('[data-i18n-skip]'))){ var v=tr(n.nodeValue); if(v!=null) n.nodeValue=v; } }); }); }).observe(document.body,{childList:true,subtree:true});
-    }).catch(function(){ mountSwitch(); mountFooterSwitch(); });
+    var cached=null; try{ var c=localStorage.getItem(CK); if(c) cached=JSON.parse(c); }catch(_){}
+    if(cached) start(cached);
+    fetch('/i18n/en.json',{cache:'no-cache'}).then(function(r){return r.text();}).then(function(txt){
+      var d=JSON.parse(txt);
+      try{ if(localStorage.getItem(CK)!==txt) localStorage.setItem(CK,txt); }catch(_){}
+      if(!cached) start(d);
+      else if(Object.keys(d).length!==Object.keys(cached).length || JSON.stringify(d)!==JSON.stringify(cached)){ DICT=d; KEYS=null; walk(document.body); }
+    }).catch(function(){ reveal(); if(!cached){ mountSwitch(); mountFooterSwitch(); } });
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',apply); else apply();
 })();

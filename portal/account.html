@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<script>/* EN 깜빡임 방지: 번역이 끝날 때까지 본문을 숨긴다(최대 2.5초) — az-i18n.js 가 공개 */(function(){try{var d=document.documentElement,q=new URLSearchParams(location.search).get('lang'),l=(q==='en'||q==='kr')?q:localStorage.getItem('az_lang');if(l!=='kr'&&l!=='en')l=((navigator.language||'').toLowerCase().indexOf('ko')===0)?'kr':'en';if(l==='en'){d.setAttribute('lang','en');d.classList.add('az-i18n-wait');setTimeout(function(){d.classList.remove('az-i18n-wait');},2500);}}catch(e){}})();</script><style>html.az-i18n-wait body{visibility:hidden}</style>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow, noai, noimageai, noarchive">
 <link rel="icon" type="image/png" href="/favicon.png"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -646,7 +647,7 @@ async function loadOrders(){
     var canRefund = o.status==='paid' && within14 && lc && !lc.firstAct && lc.status==='active';
     var refundBtn = canRefund ? '<button type="button" onclick="refundOrder(\''+o.id+'\')" style="margin-top:8px;background:transparent;border:1px solid #5A2A30;color:#ff9ea3;border-radius:8px;padding:6px 12px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer">환불 신청</button>' : '';
     return '<div class="ordrow"><div class="or-main"><div class="or-title">'+escH(nm)+'<span class="amt">'+escH(fmtAmt(o))+'</span></div>'+
-      '<div class="or-meta">'+fmtDate(o.paid_at||o.created_at)+' · '+(o.provider==='paddle'?'해외 카드 (USD)':'국내 카드')+' · 주문번호 <span class="mono" title="'+escH(o.id)+'">'+escH(String(o.id).slice(0,8))+'</span></div>'+refundBtn+'</div>'+
+      '<div class="or-meta">'+fmtDate(o.paid_at||o.created_at)+' · '+((o.provider==='paddle'||o.provider==='lemon')?'해외 카드 (USD)':'국내 카드')+' · 주문번호 <span class="mono" title="'+escH(o.id)+'">'+escH(String(o.id).slice(0,8))+'</span></div>'+refundBtn+'</div>'+
       '<div class="or-st '+cls+'">'+escH(st)+(o.is_test?'<span class="ttag" title="테스트 사이트의 테스트 결제">TEST</span>':'')+'</div></div>';
   }).join('');
 }
@@ -830,9 +831,9 @@ function lookupLicense(e){
 }
 </script>
 <script>
-// 결제 후 복귀 (?order=…&paid=1): 웹훅이 주문을 paid로 바꿀 때까지 최대 90초 폴링 → 라이선스 목록 새로고침
+// 결제 후 복귀 (?order=…&paid=1 · 해외는 ?paid=<주문번호>): 웹훅이 주문을 paid로 바꿀 때까지 최대 90초 폴링 → 라이선스 목록 새로고침
 (async function azPayCheck(){
-  var q=new URLSearchParams(location.search); var oid=q.get('order'); if(!oid||!q.get('paid')) return;
+  var q=new URLSearchParams(location.search), pq=q.get('paid'); var oid=q.get('order')||(pq&&pq!=='1'?pq:null); if(!oid||!pq) return;   // 국내: ?order=…&paid=1 · 해외(레몬스퀴지): ?paid=<주문번호>
   var bar=document.createElement('div'); bar.className='paybar wait on'; bar.textContent='결제 확인 중입니다… 결제사 확인이 끝나면 라이선스가 자동으로 발급됩니다.';
   var host=document.querySelector('.wrap')||document.body; host.insertBefore(bar, host.firstChild);
   var sbx=window.supabase.createClient('https://lkbbenyvchddsjsihofv.supabase.co','sb_publishable_sMTkTGD-1CktZQqirrjk6Q_0mxgpRG_');
