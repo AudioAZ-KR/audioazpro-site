@@ -34,11 +34,11 @@ async function login(email, password) {
   if (error) throw error;
   return data.user;
 }
-async function signup(email, password, name) {
+async function signup(email, password, name, redirectTo) {
   const { data, error } = await sb.auth.signUp({
     email, password, options: {
       data: { name },                                          // name → profiles 트리거로 복사
-      emailRedirectTo: location.origin + '/?welcome=1'  // 확인 링크 클릭 후 메인 홈으로 (환영 안내 + 로그인 상태)
+      emailRedirectTo: redirectTo || (location.origin + '/?welcome=1')  // 확인 링크 클릭 후 메인 홈으로 (크루 가입이면 크루 페이지로)
     }
   });
   if (error) throw error;
