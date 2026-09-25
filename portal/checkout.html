@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<script>/* EN 깜빡임 방지: 번역이 끝날 때까지 본문을 숨긴다(최대 2.5초) — az-i18n.js 가 공개 */(function(){try{var d=document.documentElement,q=new URLSearchParams(location.search).get('lang'),l=(q==='en'||q==='kr')?q:localStorage.getItem('az_lang');if(l!=='kr'&&l!=='en')l=((navigator.language||'').toLowerCase().indexOf('ko')===0)?'kr':'en';if(l==='en'){d.setAttribute('lang','en');d.classList.add('az-i18n-wait');setTimeout(function(){d.classList.remove('az-i18n-wait');},2500);}}catch(e){}})();</script><style>html.az-i18n-wait body{visibility:hidden}</style>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow, noai, noimageai, noarchive">
 <link rel="icon" type="image/png" href="/favicon.png"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -355,10 +356,9 @@ function renderPayButtons(){
   if(mode==='kr'){
     kr.style.display=''; kr.textContent = payReady('portone') ? '카드·간편결제로 구매 (국내 발급 카드)' : '구매 문의하기';
     if(intl) intl.style.display='none';
-    // 해외 결제(달러)는 결제사가 준비된 경우에만 안내 (레몬스퀴지 2026-09-25 라이브)
-    sw.innerHTML = (payReady('lemon') && AZ_PAY.intl)
-      ? '해외 발급 카드 · PayPal은 <a href="#" onclick="setPayMode(\'intl\');return false" style="color:var(--blue)">달러 결제(International checkout)</a>'
-      : '';
+    // 2026-09-25 사장님 지시: 국내·해외 결제 분리 — 원화 화면에서 달러 결제로 넘어가는 안내는 두지 않는다
+    // (해외 방문자는 하단 Language 스위치로 EN 을 고르면 달러 결제 화면으로 간다)
+    sw.innerHTML = '';
   } else {
     kr.style.display='none';
     if(intl){ intl.style.display=''; intl.innerHTML = payReady('lemon') ? ('<span class="pbtn-in"><span>Pay with card / PayPal</span>' + PAYLOGOS + '</span>') : 'International checkout — coming soon'; intl.disabled=!payReady('laddle'); }
