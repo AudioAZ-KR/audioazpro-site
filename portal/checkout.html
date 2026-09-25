@@ -361,7 +361,7 @@ function renderPayButtons(){
     sw.innerHTML = '';
   } else {
     kr.style.display='none';
-    if(intl){ intl.style.display=''; intl.innerHTML = payReady('lemon') ? ('<span class="pbtn-in"><span>Pay with card / PayPal</span>' + PAYLOGOS + '</span>') : 'International checkout — coming soon'; intl.disabled=!payReady('laddle'); }
+    if(intl){ intl.style.display=''; intl.innerHTML = payReady('lemon') ? ('<span class="pbtn-in"><span>Pay with card / PayPal</span>' + PAYLOGOS + '</span>') : 'International checkout — coming soon'; intl.disabled=!payReady('lemon'); }
     // 2026-09-25 사장님 지시: 국내·해외 결제는 분리 — 달러 화면에서 원화로 넘어가는 안내는 두지 않는다
     sw.innerHTML='';
   }
