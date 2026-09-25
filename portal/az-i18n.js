@@ -45,10 +45,12 @@
     var w=document.createTreeWalker(root, NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT, { acceptNode:function(n){
       if(n.nodeType===1){ var tg=n.tagName; if(tg==='SCRIPT'||tg==='STYLE'||tg==='NOSCRIPT') return NodeFilter.FILTER_REJECT; if(n.hasAttribute&&n.hasAttribute('data-i18n-skip')) return NodeFilter.FILTER_REJECT; return NodeFilter.FILTER_ACCEPT; }
       return NodeFilter.FILTER_ACCEPT; } });
+    function attrs(el){ for(var i=0;i<ATTRS.length;i++){ var a=ATTRS[i]; if(el.hasAttribute&&el.hasAttribute(a)){ var v=tr(el.getAttribute(a)); if(v!=null) el.setAttribute(a,v); } } }
+    if(root.nodeType===1) attrs(root);   // 새로 끼운 요소 자신(예: 메모 입력칸 placeholder)도 번역 — TreeWalker 는 루트를 건너뛴다
     var n; var texts=[];
     while((n=w.nextNode())){
       if(n.nodeType===3){ if(KO.test(n.nodeValue)) texts.push(n); }
-      else { for(var i=0;i<ATTRS.length;i++){ var a=ATTRS[i]; if(n.hasAttribute&&n.hasAttribute(a)){ var v=tr(n.getAttribute(a)); if(v!=null) n.setAttribute(a,v); } } }
+      else attrs(n);
     }
     texts.forEach(function(t){ var v=tr(t.nodeValue); if(v!=null) t.nodeValue=v; });
     var m=document.querySelector('meta[name="description"]'); if(m){ var mv=tr(m.getAttribute('content')||''); if(mv!=null) m.setAttribute('content',mv); }
