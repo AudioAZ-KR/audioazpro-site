@@ -163,7 +163,7 @@ footer .mono{color:var(--dim)}
       <span class="name">Audio<b>AZ</b></span>
     </div>
     <div class="meta">
-      <input id="hubQ" type="search" placeholder="빠른 찾기 — 콘솔, paddle, 탈리…" autocomplete="off" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text);border:1px solid var(--line);background:var(--card);padding:6px 12px;border-radius:999px;min-width:220px;outline:none">
+      <input id="hubQ" type="search" placeholder="빠른 찾기 — 콘솔, 레몬스퀴지, 탈리…" autocomplete="off" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text);border:1px solid var(--line);background:var(--card);padding:6px 12px;border-radius:999px;min-width:220px;outline:none">
 <span class="stamp">직원 전용 · 검색 비노출</span>
       <button class="toggle" id="tg" type="button" aria-label="테마 전환">◐ 테마</button>
     </div>
@@ -279,7 +279,7 @@ fill('g-portal', [
   {t:'로그인·회원가입', href:'https://audioazpro.com/portal/index.html', chip:{k:'live',t:'LIVE'}, d:'이메일 가입 열림 · 인증 후 메인 홈 복귀'},
   {t:'내 계정 (마이페이지)', href:'https://audioazpro.com/portal/account.html', chip:{k:'live',t:'LIVE'}, d:'좌측 메뉴: 내 라이선스(기기 활성화/해제·메모) · 주문 내역 · 테스트 보고(베타 테스터만) · 계정 설정 · 회원 탈퇴 · KR/EN'},
   {t:'플러그인 활성화', href:'https://audioazpro.com/portal/activate.html', chip:{k:'live',t:'LIVE'}},
-  {t:'결제', href:'https://audioazpro.com/portal/checkout.html', chip:{k:'auth',t:'심사중'}, d:'국내 원화: KG이니시스 실연동(계약 심사 중) · 해외 달러: Paddle 샌드박스 · 코드 등록 시 제품 자동 전환 · 데모 코드는 기간 합산'},
+  {t:'결제', href:'https://audioazpro.com/portal/checkout.html', chip:{k:'live',t:'해외 LIVE'}, d:'<b>해외 달러: 레몬스퀴지 라이브</b>(2026-09-25, 세금은 결제사가 처리) · 국내 원화: KG이니시스 실연동(카드사 심사 중) · 코드 등록 시 제품 자동 전환 · 데모 코드는 기간 합산'},
   {t:'비밀번호 찾기', href:'https://audioazpro.com/portal/forgot.html', chip:{k:'live',t:'LIVE'}},
   {t:'비밀번호 재설정', href:'https://audioazpro.com/portal/reset-password.html', chip:{k:'live',t:'LIVE'}},
 ]);
@@ -308,12 +308,12 @@ fill('g-svc', [
    rows:[['서비스','audioaz-showfile · camera-tally(싱가폴) · camera-tally-eu · camera-tally-us · camera-tally-use'],['플랜','Free (유휴 15분 절전·콜드스타트 ~50초) · 무료 750h/월 합산 주의'],['연동','GitHub push 자동 배포(탈리 서버 4곳 동시)']]},
   {cls:'svc', t:'포트원 (PortOne)', href:'https://admin.portone.io/', chip:{k:'auth',t:'LOGIN'},
    rows:[['용도','국내 <b>카드·간편결제</b>'],['상태','KG이니시스 실연동 채널 + 토스 테스트 채널 · 웹훅(테스트/실모드)·시크릿 등록 완료'],['남은 것','KG이니시스 전자계약·등록비·카드사 심사 → 실결제 테스트']]},
-  {cls:'svc', t:'Paddle', href:'https://sandbox-vendors.paddle.com/', chip:{k:'auth',t:'SANDBOX'},
-   rows:[['용도','해외 카드 · PayPal (MoR) · 달러 결제 · 세금 별도'],['상태','샌드박스 연결 완료 · Klera Voice $199 · Flare Tally $99 · 웹훅 검증 통과'],['남은 것','Live 계정 심사 → 토큰·가격ID·웹훅 교체 · PADDLE_API_KEY(해외 할인)']]},
+  {cls:'svc', t:'Lemon Squeezy', href:'https://app.lemonsqueezy.com/dashboard', chip:{k:'live',t:'LIVE'},
+   rows:[['용도','해외 카드 · PayPal (판매대행 MoR) · 달러 결제 · <b>해외 부가세는 결제사가 신고·납부</b>'],['상태','스토어 audioazpro 승인·활성화(2026-09-25) · Flare Tally $99 게시 · 라이브 웹훅·서명 검증 통과'],['수수료·정산','5% + $0.50 · 1·15일 정산 생성 → 14·28일 지급(최소 $50) · 국민은행 원화 수령'],['남은 것','다른 제품(Klera Voice 등) 등록 시 variant 추가 → LEMON_VARIANT_MAP 갱신']]},
   {cls:'svc', t:'Resend', href:'https://resend.com/domains', chip:{k:'auth',t:'LOGIN'},
    rows:[['용도','<b>이메일 발송</b> (SMTP · API)'],['발신','noreply@ (인증) · support@ (회신·라이선스)'],['로그인','Google 계정']]},
   {cls:'svc', t:'App Store Connect', href:'https://appstoreconnect.apple.com/', chip:{k:'auth',t:'LOGIN'},
-   rows:[['앱','Flare Tally (iOS) · TestFlight 베타'],['앱 ID','6808137674'],['로그인','Apple 개발자 계정']]},
+   rows:[['앱','Flare Tally (iOS) — <b>앱스토어 출시</b> 1.0.1 · AudioAZ Crew 제출'],['앱 ID','6808137674'],['판매자명','hyungjun Kim (개인사업자) — 던스번호 발급 후 AudioAZ 로 전환 예정'],['로그인','Apple 개발자 계정']]},
   {cls:'svc', t:'가비아 DNS', href:'https://dns.gabia.com/', chip:{k:'auth',t:'LOGIN'},
    rows:[['용도','도메인 · <b>DNS</b>'],['로그인','가비아 계정'],['연동','Pages · Resend DKIM']]},
 ]);
@@ -325,7 +325,7 @@ fill('g-other', [
 /* ===== 서비스 잔량·결제일 (Supabase services/service_status · 관리자 세션 필요) ===== */
 (function(){
   var LV={over:'초과',down:'장애',warn:'경고',ok:'정상',manual:'날짜 입력',unknown:'확인 필요'}, ORD={down:0,over:0,warn:1,unknown:2,manual:3,ok:4};
-  var GRP={supabase:'서버·인프라',render:'서버·인프라',github:'서버·인프라',domain:'서버·인프라',portone:'결제',inicis:'결제',paddle:'결제',resend:'이메일',google:'이메일',apple:'앱 배포'}, GRP_ORDER=['서버·인프라','결제','이메일','앱 배포','기타'];
+  var GRP={supabase:'서버·인프라',render:'서버·인프라',github:'서버·인프라',domain:'서버·인프라',portone:'결제',inicis:'결제',lemon:'결제',paddle:'결제',resend:'이메일',google:'이메일',apple:'앱 배포'}, GRP_ORDER=['서버·인프라','결제','이메일','앱 배포','기타'];
   var esc=function(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')};
   function num(v,u){ if(v==null)return '—'; if(u==='MB'||u==='GB'){var mb=v/1048576;return mb>=1024?(mb/1024).toFixed(2)+' GB':mb.toFixed(1)+' MB'} if(u==='원')return Math.round(v).toLocaleString('ko-KR')+'원'; if(u==='USD')return '$'+Number(v).toLocaleString('en-US'); return Number(v).toLocaleString('ko-KR')+(u?' '+u:''); }
   function fmt(d){ var x=new Date(d); return (x.getMonth()+1)+'/'+x.getDate()+' '+String(x.getHours()).padStart(2,'0')+':'+String(x.getMinutes()).padStart(2,'0'); }
