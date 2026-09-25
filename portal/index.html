@@ -168,7 +168,7 @@ img,svg{max-width:100%}
 
 <script src="az-supabase.js"></script>
 <script>
-(function(){ try{ var t=new URLSearchParams(location.search).get('tab'); if(t==='signup'){ window.addEventListener('DOMContentLoaded',function(){ setTab('signup'); }); } }catch(e){} })();
+(function(){ try{ var t=new URLSearchParams(location.search).get('tab'); if(t==='signup'){ window.addEventListener('DOMContentLoaded',function(){ setTab('signup'); }); } if(new URLSearchParams(location.search).get('next')==='crew'){ window.addEventListener('DOMContentLoaded',function(){ var b=document.createElement('div'); b.style.cssText='margin:0 0 14px;padding:10px 12px;border:1px solid var(--line,#243350);border-radius:6px;font-size:13px;line-height:1.5'; b.innerHTML='<b>오디오에이지 크루 가입</b> — AudioAZ 통합 계정을 만듭니다. 인증 메일의 링크를 누르면 크루 페이지(audioaz.co.kr/crew)로 바로 돌아갑니다.'; var pane=document.getElementById('paneSignup'); if(pane) pane.insertBefore(b, pane.firstChild); }); } }catch(e){} })();
 function setTab(t){
   var login=t==='login';
   document.getElementById('tabLogin').classList.toggle('on',login);
@@ -183,7 +183,9 @@ function setTab(t){
 }
 // 이미 로그인돼 있으면 계정으로 (인증 링크로 돌아온 경우 welcome=1 유지 → 가입 축하 표시)
 // 로그인 후 복귀 대상(?next=) — 오픈 리다이렉트 방지: 같은 사이트 상대경로만 허용
-function nextUrl(){ try{ var n=new URLSearchParams(location.search).get('next'); if(!n) return null; n=decodeURIComponent(n); if(/^(https?:)?\/\//i.test(n)) return null; if(!/^[A-Za-z0-9_\-./?=&%]+$/.test(n)) return null; return n; }catch(_){ return null; } }
+var CREW='https://audioaz.co.kr/crew/';
+function isCrew(){ try{ return new URLSearchParams(location.search).get('next')==='crew'; }catch(_){ return false; } }
+function nextUrl(){ try{ var n=new URLSearchParams(location.search).get('next'); if(!n) return null; if(n==='crew') return CREW; n=decodeURIComponent(n); if(/^(https?:)?\/\//i.test(n)) return null; if(!/^[A-Za-z0-9_\-./?=&%]+$/.test(n)) return null; return n; }catch(_){ return null; } }
 // 로컬에 남은 세션이 서버에서 이미 무효(만료·탈퇴·재설정)면 account.html이 다시 여기로 보내 무한 왕복이 생기므로,
 // 서버 검증(getUser)을 통과한 경우에만 이동하고, 실패하면 낡은 세션을 지우고 로그인 화면에 머문다.
 AZ.session().then(async function(s){
@@ -212,10 +214,10 @@ async function submitForm(e,mode){
     if(mode==='signup'){
       if(!/^(?=.*[A-Za-z])(?=.*\d).{8,72}$/.test(d.password)){ throw new Error('비밀번호는 영문과 숫자를 모두 포함해 8자 이상이어야 합니다.'); }
       if(d.password!==d.password2){ throw new Error('비밀번호가 일치하지 않습니다.'); }
-      await AZ.signup(d.email, d.password, d.name);
+      await AZ.signup(d.email, d.password, d.name, isCrew()?CREW:null);
       var s=await AZ.session();
       if(s){ location.href=nextUrl()||'account.html'; return false; }   // 이메일 인증 꺼져 있으면 바로 로그인
-      alert('회원가입 신청 완료!\n\n'+d.email+' 으로 승인(인증) 메일을 보냈습니다.\n메일의 링크를 눌러 이메일을 인증하면 가입이 완료되고 로그인할 수 있습니다.\n\n메일이 안 보이면 스팸함을 확인해 주세요.');
+      alert('회원가입 신청 완료!\n\n'+d.email+' 으로 승인(인증) 메일을 보냈습니다.\n메일의 링크를 눌러 이메일을 인증하면 가입이 완료되고'+(isCrew()?' 오디오에이지 크루 페이지로 바로 이동합니다.':' 로그인할 수 있습니다.')+'\n\n메일이 안 보이면 스팸함을 확인해 주세요.');
       setTab('login'); btn.disabled=false; btn.textContent=old;
     } else {
       await AZ.login(d.email, d.password);
