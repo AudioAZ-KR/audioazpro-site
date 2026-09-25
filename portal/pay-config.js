@@ -12,7 +12,7 @@
     // 해외(달러) 결제 = 레몬스퀴지(Lemon Squeezy, Merchant of Record). 2026-09-25 스토어 승인·라이브.
     // 결제창은 서버(checkout-create)가 만들어 URL 을 돌려준다 — 브라우저에는 키가 없다.
     lemon:   { enabled: true, usd: { KV: 199, KI: null, TALLY: 99, LMAZ: null } },
-    intl: true,
+    intl: false,   // ⚠️ 2026-09-25 테스트 결제 동안 임시 차단 — 끝나면 true 로 되돌릴 것
     functions: "https://lkbbenyvchddsjsihofv.supabase.co/functions/v1"
   };
 })();
