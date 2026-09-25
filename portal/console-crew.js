@@ -799,7 +799,7 @@ window.crewIvUsers = function(id){ IV_OPEN[id]=!IV_OPEN[id]; renderInvites(); };
 window.crewCopyInvite = function(id){
   var v=C.invites.filter(function(x){ return x.id===id; })[0]; if(!v) return;
   var lim=[v.max_uses==null?'':'선착순 '+v.max_uses+'명', v.expires_at?fmtDate(v.expires_at)+'까지':''].filter(Boolean).join(' · ');
-  var t='[오디오에이지 크루 초대]\n초대 코드: '+v.code+'\n\nhttps://audioaz.co.kr/crew/ 에서 [초대 코드로 가입]을 누르고 코드를 입력하세요.'+(lim?'\n('+lim+')':'');
+  var t='[오디오에이지 크루 초대]\n초대 코드: '+v.code+'\n\nAudioAZ Crew 앱(App Store) 또는 https://audioaz.co.kr/crew/ 에서 회원가입하고 초대 코드 칸에 위 코드를 넣으면 바로 크루로 합류됩니다.'+(lim?'\n('+lim+')':'');
   (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){ flash('코드 '+v.code+' — 안내문을 복사했습니다. 문자·카톡에 붙여 넣으세요.'); }, function(){ prompt('아래 안내문을 복사하세요', t); });
 };
 document.addEventListener('change', function(ev){ if (ev.target && ev.target.id==='crIvAll') renderInvites(); });
