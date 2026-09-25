@@ -362,7 +362,8 @@ function renderPayButtons(){
   } else {
     kr.style.display='none';
     if(intl){ intl.style.display=''; intl.innerHTML = payReady('lemon') ? ('<span class="pbtn-in"><span>Pay with card / PayPal</span>' + PAYLOGOS + '</span>') : 'International checkout — coming soon'; intl.disabled=!payReady('laddle'); }
-    sw.innerHTML='Prices in USD; tax is added at checkout. Korean-issued cards: <a href="#" onclick="setPayMode(\'kr\');return false" style="color:var(--blue)">pay in KRW</a>';
+    // 2026-09-25 사장님 지시: 국내·해외 결제는 분리 — 달러 화면에서 원화로 넘어가는 안내는 두지 않는다
+    sw.innerHTML='';
   }
   syncBuyerCard();
 }
