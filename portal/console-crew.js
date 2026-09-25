@@ -169,7 +169,7 @@ function mem(uid){ for (var i=0;i<C.members.length;i++) if (C.members[i].user_id
 function proj(id){ for (var i=0;i<C.projects.length;i++) if (C.projects[i].id===id) return C.projects[i]; return null; }
 function appsOf(pid){ return C.apps.filter(function(a){ return a.project_id===pid; }); }
 function projCost(pid){
-  var s=0; appsOf(pid).forEach(function(a){ if(a.status==='confirmed') s+=calcPay(C.pay[a.id]).cost; }); return s;
+  var s=0; appsOf(pid).forEach(function(a){ if(a.status==='confirmed' && !ghost(a.user_id)) s+=calcPay(C.pay[a.id]).cost; }); return s;
 }
 function projMargin(p){
   var pa=C.padmin[p.id]||{}; if (pa.quote_krw===null||pa.quote_krw===undefined) return null;
@@ -224,7 +224,8 @@ window.crewOpenDoc = async function(id){
   if (r.error){ if(w) w.close(); return dbErr(r.error); }
   if (w) w.location=r.data.signedUrl; else window.open(r.data.signedUrl,'_blank','noopener');
 };
-function bizLabel(m){ return m ? (m.is_business ? '사업자' : '개인') : '—'; }
+function bizLabel(m){ return m ? ((m.is_business ? '사업자' : '개인')+(m.is_ghost?' · <span class="cr-st a"><i></i>확인용</span>':'')) : '—'; }
+function ghost(uid){ var m=mem(uid); return !!(m && m.is_ghost); }   // 확인용(고스트) 계정: 합계·정산에서 뺀다
 function e(v){ return esc(v===null||v===undefined?'':v); }
 function today(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function ym(s){ return (s||'').slice(0,7); }
@@ -307,7 +308,7 @@ function renderDash(){
   var pend = C.members.filter(function(x){ return x.status==='pending'; });
   var mq=0, mp=0, unpaid=0, unpaidN=0;
   C.projects.forEach(function(p){ if (ym(p.date_start)===m && p.status!=='cancelled'){ mq+=n((C.padmin[p.id]||{}).quote_krw); mp+=projCost(p.id); } });
-  C.apps.forEach(function(a){ if(a.status!=='confirmed') return; var p=proj(a.project_id); if(!p||p.status==='cancelled') return;
+  C.apps.forEach(function(a){ if(a.status!=='confirmed' || ghost(a.user_id)) return; var p=proj(a.project_id); if(!p||p.status==='cancelled') return;
     var py=C.pay[a.id]; if(!py||!py.paid){ unpaid+=calcPay(py).net; unpaidN++; } });
   set('crKOpen', C.projects.filter(function(p){ return p.status==='open'; }).length);
   set('crKApplied', applied.length); set('crKPending', pend.length);
@@ -878,7 +879,7 @@ window.crewSetMember = async function(uid, status){
 /* ── 페이 정산 ─────────────────────────────────────────────────────────── */
 function settleRows(){
   var mSel=document.getElementById('crSM').value, f=document.getElementById('crSF').value;
-  return C.apps.filter(function(a){ return a.status==='confirmed'; }).map(function(a){ return {a:a, p:proj(a.project_id)||{}, m:mem(a.user_id)||{}, py:C.pay[a.id]||{}}; })
+  return C.apps.filter(function(a){ return a.status==='confirmed' && !ghost(a.user_id); }).map(function(a){ return {a:a, p:proj(a.project_id)||{}, m:mem(a.user_id)||{}, py:C.pay[a.id]||{}}; })
     .filter(function(r){ if (r.p.status==='cancelled') return false; if (mSel && ym(r.p.date_start)!==mSel) return false;
       if (f==='unpaid' && r.py.paid) return false; if (f==='paid' && !r.py.paid) return false; return true; })
     .sort(function(x,y){ return (x.p.date_start||'')<(y.p.date_start||'')?-1:1; });
