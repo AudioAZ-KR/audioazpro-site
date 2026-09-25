@@ -1,14 +1,13 @@
 /* az-i18n.js — AudioAZ 사이트 언어 전환 (KR/EN)
  * 페이지를 복제하지 않고, /i18n/en.json 사전으로 한글 텍스트 노드·속성을 영문으로 치환한다.
  * 언어 선택: localStorage az_lang → 없으면 브라우저 언어(ko면 kr, 아니면 en).
- * EN이면 결제 모드도 해외(달러·Paddle)로, KR이면 국내(원화)로 맞춘다 (checkout.html의 az_pay_mode).
+ * EN이면 결제 모드도 해외(달러·레몬스퀴지)로, KR이면 국내(원화)로 맞춘다 (checkout.html의 az_pay_mode).
  */
 (function(){
   var KO=/[가-힣]/;
-  // 2026-09-11: Paddle 계정 인증 거절(최종)로 해외 결제 경로가 없음 → EN(달러) 모드 라이브에선 비활성.
-  // 2026-09-15: 테스트 서버(스테이징·로컬)에서는 영어 홈페이지 미리보기를 열어둔다(라이브 audioazpro.com은 계속 한국어만).
-  //   해외 결제사가 정해지면 EN_LIVE 를 true 로 바꾸면 라이브에도 그대로 열린다.
-  var EN_LIVE = false;
+  // 2026-09-11: Paddle 인증 거절로 해외 결제 경로가 없어 EN(달러) 모드를 라이브에서 껐었다.
+  // 2026-09-25: 대체 결제사 **레몬스퀴지 스토어 승인·라이브** → EN 모드 재개.
+  var EN_LIVE = true;
   var EN_ENABLED = EN_LIVE || !/^(www\.)?audioazpro\.com$/.test(location.hostname);
   function lang(){ if(!EN_ENABLED) return 'kr';
     try{ var l=localStorage.getItem('az_lang'); if(l==='kr'||l==='en') return l; }catch(_){}
