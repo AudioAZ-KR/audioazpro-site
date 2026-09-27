@@ -15,6 +15,8 @@ var C = { members:[], madmin:{}, projects:[], padmin:{}, apps:[], pay:{}, invite
 var ST_PROJ = { draft:'작성 중', open:'모집 중', closed:'모집 마감', done:'완료', cancelled:'취소' };
 var ST_APP  = { applied:'신청', confirmed:'확정', declined:'거절', cancelled:'본인 취소' };
 var ST_MEM  = { pending:'승인 대기', active:'활동', inactive:'비활성', deleted:'탈퇴' };
+// 회원 등급 (2026-09-27 일반 배포): 누구나 가입 = 일반, 크루는 사장님이 올리거나 초대 코드, 코어는 사장님 지정
+var LV_NAME = { basic:'일반', crew:'크루', core:'코어' };
 var ST_BILL = { none:'—', quoted:'견적 발송', invoiced:'계산서 발행', paid:'입금 완료' };
 var TAX     = { withholding:'3.3% 원천징수', invoice:'세금계산서', none:'공제 없음' };
 
@@ -127,7 +129,7 @@ addSection('crew-members',
  + '<select class="cr-in" id="crMF" onchange="crewRenderMembers()" style="width:auto"><option value="">전체</option><option value="pending">승인 대기</option><option value="active">활동</option><option value="inactive">비활성</option><option value="deleted">탈퇴</option></select>'
  + '<button class="tbtn" onclick="crewReload()">새로고침</button>'
  + '<span class="cr-meta" style="margin-left:auto">가입 = 초대 코드 필수</span></div>'
- + '<div class="card" style="margin-top:0"><div class="cr-wrap"><table class="cr-t wide"><thead><tr><th>이름</th><th>분야</th><th>연락처</th><th>사업자</th><th style="text-align:right">기본 일당</th><th>등급</th><th style="text-align:right">확정 참여</th><th>서류</th><th>상태</th><th></th></tr></thead><tbody id="crMRows"></tbody></table></div></div>'
+ + '<div class="card" style="margin-top:0"><div class="cr-wrap"><table class="cr-t wide"><thead><tr><th>이름</th><th>분야</th><th>연락처</th><th>사업자</th><th style="text-align:right">기본 일당</th><th>회원 등급 · 포지션</th><th style="text-align:right">확정 참여</th><th>서류</th><th>상태</th><th></th></tr></thead><tbody id="crMRows"></tbody></table></div></div>'
  + '<div class="card" id="crMDetail" style="display:none"></div>');
 
 addSection('crew-settle',
@@ -179,7 +181,8 @@ function projMargin(p){
   return n(pa.quote_krw) - projCost(p.id) - n(pa.other_cost_krw);
 }
 function travelTag(p){ return p ? (p.depart_day_before?' <span class="cr-meta" style="margin-left:6px">전날 출발</span>':'')+(p.return_day_after?' <span class="cr-meta" style="margin-left:6px">다음날 복귀</span>':'') : ''; }
-function tentTag(p){ return travelTag(p)+(p && p.is_private ? ' <span class="cr-st r" style="margin-left:6px;vertical-align:middle" title="감독에게 보이지 않음"><i></i>비공개</span>' : '') + (p && p.is_tentative ? ' <span class="cr-st a" style="margin-left:6px;vertical-align:middle" title="임시 픽스 — 변동·취소 가능"><i></i>예정</span>' : ''); }
+function lvTag(p){ return p && p.min_level==='basic' ? ' <span class="cr-st g" style="margin-left:6px;vertical-align:middle" title="가입한 누구나 볼 수 있음"><i></i>일반 공개</span>' : (p && p.min_level==='core' ? ' <span class="cr-st a" style="margin-left:6px;vertical-align:middle"><i></i>코어만</span>' : ''); }
+function tentTag(p){ return lvTag(p)+travelTag(p)+(p && p.is_private ? ' <span class="cr-st r" style="margin-left:6px;vertical-align:middle" title="감독에게 보이지 않음"><i></i>비공개</span>' : '') + (p && p.is_tentative ? ' <span class="cr-st a" style="margin-left:6px;vertical-align:middle" title="임시 픽스 — 변동·취소 가능"><i></i>예정</span>' : ''); }
 function stP(s, p){ var c={open:'g',draft:'d',closed:'a',done:'b',cancelled:'d'}[s]||'d'; var t=(s==='closed'&&p&&p.auto_closed)?'정원 마감':(ST_PROJ[s]||s); return '<span class="cr-st '+c+'"><i></i>'+t+'</span>'; }
 function stA(s){ var c={applied:'a',confirmed:'g',declined:'r',cancelled:'d'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_APP[s]||s)+'</span>'; }
 function stM(s){ var c={pending:'a',active:'g',inactive:'d',deleted:'r'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_MEM[s]||s)+'</span>'; }
@@ -406,6 +409,9 @@ window.crewEditProject = function(id){
     +   '<label><input type="radio" name="crE_priv" value="0"'+(p&&p.is_private?'':' checked')+'><span>공개</span></label>'
     +   '<label><input type="radio" name="crE_priv" value="1"'+(p&&p.is_private?' checked':'')+'><span>비공개 (나만 보기)</span></label></div>'
     +   '<div class="cr-meta" style="margin-top:6px">비공개면 신청·확정된 감독도 이 프로젝트와 자료를 볼 수 없고, 알림 메일도 나가지 않습니다</div></div>'
+    + '<div class="field"><label>보이는 등급</label><div class="cr-seg">'
+    +   [['basic','일반 이상 (가입한 누구나)'],['crew','크루 이상'],['core','코어만']].map(function(o){ return '<label><input type="radio" name="crE_lv" value="'+o[0]+'"'+(((p&&p.min_level)||'crew')===o[0]?' checked':'')+'><span>'+o[1]+'</span></label>'; }).join('')+'</div>'
+    +   '<div class="cr-meta" style="margin-top:6px">이 등급 이상 회원에게만 공고가 보이고 지원할 수 있습니다. 새 공고는 크루 이상으로 시작합니다</div></div>'
     + '<div class="cr-sec">확정자 전용 — 이 프로젝트에 확정된 감독만 봄 (현장 담당자·큐시트·링크·스탭 전달사항)</div>'
     + '<div class="cr-grid3"><div class="field"><label>현장 담당자</label><input id="crE_cname" placeholder="예: 김형준"></div>'
     + '<div class="field"><label>직급</label><input id="crE_ctitle" placeholder="예: 대표 · 팀장"></div>'
@@ -602,7 +608,7 @@ function v(k){ var el=document.getElementById('crE_'+k); return el ? el.value.tr
 function numOrNull(s){ s=String(s).replace(/[^\d-]/g,''); return s===''?null:Number(s); }
 window.crewSaveProject = async function(){
   var row = { title:v('title'), venue:v('venue')||null, date_start:v('date_start'), date_end:v('date_end')||null, call_time:v('call_time')||null,
-              map_url:mapNorm(v('map_url')), roles:v('roles')||null, headcount:numOrNull(v('headcount')), description:v('description')||null, status:v('status'), is_tentative:(document.querySelector('input[name=crE_tent]:checked')||{}).value==='1', is_private:(document.querySelector('input[name=crE_priv]:checked')||{}).value==='1',
+              map_url:mapNorm(v('map_url')), roles:v('roles')||null, headcount:numOrNull(v('headcount')), description:v('description')||null, status:v('status'), is_tentative:(document.querySelector('input[name=crE_tent]:checked')||{}).value==='1', is_private:(document.querySelector('input[name=crE_priv]:checked')||{}).value==='1', min_level:(document.querySelector('input[name=crE_lv]:checked')||{}).value||'crew',
               depart_day_before:document.getElementById('crE_depart').checked, return_day_after:document.getElementById('crE_return').checked };
   if (!row.title || !row.date_start){ flash('프로젝트명과 시작일은 필수입니다.', true); return; }
   if (row.date_end && row.date_end < row.date_start){ flash('종료일이 시작일보다 빠릅니다.', true); return; }
@@ -819,7 +825,7 @@ window.crewRenderMembers = function(){
   document.getElementById('crMRows').innerHTML = rows.length ? rows.map(function(m){
     var ma=C.madmin[m.user_id]||{}, cnt=C.apps.filter(function(a){ return a.user_id===m.user_id && a.status==='confirmed'; }).length;
     return '<tr class="'+(C.openMember===m.user_id?'sel':'')+'"><td><b>'+e(m.name)+'</b><div class="cr-meta">'+e(m.email||'')+'</div></td><td>'+e(m.specialty||'—')+'</td><td class="mono">'+e(fmtPhone(m.phone)||m.phone||'—')+'</td>'
-      +'<td>'+bizLabel(m)+(m.is_business&&m.biz_no?'<div class="cr-meta">'+e(fmtBizNo(m.biz_no)||m.biz_no)+'</div>':'')+'</td><td class="cr-num">'+won(ma.day_rate)+'</td><td>'+e(ma.grade||'—')+'</td><td class="cr-num">'+cnt+'</td><td>'+docBadges(m.user_id)+'</td><td>'+stM(m.status)+'</td>'
+      +'<td>'+bizLabel(m)+(m.is_business&&m.biz_no?'<div class="cr-meta">'+e(fmtBizNo(m.biz_no)||m.biz_no)+'</div>':'')+'</td><td class="cr-num">'+won(ma.day_rate)+'</td><td><b>'+(LV_NAME[m.level]||'일반')+'</b>'+(ma.grade?'<div class="cr-meta">'+e(ma.grade)+'</div>':'')+'</td><td class="cr-num">'+cnt+'</td><td>'+docBadges(m.user_id)+'</td><td>'+stM(m.status)+'</td>'
       +'<td><div class="cr-actions">'+(m.status==='pending'?'<button class="tbtn" onclick="crewSetMember(\''+m.user_id+'\',\'active\')">승인</button>':'')+'<button class="tbtn" onclick="crewOpenMember(\''+m.user_id+'\')">상세</button></div></td></tr>';
   }).join('') : '<tr><td colspan="10" class="cr-empty">등록된 감독이 없습니다. 위에서 초대 코드를 발급해 감독에게 보내세요.</td></tr>';
 };
@@ -849,7 +855,9 @@ function renderMemberDetail(){
     + '<div class="cr-grid3">'+f('bank_name','은행',m.bank_name)+f('bank_account','계좌번호',m.bank_account)+f('bank_holder','예금주',m.bank_holder)+'</div>'
     + '<div class="field"><label>경력 소개</label><textarea id="crM_career" rows="3">'+e(m.career)+'</textarea></div>'
     + '<div class="cr-sec">관리자 전용 — 감독에게 보이지 않음</div>'
-    + '<div class="grid2">'+f('day_rate','기본 일당 (만원) — 확정 시 페이 자동 입력',toMan(ma.day_rate),'number')+f('grade','등급 / 포지션',ma.grade)+'</div>'
+    + '<div class="field"><label>회원 등급 — 크루로 올리면 크루 전용 공고가 열리고 감독에게 알림이 갑니다</label><div class="cr-seg">'
+    +   ['basic','crew','core'].map(function(k){ return '<label><input type="radio" name="crM_level" value="'+k+'"'+(((m.level||'basic')===k)?' checked':'')+'><span>'+LV_NAME[k]+'</span></label>'; }).join('')+'</div></div>'
+    + '<div class="grid2">'+f('day_rate','기본 일당 (만원) — 확정 시 페이 자동 입력',toMan(ma.day_rate),'number')+f('grade','숙련도 / 포지션 (관리자 메모)',ma.grade)+'</div>'
     + '<div class="field"><label>관리 메모</label><textarea id="crM_memo" rows="2">'+e(ma.memo)+'</textarea></div>'
     + '<div class="rowflex"><button class="btn btn-pri" onclick="crewSaveMember(\''+m.user_id+'\')">저장</button><button class="btn btn-out" onclick="crewCloseMember()">닫기</button></div>'
     + '<div class="cr-sec">제출 서류 (본인·관리자만 볼 수 있음)</div>'+docList(m.user_id)
@@ -867,6 +875,7 @@ window.crewSaveMember = async function(uid){
   var row={ name:g('name'), phone:g('phone')||null, specialty:g('specialty')||null, is_business:g('is_business')==='1',
             biz_name:g('biz_name')||null, biz_no:g('biz_no')||null, bank_name:g('bank_name')||null, bank_account:g('bank_account')||null,
             bank_holder:g('bank_holder')||null, career:g('career')||null };
+  var lv=document.querySelector('input[name=crM_level]:checked'); if (lv) row.level=lv.value;
   if (!row.name){ flash('이름은 비울 수 없습니다.', true); return; }
   var r=await sb.from('crew_members').update(row).eq('user_id', uid); if (r.error) return dbErr(r.error);
   r=await sb.from('crew_member_admin').upsert({ user_id:uid, day_rate:manToWon(g('day_rate')), grade:g('grade')||null, memo:g('memo')||null, updated_at:new Date().toISOString() });
