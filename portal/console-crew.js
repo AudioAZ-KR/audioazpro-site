@@ -13,7 +13,7 @@ var C = { members:[], madmin:{}, projects:[], padmin:{}, apps:[], pay:{}, invite
           openProject:null, openMember:null, editProject:null };
 
 var ST_PROJ = { draft:'작성 중', open:'모집 중', closed:'모집 마감', done:'완료', cancelled:'취소' };
-var ST_APP  = { applied:'신청', confirmed:'확정', declined:'거절', cancelled:'본인 취소' };
+var ST_APP  = { applied:'신청', confirmed:'확정', declined:'거절', cancelled:'본인 취소', invited:'초대 · 응답 대기' };
 var ST_MEM  = { pending:'승인 대기', active:'활동', inactive:'비활성', deleted:'탈퇴' };
 // 회원 등급 (2026-09-27 일반 배포): 누구나 가입 = 일반, 크루는 사장님이 올리거나 초대 코드, 코어는 사장님 지정
 var LV_NAME = { basic:'일반', crew:'크루', core:'코어' };
@@ -184,7 +184,7 @@ function travelTag(p){ return p ? (p.depart_day_before?' <span class="cr-meta" s
 function lvTag(p){ return p && p.min_level==='basic' ? ' <span class="cr-st g" style="margin-left:6px;vertical-align:middle" title="가입한 누구나 볼 수 있음"><i></i>일반 공개</span>' : (p && p.min_level==='core' ? ' <span class="cr-st a" style="margin-left:6px;vertical-align:middle"><i></i>코어만</span>' : ''); }
 function tentTag(p){ return lvTag(p)+travelTag(p)+(p && p.is_private ? ' <span class="cr-st r" style="margin-left:6px;vertical-align:middle" title="감독에게 보이지 않음"><i></i>비공개</span>' : '') + (p && p.is_tentative ? ' <span class="cr-st a" style="margin-left:6px;vertical-align:middle" title="임시 픽스 — 변동·취소 가능"><i></i>예정</span>' : ''); }
 function stP(s, p){ var c={open:'g',draft:'d',closed:'a',done:'b',cancelled:'d'}[s]||'d'; var t=(s==='closed'&&p&&p.auto_closed)?'정원 마감':(ST_PROJ[s]||s); return '<span class="cr-st '+c+'"><i></i>'+t+'</span>'; }
-function stA(s){ var c={applied:'a',confirmed:'g',declined:'r',cancelled:'d'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_APP[s]||s)+'</span>'; }
+function stA(s){ var c={applied:'a',confirmed:'g',declined:'r',cancelled:'d',invited:'b'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_APP[s]||s)+'</span>'; }
 function stM(s){ var c={pending:'a',active:'g',inactive:'d',deleted:'r'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_MEM[s]||s)+'</span>'; }
 /* 전화번호 자동 하이픈 (01035470502 → 010-3547-0502, 02·지역번호·1588 대표번호 포함) */
 function fmtPhone(v){
@@ -409,8 +409,8 @@ window.crewEditProject = function(id){
     +   '<div class="cr-meta" style="margin-top:6px">예정이면 감독 화면에 "일정이 바뀌거나 취소될 수 있음"이 표시됩니다. 예정→확정·취소 시 참여 감독에게 메일</div></div></div>'
     + '<div class="field"><label>공개 범위</label><div class="cr-seg">'
     +   '<label><input type="radio" name="crE_priv" value="0"'+(p&&p.is_private?'':' checked')+'><span>공개</span></label>'
-    +   '<label><input type="radio" name="crE_priv" value="1"'+(p&&p.is_private?' checked':'')+'><span>비공개 (나만 보기)</span></label></div>'
-    +   '<div class="cr-meta" style="margin-top:6px">비공개면 신청·확정된 감독도 이 프로젝트와 자료를 볼 수 없고, 알림 메일도 나가지 않습니다</div></div>'
+    +   '<label><input type="radio" name="crE_priv" value="1"'+(p&&p.is_private?' checked':'')+'><span>비공개 (지정 초대한 크루만)</span></label></div>'
+    +   '<div class="cr-meta" style="margin-top:6px">비공개면 목록에 안 뜨고, 프로젝트 상세의 [크루 지정 초대]로 고른 크루에게만 알림이 가서 수락하면 바로 확정됩니다. 나중에 공개로 바꾸면 등급에 맞는 회원이 신청할 수 있습니다</div></div>'
     + '<div class="field"><label>보이는 등급</label><div class="cr-seg">'
     +   [['basic','일반 이상 (가입한 누구나)'],['crew','크루 이상'],['core','코어만']].map(function(o){ return '<label><input type="radio" name="crE_lv" value="'+o[0]+'"'+(((p&&p.min_level)||'crew')===o[0]?' checked':'')+'><span>'+o[1]+'</span></label>'; }).join('')+'</div>'
     +   '<div class="cr-meta" style="margin-top:6px">이 등급 이상 회원에게만 공고가 보이고 지원할 수 있습니다. 새 공고는 크루 이상으로 시작합니다</div></div>'
@@ -698,7 +698,7 @@ function renderProjectDetail(){
             : '<td colspan="5" class="cr-meta">확정하면 페이를 입력할 수 있습니다</td>')
           +'<td><div class="cr-actions">'
           + (conf ? '<button class="tbtn" onclick="crewSavePay(\''+a.id+'\')">저장</button>' : '')
-          + (a.status!=='confirmed' ? '<button class="tbtn" onclick="crewSetApp(\''+a.id+'\',\'confirmed\')">확정</button>' : '')
+          + (a.status==='invited' ? '<button class="tbtn danger" onclick="crewUninvite(\''+a.id+'\')">초대 취소</button>' : (a.status!=='confirmed' ? '<button class="tbtn" onclick="crewSetApp(\''+a.id+'\',\'confirmed\')">확정</button>' : ''))
           + (a.status==='applied'||a.status==='confirmed' ? '<button class="tbtn danger" onclick="crewSetApp(\''+a.id+'\',\'declined\')">'+(conf?'확정 취소':'거절')+'</button>' : '')
           +'</div></td></tr>';
       }).join('') : '<tr><td colspan="9" class="cr-empty">아직 신청한 감독이 없습니다.</td></tr>')
@@ -706,7 +706,8 @@ function renderProjectDetail(){
     + '<div class="rowflex" style="margin-top:14px"><select class="cr-in" id="crAddM" style="width:auto;max-width:260px"><option value="">감독 직접 배정…</option>'
     + addable.map(function(m){ return '<option value="'+m.user_id+'">'+e(m.name)+(m.specialty?' · '+e(m.specialty):'')+'</option>'; }).join('')
     + '</select><button class="tbtn" onclick="crewAssign(\''+p.id+'\')">확정으로 배정</button>'
-    + '<span class="cr-meta">신청 없이 전화로 섭외한 경우. 감독 화면의 내 일정에 바로 뜹니다.</span></div>';
+    + '<span class="cr-meta">신청 없이 전화로 섭외한 경우. 감독 화면의 내 일정에 바로 뜹니다.</span></div>'
+    + inviteBox(p, addable);
   box.style.display='block';
 }
 window.crewRowCalc = function(el){
@@ -734,6 +735,26 @@ window.crewSetApp = async function(appId, status){
       tax_type: x.is_business ? 'invoice' : 'withholding' });
   }
   flash(status==='confirmed' ? (x.name||'')+' 확정' : '처리했습니다.'); await load(); render(curPage());
+};
+/* 비공개 공고 — 크루 지정 초대: 고른 크루에게 알림 → 앱·웹에서 [수락]하면 바로 확정 */
+function inviteBox(p, addable){
+  var list=addable.filter(function(m){ return !m.is_ghost; }).sort(function(a,b){ var r={core:0,crew:1,basic:2}; return (r[a.level||'basic']-r[b.level||'basic']) || (a.name<b.name?-1:1); });
+  return '<div class="cr-sec" style="margin-top:18px">크루 지정 초대'+(p.is_private?'':' <span class="cr-meta">(공개 공고에도 쓸 수 있지만, 보통은 비공개로 두고 먼저 초대합니다)</span>')+'</div>'
+    + (list.length ? '<div class="rowflex" style="flex-wrap:wrap;gap:6px 16px;margin-bottom:10px">'+list.map(function(m){ return '<label class="cr-check"><input type="checkbox" class="crInv" value="'+m.user_id+'"> '+e(m.name)+' <span class="cr-meta">'+(LV_NAME[m.level]||'일반')+(m.specialty?' · '+e(m.specialty):'')+'</span></label>'; }).join('')+'</div>'
+       + '<div class="rowflex"><button class="tbtn" onclick="crewInvite(\''+p.id+'\')">선택한 크루에게 초대 보내기</button><span class="cr-meta">초대받은 크루에게 푸시·메일이 가고, 수락하면 바로 참여 확정됩니다(정원이 차면 수락이 막힘).</span></div>'
+       : '<p class="cr-meta">초대할 수 있는 크루가 없습니다(이미 모두 신청·초대됨).</p>');
+}
+window.crewInvite = async function(pid){
+  var ids=[].map.call(document.querySelectorAll('.crInv:checked'), function(x){ return x.value; });
+  if (!ids.length){ flash('초대할 크루를 고르세요.', true); return; }
+  var r=await sb.from('crew_applications').insert(ids.map(function(u){ return { project_id:pid, user_id:u, status:'invited', note:'관리자 초대' }; }));
+  if (r.error) return dbErr(r.error);
+  flash(ids.length+'명에게 초대를 보냈습니다.'); await load(); render('crew-proj');
+};
+window.crewUninvite = async function(appId){
+  if (!confirm('이 초대를 취소합니다. 상대 화면에서도 사라집니다.')) return;
+  var r=await sb.from('crew_applications').delete().eq('id', appId).eq('status','invited'); if (r.error) return dbErr(r.error);
+  flash('초대를 취소했습니다.'); await load(); render('crew-proj');
 };
 window.crewAssign = async function(pid){
   var uid=document.getElementById('crAddM').value; if(!uid){ flash('배정할 감독을 고르세요.', true); return; }
