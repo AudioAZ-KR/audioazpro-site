@@ -169,7 +169,7 @@ img,svg{max-width:100%}
 
 <script src="az-supabase.js"></script>
 <script>
-(function(){ try{ var t=new URLSearchParams(location.search).get('tab'); if(t==='signup'){ window.addEventListener('DOMContentLoaded',function(){ setTab('signup'); }); } if(new URLSearchParams(location.search).get('next')==='crew'){ window.addEventListener('DOMContentLoaded',function(){ var b=document.createElement('div'); b.style.cssText='margin:0 0 14px;padding:10px 12px;border:1px solid var(--line,#243350);border-radius:6px;font-size:13px;line-height:1.5'; b.innerHTML='<b>오디오에이지 크루 가입</b> — AudioAZ 통합 계정을 만듭니다. 인증 메일의 링크를 누르면 크루 페이지(audioaz.co.kr/crew)로 바로 돌아갑니다.'; var pane=document.getElementById('paneSignup'); if(pane) pane.insertBefore(b, pane.firstChild); }); } }catch(e){} })();
+(function(){ try{ var t=new URLSearchParams(location.search).get('tab'); if(t==='signup'){ window.addEventListener('DOMContentLoaded',function(){ setTab('signup'); }); } }catch(e){} })();
 function setTab(t){
   var login=t==='login';
   document.getElementById('tabLogin').classList.toggle('on',login);
@@ -185,8 +185,8 @@ function setTab(t){
 // 이미 로그인돼 있으면 계정으로 (인증 링크로 돌아온 경우 welcome=1 유지 → 가입 축하 표시)
 // 로그인 후 복귀 대상(?next=) — 오픈 리다이렉트 방지: 같은 사이트 상대경로만 허용
 var CREW='https://audioaz.co.kr/crew/';
-function isCrew(){ try{ return new URLSearchParams(location.search).get('next')==='crew'; }catch(_){ return false; } }
-function nextUrl(){ try{ var n=new URLSearchParams(location.search).get('next'); if(!n) return null; if(n==='crew') return CREW; n=decodeURIComponent(n); if(/^(https?:)?\/\//i.test(n)) return null; if(!/^[A-Za-z0-9_\-./?=&%]+$/.test(n)) return null; return n; }catch(_){ return null; } }
+function isCrew(){ return false; } // 2026-09-28 크루 회원 분리: 크루 가입은 audioaz.co.kr/crew 에서
+function nextUrl(){ try{ var n=new URLSearchParams(location.search).get('next'); if(!n) return null; if(n==='crew') return null; n=decodeURIComponent(n); if(/^(https?:)?\/\//i.test(n)) return null; if(!/^[A-Za-z0-9_\-./?=&%]+$/.test(n)) return null; return n; }catch(_){ return null; } }
 // 로컬에 남은 세션이 서버에서 이미 무효(만료·탈퇴·재설정)면 account.html이 다시 여기로 보내 무한 왕복이 생기므로,
 // 서버 검증(getUser)을 통과한 경우에만 이동하고, 실패하면 낡은 세션을 지우고 로그인 화면에 머문다.
 AZ.session().then(async function(s){
@@ -229,6 +229,7 @@ async function submitForm(e,mode){
     if(/Invalid login/i.test(msg)) msg='이메일 또는 비밀번호가 올바르지 않습니다.';
     if(/already registered/i.test(msg)) msg='이미 가입된 이메일입니다.';
     if(/Email not confirmed/i.test(msg)) msg='이메일 인증이 필요합니다. 받은 메일의 링크를 확인하세요.';
+    if(/crew_address_reserved|Database error saving new user/i.test(msg)) msg='이 주소로는 가입할 수 없습니다. 다른 이메일을 써 주세요.';
     alert(msg); btn.disabled=false; btn.textContent=old;
   }
   return false;
