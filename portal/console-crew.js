@@ -397,6 +397,8 @@ window.crewEditProject = function(id){
     + '<label class="cr-check"><input type="checkbox" id="crE_return"'+(p&&p.return_day_after?' checked':'')+'> 다음날 복귀</label>'
     + '<span class="cr-meta">감독 화면·캘린더에 이동일까지 표시 (기본 일당 자동 계산은 공연일 기준)</span></div>'
     + '<div class="grid2">'+fld('roles','모집 포지션',p&&p.roles,'text','예: FOH 1, 모니터 1, 시스템 1')+fld('headcount','모집 인원',p&&p.headcount,'number')+'</div>'
+    + '<div class="cr-grid3">'+fld('need_basic','일반 등급 몇 명',pa.need_basic,'number','0')+fld('need_crew','크루 등급 몇 명',pa.need_crew,'number','0')+fld('need_core','코어 등급 몇 명',pa.need_core,'number','0')+'</div>'
+    + '<div class="cr-meta" style="margin:-4px 0 10px">등급별 인원은 관리자만 봅니다. 하나라도 적으면 모집 인원은 세 칸의 합계로 자동 저장됩니다.</div>'
     + '<div class="cr-meta" style="margin:-4px 0 10px">확정 인원이 모집 인원에 차면 자동으로 \'정원 마감\'되어 새 신청이 막힙니다. 확정이 취소되면 다시 모집 중으로 열립니다. 더 받으려면 모집 인원을 늘리세요.</div>'
     + '<div class="field"><label>상세 내용 (모집 중이면 모든 감독에게 보임)</label><textarea id="crE_description" rows="5" placeholder="장비 구성, 복장, 식사, 리허설 일정 등">'+e(p&&p.description)+'</textarea></div>'
     + presetBar('description')
@@ -615,7 +617,9 @@ window.crewSaveProject = async function(){
   row.updated_at = new Date().toISOString();
   var adm = { client_name:v('client_name')||null, client_contact:v('client_contact')||null, quote_krw:manToWon(v('quote_krw')),
               other_cost_krw:manToWon(v('other_cost_krw')), bill_status:v('bill_status'), quote_vat:document.getElementById('crE_quote_vat').checked,
-              memo:v('memo')||null, updated_at:new Date().toISOString() };
+              memo:v('memo')||null, updated_at:new Date().toISOString(),
+              need_basic:numOrNull(v('need_basic')), need_crew:numOrNull(v('need_crew')), need_core:numOrNull(v('need_core')) };
+  if (adm.need_basic!==null || adm.need_crew!==null || adm.need_core!==null) row.headcount = n(adm.need_basic)+n(adm.need_crew)+n(adm.need_core);
   try{
     var id = C.editProject, r;
     if (id){ r = await sb.from('crew_projects').update(row).eq('id', id); if (r.error) throw r.error; }
@@ -648,6 +652,13 @@ window.crewOpenProject = async function(id){
   if (curPage()!=='crew-proj') await azShow('crew-proj', true); else { crewRenderProjects(); renderProjectDetail(); }
   var d=document.getElementById('crPDetail'); if (d) d.scrollIntoView({behavior:'smooth',block:'start'});
 };
+/* 등급별 모집: 필요 인원 대비 확정 인원 (관리자 전용) */
+function levelNeedLine(p, pa, as){
+  if (pa.need_basic==null && pa.need_crew==null && pa.need_core==null) return '';
+  var cf={basic:0,crew:0,core:0}; as.forEach(function(a){ if(a.status!=='confirmed') return; var m=mem(a.user_id); if(m && !m.is_ghost) cf[m.level||'basic']++; });
+  return '<div class="rowflex" style="gap:16px;margin:-4px 0 12px">'+['basic','crew','core'].map(function(k){ var need=pa['need_'+k]; if(need==null) return ''; var ok=cf[k]>=need;
+    return '<span><b>'+LV_NAME[k]+'</b> <span class="mono">'+cf[k]+' / '+need+'</span>명 '+(ok?'<span class="cr-st g"><i></i>충족</span>':'<span class="cr-st a"><i></i>'+(need-cf[k])+'명 부족</span>')+'</span>'; }).join('')+'</div>';
+}
 function renderProjectDetail(){
   var box=document.getElementById('crPDetail'), p=proj(C.openProject);
   if (!p){ box.style.display='none'; return; }
@@ -668,6 +679,7 @@ function renderProjectDetail(){
     +   '<div><div class="l">남는 금액</div><div class="v '+(mg!==null&&mg<0?'cr-neg':'')+'">'+(mg===null?'—':won(mg))+(mg!==null&&n(q)>0?' <span class="cr-meta">'+Math.round(mg/n(q)*100)+'%</span>':'')+'</div></div>'
     +   '<div><div class="l">청구 상태</div><div class="v" style="font-family:inherit;font-size:14px">'+(pa.bill_status&&pa.bill_status!=='none'?ST_BILL[pa.bill_status]:'미청구')+'</div></div>'
     + '</div>'
+    + levelNeedLine(p, pa, as)
     + (pa.memo?'<div class="note" style="margin:-6px 0 12px">메모: '+e(pa.memo)+'</div>':'')
     + '<div class="cr-wrap"><table class="cr-t wide"><thead><tr><th>감독</th><th>희망 포지션 · 남긴 말</th><th>상태</th><th style="min-width:110px">페이 (세전, 만원)</th><th style="min-width:96px">실비 (만원)</th><th>구분</th><th style="text-align:right">지급액</th><th>지급</th><th></th></tr></thead><tbody>'
     + (as.length ? as.map(function(a){
