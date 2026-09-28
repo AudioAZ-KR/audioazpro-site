@@ -32,6 +32,11 @@ async function currentUser(){ const { data } = await sb.auth.getUser();    retur
 async function login(email, password) {
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
   if (error) throw error;
+  // 크루 계정(<아이디>@crew.audioaz.co.kr)은 Pro 회원이 아니다 — 2026-09-28 회원 분리
+  if (/@crew\.audioaz\.co\.kr$/i.test((data.user && data.user.email) || '')) {
+    await sb.auth.signOut({ scope: 'local' });
+    throw new Error('오디오에이지 크루 아이디는 이곳에서 쓸 수 없습니다. 크루 페이지(audioaz.co.kr/crew)나 AudioAZ Crew 앱에서 로그인해 주세요.');
+  }
   return data.user;
 }
 async function signup(email, password, name, redirectTo) {
