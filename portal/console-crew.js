@@ -164,7 +164,7 @@ function days(p){
   return Math.round((new Date(p.date_end) - new Date(p.date_start)) / 864e5) + 1;
 }
 function mapNorm(u){ u=String(u||'').trim(); if(!u) return null; var m=u.match(/https?:\/\/[^\s]+/); if(m) return m[0]; return /\s/.test(u)?null:'https://'+u; }   // 공유 문구에서 주소만, http 없으면 붙임
-function mapHref(p){ if(!p) return null; if(p.map_url) return p.map_url; return p.venue ? 'https://map.naver.com/p/search/'+encodeURIComponent(p.venue) : null; }
+function mapHref(p){ if(!p) return null; if(p.map_url) return p.map_url; var k=p.address||p.venue; return k ? 'https://map.naver.com/p/search/'+encodeURIComponent(k) : null; }
 function mapBtn(p){ var h=mapHref(p); return h ? ' <a class="tbtn" href="'+e(h)+'" target="_blank" rel="noopener" style="text-decoration:none">지도 보기</a>' : ''; }
 function dRange(p){
   var s=p.date_start||''; if(!p.date_end||p.date_end===s) return s;
@@ -391,7 +391,8 @@ window.crewEditProject = function(id){
   function fld(k,l,v,type,ph){ return '<div class="field"><label>'+l+'</label><input id="crE_'+k+'" type="'+(type||'text')+'"'+(type==='number'?' step="any"':'')+' value="'+e(v)+'" placeholder="'+e(ph||'')+'"></div>'; }
   box.innerHTML = '<h2>'+(p?'프로젝트 수정':'새 프로젝트')+'</h2><div class="sub">위 칸은 감독에게 보이는 정보, 아래 [관리자 전용]은 사장님만 봅니다.</div>'
     + '<div class="grid2">'+fld('title','프로젝트명 *',p&&p.title,'text','예: ○○ 콘서트 SR')+fld('venue','장소',p&&p.venue,'text','예: 세종문화회관 대극장')+'</div>'
-    + fld('map_url','지도 링크 (네이버·카카오 지도 공유 주소 — 비우면 장소명으로 네이버 지도 검색)',p&&p.map_url,'text','https://map.naver.com/…')
+    + fld('address','주소 (앱의 Apple 지도가 이 주소로 엽니다 — 비우면 장소명으로 검색)',p&&p.address,'text','예: 서울 종로구 세종대로 175')
+    + fld('map_url','지도 링크 (네이버·카카오 지도 공유 주소 — 비우면 주소·장소명으로 네이버 지도 검색)',p&&p.map_url,'text','https://map.naver.com/…')
     + '<div class="cr-grid3">'+fld('date_start','시작일 *',p&&p.date_start,'date')+fld('date_end','종료일 (하루면 비움)',p&&p.date_end,'date')+fld('call_time','콜타임',p&&p.call_time,'text','예: 08:00 로드인')+'</div>'
     + '<div class="rowflex" style="margin:-2px 0 14px;gap:18px"><label class="cr-check"><input type="checkbox" id="crE_depart"'+(p&&p.depart_day_before?' checked':'')+'> 전날 출발 (지방)</label>'
     + '<label class="cr-check"><input type="checkbox" id="crE_return"'+(p&&p.return_day_after?' checked':'')+'> 다음날 복귀</label>'
@@ -609,7 +610,7 @@ window.crewCloseEdit = function(){ document.getElementById('crPEdit').style.disp
 function v(k){ var el=document.getElementById('crE_'+k); return el ? el.value.trim() : ''; }
 function numOrNull(s){ s=String(s).replace(/[^\d-]/g,''); return s===''?null:Number(s); }
 window.crewSaveProject = async function(){
-  var row = { title:v('title'), venue:v('venue')||null, date_start:v('date_start'), date_end:v('date_end')||null, call_time:v('call_time')||null,
+  var row = { title:v('title'), venue:v('venue')||null, address:v('address')||null, date_start:v('date_start'), date_end:v('date_end')||null, call_time:v('call_time')||null,
               map_url:mapNorm(v('map_url')), roles:v('roles')||null, headcount:numOrNull(v('headcount')), description:v('description')||null, status:v('status'), is_tentative:(document.querySelector('input[name=crE_tent]:checked')||{}).value==='1', is_private:(document.querySelector('input[name=crE_priv]:checked')||{}).value==='1', min_level:(document.querySelector('input[name=crE_lv]:checked')||{}).value||'crew',
               depart_day_before:document.getElementById('crE_depart').checked, return_day_after:document.getElementById('crE_return').checked };
   if (!row.title || !row.date_start){ flash('프로젝트명과 시작일은 필수입니다.', true); return; }
