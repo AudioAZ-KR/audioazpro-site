@@ -3,7 +3,7 @@
 <script>/* EN 깜빡임 방지: 번역이 끝날 때까지 본문을 숨긴다(최대 2.5초) — az-i18n.js 가 공개 */(function(){try{var d=document.documentElement,q=new URLSearchParams(location.search).get('lang'),l=(q==='en'||q==='kr')?q:localStorage.getItem('az_lang');if(l!=='kr'&&l!=='en')l=((navigator.language||'').toLowerCase().indexOf('ko')===0)?'kr':'en';if(l==='en'){d.setAttribute('lang','en');d.classList.add('az-i18n-wait');setTimeout(function(){d.classList.remove('az-i18n-wait');},2500);}}catch(e){}})();</script><style>html.az-i18n-wait body{visibility:hidden}</style>
 <meta name="robots" content="index, follow, noai, noimageai, noarchive"><meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/png" href="/favicon.png"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<title>Flare Tally 스위처 연결 방법 — AudioAZ</title><meta name="description" content="Flare Tally 스위처 브랜드별 연결 방법 — ATEM · OBS · vMix · Roland · AVMatrix · OSEE · TSL · USB">
+<title>Flare Tally 스위처 연결 방법 — AudioAZ</title><meta name="description" content="Flare Tally 스위처 브랜드별 연결 방법 — ATEM · OBS · Roland · AVMatrix · OSEE · TSL · USB">
 <link rel="canonical" href="https://audioazpro.com/support-flare-switchers.html">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
@@ -43,8 +43,8 @@ footer{border-top:1px solid var(--line);color:var(--dim);padding:26px 0;font-siz
 
 <h2>먼저 — 스캔으로 찾기</h2>
 <p>대부분은 직접 입력할 필요가 없습니다. 호스트 앱에서 '스캔'을 누르면 USB로 꽂힌 스위처와 네트워크별 검색 버튼이 함께 나옵니다. 찾은 스위처를 고르면 주소와 종류가 자동으로 들어갑니다.</p>
-<p>비밀번호를 쓰는 기종(OBS · Roland · AVMatrix · vMix)을 고르면 연결 설정 창이 바로 열립니다. 나중에 다시 열려면 주소 칸 옆 '연결 설정' 버튼을 누르세요.</p>
-<div class="toc"><a href="#atem">ATEM</a><a href="#obs">OBS Studio</a><a href="#vmix">vMix</a><a href="#roland">Roland</a><a href="#avmatrix">AVMatrix</a><a href="#gostream">OSEE GoStream</a><a href="#tsl">TSL UMD</a><a href="#v1hd">USB 연결</a></div>
+<p>비밀번호를 쓰는 기종(OBS · Roland · AVMatrix)을 고르면 연결 설정 창이 바로 열립니다. 나중에 다시 열려면 주소 칸 옆 '연결 설정' 버튼을 누르세요.</p>
+<div class="toc"><a href="#atem">ATEM</a><a href="#obs">OBS Studio</a><a href="#roland">Roland</a><a href="#avmatrix">AVMatrix</a><a href="#gostream">OSEE GoStream</a><a href="#tsl">TSL UMD</a><a href="#v1hd">USB 연결</a></div>
 
 <h3 id="atem">Blackmagic ATEM</h3>
 <p class="kv">포트 9910 고정 · 비밀번호 없음 · Mini · Mini Pro · Mini Extreme · SDI · Television Studio · Constellation</p>
@@ -66,15 +66,6 @@ footer{border-top:1px solid var(--line);color:var(--dim);padding:26px 0;font-siz
 <img class="shot" src="/assets/flare/sw-form-obs.png" alt="Flare Tally OBS connection window">
 <p class="cap">호스트 앱의 OBS 연결 설정 창.</p>
 <p>장면 이름의 첫 숫자가 카메라 번호입니다(예: 1 Cam, 카메라 2). 숫자가 없으면 장면 목록 순서를 씁니다. 프로그램 장면이 빨강, 스튜디오 모드의 프리뷰 장면이 초록입니다.</p>
-
-<h3 id="vmix">vMix</h3>
-<p class="kv">TCP API 기본 포트 8099 · 비밀번호 없음</p>
-<ol><li>vMix가 도는 PC의 IP를 확인합니다.</li>
-<li>그 PC의 방화벽에서 8099 포트가 막혀 있지 않은지 확인합니다.</li>
-<li>호스트 앱의 연결 설정 창에 IP를 넣습니다. 포트를 바꿔 쓴다면 포트 칸에 그 번호를 넣습니다.</li></ol>
-<img class="shot" src="/assets/flare/sw-form-vmix.png" alt="Flare Tally vMix connection window">
-<p class="cap">vMix는 주소와 포트만 씁니다.</p>
-<p>vMix의 입력 번호가 그대로 카메라 번호가 됩니다.</p>
 
 <h3 id="roland">Roland (V-60HD · V-80HD · V-160HD)</h3>
 <p class="kv">웹(Smart Tally) 기본 포트 80 · 웹 인증을 켠 기종만 아이디·비밀번호</p>
@@ -121,7 +112,7 @@ footer{border-top:1px solid var(--line);color:var(--dim);padding:26px 0;font-siz
 <h2>연결이 안 될 때</h2>
 <ul><li>'비밀번호가 필요합니다'라고 뜨면 연결 설정 창에서 비밀번호를 넣습니다. OBS는 서버 정보 표시, AVMatrix는 장비 웹 로그인 계정입니다.</li>
 <li>'스위처 응답 없음'이면 IP와 포트, 그리고 스위처가 맥과 같은 네트워크에 있는지 확인합니다.</li>
-<li>PC에서 도는 스위처(OBS · vMix)는 그 PC의 방화벽이 포트를 막고 있을 수 있습니다.</li>
+<li>PC에서 도는 스위처(OBS)는 그 PC의 방화벽이 포트를 막고 있을 수 있습니다.</li>
 <li>스캔에 안 나오면 주소를 직접 넣어 보세요. 다른 네트워크에 있는 장비는 스캔에 안 잡힙니다.</li></ul>
 </div></div>
 <footer><div class="wrap"><span>© AudioAZ (오디오에이지)</span><span class="right"><a href="support.html">지원</a> · <a href="privacy.html">개인정보처리방침</a> · <a href="terms.html">이용약관</a> · <a href="refund.html">환불·라이선스</a> · <a href="/contact.html">문의</a></span></div><div class="wrap" style="display:block;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;line-height:1.8;color:#6F84A3">오디오에이지(AudioAZ) · 대표 김형준 · 사업자등록번호 456-17-01966 · 통신판매업신고번호 제2026-다산-0859호 · 경기도 남양주시 다산중앙로19번길 21, F동 419호 (다산동, 다산진건블루웨일지식산업센터1차) · 전화 070-4837-1073 · 이메일 <a href="mailto:support@audioazpro.com" style="color:#8FA5C2">support@audioazpro.com</a></div>
