@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-13T00:57+09:00",
+ "generated": "2026-10-13T01:01+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -154,5 +154,10 @@
    "msg": "대표번호 복귀: 010-3547-0502 → 070-4837-1073 (KG이니시스 카드사 심사 통과)"
   }
  ],
- "commits_staging": []
+ "commits_staging": [
+  {
+   "date": "2026-10-13T00:57:28+09:00",
+   "msg": "법적 검수 2(일부): 해외 결제 판매자(Lemon Squeezy MoR) 고지 + Klera 페이지 Paddle 잔재 정리"
+  }
+ ]
 }
