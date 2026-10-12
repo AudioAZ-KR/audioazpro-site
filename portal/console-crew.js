@@ -18,7 +18,7 @@ var ST_MEM  = { pending:'승인 대기', active:'활동', inactive:'비활성', 
 // 회원 등급 (2026-09-27 일반 배포): 누구나 가입 = 일반, 크루는 사장님이 올리거나 초대 코드, 코어는 사장님 지정
 var LV_NAME = { basic:'일반', crew:'크루', core:'코어' };
 var ST_BILL = { none:'—', quoted:'견적 발송', invoiced:'계산서 발행', paid:'입금 완료' };
-var TAX     = { withholding:'3.3% 원천징수', invoice:'세금계산서', none:'공제 없음' };
+var TAX     = { withholding:'3.3% 원천징수', daily:'일용근로 원천징수', invoice:'세금계산서', none:'공제 없음' };
 
 /* ── 스타일 ─────────────────────────────────────────────────────────────── */
 var css = ''
@@ -155,8 +155,15 @@ function trunc10(v){ return Math.floor(v/10)*10; }
 function calcPay(p){
   var pay=n(p&&p.pay_krw), extra=n(p&&p.extra_krw), t=(p&&p.tax_type)||'withholding', tax=0, vat=0;
   if (t==='withholding'){ var it=trunc10(pay*0.03), lt=trunc10(it*0.1); tax=it+lt; }
+  else if (t==='daily'){ tax=dailyTax(pay, p&&p.work_days); }
   else if (t==='invoice'){ vat=Math.round(pay*0.1); }
   return { pay:pay, extra:extra, tax:tax, vat:vat, net: pay - tax + vat + extra, cost: pay + extra };
+}
+/* 일용근로소득 원천징수 (2026-10-13): 일당=페이÷근무일, 1일 (일당−15만)×6%×45%(근로소득세액공제 55%) = 소득세,
+   지방소득세 = 소득세×10%, 이번 지급 소득세가 1,000원 미만이면 소액부징수(0원). 10원 미만 절사 */
+function dailyTax(pay, d){
+  d=Math.max(1, n(d)||1); var w=pay/d, it=trunc10(Math.max(0, w-150000)*0.06*0.45*d);
+  if (it<1000) return 0; return it+trunc10(it*0.1);
 }
 function days(p){
   if (!p.date_start) return 1;
@@ -687,8 +694,9 @@ function renderProjectDetail(){
         var x=mem(a.user_id)||{}, py=C.pay[a.id]||{}, ma=C.madmin[a.user_id]||{}, conf=a.status==='confirmed';
         var defPay = (py.pay_krw===null||py.pay_krw===undefined) && ma.day_rate ? n(ma.day_rate)*days(p) : py.pay_krw;
         var tt = py.tax_type || (x.is_business ? 'invoice' : 'withholding');
-        var c = calcPay({pay_krw:defPay, extra_krw:py.extra_krw, tax_type:tt});
-        return '<tr data-app="'+a.id+'"><td><a style="cursor:pointer;text-decoration:underline" onclick="crewOpenMember(\''+a.user_id+'\')"><b>'+e(x.name||'?')+'</b></a><div class="cr-meta">'+e(x.specialty||'')+' · '+bizLabel(x)+(ma.day_rate?' · 일당 '+won(ma.day_rate):'')+'</div></td>'
+        var wd = py.work_days || days(p);
+        var c = calcPay({pay_krw:defPay, extra_krw:py.extra_krw, tax_type:tt, work_days:wd});
+        return '<tr data-app="'+a.id+'" data-days="'+wd+'"><td><a style="cursor:pointer;text-decoration:underline" onclick="crewOpenMember(\''+a.user_id+'\')"><b>'+e(x.name||'?')+'</b></a><div class="cr-meta">'+e(x.specialty||'')+' · '+bizLabel(x)+(ma.day_rate?' · 일당 '+won(ma.day_rate):'')+'</div></td>'
           +'<td class="cr-note">'+(a.role?'<b>'+e(a.role)+'</b>\n':'')+e(a.note||'')+'</td><td>'+stA(a.status)+'</td>'
           +(conf
             ? '<td><input class="cr-in" inputmode="decimal" data-k="pay_krw" placeholder="예: 35" value="'+e(toMan(defPay))+'" oninput="crewRowCalc(this)"></td>'
@@ -711,14 +719,14 @@ function renderProjectDetail(){
 }
 window.crewRowCalc = function(el){
   var tr=el.closest('tr'); var g=function(k){ var x=tr.querySelector('[data-k="'+k+'"]'); return x?x.value:''; };
-  var c=calcPay({pay_krw:manToWon(g('pay_krw')), extra_krw:manToWon(g('extra_krw')), tax_type:g('tax_type')});
+  var c=calcPay({pay_krw:manToWon(g('pay_krw')), extra_krw:manToWon(g('extra_krw')), tax_type:g('tax_type'), work_days:n(tr.dataset.days)||1});
   tr.querySelector('[data-net]').textContent=won(c.net);
 };
 window.crewSavePay = async function(appId){
   var tr=document.querySelector('tr[data-app="'+appId+'"]'); if(!tr) return;
   var g=function(k){ var x=tr.querySelector('[data-k="'+k+'"]'); return x?x.value:''; };
   var paid=tr.querySelector('[data-k="paid"]').checked, old=C.pay[appId]||{};
-  var row={ application_id:appId, pay_krw:manToWon(g('pay_krw')), extra_krw:manToWon(g('extra_krw')), tax_type:g('tax_type'),
+  var row={ application_id:appId, pay_krw:manToWon(g('pay_krw')), extra_krw:manToWon(g('extra_krw')), tax_type:g('tax_type'), work_days:n(tr.dataset.days)||1,
             paid:paid, paid_at: paid ? (old.paid_at||today()) : null, updated_at:new Date().toISOString() };
   var r=await sb.from('crew_pay').upsert(row); if (r.error) return dbErr(r.error);
   flash('페이를 저장했습니다.'); await load(); render(curPage());
@@ -956,7 +964,7 @@ window.crewRenderSettle = function(){
 window.crewTogglePaid = async function(appId, on){
   var old=C.pay[appId]||{};
   var r=await sb.from('crew_pay').upsert({ application_id:appId, pay_krw:old.pay_krw===undefined?null:old.pay_krw, extra_krw:old.extra_krw===undefined?null:old.extra_krw,
-    tax_type:old.tax_type||'withholding', memo:old.memo||null, paid:on, paid_at:on?today():null, updated_at:new Date().toISOString() });
+    tax_type:old.tax_type||'withholding', work_days:old.work_days||null, memo:old.memo||null, paid:on, paid_at:on?today():null, updated_at:new Date().toISOString() });
   if (r.error) return dbErr(r.error);
   flash(on?'지급 완료로 표시했습니다.':'미지급으로 되돌렸습니다.'); await load(); render('crew-settle');
 };
