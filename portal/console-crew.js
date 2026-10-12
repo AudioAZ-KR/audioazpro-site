@@ -101,7 +101,7 @@ addSection('crew-dash',
  +   kpi('crew-settle','이번 달 인건비','crKPay','페이+실비, 확정 기준')
  +   kpi('crew-settle','미지급 페이','crKUnpaid','지급액 합계')
  + '</div>'
- + '<div class="card"><h2>다가오는 일정 <button class="tbtn" style="margin-left:10px" onclick="crewReload()">새로고침</button></h2><div class="sub">오늘부터 45일 · 확정된 감독 포함</div><div class="cr-wrap" id="crDashUp"></div></div>'
+ + '<div class="card"><h2>다가오는 일정 <button class="tbtn" style="margin-left:10px" onclick="crewReload()">새로고침</button></h2><div class="sub">오늘 이후 공고 전부 (작성 중·취소 제외)</div><div class="cr-wrap" id="crDashUp"></div></div>'
  + '<div class="card"><h2>내 캘린더 연동</h2><div class="sub">모든 프로젝트(비공개·예정·작성 중 포함, 취소 제외)가 사장님 캘린더에 들어갑니다. 확정 감독 이름·신청 수도 메모에 표시 — 견적·페이 금액은 넣지 않습니다(주소만 알면 열리므로). 1시간마다 갱신.</div><div id="crFeed" class="rowflex"></div></div>'
  + '<div class="card"><h2>새 참여 신청</h2><div class="sub">감독이 audioaz.co.kr 에서 남긴 신청 — 바로 확정·거절</div><div class="cr-wrap" id="crDashApps"></div></div>'
  + '<div class="card"><h2>참여 요청 (승인 대기)</h2><div class="sub">초대 코드 없이 들어온 AudioAZ(Pro) 회원의 요청입니다. 승인해야 프로젝트를 볼 수 있고, 승인하면 본인에게 메일이 갑니다</div><div class="cr-wrap" id="crDashPend"></div></div>');
@@ -327,8 +327,8 @@ function renderDash(){
   set('crKApplied', applied.length); set('crKPending', pend.length);
   set('crKQuote', won(mq)+'원'); set('crKPay', won(mp)+'원'); set('crKUnpaid', won(unpaid)+'원'); set('crKUnpaidD', unpaidN+'건 · 지급액 합계');
 
-  var ld = new Date(); ld.setDate(ld.getDate()+45); var lim = ld.getFullYear()+'-'+String(ld.getMonth()+1).padStart(2,'0')+'-'+String(ld.getDate()).padStart(2,'0');
-  var up = C.projects.filter(function(p){ return (p.date_end||p.date_start)>=t && p.date_start<=lim && p.status!=='cancelled' && p.status!=='draft'; })
+  // 다가오는 일정: 기간 제한 없이 앞으로의 공고 전부 (2026-10-13, 45일 제한 폐지 — 1월 공고가 안 보였음)
+  var up = C.projects.filter(function(p){ return (p.date_end||p.date_start)>=t && p.status!=='cancelled' && p.status!=='draft'; })
                      .sort(function(a,b){ return a.date_start<b.date_start?-1:1; });
   document.getElementById('crDashUp').innerHTML = up.length ? '<table class="cr-t"><thead><tr><th>날짜</th><th>프로젝트</th><th>장소</th><th>상태</th><th>확정 감독</th><th>신청</th></tr></thead><tbody>'
     + up.map(function(p){ var as=appsOf(p.id), cf=as.filter(function(a){return a.status==='confirmed';}), ap=as.filter(function(a){return a.status==='applied';});
