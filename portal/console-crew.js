@@ -102,7 +102,7 @@ addSection('crew-dash',
  +   kpi('crew-settle','미지급 페이','crKUnpaid','지급액 합계')
  + '</div>'
  + '<div class="card"><h2>다가오는 일정 <button class="tbtn" style="margin-left:10px" onclick="crewReload()">새로고침</button></h2><div class="sub">오늘 이후 공고 전부 (작성 중·취소 제외)</div><div class="cr-wrap" id="crDashUp"></div></div>'
- + '<div class="card"><h2>지난 일정 · 행사 완료 / 입금 / 페이 지급</h2><div class="sub">끝난 행사의 완료·클라이언트 입금·감독 페이 지급을 스위치로 켜고 끕니다. 잘못 켰으면 다시 끄면 원래대로 돌아갑니다. 셋 다 켜진 행사는 30일 뒤 이 목록에서 빠집니다</div><div class="cr-wrap" id="crDashPast"></div></div>'
+ + '<div class="card"><h2>지난 일정 · 행사 완료 / 입금 / 페이 지급</h2><div class="sub">행사 완료·클라이언트 입금은 스위치로 켜고 끄고, 감독 페이는 사람마다 [지급 완료](확인 창 한 번 더)로 처리합니다. 모두 끝난 행사는 30일 뒤 이 목록에서 빠집니다</div><div class="cr-wrap" id="crDashPast"></div></div>'
  + '<div class="card"><h2>내 캘린더 연동</h2><div class="sub">모든 프로젝트(비공개·예정·작성 중 포함, 취소 제외)가 사장님 캘린더에 들어갑니다. 확정 감독 이름·신청 수도 메모에 표시 — 견적·페이 금액은 넣지 않습니다(주소만 알면 열리므로). 1시간마다 갱신.</div><div id="crFeed" class="rowflex"></div></div>'
  + '<div class="card"><h2>새 참여 신청</h2><div class="sub">감독이 audioaz.co.kr 에서 남긴 신청 — 바로 확정·거절</div><div class="cr-wrap" id="crDashApps"></div></div>'
  + '<div class="card"><h2>참여 요청 (승인 대기)</h2><div class="sub">초대 코드 없이 들어온 AudioAZ(Pro) 회원의 요청입니다. 승인해야 프로젝트를 볼 수 있고, 승인하면 본인에게 메일이 갑니다</div><div class="cr-wrap" id="crDashPend"></div></div>');
@@ -193,21 +193,25 @@ function swPaid(p){ var pa=C.padmin[p.id]||{}, on=pa.bill_status==='paid';
   return '<label class="cr-check"><input type="checkbox"'+(on?' checked':'')+' onchange="crewMarkPaid(\''+p.id+'\',this.checked)"> <span class="cr-meta">'+(on?'ON'+(pa.bill_paid_at?' · '+e(pa.bill_paid_at):''):'OFF')+'</span></label>'; }
 /* 페이 지급 완료 — 행사의 확정 감독 전원을 한 번에 ON/OFF (일부만 지급이면 '2/3') */
 function payApps(pid){ return appsOf(pid).filter(function(a){ return a.status==='confirmed' && !ghost(a.user_id); }); }
-function swPay(p){
+/* 감독별 [지급 완료] 버튼 — 누르면 확인 창 한 번 더 (2026-10-13 사장님: 개인별·실수 방지) */
+function payList(p){
   var as=payApps(p.id); if (!as.length) return '<span class="cr-meta">확정 없음</span>';
-  var k=as.filter(function(a){ return (C.pay[a.id]||{}).paid; }).length, all=k===as.length;
-  return '<label class="cr-check"><input type="checkbox"'+(all?' checked':'')+' onchange="crewTogglePayAll(\''+p.id+'\',this.checked)"> <span class="cr-meta">'+(all?'ON':(k?k+'/'+as.length:'OFF'))+'</span></label>';
+  return as.map(function(a){ var x=mem(a.user_id)||{}, py=C.pay[a.id]||{};
+    return '<div style="display:flex;gap:6px;align-items:center;margin:2px 0;white-space:nowrap">'+e(x.name||'?')+' '
+      +(py.paid ? '<span class="cr-st g"><i></i>지급 '+e(py.paid_at||'')+'</span><button class="tbtn" onclick="crewPayOne(\''+a.id+'\',false)">취소</button>'
+                : '<button class="tbtn" onclick="crewPayOne(\''+a.id+'\',true)">지급 완료</button>')+'</div>'; }).join('');
 }
-window.crewTogglePayAll = async function(pid, on){
-  var p=proj(pid)||{}, as=payApps(pid), rows=as.map(function(a){
-    var py=C.pay[a.id], x=mem(a.user_id)||{}, ma=C.madmin[a.user_id]||{};
-    var row={ application_id:a.id, paid:on, paid_at: on ? ((py&&py.paid_at)||today()) : null, updated_at:new Date().toISOString() };
-    if ((!py || py.pay_krw===null || py.pay_krw===undefined) && ma.day_rate) row.pay_krw=n(ma.day_rate)*days(p);   // 페이 미입력이면 기본 일당으로 채움
-    if (!py) row.tax_type = x.is_business ? 'invoice' : 'withholding';
-    return row; });
-  if (!rows.length) return;
-  for (var i=0;i<rows.length;i++){ var r=await sb.from('crew_pay').upsert(rows[i]); if (r.error) return dbErr(r.error); }
-  flash(on ? '페이 지급 ON — '+rows.length+'명 지급 완료 ('+today()+')' : '페이 지급 OFF — '+rows.length+'명 미지급으로 되돌림'); await load(); render(curPage());
+window.crewPayOne = async function(appId, on){
+  var a=C.apps.filter(function(x){ return x.id===appId; })[0]; if(!a) return;
+  var p=proj(a.project_id)||{}, x=mem(a.user_id)||{}, ma=C.madmin[a.user_id]||{}, py=C.pay[appId];
+  var row={ application_id:appId, paid:on, paid_at: on ? today() : null, updated_at:new Date().toISOString() };
+  if ((!py || py.pay_krw===null || py.pay_krw===undefined) && ma.day_rate) row.pay_krw=n(ma.day_rate)*days(p);   // 페이 미입력이면 기본 일당×일수
+  if (!py) row.tax_type = x.is_business ? 'invoice' : 'withholding';
+  var c=calcPay({ pay_krw: row.pay_krw!==undefined ? row.pay_krw : (py||{}).pay_krw, extra_krw:(py||{}).extra_krw, tax_type: row.tax_type||(py||{}).tax_type, work_days:(py||{}).work_days });
+  if (!confirm(on ? (x.name||'')+' 님 페이를 지급 완료로 표시할까요?\n'+(p.title||'')+'\n지급액 '+won(c.net)+'원 · 지급일 '+today()
+                  : (x.name||'')+' 님 지급 완료를 취소하고 미지급으로 되돌릴까요?\n'+(p.title||''))) return false;
+  var r=await sb.from('crew_pay').upsert(row); if (r.error){ dbErr(r.error); return false; }
+  flash(on ? (x.name||'')+' 지급 완료' : (x.name||'')+' 미지급으로 되돌림'); await load(); render(curPage()); return true;
 };
 window.crewToggleDone = async function(id, on){
   // OFF 로 되돌리면 '모집 마감' (지난 행사라 다시 모집 중으로 열지 않는다)
@@ -396,12 +400,12 @@ function renderDash(){
   var past = C.projects.filter(pastRow).sort(function(a,b){ return a.date_start<b.date_start?1:-1; });
   var waitN=0, waitSum=0; past.forEach(function(p){ if (billWaiting(p)){ waitN++; waitSum+=billTotal(p); } });
   var openN = past.filter(pastOpen).length;
-  document.getElementById('crDashPast').innerHTML = past.length ? '<table class="cr-t"><thead><tr><th>날짜</th><th>프로젝트</th><th>클라이언트</th><th>확정 감독</th><th style="text-align:right">청구 총액</th><th>행사 완료</th><th>입금 완료</th><th>페이 지급</th></tr></thead><tbody>'
+  document.getElementById('crDashPast').innerHTML = past.length ? '<table class="cr-t"><thead><tr><th>날짜</th><th>프로젝트</th><th>클라이언트</th><th>확정 감독</th><th style="text-align:right">청구 총액</th><th>행사 완료</th><th>입금 완료</th><th>감독 페이 지급</th></tr></thead><tbody>'
     + past.map(function(p){ var pa=C.padmin[p.id]||{}, cf=appsOf(p.id).filter(function(a){ return a.status==='confirmed' && !ghost(a.user_id); });
         return '<tr><td class="cr-date">'+e(dRange(p))+'</td><td><a style="cursor:pointer;text-decoration:underline" onclick="crewOpenProject(\''+p.id+'\')"><b>'+e(p.title)+'</b></a></td><td>'+e(pa.client_name||'—')+'</td>'
           +'<td>'+(cf.length?cf.map(function(a){ var x=mem(a.user_id); return e(x?x.name:'?'); }).join(', '):'<span class="cr-meta">없음</span>')+'</td>'
           +'<td class="cr-num">'+(pa.quote_krw?won(billTotal(p)):'<span class="cr-meta">견적 없음</span>')+'</td>'
-          +'<td>'+swDone(p)+'</td><td>'+swPaid(p)+'</td><td>'+swPay(p)+'</td></tr>'; }).join('')
+          +'<td>'+swDone(p)+'</td><td>'+swPaid(p)+'</td><td>'+payList(p)+'</td></tr>'; }).join('')
     + '<tr><td colspan="4" class="cr-meta">완료 전 '+openN+'건'+(openN>1?' · <a style="cursor:pointer;text-decoration:underline" onclick="crewMarkDone(\'all\')">완료 전 행사 모두 완료</a>':'')+' · 입금 대기 '+waitN+'건</td><td class="cr-num"><b>'+won(waitSum)+'</b></td><td colspan="3" class="cr-meta">입금 대기 합계</td></tr></tbody></table>'
     : '<div class="cr-empty">정리할 지난 일정이 없습니다.</div>';
 
@@ -747,7 +751,7 @@ function renderProjectDetail(){
   var addable = C.members.filter(function(m){ return m.status==='active' && !assigned[m.user_id]; });
  box.innerHTML = '<h2>'+e(p.title)+tentTag(p)+' <span class="cr-meta" style="font-weight:400;margin-left:8px">'+e(dRange(p))+' · '+days(p)+'일'+(p.venue?' · '+e(p.venue):'')+'</span>'
     + '<button class="tbtn" style="float:right" onclick="crewEditProject(\''+p.id+'\')">프로젝트 수정</button>'
-    + '<span style="float:right;margin-right:14px;font-weight:400;font-size:13px">'+(isPast(p)&&p.status!=='draft'&&p.status!=='cancelled'?'행사 완료 '+swDone(p)+' &nbsp; ':'')+(p.status!=='cancelled'?'입금 완료 '+swPaid(p)+' &nbsp; 페이 지급 '+swPay(p):'')+'</span></h2>'
+    + '<span style="float:right;margin-right:14px;font-weight:400;font-size:13px">'+(isPast(p)&&p.status!=='draft'&&p.status!=='cancelled'?'행사 완료 '+swDone(p)+' &nbsp; ':'')+(p.status!=='cancelled'?'입금 완료 '+swPaid(p):'')+'</span></h2>'
     + '<div class="sub">'+stP(p.status,p)+(p.roles?' &nbsp; 모집: '+e(p.roles):'')+(p.call_time?' &nbsp; 콜: '+e(p.call_time):'')+(pa.client_name?' &nbsp; 클라이언트: '+e(pa.client_name)+(pa.client_contact?' ('+e(pa.client_contact)+')':''):'')+mapBtn(p)+'</div>'
     + '<div class="cr-sum">'
     +   '<div><div class="l">견적 (공급가)</div><div class="v">'+won(q)+'</div></div>'
@@ -1028,7 +1032,7 @@ window.crewRenderSettle = function(){
       +'<td class="cr-num">'+won(r.py.pay_krw)+'</td><td class="cr-num">'+(c.extra?won(c.extra):'—')+'</td>'
       +'<td class="cr-num">'+(c.tax?'−'+won(c.tax):(c.vat?'+'+won(c.vat):'—'))+'</td><td class="cr-num"><b>'+won(c.net)+'</b></td>'
       +'<td style="font-size:12.5px">'+(r.m.bank_account?e(r.m.bank_name||'')+' <span class="mono">'+e(r.m.bank_account)+'</span>'+(r.m.bank_holder&&r.m.bank_holder!==r.m.name?' <span class="cr-meta">('+e(r.m.bank_holder)+')</span>':''):'<span class="cr-meta">미등록</span>')+'</td>'
-      +'<td><label class="cr-check"><input type="checkbox"'+(r.py.paid?' checked':'')+' onchange="crewTogglePaid(\''+r.a.id+'\',this.checked)"> <span class="cr-meta">'+e(r.py.paid_at||'')+'</span></label></td></tr>';
+      +'<td>'+(r.py.paid ? '<span class="cr-st g"><i></i>지급 '+e(r.py.paid_at||'')+'</span> <button class="tbtn" onclick="crewPayOne(\''+r.a.id+'\',false)">취소</button>' : '<button class="tbtn" onclick="crewPayOne(\''+r.a.id+'\',true)">지급 완료</button>')+'</td></tr>';
   }).join('') : '<tr><td colspan="10" class="cr-empty">해당 기간에 확정된 참여가 없습니다.</td></tr>';
 };
 window.crewTogglePaid = async function(appId, on){
