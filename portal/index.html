@@ -2,7 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<script>/* EN 깜빡임 방지: 번역이 끝날 때까지 본문을 숨긴다(최대 2.5초) — az-i18n.js 가 공개 */(function(){try{var d=document.documentElement,q=new URLSearchParams(location.search).get('lang'),l=(q==='en'||q==='kr')?q:localStorage.getItem('az_lang');if(l!=='kr'&&l!=='en')l=((navigator.language||'').toLowerCase().indexOf('ko')===0)?'kr':'en';if(l==='en'){d.setAttribute('lang','en');d.classList.add('az-i18n-wait');setTimeout(function(){d.classList.remove('az-i18n-wait');},2500);}}catch(e){}})();</script><style>html.az-i18n-wait body{visibility:hidden}</style>
+<script>/* EN 깜빡임 방지: 번역이 끝날 때까지 본문을 숨긴다(최대 2.5초) — az-i18n.js 가 공개 */(function(){try{var d=document.documentElement,q=new URLSearchParams(location.search).get('lang'),l=(q==='en'||q==='kr')?q:localStorage.getItem('az_lang');if(l!=='kr'&&l!=='en')l=((navigator.language||'').toLowerCase().indexOf('ko')===0)?'kr':'en';if(l==='en'){d.setAttribute('lang','en');d.classList.add('az-i18n-wait');setTimeout(function(){d.classList.remove('az-i18n-wait');},2500);}}catch(e){}})();</script><style>html.az-i18n-wait body{visibility:hidden}.consent{margin:2px 0 14px}.consent .chk{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.55;margin-bottom:9px;cursor:pointer}.consent .chk input{margin-top:3px;flex:none;width:16px;height:16px}.consent .req{color:var(--blue-soft,#4D96F5);font-weight:700;margin-right:4px}.consent .sub{display:block;font-size:12px;color:var(--dim,#96A6BF);margin-top:3px}.consent .sub a,.consent .lk a{color:var(--blue-soft,#4D96F5);font-weight:600}.consent .lk{font-size:12px;margin-top:2px}
+</style>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow, noai, noimageai, noarchive">
 <link rel="icon" type="image/png" href="/favicon.png"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -153,6 +154,10 @@ img,svg{max-width:100%}
           <label for="su-pw2">비밀번호 확인</label>
           <input id="su-pw2" type="password" name="password2" placeholder="비밀번호 다시 입력" minlength="8" autocomplete="new-password" required>
         </div>
+        <div class="consent">
+          <label class="chk"><input type="checkbox" name="agree_terms" required> <span><span class="req">[필수]</span><span>이용약관과 환불·라이선스 정책에 동의합니다.</span><span class="lk"><span>보기:</span> <a href="/terms.html" target="_blank" rel="noopener">이용약관</a> · <a href="/refund.html" target="_blank" rel="noopener">환불·라이선스 정책</a></span></span></label>
+          <label class="chk"><input type="checkbox" name="agree_privacy" required> <span><span class="req">[필수]</span><span>개인정보 수집·이용에 동의합니다.</span><span class="sub">항목: 이메일·이름 · 목적: 계정 인증, 라이선스 발급·관리, 고객 지원 · 보유: 회원 탈퇴 시까지(법정 보관 기록 제외) · 동의하지 않으면 가입할 수 없습니다.</span><span class="lk"><span>보기:</span> <a href="/privacy.html" target="_blank" rel="noopener">개인정보처리방침</a></span></span></label>
+        </div>
         <button class="primary" type="submit">회원가입</button>
       </form>
     </div>
@@ -215,7 +220,9 @@ async function submitForm(e,mode){
     if(mode==='signup'){
       if(!/^(?=.*[A-Za-z])(?=.*\d).{8,72}$/.test(d.password)){ throw new Error('비밀번호는 영문과 숫자를 모두 포함해 8자 이상이어야 합니다.'); }
       if(d.password!==d.password2){ throw new Error('비밀번호가 일치하지 않습니다.'); }
-      await AZ.signup(d.email, d.password, d.name, isCrew()?CREW:null);
+      if(!f.agree_terms.checked||!f.agree_privacy.checked){ throw new Error('약관과 개인정보 수집·이용에 동의해 주세요.'); }
+      var consentAt=new Date().toISOString();   // 동의 증거 — 계정 메타데이터에 시각 보관
+      await AZ.signup(d.email, d.password, d.name, isCrew()?CREW:null, {consent_terms_at:consentAt, consent_privacy_at:consentAt});
       var s=await AZ.session();
       if(s){ location.href=nextUrl()||'account.html'; return false; }   // 이메일 인증 꺼져 있으면 바로 로그인
       alert('회원가입 신청 완료!\n\n'+d.email+' 으로 승인(인증) 메일을 보냈습니다.\n메일의 링크를 눌러 이메일을 인증하면 가입이 완료되고'+(isCrew()?' 오디오에이지 크루 페이지로 바로 이동합니다.':' 로그인할 수 있습니다.')+'\n\n메일이 안 보이면 스팸함을 확인해 주세요.');
