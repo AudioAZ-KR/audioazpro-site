@@ -102,6 +102,7 @@ addSection('crew-dash',
  +   kpi('crew-settle','미지급 페이','crKUnpaid','지급액 합계')
  + '</div>'
  + '<div class="card"><h2>다가오는 일정 <button class="tbtn" style="margin-left:10px" onclick="crewReload()">새로고침</button></h2><div class="sub">오늘 이후 공고 전부 (작성 중·취소 제외)</div><div class="cr-wrap" id="crDashUp"></div></div>'
+ + '<div class="card"><h2>지난 일정 · 완료 체크</h2><div class="sub">날짜가 지났는데 아직 모집 중·마감 상태인 행사입니다. 끝난 행사는 [완료]로 닫아 두세요 (감독 화면·캘린더엔 그대로 남고, 페이 정산과는 별개)</div><div class="cr-wrap" id="crDashPast"></div></div>'
  + '<div class="card"><h2>내 캘린더 연동</h2><div class="sub">모든 프로젝트(비공개·예정·작성 중 포함, 취소 제외)가 사장님 캘린더에 들어갑니다. 확정 감독 이름·신청 수도 메모에 표시 — 견적·페이 금액은 넣지 않습니다(주소만 알면 열리므로). 1시간마다 갱신.</div><div id="crFeed" class="rowflex"></div></div>'
  + '<div class="card"><h2>새 참여 신청</h2><div class="sub">감독이 audioaz.co.kr 에서 남긴 신청 — 바로 확정·거절</div><div class="cr-wrap" id="crDashApps"></div></div>'
  + '<div class="card"><h2>참여 요청 (승인 대기)</h2><div class="sub">초대 코드 없이 들어온 AudioAZ(Pro) 회원의 요청입니다. 승인해야 프로젝트를 볼 수 있고, 승인하면 본인에게 메일이 갑니다</div><div class="cr-wrap" id="crDashPend"></div></div>');
@@ -165,6 +166,16 @@ function dailyTax(pay, d){
   d=Math.max(1, n(d)||1); var w=pay/d, it=trunc10(Math.max(0, w-150000)*0.06*0.45*d);
   if (it<1000) return 0; return it+trunc10(it*0.1);
 }
+/* 지난 행사인데 아직 모집 중·마감 = 완료 체크 대상 (2026-10-13) */
+function pastOpen(p){ return (p.date_end||p.date_start) < today() && (p.status==='open' || p.status==='closed'); }
+window.crewMarkDone = async function(id){
+  var ids = id==='all' ? C.projects.filter(pastOpen).map(function(p){ return p.id; }) : [id];
+  if (!ids.length) return;
+  var p1 = proj(ids[0])||{};
+  if (!confirm(ids.length>1 ? '지난 행사 '+ids.length+'건을 완료로 바꿉니다.' : '"'+(p1.title||'')+'" 을(를) 완료로 바꿉니다.')) return;
+  var r=await sb.from('crew_projects').update({ status:'done' }).in('id', ids); if (r.error) return dbErr(r.error);
+  flash(ids.length+'건 완료 처리했습니다.'); await load(); render(curPage());
+};
 function days(p){
   if (!p.date_start) return 1;
   if (!p.date_end || p.date_end < p.date_start) return 1;
@@ -337,6 +348,15 @@ function renderDash(){
           +'<td class="cr-num">'+ap.length+'</td></tr>'; }).join('') + '</tbody></table>'
     : '<div class="cr-empty">예정된 일정이 없습니다.</div>';
 
+  var past = C.projects.filter(pastOpen).sort(function(a,b){ return a.date_start<b.date_start?1:-1; });
+  document.getElementById('crDashPast').innerHTML = past.length ? '<table class="cr-t"><thead><tr><th>날짜</th><th>프로젝트</th><th>상태</th><th>확정 감독</th><th>미지급</th><th>'+(past.length>1?'<button class="tbtn" onclick="crewMarkDone(\'all\')">모두 완료 ('+past.length+')</button>':'')+'</th></tr></thead><tbody>'
+    + past.map(function(p){ var cf=appsOf(p.id).filter(function(a){ return a.status==='confirmed' && !ghost(a.user_id); }), un=cf.filter(function(a){ var py=C.pay[a.id]; return !py||!py.paid; }).length;
+        return '<tr><td class="cr-date">'+e(dRange(p))+'</td><td><a style="cursor:pointer;text-decoration:underline" onclick="crewOpenProject(\''+p.id+'\')"><b>'+e(p.title)+'</b></a></td><td>'+stP(p.status,p)+'</td>'
+          +'<td>'+(cf.length?cf.map(function(a){ var x=mem(a.user_id); return e(x?x.name:'?'); }).join(', '):'<span class="cr-meta">없음</span>')+'</td>'
+          +'<td class="cr-num">'+(un?'<span class="cr-neg">'+un+'명</span>':'—')+'</td>'
+          +'<td><button class="tbtn" onclick="crewMarkDone(\''+p.id+'\')">완료</button></td></tr>'; }).join('') + '</tbody></table>'
+    : '<div class="cr-empty">완료 체크할 지난 일정이 없습니다.</div>';
+
   document.getElementById('crDashApps').innerHTML = applied.length ? '<table class="cr-t"><thead><tr><th>신청 시각</th><th>프로젝트</th><th>감독</th><th>희망 포지션</th><th>남긴 말</th><th></th></tr></thead><tbody>'
     + applied.slice().reverse().map(function(a){ var p=proj(a.project_id)||{}, x=mem(a.user_id)||{};
         return '<tr><td class="cr-date">'+e(fmtDateTime(a.created_at))+'</td><td><a style="cursor:pointer;text-decoration:underline" onclick="crewOpenProject(\''+p.id+'\')">'+e(p.title)+'</a><div class="cr-meta">'+e(dRange(p))+'</div></td>'
@@ -385,7 +405,7 @@ window.crewRenderProjects = function(){
       +'<td class="cr-num">'+ap+' / '+cf+(p.headcount?' <span class="cr-meta">('+p.headcount+')</span>':'')+'</td>'
       +'<td class="cr-num">'+won(pa.quote_krw)+'</td><td class="cr-num">'+won(cost)+'</td>'
       +'<td class="cr-num '+(mg===null?'':(mg<0?'cr-neg':''))+'">'+(mg===null?'—':won(mg))+'</td><td style="font-size:12.5px">'+(ST_BILL[pa.bill_status||'none'])+'</td>'
-      +'<td><div class="cr-actions"><button class="tbtn" onclick="crewOpenProject(\''+p.id+'\')">관리</button><button class="tbtn" onclick="crewEditProject(\''+p.id+'\')">수정</button></div></td></tr>';
+      +'<td><div class="cr-actions"><button class="tbtn" onclick="crewOpenProject(\''+p.id+'\')">관리</button><button class="tbtn" onclick="crewEditProject(\''+p.id+'\')">수정</button>'+(pastOpen(p)?'<button class="tbtn" onclick="crewMarkDone(\''+p.id+'\')">완료</button>':'')+'</div></td></tr>';
   }).join('') : '<tr><td colspan="10" class="cr-empty">프로젝트가 없습니다. [새 프로젝트]로 올리면 승인된 감독들에게 바로 보입니다.</td></tr>';
 };
 
@@ -677,7 +697,8 @@ function renderProjectDetail(){
   var assigned = {}; as.forEach(function(a){ assigned[a.user_id]=1; });
   var addable = C.members.filter(function(m){ return m.status==='active' && !assigned[m.user_id]; });
  box.innerHTML = '<h2>'+e(p.title)+tentTag(p)+' <span class="cr-meta" style="font-weight:400;margin-left:8px">'+e(dRange(p))+' · '+days(p)+'일'+(p.venue?' · '+e(p.venue):'')+'</span>'
-    + '<button class="tbtn" style="float:right" onclick="crewEditProject(\''+p.id+'\')">프로젝트 수정</button></h2>'
+    + '<button class="tbtn" style="float:right" onclick="crewEditProject(\''+p.id+'\')">프로젝트 수정</button>'
+    + (pastOpen(p) ? '<button class="tbtn" style="float:right;margin-right:6px" onclick="crewMarkDone(\''+p.id+'\')">행사 완료</button>' : '')+'</h2>'
     + '<div class="sub">'+stP(p.status,p)+(p.roles?' &nbsp; 모집: '+e(p.roles):'')+(p.call_time?' &nbsp; 콜: '+e(p.call_time):'')+(pa.client_name?' &nbsp; 클라이언트: '+e(pa.client_name)+(pa.client_contact?' ('+e(pa.client_contact)+')':''):'')+mapBtn(p)+'</div>'
     + '<div class="cr-sum">'
     +   '<div><div class="l">견적 (공급가)</div><div class="v">'+won(q)+'</div></div>'
