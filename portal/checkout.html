@@ -2,7 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<script>/* EN 깜빡임 방지: 번역이 끝날 때까지 본문을 숨긴다(최대 2.5초) — az-i18n.js 가 공개 */(function(){try{var d=document.documentElement,q=new URLSearchParams(location.search).get('lang'),l=(q==='en'||q==='kr')?q:localStorage.getItem('az_lang');if(l!=='kr'&&l!=='en')l=((navigator.language||'').toLowerCase().indexOf('ko')===0)?'kr':'en';if(l==='en'){d.setAttribute('lang','en');d.classList.add('az-i18n-wait');setTimeout(function(){d.classList.remove('az-i18n-wait');},2500);}}catch(e){}})();</script><style>html.az-i18n-wait body{visibility:hidden}</style>
+<script>/* EN 깜빡임 방지: 번역이 끝날 때까지 본문을 숨긴다(최대 2.5초) — az-i18n.js 가 공개 */(function(){try{var d=document.documentElement,q=new URLSearchParams(location.search).get('lang'),l=(q==='en'||q==='kr')?q:localStorage.getItem('az_lang');if(l!=='kr'&&l!=='en')l=((navigator.language||'').toLowerCase().indexOf('ko')===0)?'kr':'en';if(l==='en'){d.setAttribute('lang','en');d.classList.add('az-i18n-wait');setTimeout(function(){d.classList.remove('az-i18n-wait');},2500);}}catch(e){}})();</script><style>html.az-i18n-wait body{visibility:hidden}.consent{margin:2px 0 14px}.consent .chk{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.55;margin-bottom:9px;cursor:pointer}.consent .chk input{margin-top:3px;flex:none;width:16px;height:16px}.consent .req{color:var(--blue-soft,#4D96F5);font-weight:700;margin-right:4px}.consent .sub{display:block;font-size:12px;color:var(--dim,#96A6BF);margin-top:3px}.consent .sub a,.consent .lk a{color:var(--blue-soft,#4D96F5);font-weight:600}.consent .lk{font-size:12px;margin-top:2px}
+</style>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow, noai, noimageai, noarchive">
 <link rel="icon" type="image/png" href="/favicon.png"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -127,6 +128,11 @@ h1{font-size:24px;font-weight:800;margin-bottom:4px}.lead{color:var(--dim);font-
       <div class="line disc" id="sDiscLine" style="display:none">코드 할인 <b id="sDisc">-₩0</b></div>
       <div class="total"><span id="totLabel">합계</span><span class="amt" id="sTotal">—</span></div>
       <div id="licBox" style="display:none;margin-top:12px;background:var(--sky);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--blue-deep)"></div>
+      <div class="consent" id="consentBox">
+        <label class="chk"><input type="checkbox" id="agreeTerms"> <span><span class="req">[필수]</span><span>이용약관과 환불·라이선스 정책에 동의합니다.</span><span class="sub">결제 후 14일 이내이고 라이선스를 활성화하지 않았다면 전액 환불됩니다. 라이선스를 활성화하면 제품 제공이 개시되어 청약철회가 제한됩니다. 7일 무료 체험으로 미리 확인할 수 있습니다.</span><span class="lk"><span>보기:</span> <a href="/terms.html" target="_blank" rel="noopener">이용약관</a> · <a href="/refund.html" target="_blank" rel="noopener">환불·라이선스 정책</a></span></span></label>
+        <label class="chk" id="agreePrivacyRow"><input type="checkbox" id="agreePrivacy"> <span><span class="req">[필수]</span><span>개인정보 수집·이용에 동의합니다.</span><span class="sub">항목: 구매자 이름·휴대폰 번호 · 목적: 결제대행사(KG이니시스) 본인확인, 결제·환불 안내 · 보유: 전자상거래법에 따라 5년 · 동의하지 않으면 국내 카드 결제를 진행할 수 없습니다.</span><span class="lk"><span>보기:</span> <a href="/privacy.html" target="_blank" rel="noopener">개인정보처리방침</a></span></span></label>
+        <div class="codemsg" id="consentMsg"></div>
+      </div>
       <div class="pay">
         <button class="pbtn kr" id="btnKr" onclick="pay('포트원')">구매 문의하기</button>
         <button class="pbtn" id="btnIntl" onclick="pay('Lemon')" style="display:none">Pay now</button>
@@ -309,6 +315,13 @@ async function pay(ch){
     location.href='/contact.html?subject='+encodeURIComponent(PROD[CURPROD]+' 구매 문의'); return;
   }
   var u=(await sbC.auth.getUser()).data.user; if(!u){ location.href='index.html?next='+encodeURIComponent('checkout.html'+location.search); return; }
+  // 약관·환불정책(청약철회 제한 포함) 동의 — 국내 모드는 개인정보(이름·휴대폰) 동의까지 (전자상거래법 13조·개인정보보호법 22조)
+  var at=document.getElementById('agreeTerms'), ap=document.getElementById('agreePrivacy'), cm=document.getElementById('consentMsg');
+  function cwarn(el,t){ if(cm){ cm.className='codemsg err'; cm.textContent=t; } if(el){ el.focus(); el.scrollIntoView({block:'center',behavior:'smooth'}); } return null; }
+  if(!at||!at.checked) return cwarn(at,'이용약관과 환불·라이선스 정책에 동의해 주세요.');
+  if(provider==='portone' && (!ap||!ap.checked)) return cwarn(ap,'개인정보 수집·이용에 동의해 주세요.');
+  if(cm){ cm.className='codemsg'; cm.textContent=''; }
+  try{ sbC.auth.updateUser({data:{consent_checkout_at:new Date().toISOString()}}); }catch(_){}   // 동의 증거(실패해도 결제 진행)
   var buyer = (provider==='portone') ? buyerInfo() : {name:'',phone:''};
   if(!buyer) return;                                   // 이름·휴대폰 미입력 — 해당 칸으로 안내했으므로 여기서 중단
   var cfg=window.AZ_PAY[provider];
@@ -343,7 +356,7 @@ function payMode(){
   return lang.indexOf('ko')===0 ? 'kr' : 'intl';
 }
 function setPayMode(m){ try{ localStorage.setItem('az_pay_mode',m); }catch(_){} renderPrice(); renderPayButtons(); }
-function syncBuyerCard(){ var c=document.getElementById('buyerCard'); if(c) c.style.display = (payMode()==='kr') ? '' : 'none'; }
+function syncBuyerCard(){ var kr=(payMode()==='kr'); var c=document.getElementById('buyerCard'); if(c) c.style.display = kr ? '' : 'none'; var pr=document.getElementById('agreePrivacyRow'); if(pr) pr.style.display = kr ? '' : 'none'; }   // 해외(Lemon) 모드는 이름·휴대폰을 받지 않으므로 개인정보 동의 줄도 숨김
 function usdOf(pid){ var d=AZ.usdOf?AZ.usdOf(pid):{now:null}; if(d.now!=null) return d.now; var u=(window.AZ_PAY&&window.AZ_PAY.lemon&&window.AZ_PAY.lemon.usd)||{}; return (u[pid]!=null)?u[pid]:null; }
 function U(v){ return '$'+Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 var PAYLOGOS="<span class=\"paylogos\" aria-hidden=\"true\"><svg viewBox=\"0 0 60 16\" width=\"54\" height=\"14\"><text x=\"0\" y=\"13\" font-family=\"Verdana,Arial,sans-serif\" font-weight=\"700\" font-style=\"italic\" font-size=\"15\" fill=\"#003087\">Pay</text><text x=\"30\" y=\"13\" font-family=\"Verdana,Arial,sans-serif\" font-weight=\"700\" font-style=\"italic\" font-size=\"15\" fill=\"#009CDE\">Pal</text></svg><svg viewBox=\"0 0 32 20\" width=\"24\" height=\"15\"><rect x=\"1\" y=\"1\" width=\"30\" height=\"18\" rx=\"3\" fill=\"none\" stroke=\"#14213A\" stroke-width=\"1.6\"/><rect x=\"1\" y=\"5\" width=\"30\" height=\"4\" fill=\"#14213A\"/><rect x=\"5\" y=\"13\" width=\"9\" height=\"2.4\" rx=\"1\" fill=\"#14213A\"/></svg></span>";

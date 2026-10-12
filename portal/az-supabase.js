@@ -39,10 +39,10 @@ async function login(email, password) {
   }
   return data.user;
 }
-async function signup(email, password, name, redirectTo) {
+async function signup(email, password, name, redirectTo, meta) {
   const { data, error } = await sb.auth.signUp({
     email, password, options: {
-      data: { name },                                          // name → profiles 트리거로 복사
+      data: Object.assign({ name }, meta || {}),            // meta: 약관·개인정보 동의 시각 등 (증거용, profiles 트리거는 name 만 복사)                                          // name → profiles 트리거로 복사
       emailRedirectTo: redirectTo || (location.origin + '/?welcome=1')  // 확인 링크 클릭 후 메인 홈으로 (크루 가입이면 크루 페이지로)
     }
   });
