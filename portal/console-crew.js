@@ -208,7 +208,19 @@ function payList(p){
   return as.map(function(a){ var x=mem(a.user_id)||{}, py=C.pay[a.id]||{}, tt=py.tax_type||(x.is_business?'invoice':'withholding');
     return '<div style="display:flex;gap:6px;align-items:center;margin:2px 0;white-space:nowrap">'+e(x.name||'?')+' <span class="cr-meta">'+TAX[tt]+'</span> '
       +(py.paid ? '<span class="cr-st g"><i></i>지급 '+e(py.paid_at||'')+'</span><button class="tbtn" onclick="crewPayOne(\''+a.id+'\',false)">취소</button>'
-                : '<button class="tbtn" onclick="crewPayOne(\''+a.id+'\',true)">지급 완료</button>')+'</div>'; }).join('');
+                : (x.bank_account?'<button class="tbtn" onclick="crewCopy(\''+e(String(x.bank_account).replace(/[^0-9]/g,''))+'\',\'계좌번호\')" title="'+e((x.bank_name||'')+' '+x.bank_account+(x.bank_holder?' '+x.bank_holder:''))+'">계좌</button>':'<span class="cr-meta">계좌 미등록</span>')
+                  +'<button class="tbtn" onclick="crewCopy(\''+payNetOf(a)+'\',\'금액 '+payNetOf(a).toLocaleString('ko-KR')+'원\')">금액</button>'
+                  +'<button class="tbtn" onclick="crewPayOne(\''+a.id+'\',true)">지급 완료</button>')+'</div>'; }).join('');
+}
+/* 은행 이체 입력용 복사 — 계좌번호는 숫자만, 금액은 원 단위 숫자만 (2026-10-13) */
+window.crewCopy = async function(text, label){
+  try { await navigator.clipboard.writeText(String(text)); flash(label+' 복사됨'); }
+  catch(_){ var t=document.createElement('textarea'); t.value=String(text); document.body.appendChild(t); t.select(); try{ document.execCommand('copy'); flash(label+' 복사됨'); }catch(__){ flash('복사하지 못했습니다', true); } t.remove(); }
+};
+function payNetOf(a){
+  var p=proj(a.project_id)||{}, x=mem(a.user_id)||{}, ma=C.madmin[a.user_id]||{}, py=C.pay[a.id]||{};
+  var pay = (py.pay_krw===null||py.pay_krw===undefined) && ma.day_rate ? n(ma.day_rate)*days(p) : py.pay_krw;
+  return calcPay({ pay_krw:pay, extra_krw:py.extra_krw, tax_type: py.tax_type||(x.is_business?'invoice':'withholding'), work_days: py.work_days||days(p) }).net;
 }
 window.crewPayOne = async function(appId, on){
   var a=C.apps.filter(function(x){ return x.id===appId; })[0]; if(!a) return;
@@ -1088,7 +1100,9 @@ window.crewRenderSettle = function(){
       +'<td><b>'+e(r.m.name)+'</b></td><td style="font-size:12.5px">'+TAX[tt]+(r.m.is_business&&r.m.biz_no?'<div class="cr-meta">'+e(fmtBizNo(r.m.biz_no)||r.m.biz_no)+'</div>':'')+'</td>'
       +'<td class="cr-num">'+won(r.py.pay_krw)+'</td><td class="cr-num">'+(c.extra?won(c.extra):'—')+'</td>'
       +'<td class="cr-num">'+(c.tax?'−'+won(c.tax):(c.vat?'+'+won(c.vat):'—'))+'</td><td class="cr-num"><b>'+won(c.net)+'</b></td>'
-      +'<td style="font-size:12.5px">'+(r.m.bank_account?e(r.m.bank_name||'')+' <span class="mono">'+e(r.m.bank_account)+'</span>'+(r.m.bank_holder&&r.m.bank_holder!==r.m.name?' <span class="cr-meta">('+e(r.m.bank_holder)+')</span>':''):'<span class="cr-meta">미등록</span>')+'</td>'
+      +'<td style="font-size:12.5px">'+(r.m.bank_account?e(r.m.bank_name||'')+' <span class="mono">'+e(r.m.bank_account)+'</span>'+(r.m.bank_holder&&r.m.bank_holder!==r.m.name?' <span class="cr-meta">('+e(r.m.bank_holder)+')</span>':'')
+        +'<div class="cr-actions" style="margin-top:4px"><button class="tbtn" onclick="crewCopy(\''+e(String(r.m.bank_account).replace(/[^0-9]/g,''))+'\',\'계좌번호\')">계좌 복사</button><button class="tbtn" onclick="crewCopy(\''+c.net+'\',\'금액 '+c.net.toLocaleString('ko-KR')+'원\')">금액 복사</button></div>'
+        :'<span class="cr-meta">미등록</span><div class="cr-actions" style="margin-top:4px"><button class="tbtn" onclick="crewCopy(\''+c.net+'\',\'금액 '+c.net.toLocaleString('ko-KR')+'원\')">금액 복사</button></div>')+'</td>'
       +'<td>'+(r.py.paid ? '<span class="cr-st g"><i></i>지급 '+e(r.py.paid_at||'')+'</span> <button class="tbtn" onclick="crewPayOne(\''+r.a.id+'\',false)">취소</button>' : (isPast(r.p) ? '<button class="tbtn" onclick="crewPayOne(\''+r.a.id+'\',true)">지급 완료</button>' : '<span class="cr-meta">행사 전</span>'))+'</td></tr>';
   }).join('') : '<tr><td colspan="10" class="cr-empty">해당 기간에 확정된 참여가 없습니다.</td></tr>';
 };
