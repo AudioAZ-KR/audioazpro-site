@@ -138,6 +138,7 @@ addSection('crew-settle',
  + '<select class="cr-in" id="crSF" onchange="crewRenderSettle()" style="width:auto"><option value="">전체</option><option value="unpaid">미지급만</option><option value="paid">지급 완료만</option></select>'
  + '<button class="tbtn" onclick="crewSettleCsv()">CSV 내려받기</button><button class="tbtn" onclick="crewReload()">새로고침</button></div>'
  + '<div class="cr-sum" id="crSSum"></div>'
+ + '<div class="card" style="margin-top:0"><h2>세금 신고 — 이 달 지급분</h2><div class="sub">지급일(지급 완료 표시한 날) 기준입니다. 원천세는 지급한 달 기준으로 신고하므로 행사 날짜가 아니라 지급일로 묶습니다. 위에서 고른 달 기준, 지급 완료 건만.</div><div id="crSTax"></div></div>'
  + '<div class="card" style="margin-top:0"><div class="sub">확정된 참여만 표시. 금액 단위 만원(CSV 는 이체용으로 원 단위). 원천징수 = 소득세 3% + 지방소득세 0.3%(10원 미만 절사). 세금계산서는 페이에 부가세 10%를 더해 지급.</div>'
  + '<div class="cr-wrap"><table class="cr-t wide"><thead><tr><th>날짜</th><th>프로젝트</th><th>감독</th><th>구분</th><th style="text-align:right">페이(세전)</th><th style="text-align:right">실비</th><th style="text-align:right">공제 / VAT</th><th style="text-align:right">지급액</th><th>계좌</th><th>지급</th></tr></thead><tbody id="crSRows"></tbody></table></div></div>');
 
@@ -162,6 +163,14 @@ function calcPay(p){
 }
 /* 일용근로소득 원천징수 (2026-10-13): 일당=페이÷근무일, 1일 (일당−15만)×6%×45%(근로소득세액공제 55%) = 소득세,
    지방소득세 = 소득세×10%, 이번 지급 소득세가 1,000원 미만이면 소액부징수(0원). 10원 미만 절사 */
+/* 신고용 세액 분해: 소득세(it)·지방소득세(lt)·부가세(vat) — calcPay 와 같은 규칙 */
+function taxParts(py){
+  var pay=n(py&&py.pay_krw), t=(py&&py.tax_type)||'withholding', it=0, lt=0, vat=0;
+  if (t==='withholding'){ it=trunc10(pay*0.03); lt=trunc10(it*0.1); }
+  else if (t==='daily'){ var d=Math.max(1, n(py.work_days)||1); it=trunc10(Math.max(0, pay/d-150000)*0.06*0.45*d); if (it<1000) it=0; lt=it?trunc10(it*0.1):0; }
+  else if (t==='invoice'){ vat=Math.round(pay*0.1); }
+  return { pay:pay, it:it, lt:lt, vat:vat };
+}
 function dailyTax(pay, d){
   d=Math.max(1, n(d)||1); var w=pay/d, it=trunc10(Math.max(0, w-150000)*0.06*0.45*d);
   if (it<1000) return 0; return it+trunc10(it*0.1);
@@ -1009,6 +1018,52 @@ function settleRows(){
       if (f==='unpaid' && (r.py.paid || !isPast(r.p))) return false; if (f==='paid' && !r.py.paid) return false; return true; })
     .sort(function(x,y){ return (x.p.date_start||'')<(y.p.date_start||'')?-1:1; });
 }
+function renderTaxReport(m){
+  var box=document.getElementById('crSTax'); if(!box) return;
+  var rows=C.apps.filter(function(a){ return a.status==='confirmed' && !ghost(a.user_id); }).map(function(a){ return {a:a, p:proj(a.project_id)||{}, m:mem(a.user_id)||{}, py:C.pay[a.id]||{}}; })
+    .filter(function(r){ return r.py.paid && r.py.paid_at && (!m || String(r.py.paid_at).slice(0,7)===m); })
+    .sort(function(x,y){ return (x.py.paid_at||'')<(y.py.paid_at||'')?-1:1; });
+  if (!rows.length){ box.innerHTML='<div class="cr-empty">'+(m?m.replace('-','년 ')+'월에':'')+' 지급 완료한 건이 없습니다.</div>'; return; }
+  var nm = m ? (function(){ var y=+m.slice(0,4), mo=+m.slice(5,7)+1; if(mo>12){mo=1;y++;} var last=new Date(y,mo,0).getDate(); return {y:y,mo:mo,last:last}; })() : null;
+  var due = function(d){ return nm ? nm.y+'-'+String(nm.mo).padStart(2,'0')+'-'+String(d).padStart(2,'0') : '다음 달 '+d+'일'; };
+  var GROUPS=[
+    { k:'withholding', t:'3.3% 원천징수 (사업소득)', todo:[
+        '원천세 신고·납부 (홈택스, 원천징수이행상황신고서 · 사업소득) — '+due(10)+'까지',
+        '지방소득세(특별징수) 신고·납부 (위택스) — '+due(10)+'까지',
+        '간이지급명세서(거주자의 사업소득) 제출 — '+due(nm?nm.last:'말')+'까지'] },
+    { k:'daily', t:'일용근로 원천징수 (일용근로소득)', todo:[
+        '원천세 신고·납부 (홈택스, 원천징수이행상황신고서 · 일용근로) — '+due(10)+'까지',
+        '지방소득세(특별징수) 신고·납부 (위택스) — '+due(10)+'까지',
+        '근로내용확인신고 (고용·산재보험, 근로복지공단) — '+due(15)+'까지',
+        '일용근로소득 지급명세서 제출 — '+due(nm?nm.last:'말')+'까지'] },
+    { k:'invoice', t:'세금계산서 (사업자)', todo:[
+        '원천징수 없음 — 감독(사업자)에게 매입 세금계산서를 받았는지 확인 (공급가 + 부가세)',
+        '받은 세금계산서는 부가세 신고 때 매입세액공제 (분기 신고)'] },
+    { k:'none', t:'공제 없음', todo:['신고할 원천세 없음 — 필요하면 지급 근거만 보관'] }
+  ];
+  var h='', tot={pay:0,it:0,lt:0,vat:0};
+  GROUPS.forEach(function(g){
+    var rs=rows.filter(function(r){ return (r.py.tax_type||'withholding')===g.k; }); if(!rs.length) return;
+    var s={pay:0,it:0,lt:0,vat:0};
+    h+='<div class="cr-sec">'+g.t+' · '+rs.length+'건</div><div class="cr-wrap"><table class="cr-t"><thead><tr><th>지급일</th><th>감독</th>'+(g.k==='invoice'?'<th>사업자등록번호</th>':'')+'<th>프로젝트</th>'+(g.k==='daily'?'<th style="text-align:right">근무일</th>':'')
+      +'<th style="text-align:right">지급액(세전)</th>'+(g.k==='invoice'?'<th style="text-align:right">부가세</th>':'<th style="text-align:right">소득세</th><th style="text-align:right">지방소득세</th>')+'</tr></thead><tbody>'
+      + rs.map(function(r){ var x=taxParts(r.py); s.pay+=x.pay; s.it+=x.it; s.lt+=x.lt; s.vat+=x.vat;
+          return '<tr><td class="cr-date">'+e(r.py.paid_at)+'</td><td><b>'+e(r.m.name||'?')+'</b></td>'+(g.k==='invoice'?'<td class="mono">'+e(fmtBizNo(r.m.biz_no)||r.m.biz_no||'미등록')+'</td>':'')+'<td>'+e(r.p.title||'')+'</td>'
+            +(g.k==='daily'?'<td class="cr-num">'+(r.py.work_days||1)+'일</td>':'')
+            +'<td class="cr-num">'+x.pay.toLocaleString('ko-KR')+'</td>'+(g.k==='invoice'?'<td class="cr-num">'+x.vat.toLocaleString('ko-KR')+'</td>':'<td class="cr-num">'+x.it.toLocaleString('ko-KR')+'</td><td class="cr-num">'+x.lt.toLocaleString('ko-KR')+'</td>')+'</tr>'; }).join('')
+      + '<tr><td colspan="'+(g.k==='invoice'?4:(g.k==='daily'?4:3))+'"><b>합계</b></td><td class="cr-num"><b>'+s.pay.toLocaleString('ko-KR')+'</b></td>'+(g.k==='invoice'?'<td class="cr-num"><b>'+s.vat.toLocaleString('ko-KR')+'</b></td>':'<td class="cr-num"><b>'+s.it.toLocaleString('ko-KR')+'</b></td><td class="cr-num"><b>'+s.lt.toLocaleString('ko-KR')+'</b></td>')+'</tr>'
+      + '</tbody></table></div>'
+      + '<ul class="cr-meta" style="margin:6px 0 14px 18px;line-height:1.7">'+g.todo.map(function(t){ return '<li>'+e(t)+'</li>'; }).join('')+'</ul>';
+    tot.pay+=s.pay; tot.it+=s.it; tot.lt+=s.lt; tot.vat+=s.vat;
+  });
+  box.innerHTML = '<div class="cr-sum" style="margin-bottom:10px">'
+    + '<div><div class="l">지급액 합계 (세전, 원)</div><div class="v">'+tot.pay.toLocaleString('ko-KR')+'</div></div>'
+    + '<div><div class="l">원천 소득세 (홈택스)</div><div class="v">'+tot.it.toLocaleString('ko-KR')+'</div></div>'
+    + '<div><div class="l">지방소득세 (위택스)</div><div class="v">'+tot.lt.toLocaleString('ko-KR')+'</div></div>'
+    + '<div><div class="l">납부할 원천세 합계</div><div class="v">'+(tot.it+tot.lt).toLocaleString('ko-KR')+'</div></div>'
+    + '<div><div class="l">세금계산서 부가세 (매입)</div><div class="v">'+tot.vat.toLocaleString('ko-KR')+'</div></div></div>'
+    + h + '<p class="cr-meta">금액은 원 단위. 기한은 일반적인 월별 신고 기준이며, 반기납부 승인을 받았거나 기한이 휴일이면 달라집니다. 최종 신고는 세무사 확인 후 하세요.</p>';
+}
 window.crewRenderSettle = function(){
   var sel=document.getElementById('crSM'), cur=sel.value, months={};
   C.projects.forEach(function(p){ if (p.date_start) months[ym(p.date_start)]=1; }); months[ym(today())]=1;
@@ -1019,6 +1074,7 @@ window.crewRenderSettle = function(){
   }
   var rows=settleRows(), s={pay:0,extra:0,tax:0,vat:0,net:0,unpaid:0};
   rows.forEach(function(r){ var c=calcPay(r.py); s.pay+=c.pay; s.extra+=c.extra; s.tax+=c.tax; s.vat+=c.vat; s.net+=c.net; if(!r.py.paid && isPast(r.p)) s.unpaid+=c.net; });
+  renderTaxReport(document.getElementById('crSM').value);
   document.getElementById('crSSum').innerHTML =
       '<div><div class="l">페이 합계 (세전)</div><div class="v">'+won(s.pay)+'</div></div>'
     + '<div><div class="l">실비</div><div class="v">'+won(s.extra)+'</div></div>'
