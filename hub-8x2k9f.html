@@ -279,7 +279,7 @@ fill('g-portal', [
   {t:'로그인·회원가입', href:'https://audioazpro.com/portal/index.html', chip:{k:'live',t:'LIVE'}, d:'이메일 가입 열림 · 인증 후 메인 홈 복귀'},
   {t:'내 계정 (마이페이지)', href:'https://audioazpro.com/portal/account.html', chip:{k:'live',t:'LIVE'}, d:'좌측 메뉴: 내 라이선스(기기 활성화/해제·메모) · 주문 내역 · 테스트 보고(베타 테스터만) · 계정 설정 · 회원 탈퇴 · KR/EN'},
   {t:'플러그인 활성화', href:'https://audioazpro.com/portal/activate.html', chip:{k:'live',t:'LIVE'}},
-  {t:'결제', href:'https://audioazpro.com/portal/checkout.html', chip:{k:'live',t:'해외 LIVE'}, d:'<b>해외 달러: 레몬스퀴지 실결제 오픈</b>(2026-09-25 23:50 · 카드·PayPal·Apple Pay·Google Pay · 세금은 결제사가 처리) · 국내 원화: KG이니시스 <b>카드사 심사 대기</b>(실결제 아직 불가) · 국내·해외 결제 분리(전환 링크 없음, 언어로 구분) · 코드 등록 시 제품 자동 전환 · 데모 코드는 기간 합산'},
+  {t:'결제', href:'https://audioazpro.com/portal/checkout.html', chip:{k:'live',t:'국내·해외 LIVE'}, d:'<b>국내 원화: KG이니시스 실결제</b>(카드사 심사 통과 2026-10-01 · 첫 실결제·실환불 9/15 완주) · <b>해외 달러: 레몬스퀴지 실결제</b>(2026-09-25 23:50 · 카드·PayPal·Apple Pay·Google Pay · 세금은 결제사가 처리) · 국내·해외 결제 분리(전환 링크 없음, 언어로 구분) · 코드 등록 시 제품 자동 전환 · 데모 코드는 기간 합산'},
   {t:'비밀번호 찾기', href:'https://audioazpro.com/portal/forgot.html', chip:{k:'live',t:'LIVE'}},
   {t:'비밀번호 재설정', href:'https://audioazpro.com/portal/reset-password.html', chip:{k:'live',t:'LIVE'}},
 ]);
@@ -287,7 +287,7 @@ function tallyStatusUrl(){ return 'https://audioazpro.com/portal/console-8kq3f7.
 var STG='https://'+atob('YXVkaW9hei1zdGctbTR4OS5vbnJlbmRlci5jb20=')+'/';
 fill('g-admin', [
   {cls:'admin', t:'관리자 콘솔', href:'https://audioazpro.com/portal/console-8kq3f7.html',
-   chip:{k:'lock',t:'PASSKEY'}, d:'<span id="hubConsoleVer">콘솔</span> · 대시보드 · <b>클로드 지휘소</b>(병렬 채팅 관제·명령·작업 큐·경보) · 작업현황 · 서비스·한도 · 결재 · 문의함 · 라이선스 · 프로모션(수량 발행·복사) · 베타 모집(신청자·테스터·보고 게시판) · 주문 · 고객 · 제품 · 공지 · 관리자 · 10분 자동 로그아웃',
+   chip:{k:'lock',t:'PASSKEY'}, d:'<span id="hubConsoleVer">콘솔</span> · 대시보드 · <b>클로드 지휘소</b>(병렬 채팅 관제·명령·작업 큐·경보) · 작업현황 · 서비스·한도 · 결재 · 문의함 · 라이선스 · 프로모션(수량 발행·복사) · 베타 모집(신청자·테스터·보고 게시판) · 주문 · 고객 · 제품 · 공지 · 관리자 · 1시간 자동 로그아웃',
    warn:'패스키 전용 · 비공개 URL · 외부 공유 금지'},
   // 비공개 주소·키가 든 타일은 관리자 세션을 확인한 뒤에만 실제 링크로 바뀐다(보안 점검 2026-09-15/17). 그 전엔 자리만 보인다.
   {cls:'admin', ph:1, t:'스테이징(테스트) 사이트', href:'https://audioazpro.com/portal/console-8kq3f7.html',
@@ -303,22 +303,25 @@ fill('g-svc', [
   {cls:'svc', t:'GitHub · Flare Tally', href:'https://github.com/AudioAZ-KR', chip:{k:'lock',t:'PRIVATE'},
    rows:[['호스트','flare-tally-host (비공개, 드라이브 19_카메라 탈리)'],['iOS','flare-tally-ios (비공개)'],['서버','camera-tally-server (공개 · Render 4지역 자동 배포 · 키는 환경변수만)']]},
   {cls:'svc', t:'Supabase', href:'https://supabase.com/dashboard/project/lkbbenyvchddsjsihofv', chip:{k:'auth',t:'LOGIN'},
-   rows:[['용도','인증 · DB · <b>Edge Functions</b> · Storage(문의·베타 보고 첨부)'],['함수','결제: checkout-create · payment-webhook · customer-refund · admin-refund / 라이선스: license-proof · demo-start / 베타: beta-signup · beta-issue / 운영: inquiry-reply · admin-manage · usage-collector · board-sync · agent-hub · tally-status / 크루: crew-push · crew-ical · crew-delete-account'],['로그인','GitHub 으로 로그인']]},
+   rows:[['용도','인증 · DB · <b>Edge Functions</b> · Storage(문의·베타 보고 첨부)'],['함수','결제: checkout-create · payment-webhook · customer-refund · admin-refund / 라이선스: license-proof · demo-start / 베타: beta-signup · beta-issue / 운영: inquiry-reply · admin-manage · usage-collector · board-sync · agent-hub · tally-status / 크루: crew-push · crew-ical · crew-signup · crew-password-reset · crew-delete-account / HQ 앱: hq-push'],['로그인','GitHub 으로 로그인']]},
   {cls:'svc', t:'Render', href:'https://dashboard.render.com/', chip:{k:'auth',t:'LOGIN'},
-   rows:[['서비스','audioaz-showfile · camera-tally(싱가폴) · camera-tally-eu · camera-tally-us · camera-tally-use'],['플랜','Free (유휴 15분 절전·콜드스타트 ~50초) · 무료 750h/월 합산 주의'],['연동','GitHub push 자동 배포(탈리 서버 4곳 동시)']]},
+   rows:[['서비스','audioaz-showfile · camera-tally(싱가폴) · camera-tally-eu · camera-tally-us · camera-tally-use · audioaz-relay(리모트 중계)'],['플랜','<b>유료 Starter $7/월 ×2</b>: camera-tally(싱가폴) · audioaz-relay — 절전 없음 · 나머지 무료(유휴 15분 절전·콜드스타트 ~50초 · 750h/월 합산)'],['연동','GitHub push 자동 배포(탈리 서버 4곳 동시)']]},
   {cls:'svc', t:'포트원 (PortOne)', href:'https://admin.portone.io/', chip:{k:'auth',t:'LOGIN'},
-   rows:[['용도','국내 <b>카드·간편결제</b>'],['상태','KG이니시스 실연동 채널 + 토스 테스트 채널 · 웹훅(테스트/실모드)·시크릿 등록 완료'],['남은 것','계약 완료(9/14) · <b>카드사 심사 대기(~9/28)</b> · 고객확인(AML) 재심사 · 통과 후 사이트 전화번호 070 복귀']]},
+   rows:[['용도','국내 <b>카드·간편결제</b>'],['상태','<b>실결제 운영 중</b> · KG이니시스 실연동 채널(라이브 도메인) + 토스 테스트 채널(스테이징) · 계약 9/14 · 카드사 심사 통과 10/01 · 사이트 대표번호 070 복귀 완료'],['남은 것','이니시스 상점관리자 전화번호 070 으로 변경(사장님) · 월 한도 2천만 초과 시 보증보험']]},
   {cls:'svc', t:'Lemon Squeezy', href:'https://app.lemonsqueezy.com/dashboard', chip:{k:'live',t:'LIVE'},
-   rows:[['용도','해외 카드 · PayPal (판매대행 MoR) · 달러 결제 · <b>해외 부가세는 결제사가 신고·납부</b>'],['상태','<b>실결제 오픈 2026-09-25 23:50</b> · 서버 라이브 키·LIVE=1 · Flare Tally $99 · 해외 주문은 영문 라이선스 메일 · Apple Pay·Google Pay 자동 표시(한국 카드 기기에선 안 보임)'],['테스트','스테이징도 이제 <b>실결제</b>(서버 공용) — 테스트는 키를 테스트로 되돌린 뒤 · 테스트 계정 demo@audioazpro.com'],['수수료·정산','5% + $0.50 · 1·15일 정산 생성 → 14·28일 지급(최소 $50) · 국민은행 원화 수령'],['남은 것','다른 제품(Klera Voice 등) 등록 시 variant 추가 → LEMON_VARIANT_MAP 갱신']]},
+   rows:[['용도','해외 카드 · PayPal (판매대행 MoR) · 달러 결제 · <b>해외 부가세는 결제사가 신고·납부</b>'],['상태','<b>실결제 오픈 2026-09-25 23:50</b> · 서버 라이브 키·LIVE=1 · Flare Tally $99 · 해외 주문은 영문 라이선스 메일 · Apple Pay·Google Pay 자동 표시(한국 카드 기기에선 안 보임)'],['테스트','스테이징도 이제 <b>실결제</b>(서버 공용) — 테스트는 키를 테스트로 되돌린 뒤 · 테스트 계정 demo@audioazpro.com'],['수수료·정산','5% + $0.50 · 1·15일 정산 생성 → 14·28일 지급(최소 $50) · 국민은행 원화 수령 · <b>세금 서류(W-8) 제출 완료</b>'],['남은 것','다른 제품(Klera Voice 등) 등록 시 variant 추가 → LEMON_VARIANT_MAP 갱신']]},
   {cls:'svc', t:'Resend', href:'https://resend.com/domains', chip:{k:'auth',t:'LOGIN'},
    rows:[['용도','<b>이메일 발송</b> (SMTP · API)'],['발신','noreply@ (인증) · support@ (회신·라이선스)'],['로그인','Google 계정']]},
+  {cls:'svc', t:'Google Workspace', href:'https://admin.google.com/', chip:{k:'live',t:'유료'},
+   rows:[['용도','<b>회사 메일</b> hj@audioazpro.com (사서함 1개) · 별칭 support@ · contact@ · dev@ · tax@ · orders@ · demo@ · admin@ (audioaz.co.kr 도 같은 편지함)'],['상태','Business Starter · 무료 체험 종료 후 <b>유료 재시작(2026-10-13)</b>'],['로그인','hj@ (최고 관리자) · 결제는 관리 콘솔 › 결제']]},
   {cls:'svc', t:'App Store Connect', href:'https://appstoreconnect.apple.com/', chip:{k:'auth',t:'LOGIN'},
-   rows:[['앱','Flare Tally (iOS) — <b>앱스토어 출시</b> · 최신 승인 1.1.0 · AudioAZ Crew 제출'],['앱 ID','6808137674'],['판매자명','hyungjun Kim (개인사업자) — 던스번호 재신청 중(D&amp;B 케이스 #34875574) → 발급 후 AudioAZ 로 전환'],['로그인','Apple 개발자 계정']]},
+   rows:[['앱','Flare Tally (iOS·워치) — <b>앱스토어 출시</b> · <b>AudioAZ Crew 출시</b>(10/02, 일반 배포·등급제) · AZ HQ(지휘소, 직접 설치 전용)'],['앱 ID','Flare Tally 6808137674 · Crew 6815489675'],['판매자명','hyungjun Kim (개인) → <b>AudioAZ 조직 전환 요청 중</b> · D-U-N-S 696722539 발급(9/30) · 애플 케이스 102982076092(10/13 dev@ 로 준비 완료 회신) · 전환 중엔 인증서·프로파일 메뉴 잠김'],['로그인','Apple 개발자 계정']]},
   {cls:'svc', t:'가비아 DNS', href:'https://dns.gabia.com/', chip:{k:'auth',t:'LOGIN'},
    rows:[['용도','도메인 · <b>DNS</b>'],['로그인','가비아 계정'],['연동','Pages · Resend DKIM']]},
 ]);
 fill('g-other', [
   {t:'audioaz.co.kr', href:'http://audioaz.co.kr', d:'렌탈 · 장비 대여 (기존 사이트, 유지)', chip:{k:'auth',t:'렌탈'}},
+  {t:'AudioAZ Crew (감독 스케줄)', href:'https://audioaz.co.kr/crew/', d:'웹 + iOS 앱(앱스토어 id6815489675) · 누구나 가입(기본 등급) → 초대 코드나 사장님이 크루 등급으로 올림 · 관리는 콘솔 › Pro/AudioAZ 탭', chip:{k:'live',t:'LIVE'}},
   {t:'네이버 블로그', href:'https://blog.naver.com/audioaz', d:'현장 기록 · 포트폴리오 원문', chip:{k:'auth',t:'블로그'}},
 ]);
 
