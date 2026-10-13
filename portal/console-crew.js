@@ -382,7 +382,7 @@ function renderDash(){
   var mq=0, mp=0, unpaid=0, unpaidN=0;
   C.projects.forEach(function(p){ if (ym(p.date_start)===m && p.status!=='cancelled'){ mq+=n((C.padmin[p.id]||{}).quote_krw); mp+=projCost(p.id); } });
   C.apps.forEach(function(a){ if(a.status!=='confirmed' || ghost(a.user_id)) return; var p=proj(a.project_id); if(!p||p.status==='cancelled') return;
-    var py=C.pay[a.id]; if(!py||!py.paid){ unpaid+=calcPay(py).net; unpaidN++; } });
+    var py=C.pay[a.id]; if(isPast(p) && (!py||!py.paid)){ unpaid+=calcPay(py).net; unpaidN++; } });   // 미지급 = 끝난 행사만 (10-13)
   set('crKOpen', C.projects.filter(function(p){ return p.status==='open'; }).length);
   set('crKApplied', applied.length); set('crKPending', pend.length);
   set('crKQuote', won(mq)+'원'); set('crKPay', won(mp)+'원'); set('crKUnpaid', won(unpaid)+'원'); set('crKUnpaidD', unpaidN+'건 · 지급액 합계');
@@ -951,7 +951,7 @@ function renderMemberDetail(){
   var ma=C.madmin[m.user_id]||{};
   var hist=C.apps.filter(function(a){ return a.user_id===m.user_id; }).map(function(a){ return {a:a,p:proj(a.project_id)||{}}; })
                  .sort(function(x,y){ return (x.p.date_start||'')<(y.p.date_start||'')?1:-1; });
-  var sumNet=0, sumUnpaid=0; hist.forEach(function(h){ if(h.a.status!=='confirmed') return; var c=calcPay(C.pay[h.a.id]); sumNet+=c.net; if(!(C.pay[h.a.id]||{}).paid) sumUnpaid+=c.net; });
+  var sumNet=0, sumUnpaid=0; hist.forEach(function(h){ if(h.a.status!=='confirmed') return; var c=calcPay(C.pay[h.a.id]); sumNet+=c.net; if(!(C.pay[h.a.id]||{}).paid && isPast(h.p)) sumUnpaid+=c.net; });
   function f(k,l,val,type){ return '<div class="field"><label>'+l+'</label><input id="crM_'+k+'"'+(k==='biz_no'?' data-bizno':'')+' type="'+(type||'text')+'"'+(type==='number'?' step="any"':'')+' value="'+e(val)+'"></div>'; }
   box.innerHTML = '<h2>'+e(m.name)+' <span class="cr-meta" style="font-weight:400;margin-left:8px">'+e(m.email||'')+' · 가입 '+e(fmtDate(m.created_at))+'</span></h2>'
     + '<div class="sub">'+stM(m.status)+'</div>'
@@ -976,7 +976,7 @@ function renderMemberDetail(){
     + (hist.length ? '<div class="cr-wrap"><table class="cr-t"><thead><tr><th>날짜</th><th>프로젝트</th><th>상태</th><th style="text-align:right">페이</th><th style="text-align:right">지급액</th><th>지급</th></tr></thead><tbody>'
       + hist.map(function(h){ var py=C.pay[h.a.id]||{}, c=calcPay(py), conf=h.a.status==='confirmed';
           return '<tr><td class="cr-date">'+e(dRange(h.p))+'</td><td><a style="cursor:pointer;text-decoration:underline" onclick="crewOpenProject(\''+h.p.id+'\')">'+e(h.p.title)+'</a></td><td>'+stA(h.a.status)+'</td>'
-            +'<td class="cr-num">'+(conf?won(py.pay_krw):'—')+'</td><td class="cr-num">'+(conf?won(c.net):'—')+'</td><td>'+(conf?(py.paid?'<span class="cr-st g"><i></i>'+e(py.paid_at||'완료')+'</span>':'<span class="cr-st a"><i></i>미지급</span>'):'')+'</td></tr>'; }).join('')
+            +'<td class="cr-num">'+(conf?won(py.pay_krw):'—')+'</td><td class="cr-num">'+(conf?won(c.net):'—')+'</td><td>'+(conf?(py.paid?'<span class="cr-st g"><i></i>'+e(py.paid_at||'완료')+'</span>':(isPast(h.p)?'<span class="cr-st a"><i></i>미지급</span>':'<span class="cr-meta">행사 전</span>')):'')+'</td></tr>'; }).join('')
       + '</tbody></table></div>' : '<div class="cr-empty">참여 기록이 없습니다.</div>');
   box.style.display='block';
 }
@@ -1005,7 +1005,7 @@ function settleRows(){
   var mSel=document.getElementById('crSM').value, f=document.getElementById('crSF').value;
   return C.apps.filter(function(a){ return a.status==='confirmed' && !ghost(a.user_id); }).map(function(a){ return {a:a, p:proj(a.project_id)||{}, m:mem(a.user_id)||{}, py:C.pay[a.id]||{}}; })
     .filter(function(r){ if (r.p.status==='cancelled') return false; if (mSel && ym(r.p.date_start)!==mSel) return false;
-      if (f==='unpaid' && r.py.paid) return false; if (f==='paid' && !r.py.paid) return false; return true; })
+      if (f==='unpaid' && (r.py.paid || !isPast(r.p))) return false; if (f==='paid' && !r.py.paid) return false; return true; })
     .sort(function(x,y){ return (x.p.date_start||'')<(y.p.date_start||'')?-1:1; });
 }
 window.crewRenderSettle = function(){
@@ -1017,7 +1017,7 @@ window.crewRenderSettle = function(){
     sel.value = cur || ym(today());
   }
   var rows=settleRows(), s={pay:0,extra:0,tax:0,vat:0,net:0,unpaid:0};
-  rows.forEach(function(r){ var c=calcPay(r.py); s.pay+=c.pay; s.extra+=c.extra; s.tax+=c.tax; s.vat+=c.vat; s.net+=c.net; if(!r.py.paid) s.unpaid+=c.net; });
+  rows.forEach(function(r){ var c=calcPay(r.py); s.pay+=c.pay; s.extra+=c.extra; s.tax+=c.tax; s.vat+=c.vat; s.net+=c.net; if(!r.py.paid && isPast(r.p)) s.unpaid+=c.net; });
   document.getElementById('crSSum').innerHTML =
       '<div><div class="l">페이 합계 (세전)</div><div class="v">'+won(s.pay)+'</div></div>'
     + '<div><div class="l">실비</div><div class="v">'+won(s.extra)+'</div></div>'
@@ -1032,7 +1032,7 @@ window.crewRenderSettle = function(){
       +'<td class="cr-num">'+won(r.py.pay_krw)+'</td><td class="cr-num">'+(c.extra?won(c.extra):'—')+'</td>'
       +'<td class="cr-num">'+(c.tax?'−'+won(c.tax):(c.vat?'+'+won(c.vat):'—'))+'</td><td class="cr-num"><b>'+won(c.net)+'</b></td>'
       +'<td style="font-size:12.5px">'+(r.m.bank_account?e(r.m.bank_name||'')+' <span class="mono">'+e(r.m.bank_account)+'</span>'+(r.m.bank_holder&&r.m.bank_holder!==r.m.name?' <span class="cr-meta">('+e(r.m.bank_holder)+')</span>':''):'<span class="cr-meta">미등록</span>')+'</td>'
-      +'<td>'+(r.py.paid ? '<span class="cr-st g"><i></i>지급 '+e(r.py.paid_at||'')+'</span> <button class="tbtn" onclick="crewPayOne(\''+r.a.id+'\',false)">취소</button>' : '<button class="tbtn" onclick="crewPayOne(\''+r.a.id+'\',true)">지급 완료</button>')+'</td></tr>';
+      +'<td>'+(r.py.paid ? '<span class="cr-st g"><i></i>지급 '+e(r.py.paid_at||'')+'</span> <button class="tbtn" onclick="crewPayOne(\''+r.a.id+'\',false)">취소</button>' : (isPast(r.p) ? '<button class="tbtn" onclick="crewPayOne(\''+r.a.id+'\',true)">지급 완료</button>' : '<span class="cr-meta">행사 전</span>'))+'</td></tr>';
   }).join('') : '<tr><td colspan="10" class="cr-empty">해당 기간에 확정된 참여가 없습니다.</td></tr>';
 };
 window.crewTogglePaid = async function(appId, on){
