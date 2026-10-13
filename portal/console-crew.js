@@ -196,8 +196,8 @@ function payApps(pid){ return appsOf(pid).filter(function(a){ return a.status===
 /* 감독별 [지급 완료] 버튼 — 누르면 확인 창 한 번 더 (2026-10-13 사장님: 개인별·실수 방지) */
 function payList(p){
   var as=payApps(p.id); if (!as.length) return '<span class="cr-meta">확정 없음</span>';
-  return as.map(function(a){ var x=mem(a.user_id)||{}, py=C.pay[a.id]||{};
-    return '<div style="display:flex;gap:6px;align-items:center;margin:2px 0;white-space:nowrap">'+e(x.name||'?')+' '
+  return as.map(function(a){ var x=mem(a.user_id)||{}, py=C.pay[a.id]||{}, tt=py.tax_type||(x.is_business?'invoice':'withholding');
+    return '<div style="display:flex;gap:6px;align-items:center;margin:2px 0;white-space:nowrap">'+e(x.name||'?')+' <span class="cr-meta">'+TAX[tt]+'</span> '
       +(py.paid ? '<span class="cr-st g"><i></i>지급 '+e(py.paid_at||'')+'</span><button class="tbtn" onclick="crewPayOne(\''+a.id+'\',false)">취소</button>'
                 : '<button class="tbtn" onclick="crewPayOne(\''+a.id+'\',true)">지급 완료</button>')+'</div>'; }).join('');
 }
@@ -208,7 +208,8 @@ window.crewPayOne = async function(appId, on){
   if ((!py || py.pay_krw===null || py.pay_krw===undefined) && ma.day_rate) row.pay_krw=n(ma.day_rate)*days(p);   // 페이 미입력이면 기본 일당×일수
   if (!py) row.tax_type = x.is_business ? 'invoice' : 'withholding';
   var c=calcPay({ pay_krw: row.pay_krw!==undefined ? row.pay_krw : (py||{}).pay_krw, extra_krw:(py||{}).extra_krw, tax_type: row.tax_type||(py||{}).tax_type, work_days:(py||{}).work_days });
-  if (!confirm(on ? (x.name||'')+' 님 페이를 지급 완료로 표시할까요?\n'+(p.title||'')+'\n지급액 '+won(c.net)+'원 · 지급일 '+today()
+  var tt=row.tax_type||(py||{}).tax_type||(x.is_business?'invoice':'withholding');
+  if (!confirm(on ? (x.name||'')+' 님 페이를 지급 완료로 표시할까요?\n'+(p.title||'')+'\n구분 '+TAX[tt]+(c.tax?' (원천세 −'+won(c.tax)+'원)':'')+(c.vat?' (VAT +'+won(c.vat)+'원)':'')+'\n지급액 '+won(c.net)+'원 · 지급일 '+today()
                   : (x.name||'')+' 님 지급 완료를 취소하고 미지급으로 되돌릴까요?\n'+(p.title||''))) return false;
   var r=await sb.from('crew_pay').upsert(row); if (r.error){ dbErr(r.error); return false; }
   flash(on ? (x.name||'')+' 지급 완료' : (x.name||'')+' 미지급으로 되돌림'); await load(); render(curPage()); return true;
@@ -828,7 +829,7 @@ function inviteBox(p, addable){
 window.crewInvite = async function(pid){
   var ids=[].map.call(document.querySelectorAll('.crInv:checked'), function(x){ return x.value; });
   if (!ids.length){ flash('지정할 감독을 고르세요.', true); return; }
-  var r=await sb.from('crew_applications').insert(ids.map(function(u){ return { project_id:pid, user_id:u, status:'invited', note:'관리자 지정' }; }));
+  var r=await sb.from('crew_applications').insert(ids.map(function(u){ return { project_id:pid, user_id:u, status:'invited' }; }));   // note 는 감독 본인이 남기는 말 칸이라 비워 둔다
   if (r.error) return dbErr(r.error);
   flash(ids.length+'명에게 지정 알림을 보냈습니다. 수락하면 확정됩니다.'); await load(); render('crew-proj');
 };
@@ -839,7 +840,7 @@ window.crewUninvite = async function(appId){
 };
 window.crewReinvite = async function(appId){
   var a=C.apps.filter(function(x){return x.id===appId;})[0]; if(!a) return;
-  var r=await sb.from('crew_applications').update({ status:'invited', note:'관리자 지정' }).eq('id', appId); if (r.error) return dbErr(r.error);
+  var r=await sb.from('crew_applications').update({ status:'invited' }).eq('id', appId); if (r.error) return dbErr(r.error);
   flash(((mem(a.user_id)||{}).name||'')+' 님에게 지정 알림을 보냈습니다. 수락하면 확정됩니다.'); await load(); render('crew-proj');
 };
 
