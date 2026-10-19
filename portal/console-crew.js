@@ -343,6 +343,76 @@ window.crewCertZip = async function(pid){
   a.href=URL.createObjectURL(blob); a.download=((p.title||'행사')+'_'+(p.date_start||'')+'_안전교육수료증.zip').replace(/[\\/:*?"<>|]/g,'_'); document.body.appendChild(a); a.click(); a.remove();
   flash('수료증 '+ds.length+'개를 받았습니다.'+(missing?' (미제출 '+missing+'명 제외)':''));
 };
+/* 주민등록번호 원문 — 관리자(패스키)만, 화면에 30초만 보여 준다 */
+window.crewShowRrn = async function(uid){
+  var r=await sb.rpc('crew_admin_rrn', { p_uid:uid }); if (r.error) return dbErr(r.error);
+  var el=document.getElementById('crRrn-'+uid); if (!el) return; el.textContent=r.data||'—';
+  setTimeout(function(){ if (el) el.textContent=(C.rrn&&C.rrn[uid])||'—'; }, 30000);
+};
+window.crewCopyRrn = async function(uid){
+  var r=await sb.rpc('crew_admin_rrn', { p_uid:uid }); if (r.error) return dbErr(r.error);
+  if (!r.data) return flash('등록된 주민등록번호가 없습니다.', true);
+  crewCopy(String(r.data).replace(/\D/g,''), '주민등록번호');
+};
+/* ── 일용근로 근로계약서·임금명세서 (근로기준법 제17조·제48조 제2항, 2026-10-19) — 새 창에서 인쇄/PDF 저장 ── */
+var BIZ={ name:'오디오에이지(AudioAZ)', ceo:'김형준', no:'456-17-01966', addr:'경기도 남양주시 다산중앙로19번길 21', tel:'070-4837-1073' };
+function birthFromHint(h){ if(!h) return ''; var d=h.replace(/\D/g,''); if(d.length<7) return ''; var g=+d[6], c=(g===1||g===2||g===5||g===6)?'19':((g===3||g===4||g===7||g===8)?'20':'18'); return c+d.slice(0,2)+'-'+d.slice(2,4)+'-'+d.slice(4,6); }
+function laborDocWindow(title, body){
+  var w=window.open('', '_blank'); if(!w) return flash('팝업이 막혔습니다. 브라우저에서 팝업을 허용해 주세요.', true);
+  w.document.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>'+e(title)+'</title><style>'
+    +'@page{size:A4;margin:16mm}body{font-family:"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:#000;font-size:12.5px;line-height:1.55;margin:0}'
+    +'h1{font-size:20px;text-align:center;letter-spacing:.3em;margin:0 0 14px}table{width:100%;border-collapse:collapse;margin:8px 0}th,td{border:1px solid #000;padding:6px 8px;text-align:left;vertical-align:top}th{background:#f2f2f2;width:22%;font-weight:600}'
+    +'.r{text-align:right}.sign{display:flex;gap:24px;margin-top:22px}.sign div{flex:1;border:1px solid #000;padding:10px}.note{font-size:11px;color:#333;margin-top:10px}.tb{margin:14px 0 6px;font-weight:700}'
+    +'@media screen{body{max-width:760px;margin:20px auto;padding:0 16px}.pbtn{position:fixed;right:16px;top:16px;padding:8px 14px;border:1px solid #000;background:#fff;cursor:pointer}}@media print{.pbtn{display:none}}'
+    +'</style></head><body><button class="pbtn" onclick="window.print()">인쇄 / PDF 저장</button>'+body+'</body></html>');
+  w.document.close();
+}
+window.crewLaborContract = function(appId){
+  var a=C.apps.filter(function(x){ return x.id===appId; })[0]; if(!a) return;
+  var p=proj(a.project_id)||{}, x=mem(a.user_id)||{}, py=C.pay[a.id]||{}, d=py.work_days||days(p), pay=n(py.pay_krw), daily=d?Math.round(pay/d):0;
+  var dates=dRange(p), birth=birthFromHint(C.rrn&&C.rrn[a.user_id]);
+  laborDocWindow('일용근로계약서_'+(x.name||'')+'_'+(p.title||''),
+    '<h1>일용근로계약서</h1>'
+    +'<p>'+e(BIZ.name)+'(이하 "사업주")와 '+e(x.name||'__________')+'(이하 "근로자")은 다음과 같이 근로계약을 체결한다.</p>'
+    +'<div class="tb">1. 당사자</div><table>'
+    +'<tr><th>사업주</th><td>'+e(BIZ.name)+' · 대표 '+e(BIZ.ceo)+' · 사업자등록번호 '+e(BIZ.no)+'<br>'+e(BIZ.addr)+' · '+e(BIZ.tel)+'</td></tr>'
+    +'<tr><th>근로자</th><td>'+e(x.name||'')+' · 생년월일 '+(birth||'__________')+' · 연락처 '+e(x.phone||'')+'</td></tr></table>'
+    +'<div class="tb">2. 근로 조건</div><table>'
+    +'<tr><th>근로일</th><td>'+e(dates)+' ('+d+'일) — 일 단위로 근로계약이 성립·종료되는 일용근로</td></tr>'
+    +'<tr><th>근무 장소</th><td>'+e(p.venue||'')+(p.address?' ('+e(p.address)+')':'')+'</td></tr>'
+    +'<tr><th>업무 내용</th><td>'+e(p.title||'')+' 공연·행사 음향 업무'+(a.role?' ('+e(a.role)+')':'')+'</td></tr>'
+    +'<tr><th>근로시간</th><td>'+(p.call_time?e(p.call_time)+' 부터 ':'____시 ____분부터 ')+'____시 ____분까지 (휴게시간 ____분) — 연장·야간·휴일근로 시 근로기준법에 따라 가산</td></tr>'
+    +'<tr><th>임금</th><td>일급 <b>'+daily.toLocaleString('ko-KR')+'원</b> × '+d+'일 = '+pay.toLocaleString('ko-KR')+'원 (세전)</td></tr>'
+    +'<tr><th>임금 지급일·방법</th><td>근로 종료 후 ______일 이내, 근로자 명의 계좌 입금'+(x.bank_name?' ('+e(x.bank_name)+')':'')+'</td></tr>'
+    +'<tr><th>공제</th><td>일용근로소득세·지방소득세 원천징수, 고용보험 근로자 부담분(해당 시)</td></tr>'
+    +'<tr><th>사회보험</th><td>고용보험·산재보험 적용. 국민연금·건강보험은 법령상 가입 요건(월 8일 이상 근로 등) 충족 시 적용</td></tr>'
+    +'<tr><th>기타</th><td>이 계약에 정하지 않은 사항은 근로기준법 등 관계 법령에 따른다. 사업주는 계약서 1부를 근로자에게 교부한다(전자 교부 포함).</td></tr></table>'
+    +'<p style="text-align:center;margin-top:16px">'+new Date().getFullYear()+'년 ____월 ____일</p>'
+    +'<div class="sign"><div><b>사업주</b><br>'+e(BIZ.name)+'<br>대표 '+e(BIZ.ceo)+' (서명)</div><div><b>근로자</b><br>'+e(x.name||'')+' (서명)</div></div>'
+    +'<p class="note">고용노동부 표준근로계약서(일용·단시간) 항목을 바탕으로 만든 양식입니다. 실제 근로시간·지급일을 채운 뒤 교부하세요.</p>');
+};
+window.crewPayslip = function(appId){
+  var a=C.apps.filter(function(x){ return x.id===appId; })[0]; if(!a) return;
+  var p=proj(a.project_id)||{}, x=mem(a.user_id)||{}, py=C.pay[a.id]||{}, d=py.work_days||days(p), t=taxParts(py), pay=t.pay, extra=n(py.extra_krw), daily=d?Math.round(pay/d):0;
+  var ded=t.it+t.lt, net=pay-ded+extra, birth=birthFromHint(C.rrn&&C.rrn[a.user_id]);
+  var row=function(k,v,c){ return '<tr><th>'+k+'</th><td class="r">'+v+'</td><td>'+(c||'')+'</td></tr>'; };
+  laborDocWindow('임금명세서_'+(x.name||'')+'_'+(p.title||''),
+    '<h1>임금명세서</h1>'
+    +'<table><tr><th>성명</th><td>'+e(x.name||'')+'</td><th>생년월일</th><td>'+(birth||'')+'</td></tr>'
+    +'<tr><th>사업장</th><td colspan="3">'+e(BIZ.name)+' (사업자등록번호 '+e(BIZ.no)+')</td></tr>'
+    +'<tr><th>근로일</th><td>'+e(dRange(p))+'</td><th>임금 지급일</th><td>'+e(py.paid_at||'__________')+'</td></tr>'
+    +'<tr><th>현장</th><td colspan="3">'+e(p.title||'')+(p.venue?' · '+e(p.venue):'')+'</td></tr></table>'
+    +'<div class="tb">지급 내역</div><table><tr><th>항목</th><th class="r">금액(원)</th><th>계산 방법</th></tr>'
+    +row('일급', pay.toLocaleString('ko-KR'), '일급 '+daily.toLocaleString('ko-KR')+'원 × 근로일수 '+d+'일')
+    +(extra?row('실비(교통·숙박 등)', extra.toLocaleString('ko-KR'), '실비 변상 — 비과세'):'')
+    +row('지급 총액', '<b>'+(pay+extra).toLocaleString('ko-KR')+'</b>','')+'</table>'
+    +'<div class="tb">공제 내역</div><table><tr><th>항목</th><th class="r">금액(원)</th><th>계산 방법</th></tr>'
+    +row('소득세', t.it.toLocaleString('ko-KR'), '(일급 − 150,000원) × 6% × 45% × '+d+'일, 10원 미만 절사'+(t.it===0&&pay>0?' · 1,000원 미만 소액부징수':''))
+    +row('지방소득세', t.lt.toLocaleString('ko-KR'), '소득세 × 10%')
+    +row('공제 총액', '<b>'+ded.toLocaleString('ko-KR')+'</b>','')+'</table>'
+    +'<table><tr><th>실지급액</th><td class="r"><b>'+net.toLocaleString('ko-KR')+'원</b></td><td>지급 총액 − 공제 총액</td></tr></table>'
+    +'<p class="note">근로기준법 제48조 제2항에 따른 임금명세서입니다. 고용보험 근로자 부담분을 공제한 경우 공제 내역에 추가해야 합니다.</p>');
+};
 window.crewOpenDoc = async function(id){
   var d=(C.docs||[]).filter(function(x){ return x.id===id; })[0]; if(!d) return;
   var w=window.open('', '_blank');
@@ -396,6 +466,7 @@ async function load(){
     C.inviteUses=r[9].data||[];
     C.contacts=r[10].data||[];
     C.docs=r[11].data||[];
+    C.rrn={}; try{ var rh=await sb.rpc('crew_admin_rrn_hints'); (rh.data||[]).forEach(function(x){ C.rrn[x.user_id]=x.hint; }); }catch(_){}   // 주민번호는 가린 표시만 미리, 원문은 [보기]로
     C.loaded = true;
   }catch(err){ dbErr(err); }
   C.busy = false;
@@ -839,6 +910,7 @@ function renderProjectDetail(){
             : '<td colspan="5" class="cr-meta">확정하면 페이를 입력할 수 있습니다</td>')
           +'<td><div class="cr-actions">'
           + (conf ? '<button class="tbtn" onclick="crewSavePay(\''+a.id+'\')">저장</button>' : '')
+          + (conf && (py.tax_type==='daily') ? '<button class="tbtn" onclick="crewLaborContract(\''+a.id+'\')">근로계약서</button><button class="tbtn" onclick="crewPayslip(\''+a.id+'\')">임금명세서</button>' : '')
           + (a.status==='invited' ? '<button class="tbtn danger" onclick="crewUninvite(\''+a.id+'\')">지정 취소</button>'
              : a.status==='applied' ? '<button class="tbtn" onclick="crewSetApp(\''+a.id+'\',\'confirmed\')">확정</button>'
              : a.status!=='confirmed' ? '<button class="tbtn" onclick="crewReinvite(\''+a.id+'\')">다시 지정</button>' : '')
@@ -1029,6 +1101,8 @@ function renderMemberDetail(){
     + '<div class="grid2">'+f('day_rate','기본 일당 (만원) — 확정 시 페이 자동 입력',toMan(ma.day_rate),'number')+f('grade','숙련도 / 포지션 (관리자 메모)',ma.grade)+'</div>'
     + '<div class="field"><label>관리 메모</label><textarea id="crM_memo" rows="2">'+e(ma.memo)+'</textarea></div>'
     + '<div class="rowflex"><button class="btn btn-pri" onclick="crewSaveMember(\''+m.user_id+'\')">저장</button><button class="btn btn-out" onclick="crewCloseMember()">닫기</button></div>'
+    + '<div class="cr-sec">주민등록번호 (원천징수 신고용 · 암호화 보관)</div>'
+    + (C.rrn&&C.rrn[m.user_id] ? '<div class="rowflex"><span class="mono" id="crRrn-'+m.user_id+'">'+e(C.rrn[m.user_id])+'</span><button class="tbtn" onclick="crewShowRrn(\''+m.user_id+'\')">보기</button><button class="tbtn" onclick="crewCopyRrn(\''+m.user_id+'\')">복사</button></div>' : '<div class="cr-meta">아직 등록하지 않았습니다 (감독이 앱·웹 [내 정보]에서 입력).</div>')
     + '<div class="cr-sec">제출 서류 (본인·관리자만 볼 수 있음)</div>'+docList(m.user_id)
     + '<div class="cr-sec">참여 기록 · 지급액 합계 '+won(sumNet)+'원 · 미지급 '+won(sumUnpaid)+'원</div>'
     + (hist.length ? '<div class="cr-wrap"><table class="cr-t"><thead><tr><th>날짜</th><th>프로젝트</th><th>상태</th><th style="text-align:right">페이</th><th style="text-align:right">지급액</th><th>지급</th></tr></thead><tbody>'
@@ -1096,7 +1170,7 @@ function renderTaxReport(m){
     h+='<div class="cr-sec">'+g.t+' · '+rs.length+'건</div><div class="cr-wrap"><table class="cr-t"><thead><tr><th>지급일</th><th>감독</th>'+(g.k==='invoice'?'<th>사업자등록번호</th>':'')+'<th>프로젝트</th>'+(g.k==='daily'?'<th style="text-align:right">근무일</th>':'')
       +'<th style="text-align:right">지급액(세전)</th>'+(g.k==='invoice'?'<th style="text-align:right">부가세</th>':'<th style="text-align:right">소득세</th><th style="text-align:right">지방소득세</th>')+'</tr></thead><tbody>'
       + rs.map(function(r){ var x=taxParts(r.py); s.pay+=x.pay; s.it+=x.it; s.lt+=x.lt; s.vat+=x.vat;
-          return '<tr><td class="cr-date">'+e(r.py.paid_at)+'</td><td><b>'+e(r.m.name||'?')+'</b></td>'+(g.k==='invoice'?'<td class="mono">'+e(fmtBizNo(r.m.biz_no)||r.m.biz_no||'미등록')+'</td>':'')+'<td>'+e(r.p.title||'')+'</td>'
+          return '<tr><td class="cr-date">'+e(r.py.paid_at)+'</td><td><b>'+e(r.m.name||'?')+'</b>'+(g.k!=='invoice'&&g.k!=='none'?(C.rrn&&C.rrn[r.a.user_id]?' <button class="tbtn" onclick="crewCopyRrn(\''+r.a.user_id+'\')">주민번호 복사</button>':' <span class="cr-neg" style="font-size:11.5px">주민번호 미등록</span>'):'')+'</td>'+(g.k==='invoice'?'<td class="mono">'+e(fmtBizNo(r.m.biz_no)||r.m.biz_no||'미등록')+'</td>':'')+'<td>'+e(r.p.title||'')+'</td>'
             +(g.k==='daily'?'<td class="cr-num">'+(r.py.work_days||1)+'일</td>':'')
             +'<td class="cr-num">'+x.pay.toLocaleString('ko-KR')+'</td>'+(g.k==='invoice'?'<td class="cr-num">'+x.vat.toLocaleString('ko-KR')+'</td>':'<td class="cr-num">'+x.it.toLocaleString('ko-KR')+'</td><td class="cr-num">'+x.lt.toLocaleString('ko-KR')+'</td>')+'</tr>'; }).join('')
       + '<tr><td colspan="'+(g.k==='invoice'?4:(g.k==='daily'?4:3))+'"><b>합계</b></td><td class="cr-num"><b>'+s.pay.toLocaleString('ko-KR')+'</b></td>'+(g.k==='invoice'?'<td class="cr-num"><b>'+s.vat.toLocaleString('ko-KR')+'</b></td>':'<td class="cr-num"><b>'+s.it.toLocaleString('ko-KR')+'</b></td><td class="cr-num"><b>'+s.lt.toLocaleString('ko-KR')+'</b></td>')+'</tr>'
