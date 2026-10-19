@@ -84,7 +84,9 @@ tr:last-child td{border-bottom:0}
 .btn-out{background:#fff;border:1px solid var(--line);color:var(--navy)}
 .result{margin-top:14px;background:var(--navy-deep);border-radius:11px;padding:15px 17px;color:#dfe8f5;display:none}.result.on{display:block}
 .result .k{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:#fff;word-break:break-all;margin-top:6px}
-.codelist{display:flex;flex-direction:column;gap:6px;margin:10px 0 12px}.codelist button{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:44px;padding:0 14px;border:1px solid #2A3B5A;border-radius:9px;background:#0E1A2E;color:#fff;font-family:ui-monospace,Menlo,monospace;font-size:14px;letter-spacing:.04em;cursor:pointer;text-align:left}.codelist button:hover{background:#17273F}.codelist button .cp{font-family:inherit;font-size:11px;color:#8fa5c2}.codelist button.done{border-color:#2E6B4A}.codelist button.done .cp{color:#39D48C}
+.codelist{display:flex;flex-direction:column;gap:6px;margin:10px 0 12px}.codelist>button{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:44px;padding:0 14px;border:1px solid #2A3B5A;border-radius:9px;background:#0E1A2E;color:#fff;font-family:ui-monospace,Menlo,monospace;font-size:14px;letter-spacing:.04em;cursor:pointer;text-align:left}.codelist>button:hover{background:#17273F}.codelist>button .cp{font-family:inherit;font-size:11px;color:#8fa5c2}.codelist>button.done{border-color:#2E6B4A}.codelist>button.done .cp{color:#39D48C}
+.coderow{box-sizing:border-box;max-width:100%;display:flex;align-items:center;gap:6px;min-height:44px;padding:4px 6px 4px 14px;border:1px solid #2A3B5A;border-radius:9px;background:#0E1A2E}.coderow .cv{flex:1;min-width:0;color:#fff;font-family:ui-monospace,Menlo,monospace;font-size:14px;letter-spacing:.04em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.coderow .tbtn{min-height:34px;padding:0 10px;font-size:12px;white-space:nowrap}.coderow .tbtn.done{border-color:#2E6B4A;color:#39D48C}
+@media(max-width:560px){.coderow{flex-wrap:wrap;padding:8px 10px}.coderow .cv{flex-basis:100%}.coderow .tbtn{flex:1 1 0;min-width:0;padding:0 6px}}
 .codeacts{display:flex;gap:8px;flex-wrap:wrap}.codeacts .tbtn{min-height:40px;padding:0 14px;font-size:13px}
 .note{font-size:12px;color:var(--dim);margin-top:12px;line-height:1.6}
 .rowflex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -892,7 +894,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.31.0', AZ_CONSOLE_DATE='2026-09-23'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.32.0', AZ_CONSOLE_DATE='2026-10-20'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1507,9 +1509,19 @@ function codeLink(c){ return 'https://audioazpro.com/portal/checkout.html?code='
 function codesText(codes, withLink){ return codes.map(function(c){ return withLink ? c+'  '+codeLink(c) : c; }).join('\n'); }
 function renderCodeList(codes, product){
   var share=(navigator.share?'<button class="tbtn" type="button" onclick="shareCodes()">공유 (카톡 등)</button>':'');
-  return '<div class="codelist">'+codes.map(function(c){ return '<button type="button" onclick="copyCode(this,\''+esc(c)+'\')"><span>'+esc(c)+'</span><span class="cp">복사</span></button>'; }).join('')+'</div>'+
+  return '<div class="codelist">'+codes.map(function(c){ var a='\''+esc(c)+'\''; return '<div class="coderow"><span class="cv">'+esc(c)+'</span>'+
+    '<button class="tbtn" type="button" onclick="copyOne('+a+',true,this)">링크 포함</button>'+
+    '<button class="tbtn" type="button" onclick="shareOne('+a+',this)">공유</button>'+
+    '<button class="tbtn" type="button" onclick="copyOne('+a+',false,this)">코드 복사</button></div>'; }).join('')+'</div>'+
     '<div class="codeacts"><button class="tbtn" type="button" onclick="copyAll(false,this)">전체 복사</button><button class="tbtn" type="button" onclick="copyAll(true,this)">링크 포함 복사</button>'+share+'</div>';
 }
+// 코드 하나씩 — 링크 포함 복사 / 공유(카톡 등, 공유 창이 없으면 공유 문구를 복사) / 코드만 복사 (2026-10-20 사장님 요청)
+function flashBtn(btn,t){ var o=btn.dataset.lbl||btn.textContent; btn.dataset.lbl=o; btn.textContent=t; btn.classList.add('done'); clearTimeout(btn._t); btn._t=setTimeout(function(){ btn.textContent=o; btn.classList.remove('done'); },1500); }
+function copyOne(c,withLink,btn){ navigator.clipboard&&navigator.clipboard.writeText(withLink? c+'  '+codeLink(c) : c); flashBtn(btn,'복사됨'); }
+function shareText(c,product){ var nm=PRODNAME[product]||'AudioAZ'; return '[AudioAZ] '+nm+' 코드\n'+c+'\n\n등록: '+codeLink(c); }
+function shareOne(c,btn,product){ if(product===undefined) product=LAST_CODES&&LAST_CODES.product; var t=shareText(c,product);
+  if(navigator.share){ navigator.share({title:'AudioAZ 코드', text:t}).catch(function(){}); return; }
+  navigator.clipboard&&navigator.clipboard.writeText(t); flashBtn(btn,'문구 복사됨'); }
 function copyCode(btn,c){ navigator.clipboard&&navigator.clipboard.writeText(c); btn.classList.add('done'); btn.querySelector('.cp').textContent='복사됨'; setTimeout(function(){ btn.classList.remove('done'); btn.querySelector('.cp').textContent='복사'; },1500); }
 function copyAll(withLink,btn){ if(!LAST_CODES) return; navigator.clipboard&&navigator.clipboard.writeText(codesText(LAST_CODES.codes,withLink)); var t=btn.textContent; btn.textContent='복사됨 ('+LAST_CODES.codes.length+'개)'; setTimeout(function(){btn.textContent=t;},1500); }
 function checkoutUrl(product){ var b='https://audioazpro.com/portal/checkout.html'; return (product && product!=='ALL') ? b+'?p='+encodeURIComponent(product) : b; }
@@ -1538,7 +1550,7 @@ async function renderPromos(){
       '<td>'+(p.used_count||0)+'/'+(p.max_uses?p.max_uses:'∞')+'</td>'+
       '<td class="mono">'+period+'</td>'+
       '<td>'+esc(p.memo||'')+'</td>'+
-      '<td style="white-space:nowrap"><button class="tbtn" onclick="copyText(PROMOS['+PROMOS.indexOf(p)+'].code,this)">복사</button> '+(p.active?'<button class="tbtn danger" onclick="disablePromo(PROMOS['+PROMOS.indexOf(p)+'].code)">중지</button>':'')+'</td>'+
+      '<td style="white-space:nowrap"><button class="tbtn" onclick="copyOne(PROMOS['+PROMOS.indexOf(p)+'].code,true,this)">링크 포함</button> <button class="tbtn" onclick="shareOne(PROMOS['+PROMOS.indexOf(p)+'].code,this,PROMOS['+PROMOS.indexOf(p)+'].product_id)">공유</button> <button class="tbtn" onclick="copyOne(PROMOS['+PROMOS.indexOf(p)+'].code,false,this)">코드 복사</button> '+(p.active?'<button class="tbtn danger" onclick="disablePromo(PROMOS['+PROMOS.indexOf(p)+'].code)">중지</button>':'')+'</td>'+
     '</tr>';
   }).join('');
 }
