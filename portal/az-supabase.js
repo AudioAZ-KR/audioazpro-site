@@ -50,6 +50,11 @@ async function signup(email, password, name, redirectTo, meta) {
   return data.user;                                 // 이메일 인증 필요 설정이면 확인메일 발송
 }
 async function logout() { await sb.auth.signOut(); }
+// 인증 안 된 계정에 가입 인증 메일 다시 보내기 (로그인 화면 'Email not confirmed' 일 때) — Supabase 가 같은 주소엔 약 1분 간격 제한
+async function resendSignup(email) {
+  const { error } = await sb.auth.resend({ type: 'signup', email, options: { emailRedirectTo: location.origin + '/?welcome=1' } });
+  if (error) throw error;
+}
 
 async function resetPassword(email) {
   const { error } = await sb.auth.resetPasswordForEmail(email, {
@@ -106,7 +111,7 @@ async function deactivate(activationId) {
 
 window.AZ = {
   PRODMETA, TYPELABEL,
-  session, currentUser, login, signup, logout, resetPassword, requireLogin,
+  session, currentUser, login, signup, logout, resetPassword, resendSignup, requireLogin,
   myProfile, isAdmin,
   licenses, licensesFor, hasLicense, activate, deactivate
 };
