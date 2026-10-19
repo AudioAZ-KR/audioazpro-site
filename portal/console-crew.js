@@ -179,6 +179,7 @@ function dailyTax(pay, d){
 /* 공연자 안전교육 수료증 (2026-10-19): 행사 마지막 날 <= 수료일 + 2년 이면 통과. 수료일은 감독 앱에서 수료증을 기기 인식해 저장 */
 function safetyExp(d){ var t=new Date(d+'T00:00:00'); t.setFullYear(t.getFullYear()+2); return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0'); }
 function safetyTag(x, p){
+  if (!p || !p.requires_safety) return '';
   if (!x || !x.safety_cert_date) return '<span class="cr-st a"><i></i>안전교육 미제출</span>';
   var exp=safetyExp(x.safety_cert_date), ok=(p.date_end||p.date_start) <= exp;
   return '<span class="cr-st '+(ok?'g':'r')+'"><i></i>안전교육 '+(ok?'통과':'기간 지남')+' · 수료 '+e(x.safety_cert_date)+' ('+exp+'까지)</span>';
@@ -278,7 +279,7 @@ function projMargin(p){
 }
 function travelTag(p){ return p ? (p.depart_day_before?' <span class="cr-meta" style="margin-left:6px">전날 출발</span>':'')+(p.return_day_after?' <span class="cr-meta" style="margin-left:6px">다음날 복귀</span>':'') : ''; }
 function lvTag(p){ return p && p.min_level==='basic' ? ' <span class="cr-st g" style="margin-left:6px;vertical-align:middle" title="가입한 누구나 볼 수 있음"><i></i>일반 공개</span>' : (p && p.min_level==='core' ? ' <span class="cr-st a" style="margin-left:6px;vertical-align:middle"><i></i>코어만</span>' : ''); }
-function tentTag(p){ return lvTag(p)+travelTag(p)+(p && p.is_private ? ' <span class="cr-st r" style="margin-left:6px;vertical-align:middle" title="감독에게 보이지 않음"><i></i>비공개</span>' : '') + (p && p.is_tentative ? ' <span class="cr-st a" style="margin-left:6px;vertical-align:middle" title="임시 픽스 — 변동·취소 가능"><i></i>예정</span>' : ''); }
+function tentTag(p){ return lvTag(p)+travelTag(p)+(p && p.requires_safety ? ' <span class="cr-st b" style="margin-left:6px;vertical-align:middle" title="공연자 안전교육 수료증 필요"><i></i>안전교육 필요</span>' : '')+(p && p.is_private ? ' <span class="cr-st r" style="margin-left:6px;vertical-align:middle" title="감독에게 보이지 않음"><i></i>비공개</span>' : '') + (p && p.is_tentative ? ' <span class="cr-st a" style="margin-left:6px;vertical-align:middle" title="임시 픽스 — 변동·취소 가능"><i></i>예정</span>' : ''); }
 function stP(s, p){ var c={open:'g',draft:'d',closed:'a',done:'b',cancelled:'d'}[s]||'d'; var t=(s==='closed'&&p&&p.auto_closed)?'정원 마감':(ST_PROJ[s]||s); return '<span class="cr-st '+c+'"><i></i>'+t+'</span>'; }
 function stA(s){ var c={applied:'a',confirmed:'g',declined:'r',cancelled:'d',invited:'b'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_APP[s]||s)+'</span>'; }
 function stM(s){ var c={pending:'a',active:'g',inactive:'d',deleted:'r'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_MEM[s]||s)+'</span>'; }
@@ -520,6 +521,10 @@ window.crewEditProject = function(id){
     +   '<label><input type="radio" name="crE_priv" value="0"'+(p&&p.is_private?'':' checked')+'><span>공개</span></label>'
     +   '<label><input type="radio" name="crE_priv" value="1"'+(p&&p.is_private?' checked':'')+'><span>비공개 (지정한 감독만)</span></label></div>'
     +   '<div class="cr-meta" style="margin-top:6px">비공개면 목록에 안 뜨고, 프로젝트 상세의 [감독 지정]으로 고른 감독에게만 알림이 가고, 본인이 수락하면 확정됩니다. 나중에 공개로 바꾸면 등급에 맞는 회원이 신청할 수 있습니다</div></div>'
+    + '<div class="field"><label>공연자 안전교육 수료증</label><div class="cr-seg">'
+    +   '<label><input type="radio" name="crE_safe" value="0"'+(p&&p.requires_safety?'':' checked')+'><span>필요 없음</span></label>'
+    +   '<label><input type="radio" name="crE_safe" value="1"'+(p&&p.requires_safety?' checked':'')+'><span>수료증 필요</span></label></div>'
+    +   '<div class="cr-meta" style="margin-top:6px">필요로 두면 수료증이 행사일 기준 수료 2년 이내인 감독만 지원·초대 수락할 수 있습니다 (감독이 앱·웹에서 한 번 올리면 자동 확인)</div></div>'
     + '<div class="field"><label>보이는 등급</label><div class="cr-seg">'
     +   [['basic','일반 이상 (가입한 누구나)'],['crew','크루 이상'],['core','코어만']].map(function(o){ return '<label><input type="radio" name="crE_lv" value="'+o[0]+'"'+(((p&&p.min_level)||'crew')===o[0]?' checked':'')+'><span>'+o[1]+'</span></label>'; }).join('')+'</div>'
     +   '<div class="cr-meta" style="margin-top:6px">이 등급 이상 회원에게만 공고가 보이고 지원할 수 있습니다. 새 공고는 크루 이상으로 시작합니다</div></div>'
@@ -719,7 +724,7 @@ function v(k){ var el=document.getElementById('crE_'+k); return el ? el.value.tr
 function numOrNull(s){ s=String(s).replace(/[^\d-]/g,''); return s===''?null:Number(s); }
 window.crewSaveProject = async function(){
   var row = { title:v('title'), venue:v('venue')||null, address:v('address')||null, date_start:v('date_start'), date_end:v('date_end')||null, call_time:v('call_time')||null,
-              map_url:mapNorm(v('map_url')), roles:v('roles')||null, headcount:numOrNull(v('headcount')), description:v('description')||null, status:v('status'), is_tentative:(document.querySelector('input[name=crE_tent]:checked')||{}).value==='1', is_private:(document.querySelector('input[name=crE_priv]:checked')||{}).value==='1', min_level:(document.querySelector('input[name=crE_lv]:checked')||{}).value||'crew',
+              map_url:mapNorm(v('map_url')), roles:v('roles')||null, headcount:numOrNull(v('headcount')), description:v('description')||null, status:v('status'), is_tentative:(document.querySelector('input[name=crE_tent]:checked')||{}).value==='1', is_private:(document.querySelector('input[name=crE_priv]:checked')||{}).value==='1', requires_safety:(document.querySelector('input[name=crE_safe]:checked')||{}).value==='1', min_level:(document.querySelector('input[name=crE_lv]:checked')||{}).value||'crew',
               depart_day_before:document.getElementById('crE_depart').checked, return_day_after:document.getElementById('crE_return').checked };
   if (!row.title || !row.date_start){ flash('프로젝트명과 시작일은 필수입니다.', true); return; }
   if (row.date_end && row.date_end < row.date_start){ flash('종료일이 시작일보다 빠릅니다.', true); return; }
