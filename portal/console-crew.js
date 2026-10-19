@@ -176,6 +176,13 @@ function dailyTax(pay, d){
   if (it<1000) return 0; return it+trunc10(it*0.1);
 }
 /* 지난 행사인데 아직 모집 중·마감 = 완료 체크 대상 (2026-10-13) */
+/* 공연자 안전교육 수료증 (2026-10-19): 행사 마지막 날 <= 수료일 + 2년 이면 통과. 수료일은 감독 앱에서 수료증을 기기 인식해 저장 */
+function safetyExp(d){ var t=new Date(d+'T00:00:00'); t.setFullYear(t.getFullYear()+2); return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0'); }
+function safetyTag(x, p){
+  if (!x || !x.safety_cert_date) return '<span class="cr-st a"><i></i>안전교육 미제출</span>';
+  var exp=safetyExp(x.safety_cert_date), ok=(p.date_end||p.date_start) <= exp;
+  return '<span class="cr-st '+(ok?'g':'r')+'"><i></i>안전교육 '+(ok?'통과':'기간 지남')+' · 수료 '+e(x.safety_cert_date)+' ('+exp+'까지)</span>';
+}
 function isPast(p){ return (p.date_end||p.date_start) < today(); }
 function pastOpen(p){ return isPast(p) && (p.status==='open' || p.status==='closed'); }
 window.crewMarkDone = async function(id){
@@ -793,7 +800,7 @@ function renderProjectDetail(){
         var wd = py.work_days || days(p);
         var c = calcPay({pay_krw:defPay, extra_krw:py.extra_krw, tax_type:tt, work_days:wd});
         return '<tr data-app="'+a.id+'" data-days="'+wd+'"><td><a style="cursor:pointer;text-decoration:underline" onclick="crewOpenMember(\''+a.user_id+'\')"><b>'+e(x.name||'?')+'</b></a><div class="cr-meta">'+e(x.specialty||'')+' · '+bizLabel(x)+(ma.day_rate?' · 일당 '+won(ma.day_rate):'')+'</div></td>'
-          +'<td class="cr-note">'+(a.role?'<b>'+e(a.role)+'</b>\n':'')+(a.apply_level&&a.apply_level!==(x.level||'basic')?'<b style="color:var(--blue,#1877F2)">'+LV_NAME[a.apply_level]+' 자리로 지원</b>\n':'')+e(a.note||'')+(a.status==='cancelled'&&a.cancel_reason?'\n<b class="cr-neg">취소 사유: '+e(a.cancel_reason)+'</b>':'')+'</td><td>'+stA(a.status)+'</td>'
+          +'<td class="cr-note">'+safetyTag(x,p)+'\n'+(a.role?'<b>'+e(a.role)+'</b>\n':'')+(a.apply_level&&a.apply_level!==(x.level||'basic')?'<b style="color:var(--blue,#1877F2)">'+LV_NAME[a.apply_level]+' 자리로 지원</b>\n':'')+e(a.note||'')+(a.status==='cancelled'&&a.cancel_reason?'\n<b class="cr-neg">취소 사유: '+e(a.cancel_reason)+'</b>':'')+'</td><td>'+stA(a.status)+'</td>'
           +(conf
             ? '<td><input class="cr-in" inputmode="decimal" data-k="pay_krw" placeholder="예: 35" value="'+e(toMan(defPay))+'" oninput="crewRowCalc(this)"></td>'
              +'<td><input class="cr-in" inputmode="decimal" data-k="extra_krw" placeholder="예: 3" value="'+e(toMan(py.extra_krw))+'" oninput="crewRowCalc(this)"></td>'
