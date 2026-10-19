@@ -177,7 +177,7 @@ function dailyTax(pay, d){
 }
 /* 지난 행사인데 아직 모집 중·마감 = 완료 체크 대상 (2026-10-13) */
 /* 공연자 안전교육 수료증 (2026-10-19): 행사 마지막 날 <= 수료일 + 2년 이면 통과. 수료일은 감독 앱에서 수료증을 기기 인식해 저장 */
-function safetyExp(d){ var t=new Date(d+'T00:00:00'); t.setFullYear(t.getFullYear()+2); return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0'); }
+function safetyExp(d){ var t=new Date(d+'T00:00:00'), dd=t.getDate(); t.setFullYear(t.getFullYear()+2); if (t.getDate()!==dd) t.setDate(0); return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0'); }
 function safetyTag(x, p){
   if (!p || !p.requires_safety) return '';
   if (!x || !x.safety_cert_date) return '<span class="cr-st a"><i></i>안전교육 미제출</span>';
