@@ -65,6 +65,8 @@ img,svg{max-width:100%}
 .field input{width:100%;height:46px;border:1px solid var(--line);border-radius:11px;padding:0 14px;font-family:inherit;font-size:15px;color:var(--text);background:#fff;transition:.15s}
 .field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,119,242,.12)}
 .field .hint{font-size:11.5px;color:var(--dim);margin-top:4px}
+.notice.verify{margin-top:14px}.notice.verify .vaddr{margin:8px 0;color:#fff;font-weight:600;word-break:break-all}.notice.verify .vbtn{width:100%;min-height:42px;border:1px solid #33507F;border-radius:9px;background:#1E2E4C;color:#fff;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer}.notice.verify .vbtn:disabled{opacity:.5;cursor:default}.notice.verify .vmsg{margin-top:8px;font-size:12.5px}
+.field .hint.typo{color:#F5B94A;font-size:12.5px}.field .hint.typo b{color:#fff;font-weight:600;word-break:break-all}
 .primary{width:100%;height:48px;border:0;border-radius:11px;background:var(--blue);color:#fff;font-family:inherit;font-size:15.5px;font-weight:800;cursor:pointer;margin-top:6px;transition:.15s}
 .primary:hover{background:var(--blue-deep)}
 .foot{text-align:center;font-size:12.5px;color:var(--dim);margin-top:16px;line-height:1.7}
@@ -131,6 +133,13 @@ img,svg{max-width:100%}
         <div style="text-align:right;margin:-4px 0 12px"><a href="forgot.html" style="font-size:12.5px;color:var(--blue-soft);font-weight:600">비밀번호를 잊으셨나요?</a></div>
         <button class="primary" type="submit">로그인</button>
       </form>
+      <div class="notice verify" id="verifyBox" hidden>
+        <b>이메일 인증이 아직 완료되지 않았습니다.</b><br>
+        <span>가입할 때 받은 인증 메일의 링크를 눌러야 로그인할 수 있습니다. 메일이 없으면 스팸함을 확인하거나 아래 버튼으로 다시 받으세요.</span>
+        <div class="vaddr" id="verifyAddr"></div>
+        <button type="button" class="vbtn" id="verifyBtn" onclick="resendVerify()">인증 메일 다시 보내기</button>
+        <div class="vmsg" id="verifyMsg"></div>
+      </div>
     </div>
 
     <!-- 회원가입 폼 -->
@@ -144,6 +153,7 @@ img,svg{max-width:100%}
           <label for="su-email">이메일</label>
           <input id="su-email" type="email" name="email" placeholder="you@example.com" autocomplete="username" required>
           <div class="hint">구매·라이선스 발급에 사용됩니다. 정확히 입력하세요.</div>
+          <div class="hint typo" id="su-typo" hidden><span>혹시 이 주소가 아닌가요?</span> <b id="su-typo-addr"></b> <button type="button" class="linklike" onclick="fixEmailTypo()">이 주소로 고치기</button></div>
         </div>
         <div class="field">
           <label for="su-pw">비밀번호</label>
@@ -210,6 +220,51 @@ function oauth(provider){
   var names={google:'Google',kakao:'카카오',naver:'네이버',apple:'Apple'};
   alert(names[provider]+' 로그인은 정식 오픈 예정입니다. 지금은 이메일 회원가입/로그인을 이용해 주세요.');
 }
+// 인증 안 된 계정 — 로그인 시 '인증 메일 다시 보내기' (2026-10-20 사장님 요청)
+var VERIFY_EMAIL=null;
+function showVerify(email){
+  VERIFY_EMAIL=String(email||'').trim();
+  var box=document.getElementById('verifyBox'); box.hidden=false;
+  document.getElementById('verifyAddr').textContent=VERIFY_EMAIL;
+  document.getElementById('verifyMsg').textContent='';
+  var sug=emailTypo(VERIFY_EMAIL);   // 가입 때 주소를 잘못 쓴 경우(naver.co 등) — 다시 보내도 못 받는다
+  if(sug) document.getElementById('verifyMsg').textContent='이 주소는 메일을 받을 수 없는 주소일 수 있습니다. 바른 주소로 다시 가입해 주세요: '+sug;
+  box.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+async function resendVerify(){
+  var b=document.getElementById('verifyBtn'), m=document.getElementById('verifyMsg'); if(!VERIFY_EMAIL) return;
+  b.disabled=true; m.style.color=''; m.textContent='보내는 중…';
+  try{
+    await AZ.resendSignup(VERIFY_EMAIL);
+    m.style.color='#39D48C'; m.textContent='인증 메일을 다시 보냈습니다. 받은편지함(스팸함 포함)을 확인해 주세요. 1분 뒤에 다시 보낼 수 있습니다.';
+    setTimeout(function(){ b.disabled=false; },60000);
+  }catch(ex){
+    var t=(ex&&ex.message)||'';
+    m.style.color='#F5B94A';
+    m.textContent=/security purposes|rate limit|seconds|too many/i.test(t) ? '잠시 후(약 1분) 다시 시도해 주세요.' : '보내지 못했습니다. 잠시 후 다시 시도하거나 support@audioazpro.com 으로 알려 주세요.';
+    setTimeout(function(){ b.disabled=false; },/security purposes|rate limit|seconds|too many/i.test(t)?60000:3000);
+  }
+}
+// 이메일 도메인 오타 안내 (2026-10-20: naver.co 로 가입해 인증 메일을 못 받은 일) — 흔한 메일 도메인과 한두 글자 다르면 제안
+var MAIL_DOMAINS=['naver.com','gmail.com','daum.net','hanmail.net','nate.com','kakao.com','icloud.com','me.com','outlook.com','hotmail.com','yahoo.com','yahoo.co.kr','korea.com','audioazpro.com'];
+function editDist(a,b){ var m=a.length,n=b.length,d=[],i,j; for(i=0;i<=m;i++){d[i]=[i];} for(j=1;j<=n;j++){d[0][j]=j;} for(i=1;i<=m;i++)for(j=1;j<=n;j++){ d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1)); if(i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1]) d[i][j]=Math.min(d[i][j],d[i-2][j-2]+1); } return d[m][n]; }
+function emailTypo(email){
+  var m=String(email||'').trim().toLowerCase().match(/^([^@\s]+)@([^@\s]+)$/); if(!m) return null;
+  var dom=m[2]; if(MAIL_DOMAINS.indexOf(dom)>=0) return null;
+  var best=null,bd=9;
+  MAIL_DOMAINS.forEach(function(x){
+    var k=editDist(dom,x);
+    if(x.indexOf(dom+'.')===0 || x.split('.')[0]===dom) k=Math.min(k,1);   // naver.co → naver.com, naver → naver.com
+    if(k<bd){ bd=k; best=x; }
+  });
+  return (best && bd<=2 && dom.length>=4) ? m[1]+'@'+best : null;
+}
+function showEmailTypo(){
+  var el=document.getElementById('su-email'), box=document.getElementById('su-typo'); if(!el||!box) return;
+  var sug=emailTypo(el.value); box.hidden=!sug; if(sug) document.getElementById('su-typo-addr').textContent=sug;
+}
+function fixEmailTypo(){ var el=document.getElementById('su-email'), sug=emailTypo(el.value); if(sug){ el.value=sug; } showEmailTypo(); el.focus(); }
+(function(){ var el=document.getElementById('su-email'); if(!el) return; el.addEventListener('blur',showEmailTypo); el.addEventListener('input',function(){ if(!document.getElementById('su-typo').hidden) showEmailTypo(); }); })();
 // 실제 Supabase 인증
 async function submitForm(e,mode){
   e.preventDefault();
@@ -220,6 +275,8 @@ async function submitForm(e,mode){
     if(mode==='signup'){
       if(!/^(?=.*[A-Za-z])(?=.*\d).{8,72}$/.test(d.password)){ throw new Error('비밀번호는 영문과 숫자를 모두 포함해 8자 이상이어야 합니다.'); }
       if(d.password!==d.password2){ throw new Error('비밀번호가 일치하지 않습니다.'); }
+      var sug=emailTypo(d.email);   // naver.co 같은 오타 — 한 번은 멈춰 확인받고, 그래도 맞다고 하면(같은 주소로 다시 누름) 그대로 가입
+      if(sug && f.dataset.typoOk!==d.email){ f.dataset.typoOk=d.email; showEmailTypo(); throw new Error('입력한 이메일 주소를 다시 확인해 주세요.\n\n'+d.email+'  →  '+sug+'\n\n입력한 주소가 맞다면 회원가입을 한 번 더 누르세요.'); }
       if(!f.agree_terms.checked||!f.agree_privacy.checked){ throw new Error('약관과 개인정보 수집·이용에 동의해 주세요.'); }
       var consentAt=new Date().toISOString();   // 동의 증거 — 계정 메타데이터에 시각 보관
       await AZ.signup(d.email, d.password, d.name, isCrew()?CREW:null, {consent_terms_at:consentAt, consent_privacy_at:consentAt});
@@ -228,6 +285,7 @@ async function submitForm(e,mode){
       alert('회원가입 신청 완료!\n\n'+d.email+' 으로 승인(인증) 메일을 보냈습니다.\n메일의 링크를 눌러 이메일을 인증하면 가입이 완료되고'+(isCrew()?' 오디오에이지 크루 페이지로 바로 이동합니다.':' 로그인할 수 있습니다.')+'\n\n메일이 안 보이면 스팸함을 확인해 주세요.');
       setTab('login'); btn.disabled=false; btn.textContent=old;
     } else {
+      document.getElementById('verifyBox').hidden=true;
       await AZ.login(d.email, d.password);
       location.href=nextUrl()||'account.html';
     }
@@ -235,7 +293,7 @@ async function submitForm(e,mode){
     var msg=(ex && ex.message) || '처리에 실패했습니다.';
     if(/Invalid login/i.test(msg)) msg='이메일 또는 비밀번호가 올바르지 않습니다.';
     if(/already registered/i.test(msg)) msg='이미 가입된 이메일입니다.';
-    if(/Email not confirmed/i.test(msg)) msg='이메일 인증이 필요합니다. 받은 메일의 링크를 확인하세요.';
+    if(/Email not confirmed/i.test(msg)){ showVerify(d.email); btn.disabled=false; btn.textContent=old; return false; }   // 경고창 대신 '인증 메일 다시 보내기' 상자
     if(/crew_address_reserved|Database error saving new user/i.test(msg)) msg='이 주소로는 가입할 수 없습니다. 다른 이메일을 써 주세요.';
     alert(msg); btn.disabled=false; btn.textContent=old;
   }
