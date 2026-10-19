@@ -182,7 +182,8 @@ function safetyTag(x, p){
   if (!p || !p.requires_safety) return '';
   if (!x || !x.safety_cert_date) return '<span class="cr-st a"><i></i>안전교육 미제출</span>';
   var exp=safetyExp(x.safety_cert_date), ok=(p.date_end||p.date_start) <= exp;
-  return '<span class="cr-st '+(ok?'g':'r')+'"><i></i>안전교육 '+(ok?'통과':'기간 지남')+' · 수료 '+e(x.safety_cert_date)+' ('+exp+'까지)</span>';
+  return '<span class="cr-st '+(ok?'g':'r')+'"><i></i>안전교육 '+(ok?'통과':'기간 지남')+' · 수료 '+e(x.safety_cert_date)+' ('+exp+'까지)</span>'
+    +(x.safety_cert_doc?' <button class="tbtn" style="margin-left:4px" onclick="crewDownloadDoc(\''+x.safety_cert_doc+'\')">수료증 받기</button>':'');
 }
 function isPast(p){ return (p.date_end||p.date_start) < today(); }
 function pastOpen(p){ return isPast(p) && (p.status==='open' || p.status==='closed'); }
@@ -318,8 +319,30 @@ function docList(uid){
   if (!ds.length) return '<div class="cr-empty" style="text-align:left;padding:4px 0">아직 제출한 서류가 없습니다.</div>';
   return '<table class="cr-t"><tbody>'+ds.map(function(d){
     return '<tr><td style="width:90px"><span class="cr-st b"><i></i>'+(DOC_KIND[d.kind]||d.kind)+'</span></td><td><b>'+e(d.title)+'</b><div class="cr-meta">'+(d.size_bytes?(d.size_bytes>=1048576?(d.size_bytes/1048576).toFixed(1)+'MB':Math.max(1,Math.round(d.size_bytes/1024))+'KB'):'')+' · '+e(fmtDateTime(d.created_at))+'</div></td>'
-      +'<td style="width:90px"><button class="tbtn" onclick="crewOpenDoc(\''+d.id+'\')">열기</button></td></tr>'; }).join('')+'</tbody></table>';
+      +'<td style="width:160px"><div class="cr-actions"><button class="tbtn" onclick="crewOpenDoc(\''+d.id+'\')">열기</button><button class="tbtn" onclick="crewDownloadDoc(\''+d.id+'\')">다운로드</button></div></td></tr>'; }).join('')+'</tbody></table>';
 }
+/* 서류 다운로드 (2026-10-19) — 파일명: 이름_종류_원래이름 */
+function docFileName(d){ var m=mem(d.user_id)||{}; return ((m.name||'감독')+'_'+(DOC_KIND[d.kind]||d.kind)+'_'+(d.title||'파일')).replace(/[\\/:*?"<>|]/g,'_'); }
+window.crewDownloadDoc = async function(id){
+  var d=(C.docs||[]).filter(function(x){ return x.id===id; })[0]; if(!d) return;
+  var r=await sb.storage.from('crew-docs').createSignedUrl(d.storage_path, 120, { download: docFileName(d) });
+  if (r.error) return dbErr(r.error);
+  var a=document.createElement('a'); a.href=r.data.signedUrl; a.download=docFileName(d); document.body.appendChild(a); a.click(); a.remove();
+};
+/* 행사 확정자 안전교육 수료증 한꺼번에 받기 — zip 하나로 (공연장 제출용) */
+window.crewCertZip = async function(pid){
+  var p=proj(pid)||{}, as=appsOf(pid).filter(function(a){ return a.status==='confirmed' && !ghost(a.user_id); });
+  var ds=as.map(function(a){ var m=mem(a.user_id)||{}; return (C.docs||[]).filter(function(d){ return d.id===m.safety_cert_doc; })[0]; }).filter(Boolean);
+  var missing=as.length-ds.length;
+  if (!ds.length) return flash('받을 수 있는 수료증이 없습니다 (확정자 중 제출자 없음).', true);
+  if (!window.JSZip){ await new Promise(function(ok,no){ var x=document.createElement('script'); x.src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'; x.onload=ok; x.onerror=no; document.head.appendChild(x); }); }
+  flash('수료증 '+ds.length+'개를 묶는 중…');
+  var zip=new JSZip();
+  for (var i=0;i<ds.length;i++){ var r=await sb.storage.from('crew-docs').download(ds[i].storage_path); if (r.error) return dbErr(r.error); zip.file(docFileName(ds[i]), r.data); }
+  var blob=await zip.generateAsync({ type:'blob' }), a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=((p.title||'행사')+'_'+(p.date_start||'')+'_안전교육수료증.zip').replace(/[\\/:*?"<>|]/g,'_'); document.body.appendChild(a); a.click(); a.remove();
+  flash('수료증 '+ds.length+'개를 받았습니다.'+(missing?' (미제출 '+missing+'명 제외)':''));
+};
 window.crewOpenDoc = async function(id){
   var d=(C.docs||[]).filter(function(x){ return x.id===id; })[0]; if(!d) return;
   var w=window.open('', '_blank');
@@ -796,6 +819,7 @@ function renderProjectDetail(){
     +   '<div><div class="l">청구 상태</div><div class="v" style="font-family:inherit;font-size:14px">'+(pa.bill_status&&pa.bill_status!=='none'?ST_BILL[pa.bill_status]:'미청구')+(pa.bill_status==='paid'&&pa.bill_paid_at?'<div class="cr-meta">'+e(pa.bill_paid_at)+' 입금</div>':'')+'</div></div>'
     + '</div>'
     + levelNeedLine(p, pa, as)
+    + (p.requires_safety ? '<div class="rowflex" style="margin:-4px 0 12px"><button class="tbtn" onclick="crewCertZip(\''+p.id+'\')">확정자 안전교육 수료증 모두 받기 (zip)</button><span class="cr-meta">공연장 제출용 — 확정된 감독의 수료증을 한 파일로</span></div>' : '')
     + (pa.memo?'<div class="note" style="margin:-6px 0 12px">메모: '+e(pa.memo)+'</div>':'')
     + '<div class="cr-wrap"><table class="cr-t wide"><thead><tr><th>감독</th><th>희망 포지션 · 남긴 말</th><th>상태</th><th style="min-width:110px">페이 (세전, 만원)</th><th style="min-width:96px">실비 (만원)</th><th>구분</th><th style="text-align:right">지급액</th><th>지급</th><th></th></tr></thead><tbody>'
     + (as.length ? as.map(function(a){
