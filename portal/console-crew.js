@@ -758,7 +758,7 @@ window.crewOpenProject = async function(id){
 /* 등급별 모집: 필요 인원 대비 확정 인원 (관리자 전용) */
 function levelNeedLine(p, pa, as){
   if (pa.need_basic==null && pa.need_crew==null && pa.need_core==null) return '';
-  var cf={basic:0,crew:0,core:0}; as.forEach(function(a){ if(a.status!=='confirmed') return; var m=mem(a.user_id); if(m && !m.is_ghost) cf[m.level||'basic']++; });
+  var cf={basic:0,crew:0,core:0}; as.forEach(function(a){ if(a.status!=='confirmed') return; var m=mem(a.user_id); if(m && !m.is_ghost) cf[a.apply_level||m.level||'basic']++; });   // 지원 등급 기준 (코어가 크루로 지원하면 크루 칸)
   return '<div class="rowflex" style="gap:16px;margin:-4px 0 12px">'+['basic','crew','core'].map(function(k){ var need=pa['need_'+k]; if(need==null) return ''; var ok=cf[k]>=need;
     return '<span><b>'+LV_NAME[k]+'</b> <span class="mono">'+cf[k]+' / '+need+'</span>명 '+(ok?'<span class="cr-st g"><i></i>충족</span>':'<span class="cr-st a"><i></i>'+(need-cf[k])+'명 부족</span>')+'</span>'; }).join('')+'</div>';
 }
@@ -793,7 +793,7 @@ function renderProjectDetail(){
         var wd = py.work_days || days(p);
         var c = calcPay({pay_krw:defPay, extra_krw:py.extra_krw, tax_type:tt, work_days:wd});
         return '<tr data-app="'+a.id+'" data-days="'+wd+'"><td><a style="cursor:pointer;text-decoration:underline" onclick="crewOpenMember(\''+a.user_id+'\')"><b>'+e(x.name||'?')+'</b></a><div class="cr-meta">'+e(x.specialty||'')+' · '+bizLabel(x)+(ma.day_rate?' · 일당 '+won(ma.day_rate):'')+'</div></td>'
-          +'<td class="cr-note">'+(a.role?'<b>'+e(a.role)+'</b>\n':'')+e(a.note||'')+'</td><td>'+stA(a.status)+'</td>'
+          +'<td class="cr-note">'+(a.role?'<b>'+e(a.role)+'</b>\n':'')+(a.apply_level&&a.apply_level!==(x.level||'basic')?'<b style="color:var(--blue,#1877F2)">'+LV_NAME[a.apply_level]+' 자리로 지원</b>\n':'')+e(a.note||'')+(a.status==='cancelled'&&a.cancel_reason?'\n<b class="cr-neg">취소 사유: '+e(a.cancel_reason)+'</b>':'')+'</td><td>'+stA(a.status)+'</td>'
           +(conf
             ? '<td><input class="cr-in" inputmode="decimal" data-k="pay_krw" placeholder="예: 35" value="'+e(toMan(defPay))+'" oninput="crewRowCalc(this)"></td>'
              +'<td><input class="cr-in" inputmode="decimal" data-k="extra_krw" placeholder="예: 3" value="'+e(toMan(py.extra_krw))+'" oninput="crewRowCalc(this)"></td>'
