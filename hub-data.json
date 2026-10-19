@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-19T23:45+09:00",
+ "generated": "2026-10-20T08:12+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -106,21 +106,25 @@
   "tally": {
    "product": "flare-tally-host",
    "version": "1.0",
-   "build": 108,
-   "label": "v1.0 (108)",
-   "pkg": "Flare-Tally-1.0-b108.pkg",
+   "build": 110,
+   "label": "v1.0 (110)",
+   "pkg": "Flare-Tally-1.0-b110.pkg",
    "url": "https://audioazpro.com/downloads.html",
-   "date": "2026-09-24",
-   "note": "경고·확인 창이 앱 언어로 나옵니다. 맥 기본 대화상자는 버튼이 항상 영어(Yes/No)였는데, 이제 테스트 모드 경고와 종료 확인이 예·아니오·취소로 표시됩니다.",
-   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b108/Flare-Tally-1.0-b108.pkg",
-   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b108/Flare-Tally-win-1.0-b108.zip",
-   "win_label": "v1.0 (108) 베타"
+   "date": "2026-10-20",
+   "note": "연결 상태의 긴 오류 문구와 카메라맨 접속 칸의 버튼이 잘리던 것을 고쳤습니다. 연결 상태 줄을 누르면 전체 문구를 팝업으로 볼 수 있습니다.",
+   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b110/Flare-Tally-1.0-b110.pkg",
+   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b110/Flare-Tally-win-1.0-b110.zip",
+   "win_label": "v1.0 (110) 베타"
   },
   "showfile": "v0.6.6",
   "lmaz": null
  },
  "console_version": "1.31.0",
  "commits_live": [
+  {
+   "date": "2026-10-19T23:45:04+09:00",
+   "msg": "콘솔 크루: 수료증 만료일 2/29 보정"
+  },
   {
    "date": "2026-10-19T23:27:43+09:00",
    "msg": "콘솔 크루: 주민번호(암호화) 보기·복사, 일용 근로계약서·임금명세서 인쇄, 세금 신고 목록 주민번호 복사"
@@ -148,10 +152,6 @@
   {
    "date": "2026-10-13T10:28:57+09:00",
    "msg": "콘솔 크루: 정산 탭에 그 달 세금 신고 목록(지급일 기준, 3.3%/일용/세금계산서별 목록·합계·소득세/지방소득세 분리·신고 기한)"
-  },
-  {
-   "date": "2026-10-13T10:22:26+09:00",
-   "msg": "콘솔 크루: 감독 지정 시 note 미기록, 지급 목록·확인 창에 지급 구분(3.3%/일용/세금계산서) 표시"
   }
  ],
  "commits_staging": []
