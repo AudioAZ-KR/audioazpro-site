@@ -276,7 +276,7 @@ fill('g-tools', [
   {t:'웹 탈리 · 중계 서버', href:'https://camera-tally.onrender.com/', chip:{k:'live',t:'LIVE'}, d:'브라우저 탈리 수신 · iOS 앱 딥링크 · 호스트가 가장 가까운 지역 서버 자동 선택(방 코드 첫 글자 S/E/U/A) · 서버 4곳: 싱가폴 · 프랑크푸르트 · 오레곤 · 오하이오'},
 ]);
 fill('g-portal', [
-  {t:'로그인·회원가입', href:'https://audioazpro.com/portal/index.html', chip:{k:'live',t:'LIVE'}, d:'이메일 가입 열림 · 인증 후 메인 홈 복귀'},
+  {t:'로그인·회원가입', href:'https://audioazpro.com/portal/index.html', chip:{k:'live',t:'LIVE'}, d:'이메일 가입 열림 · 인증 후 메인 홈 복귀 · 주소 오타 안내(naver.co → naver.com) · 미인증 계정 로그인 시 <b>인증 메일 다시 보내기</b>(10/20)'},
   {t:'내 계정 (마이페이지)', href:'https://audioazpro.com/portal/account.html', chip:{k:'live',t:'LIVE'}, d:'좌측 메뉴: 내 라이선스(기기 활성화/해제·메모) · 주문 내역 · 테스트 보고(베타 테스터만) · 계정 설정 · 회원 탈퇴 · KR/EN'},
   {t:'플러그인 활성화', href:'https://audioazpro.com/portal/activate.html', chip:{k:'live',t:'LIVE'}},
   {t:'결제', href:'https://audioazpro.com/portal/checkout.html', chip:{k:'live',t:'국내·해외 LIVE'}, d:'<b>국내 원화: KG이니시스 실결제</b>(카드사 심사 통과 2026-10-01 · 첫 실결제·실환불 9/15 완주) · <b>해외 달러: 레몬스퀴지 실결제</b>(2026-09-25 23:50 · 카드·PayPal·Apple Pay·Google Pay · 세금은 결제사가 처리) · 국내·해외 결제 분리(전환 링크 없음, 언어로 구분) · 코드 등록 시 제품 자동 전환 · 데모 코드는 기간 합산'},
@@ -287,7 +287,7 @@ function tallyStatusUrl(){ return 'https://audioazpro.com/portal/console-8kq3f7.
 var STG='https://'+atob('YXVkaW9hei1zdGctbTR4OS5vbnJlbmRlci5jb20=')+'/';
 fill('g-admin', [
   {cls:'admin', t:'관리자 콘솔', href:'https://audioazpro.com/portal/console-8kq3f7.html',
-   chip:{k:'lock',t:'PASSKEY'}, d:'<span id="hubConsoleVer">콘솔</span> · 대시보드 · <b>클로드 지휘소</b>(병렬 채팅 관제·명령·작업 큐·경보) · 작업현황 · 서비스·한도 · 결재 · 문의함 · 라이선스 · 프로모션(수량 발행·복사) · 베타 모집(신청자·테스터·보고 게시판) · 주문 · 고객 · 제품 · 공지 · 관리자 · 1시간 자동 로그아웃',
+   chip:{k:'lock',t:'PASSKEY'}, d:'<span id="hubConsoleVer">콘솔</span> · 대시보드 · <b>클로드 지휘소</b>(병렬 채팅 관제·명령·작업 큐·경보) · 작업현황 · 서비스·한도 · 결재 · 문의함 · 라이선스 · 프로모션(수량 발행 · 코드마다 링크 포함·공유·코드 복사) · 베타 모집(신청자·테스터·보고 게시판) · 주문 · 고객 · 제품 · 공지 · 관리자 · <b>AudioAZ 탭</b>(크루 감독·프로젝트·정산·서류·안전교육 수료증·주민번호(암호화)·근로계약서·임금명세서·세금 신고 목록) · 1시간 자동 로그아웃',
    warn:'패스키 전용 · 비공개 URL · 외부 공유 금지'},
   // 비공개 주소·키가 든 타일은 관리자 세션을 확인한 뒤에만 실제 링크로 바뀐다(보안 점검 2026-09-15/17). 그 전엔 자리만 보인다.
   {cls:'admin', ph:1, t:'스테이징(테스트) 사이트', href:'https://audioazpro.com/portal/console-8kq3f7.html',
@@ -315,13 +315,13 @@ fill('g-svc', [
   {cls:'svc', t:'Google Workspace', href:'https://admin.google.com/', chip:{k:'live',t:'유료'},
    rows:[['용도','<b>회사 메일</b> hj@audioazpro.com (사서함 1개) · 별칭 support@ · contact@ · dev@ · tax@ · orders@ · demo@ · admin@ (audioaz.co.kr 도 같은 편지함)'],['상태','Business Starter · 무료 체험 종료 후 <b>유료 재시작(2026-10-13)</b>'],['로그인','hj@ (최고 관리자) · 결제는 관리 콘솔 › 결제']]},
   {cls:'svc', t:'App Store Connect', href:'https://appstoreconnect.apple.com/', chip:{k:'auth',t:'LOGIN'},
-   rows:[['앱','Flare Tally (iOS·워치) — <b>앱스토어 출시</b> · <b>AudioAZ Crew 출시</b>(10/02, 일반 배포·등급제) · AZ HQ(지휘소, 직접 설치 전용)'],['앱 ID','Flare Tally 6808137674 · Crew 6815489675'],['판매자명','hyungjun Kim (개인) → <b>AudioAZ 조직 전환 요청 중</b> · D-U-N-S 696722539 발급(9/30) · 애플 케이스 102982076092(10/13 dev@ 로 준비 완료 회신) · 전환 중엔 인증서·프로파일 메뉴 잠김'],['로그인','Apple 개발자 계정']]},
+   rows:[['앱','Flare Tally (iOS·워치) — <b>앱스토어 출시</b> · <b>AudioAZ Crew</b> 1.0.1 출시(10/13) · <b>1.0.2 (48) 심사 중</b>(10/20 제출) · AZ HQ(지휘소, 직접 설치 전용)'],['앱 ID','Flare Tally 6808137674 · Crew 6815489675'],['판매자명','hyungjun Kim (개인) → <b>AudioAZ 조직 전환 요청 중</b> · D-U-N-S 696722539 발급(9/30) · 애플 케이스 102982076092(10/13 준비 완료 회신 → 무응답, <b>10/20 진행 문의</b>) · 전환 중엔 인증서·프로파일 메뉴 잠김'],['계약','개발자 프로그램 계약 10/14판 <b>10/20 동의</b> · 남은 배너: EU 거래자(DSA)·한국 규정 준수·유료 앱 계약 법인 정보 → 조직 전환 후'],['로그인','Apple 개발자 계정']]},
   {cls:'svc', t:'가비아 DNS', href:'https://dns.gabia.com/', chip:{k:'auth',t:'LOGIN'},
    rows:[['용도','도메인 · <b>DNS</b>'],['로그인','가비아 계정'],['연동','Pages · Resend DKIM']]},
 ]);
 fill('g-other', [
   {t:'audioaz.co.kr', href:'http://audioaz.co.kr', d:'렌탈 · 장비 대여 (기존 사이트, 유지)', chip:{k:'auth',t:'렌탈'}},
-  {t:'AudioAZ Crew (감독 스케줄)', href:'https://audioaz.co.kr/crew/', d:'웹 + iOS 앱(앱스토어 id6815489675) · 누구나 가입(기본 등급) → 초대 코드나 사장님이 크루 등급으로 올림 · 관리는 콘솔 › Pro/AudioAZ 탭', chip:{k:'live',t:'LIVE'}},
+  {t:'AudioAZ Crew (감독 스케줄)', href:'https://audioaz.co.kr/crew/', d:'웹 + iOS 앱(앱스토어 id6815489675 · 1.0.2 심사 중) · 누구나 가입(기본 등급) · 가입 이메일 오타 안내·앱은 영문 자판 → 초대 코드나 사장님이 크루 등급으로 올림 · 관리는 콘솔 › Pro/AudioAZ 탭', chip:{k:'live',t:'LIVE'}},
   {t:'네이버 블로그', href:'https://blog.naver.com/audioaz', d:'현장 기록 · 포트폴리오 원문', chip:{k:'auth',t:'블로그'}},
 ]);
 
