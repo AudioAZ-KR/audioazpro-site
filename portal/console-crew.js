@@ -118,7 +118,13 @@ addSection('crew-proj',
  + '<div class="card" id="crPDetail" style="display:none"></div>');
 
 addSection('crew-members',
-   '<div class="card" style="margin-top:0"><h2>초대 코드</h2><div class="sub">감독은 초대 코드가 있어야 가입할 수 있습니다(웹 audioaz.co.kr/crew/). 코드 문구·사용 횟수·만료일을 직접 정하고 언제든 바꿀 수 있습니다. 여러 번 쓰는 코드는 아는 사람 누구나 가입하니, 퍼졌다 싶으면 바꾸거나 중지하세요.</div>'
+   '<div class="card" style="margin-top:0"><h2>공지</h2><div class="sub">게시하면 감독 앱·웹 [공지사항]에 올라가고, \'첫 화면 팝업\'을 켜면 접속할 때 팝업으로 뜹니다(감독은 [닫기]·[다시 보지 않기]). \'알림도 보내기\'를 고르면 활성 감독 전원에게 푸시·메일이 갑니다</div>'
+ + '<div class="field"><label>제목</label><input class="cr-in" id="crNtTitle" maxlength="120" style="font-family:inherit"></div>'
+ + '<div class="field"><label>내용</label><textarea id="crNtBody" rows="7" maxlength="5000"></textarea></div>'
+ + '<div class="rowflex" style="gap:16px;flex-wrap:wrap"><label class="cr-check"><input type="checkbox" id="crNtPopup" checked> 첫 화면 팝업</label><label class="cr-check"><input type="checkbox" id="crNtPinned"> 맨 위 고정</label>'
+ + '<button class="tbtn" onclick="crewSaveNotice(false)">임시 저장</button><button class="tbtn" onclick="crewSaveNotice(true)">저장하고 게시</button></div>'
+ + '<div class="cr-wrap" id="crNtList" style="margin-top:12px"></div></div>'
+ + '<div class="card"><h2>초대 코드</h2><div class="sub">감독은 초대 코드가 있어야 가입할 수 있습니다(웹 audioaz.co.kr/crew/). 코드 문구·사용 횟수·만료일을 직접 정하고 언제든 바꿀 수 있습니다. 여러 번 쓰는 코드는 아는 사람 누구나 가입하니, 퍼졌다 싶으면 바꾸거나 중지하세요.</div>'
  + '<div class="rowflex" style="align-items:flex-end;gap:10px">'
  +   '<div class="field" style="margin:0"><label>코드 (영문·숫자·-, 32자까지 · 짧은 코드는 횟수·기한을 걸어 두세요)</label><input class="cr-in" id="crIvCode" placeholder="비우면 자동 생성" style="width:220px;text-transform:uppercase;letter-spacing:.08em"></div>'
  +   '<div class="field" style="margin:0"><label>메모</label><input class="cr-in" id="crIvLabel" placeholder="예: 2026 가을 크루 공용" style="width:220px;font-family:inherit"></div>'
@@ -232,6 +238,51 @@ function payNetOf(a){
   var pay = (py.pay_krw===null||py.pay_krw===undefined) && ma.day_rate ? n(ma.day_rate)*days(p) : py.pay_krw;
   return calcPay({ pay_krw:pay, extra_krw:py.extra_krw, tax_type: py.tax_type||(x.is_business?'invoice':'withholding'), work_days: py.work_days||days(p) }).net;
 }
+/* ── 공지 (2026-10-21) — 작성·임시 저장·게시(+알림)·내리기·수정·삭제 ── */
+function renderNotices(){
+  var box=document.getElementById('crNtList'); if(!box) return; var ns=C.notices||[];
+  box.innerHTML = ns.length ? '<table class="cr-t"><thead><tr><th>상태</th><th>제목</th><th>팝업</th><th>게시일</th><th></th></tr></thead><tbody>'
+    + ns.map(function(n){ return '<tr><td>'+(n.published?'<span class="cr-st g"><i></i>게시 중</span>':'<span class="cr-st d"><i></i>임시 저장</span>')+(n.pinned?' <span class="cr-meta">고정</span>':'')+'</td>'
+      +'<td><b>'+e(n.title)+'</b><div class="cr-meta" style="white-space:pre-wrap;max-width:420px">'+e(String(n.body||'').slice(0,120))+(String(n.body||'').length>120?'…':'')+'</div></td>'
+      +'<td>'+(n.popup?'켬':'끔')+'</td><td class="cr-date">'+e(n.published_at?fmtDateTime(n.published_at):'—')+'</td>'
+      +'<td><div class="cr-actions">'+(n.published?'<button class="tbtn" onclick="crewUnpublishNotice(\''+n.id+'\')">내리기</button>':'<button class="tbtn" onclick="crewPublishNotice(\''+n.id+'\')">게시</button>')
+      +'<button class="tbtn" onclick="crewEditNotice(\''+n.id+'\')">수정</button><button class="tbtn danger" onclick="crewDeleteNotice(\''+n.id+'\')">삭제</button></div></td></tr>'; }).join('') + '</tbody></table>'
+    : '<div class="cr-empty">아직 공지가 없습니다.</div>';
+}
+window.crewSaveNotice = async function(publish){
+  var t=(document.getElementById('crNtTitle').value||'').trim(), b=(document.getElementById('crNtBody').value||'').trim();
+  if (!t) return flash('제목을 입력하세요.', true);
+  var row={ title:t, body:b, popup:document.getElementById('crNtPopup').checked, pinned:document.getElementById('crNtPinned').checked, updated_at:new Date().toISOString() };
+  var r = C.editNotice ? await sb.from('crew_notices').update(row).eq('id', C.editNotice).select('id').single() : await sb.from('crew_notices').insert(row).select('id').single();
+  if (r.error) return dbErr(r.error);
+  var id=r.data.id; C.editNotice=null;
+  document.getElementById('crNtTitle').value=''; document.getElementById('crNtBody').value=''; document.getElementById('crNtTitle').defaultValue=''; document.getElementById('crNtBody').defaultValue='';
+  if (publish) { await load(); return crewPublishNotice(id); }
+  flash('임시 저장했습니다.'); await load(); render(curPage());
+};
+window.crewPublishNotice = async function(id){
+  var n=(C.notices||[]).filter(function(x){ return x.id===id; })[0]; if(!n) return;
+  if (!confirm('"'+n.title+'" 공지를 게시할까요?\n감독 앱·웹 공지사항에 올라가고'+(n.popup?', 접속할 때 팝업으로 뜹니다.':'.'))) return;
+  var push=confirm('활성 감독 전원에게 알림(푸시·메일)도 보낼까요?\n[확인] 보내기 · [취소] 알림 없이 게시만');
+  var r=await sb.rpc('crew_publish_notice', { p_id:id, p_push:push }); if (r.error) return dbErr(r.error);
+  flash(push?'게시하고 알림을 보냈습니다.':'게시했습니다.'); await load(); render(curPage());
+};
+window.crewUnpublishNotice = async function(id){
+  if (!confirm('이 공지를 내릴까요? 감독 화면에서 사라집니다.')) return;
+  var r=await sb.from('crew_notices').update({ published:false, updated_at:new Date().toISOString() }).eq('id', id); if (r.error) return dbErr(r.error);
+  flash('공지를 내렸습니다.'); await load(); render(curPage());
+};
+window.crewEditNotice = function(id){
+  var n=(C.notices||[]).filter(function(x){ return x.id===id; })[0]; if(!n) return; C.editNotice=id;
+  document.getElementById('crNtTitle').value=n.title; document.getElementById('crNtBody').value=n.body||'';
+  document.getElementById('crNtPopup').checked=!!n.popup; document.getElementById('crNtPinned').checked=!!n.pinned;
+  document.getElementById('crNtTitle').focus(); flash('수정한 뒤 [임시 저장] 또는 [저장하고 게시]를 누르세요.');
+};
+window.crewDeleteNotice = async function(id){
+  if (!confirm('이 공지를 삭제할까요? 되돌릴 수 없습니다.')) return;
+  var r=await sb.from('crew_notices').delete().eq('id', id); if (r.error) return dbErr(r.error);
+  flash('삭제했습니다.'); await load(); render(curPage());
+};
 /* 확정 참여 취소 요청 승인/반려 (2026-10-21) */
 function cancelBtns(a){ return '<span class="cr-actions" style="display:inline-flex"><button class="tbtn danger" onclick="crewResolveCancel(\''+a.id+'\',true)">취소 승인</button><button class="tbtn" onclick="crewResolveCancel(\''+a.id+'\',false)">반려</button></span>'; }
 window.crewResolveCancel = async function(appId, ok){
@@ -463,7 +514,8 @@ async function load(){
       sb.from('crew_admin_feed').select('token').eq('id',1).maybeSingle(),
       sb.from('crew_invite_uses').select('invite_id,user_id,used_at').order('used_at',{ascending:false}).limit(1000),
       sb.from('crew_contact_presets').select('*').order('name'),
-      sb.from('crew_member_docs').select('id,user_id,kind,title,storage_path,size_bytes,created_at').order('created_at',{ascending:false})
+      sb.from('crew_member_docs').select('id,user_id,kind,title,storage_path,size_bytes,created_at').order('created_at',{ascending:false}),
+      sb.from('crew_notices').select('*').order('created_at',{ascending:false}).limit(200)
     ]);
     for (var i=0;i<r.length;i++) if (r[i].error) throw r[i].error;
     C.members=r[0].data||[]; C.projects=r[2].data||[]; C.apps=r[4].data||[];
@@ -476,6 +528,7 @@ async function load(){
     C.inviteUses=r[9].data||[];
     C.contacts=r[10].data||[];
     C.docs=r[11].data||[];
+    C.notices=r[12].data||[];
     C.rrn={}; try{ var rh=await sb.rpc('crew_admin_rrn_hints'); (rh.data||[]).forEach(function(x){ C.rrn[x.user_id]=x.hint; }); }catch(_){}   // 주민번호는 가린 표시만 미리, 원문은 [보기]로
     C.loaded = true;
   }catch(err){ dbErr(err); }
@@ -492,13 +545,13 @@ function curPage(){ var s=document.querySelector('.page.on'); return s ? s.id.re
 function render(p){
   if (p==='crew-dash') renderDash();
   else if (p==='crew-proj') { crewRenderProjects(); if (C.openProject) renderProjectDetail(); }
-  else if (p==='crew-members') { renderInvites(); crewRenderMembers(); if (C.openMember) renderMemberDetail(); }
+  else if (p==='crew-members') { renderNotices(); renderInvites(); crewRenderMembers(); if (C.openMember) renderMemberDetail(); }
   else if (p==='crew-settle') crewRenderSettle();
 }
 
 /* 크루 화면을 보는 동안 15초마다 조용히 새로 고침 (2026-10-21) — 바뀐 게 있을 때만 다시 그림.
    입력 중이거나, 고치다 만 칸(저장 안 한 값)이 있거나, 편집 창이 열려 있으면 건너뛴다 */
-function crSig(){ try{ return JSON.stringify([C.projects,C.apps,C.pay,C.padmin,C.members,C.madmin,C.docs,C.rrn]); }catch(_){ return ''; } }
+function crSig(){ try{ return JSON.stringify([C.projects,C.apps,C.pay,C.padmin,C.members,C.madmin,C.docs,C.rrn,C.notices]); }catch(_){ return ''; } }
 function crDirty(){
   var els=document.querySelectorAll('.page.on input, .page.on textarea, .page.on select');
   for (var i=0;i<els.length;i++){ var x=els[i];
