@@ -102,6 +102,7 @@ addSection('crew-dash',
  +   kpi('crew-settle','미지급 페이','crKUnpaid','지급액 합계')
  + '</div>'
  + '<div class="card"><h2>다가오는 일정 <button class="tbtn" style="margin-left:10px" onclick="crewReload()">새로고침</button></h2><div class="sub">오늘 이후 공고 전부 (작성 중·취소 제외)</div><div class="cr-wrap" id="crDashUp"></div></div>'
+ + '<div class="card" id="crCancelCard" style="display:none"><h2>확정 참여 취소 요청</h2><div class="sub">감독이 확정된 참여의 취소를 요청했습니다. 승인하면 취소되고 자리가 다시 열리며, 반려하면 참여가 유지됩니다. 어느 쪽이든 감독에게 알림이 갑니다</div><div class="cr-wrap" id="crDashCancel"></div></div>'
  + '<div class="card"><h2>지난 일정 · 행사 완료 / 입금 / 페이 지급</h2><div class="sub">행사 완료·클라이언트 입금은 스위치로 켜고 끄고, 감독 페이는 사람마다 [지급 완료](확인 창 한 번 더)로 처리합니다. 모두 끝난 행사는 30일 뒤 이 목록에서 빠집니다</div><div class="cr-wrap" id="crDashPast"></div></div>'
  + '<div class="card"><h2>내 캘린더 연동</h2><div class="sub">모든 프로젝트(비공개·예정·작성 중 포함, 취소 제외)가 사장님 캘린더에 들어갑니다. 확정 감독 이름·신청 수도 메모에 표시 — 견적·페이 금액은 넣지 않습니다(주소만 알면 열리므로). 1시간마다 갱신.</div><div id="crFeed" class="rowflex"></div></div>'
  + '<div class="card"><h2>새 참여 신청</h2><div class="sub">감독이 audioaz.co.kr 에서 남긴 신청 — 바로 확정·거절</div><div class="cr-wrap" id="crDashApps"></div></div>'
@@ -231,6 +232,15 @@ function payNetOf(a){
   var pay = (py.pay_krw===null||py.pay_krw===undefined) && ma.day_rate ? n(ma.day_rate)*days(p) : py.pay_krw;
   return calcPay({ pay_krw:pay, extra_krw:py.extra_krw, tax_type: py.tax_type||(x.is_business?'invoice':'withholding'), work_days: py.work_days||days(p) }).net;
 }
+/* 확정 참여 취소 요청 승인/반려 (2026-10-21) */
+function cancelBtns(a){ return '<span class="cr-actions" style="display:inline-flex"><button class="tbtn danger" onclick="crewResolveCancel(\''+a.id+'\',true)">취소 승인</button><button class="tbtn" onclick="crewResolveCancel(\''+a.id+'\',false)">반려</button></span>'; }
+window.crewResolveCancel = async function(appId, ok){
+  var a=C.apps.filter(function(x){ return x.id===appId; })[0]; if(!a) return;
+  var x=mem(a.user_id)||{}, p=proj(a.project_id)||{};
+  if (!confirm(ok ? (x.name||'')+' 님의 참여 취소를 승인할까요?\n'+(p.title||'')+'\n참여가 취소되고 자리가 다시 열립니다. 감독에게 알림이 갑니다.' : (x.name||'')+' 님의 취소 요청을 반려할까요?\n참여가 그대로 유지되고 감독에게 알림이 갑니다.')) return;
+  var r=await sb.rpc('crew_admin_resolve_cancel', { p_app:appId, p_approve:!!ok }); if (r.error) return dbErr(r.error);
+  flash(ok?'취소를 승인했습니다.':'취소 요청을 반려했습니다.'); await load(); render(curPage());
+};
 window.crewPayOne = async function(appId, on){
   var a=C.apps.filter(function(x){ return x.id===appId; })[0]; if(!a) return;
   var p=proj(a.project_id)||{}, x=mem(a.user_id)||{}, ma=C.madmin[a.user_id]||{}, py=C.pay[appId];
@@ -540,6 +550,12 @@ function renderDash(){
           +'<td class="cr-num">'+ap.length+'</td></tr>'; }).join('') + '</tbody></table>'
     : '<div class="cr-empty">예정된 일정이 없습니다.</div>';
 
+  var creq=C.apps.filter(function(a){ return a.status==='confirmed' && a.cancel_requested_at; });
+  document.getElementById('crCancelCard').style.display = creq.length ? '' : 'none';
+  document.getElementById('crDashCancel').innerHTML = creq.length ? '<table class="cr-t"><thead><tr><th>요청 시각</th><th>감독</th><th>프로젝트</th><th>사유</th><th></th></tr></thead><tbody>'
+    + creq.map(function(a){ var p=proj(a.project_id)||{}, x=mem(a.user_id)||{};
+        return '<tr><td class="cr-date">'+e(fmtDateTime(a.cancel_requested_at))+'</td><td><b>'+e(x.name||'?')+'</b></td><td><a style="cursor:pointer;text-decoration:underline" onclick="crewOpenProject(\''+p.id+'\')">'+e(p.title||'')+'</a><div class="cr-meta">'+e(dRange(p))+'</div></td>'
+          +'<td class="cr-note cr-neg">'+e(a.cancel_reason||'')+'</td><td>'+cancelBtns(a)+'</td></tr>'; }).join('') + '</tbody></table>' : '';
   var past = C.projects.filter(pastRow).sort(function(a,b){ return a.date_start<b.date_start?1:-1; });
   var waitN=0, waitSum=0; past.forEach(function(p){ if (billWaiting(p)){ waitN++; waitSum+=billTotal(p); } });
   var openN = past.filter(pastOpen).length;
@@ -919,7 +935,7 @@ function renderProjectDetail(){
         var wd = py.work_days || days(p);
         var c = calcPay({pay_krw:defPay, extra_krw:py.extra_krw, tax_type:tt, work_days:wd});
         return '<tr data-app="'+a.id+'" data-days="'+wd+'"><td><a style="cursor:pointer;text-decoration:underline" onclick="crewOpenMember(\''+a.user_id+'\')"><b>'+e(x.name||'?')+'</b></a><div class="cr-meta">'+e(x.specialty||'')+' · '+bizLabel(x)+(ma.day_rate?' · 일당 '+won(ma.day_rate):'')+'</div></td>'
-          +'<td class="cr-note">'+safetyTag(x,p)+'\n'+(a.role?'<b>'+e(a.role)+'</b>\n':'')+(a.apply_level&&a.apply_level!==(x.level||'basic')?'<b style="color:var(--blue,#1877F2)">'+LV_NAME[a.apply_level]+' 자리로 지원</b>\n':'')+e(a.note||'')+(a.status==='cancelled'&&a.cancel_reason?'\n<b class="cr-neg">취소 사유: '+e(a.cancel_reason)+'</b>':'')+'</td><td>'+stA(a.status)+'</td>'
+          +'<td class="cr-note">'+(a.status==='confirmed'&&a.cancel_requested_at?'<b class="cr-neg">취소 요청: '+e(a.cancel_reason||'')+'</b> '+cancelBtns(a)+'\n':'')+safetyTag(x,p)+'\n'+(a.role?'<b>'+e(a.role)+'</b>\n':'')+(a.apply_level&&a.apply_level!==(x.level||'basic')?'<b style="color:var(--blue,#1877F2)">'+LV_NAME[a.apply_level]+' 자리로 지원</b>\n':'')+e(a.note||'')+(a.status==='cancelled'&&a.cancel_reason?'\n<b class="cr-neg">취소 사유: '+e(a.cancel_reason)+'</b>':'')+'</td><td>'+stA(a.status)+'</td>'
           +(conf
             ? '<td><input class="cr-in" inputmode="decimal" data-k="pay_krw" placeholder="예: 35" value="'+e(toMan(defPay))+'" oninput="crewRowCalc(this)"></td>'
              +'<td><input class="cr-in" inputmode="decimal" data-k="extra_krw" placeholder="예: 3" value="'+e(toMan(py.extra_krw))+'" oninput="crewRowCalc(this)"></td>'
