@@ -118,7 +118,7 @@ addSection('crew-proj',
  + '<div class="card" id="crPDetail" style="display:none"></div>');
 
 addSection('crew-members',
-   '<div class="card" style="margin-top:0"><h2>공지</h2><div class="sub">게시하면 감독 앱·웹 [공지사항]에 올라가고, \'첫 화면 팝업\'을 켜면 접속할 때 팝업으로 뜹니다(감독은 [닫기]·[다시 보지 않기]). \'알림도 보내기\'를 고르면 활성 감독 전원에게 푸시·메일이 갑니다</div>'
+   '<div class="card" style="margin-top:0"><h2>공지</h2><div class="sub">게시하면 감독 앱·웹 [공지사항]에 올라가고, \'첫 화면 팝업\'을 켜면 접속할 때 팝업으로 뜹니다(감독은 [닫기]·[다시 보지 않기]). 긴급 공지일 때만 감독 앱으로 푸시 알림을 보낼 수 있습니다(메일은 보내지 않음)</div>'
  + '<div class="field"><label>제목</label><input class="cr-in" id="crNtTitle" maxlength="120" style="font-family:inherit"></div>'
  + '<div class="field"><label>내용</label><textarea id="crNtBody" rows="7" maxlength="5000"></textarea></div>'
  + '<div class="rowflex" style="gap:16px;flex-wrap:wrap"><label class="cr-check"><input type="checkbox" id="crNtPopup" checked> 첫 화면 팝업</label><label class="cr-check"><input type="checkbox" id="crNtPinned"> 맨 위 고정</label>'
@@ -263,9 +263,9 @@ window.crewSaveNotice = async function(publish){
 window.crewPublishNotice = async function(id){
   var n=(C.notices||[]).filter(function(x){ return x.id===id; })[0]; if(!n) return;
   if (!confirm('"'+n.title+'" 공지를 게시할까요?\n감독 앱·웹 공지사항에 올라가고'+(n.popup?', 접속할 때 팝업으로 뜹니다.':'.'))) return;
-  var push=confirm('활성 감독 전원에게 알림(푸시·메일)도 보낼까요?\n[확인] 보내기 · [취소] 알림 없이 게시만');
+  var push=confirm('긴급 공지인가요?\n[확인] 긴급 — 감독 앱으로 푸시 알림도 보냄(메일 없음)\n[취소] 알림 없이 게시만');
   var r=await sb.rpc('crew_publish_notice', { p_id:id, p_push:push }); if (r.error) return dbErr(r.error);
-  flash(push?'게시하고 알림을 보냈습니다.':'게시했습니다.'); await load(); render(curPage());
+  flash(push?'게시하고 긴급 푸시 알림을 보냈습니다.':'게시했습니다.'); await load(); render(curPage());
 };
 window.crewUnpublishNotice = async function(id){
   if (!confirm('이 공지를 내릴까요? 감독 화면에서 사라집니다.')) return;
