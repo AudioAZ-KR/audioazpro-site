@@ -486,6 +486,25 @@ function render(p){
   else if (p==='crew-settle') crewRenderSettle();
 }
 
+/* 크루 화면을 보는 동안 15초마다 조용히 새로 고침 (2026-10-21) — 바뀐 게 있을 때만 다시 그림.
+   입력 중이거나, 고치다 만 칸(저장 안 한 값)이 있거나, 편집 창이 열려 있으면 건너뛴다 */
+function crSig(){ try{ return JSON.stringify([C.projects,C.apps,C.pay,C.padmin,C.members,C.madmin,C.docs,C.rrn]); }catch(_){ return ''; } }
+function crDirty(){
+  var els=document.querySelectorAll('.page.on input, .page.on textarea, .page.on select');
+  for (var i=0;i<els.length;i++){ var x=els[i];
+    if (x.type==='checkbox'||x.type==='radio'){ if (x.checked!==x.defaultChecked) return true; }
+    else if (x.tagName==='SELECT'){ for (var j=0;j<x.options.length;j++) if (x.options[j].selected!==x.options[j].defaultSelected) return true; }
+    else if (x.value!==x.defaultValue) return true; }
+  return false;
+}
+setInterval(async function(){
+  var p=curPage(); if (document.hidden || p.indexOf('crew-')!==0 || !C.loaded) return;
+  var ae=document.activeElement; if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return;
+  if (C.editProject!==undefined && C.editProject!==null) return; var ed=document.getElementById('crPEdit'); if (ed && ed.style.display!=='none') return;
+  if (crDirty()) return;
+  var before=crSig(); await load(); if (crSig()!==before) render(p);
+}, 15000);
+
 /* 콘솔 azShow 가 매 탭 전환마다 부른다 */
 window.crewEnter = async function(p){
   setBiz(p.indexOf('crew-')===0 ? 'az' : 'pro');
