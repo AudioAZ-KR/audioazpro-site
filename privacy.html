@@ -24,6 +24,7 @@ h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:8px 0 4px}
 .doc{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:30px;margin:22px 0 40px}
 .doc h2{font-size:16px;font-weight:800;margin:22px 0 8px;color:#fff}.doc h3{font-size:14px;font-weight:800;margin:18px 0 6px;color:#E9EEF7}.doc h2:first-child{margin-top:0}
 .doc p,.doc li{font-size:14.5px;color:#cdd8e8;margin-bottom:8px}.doc ul{padding-left:20px;margin-bottom:10px}
+.tbl{width:100%;border-collapse:collapse;margin:6px 0 14px;font-size:13px}.tbl th,.tbl td{border:1px solid var(--line);padding:8px 9px;text-align:left;vertical-align:top;color:#cdd8e8}.tbl th{background:#17263f;color:#fff;font-weight:700;white-space:nowrap}.tblw{overflow-x:auto;-webkit-overflow-scrolling:touch}.tblw .tbl{min-width:640px}
 .note{background:#17263f;border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:13px;color:var(--dim);margin-bottom:18px}
 footer{border-top:1px solid var(--line);color:var(--dim);padding:26px 0;font-size:13px}
 footer .wrap{display:flex;gap:14px;flex-wrap:wrap}footer .right{margin-left:auto;display:flex;gap:14px;flex-wrap:wrap}footer a:hover{color:#fff}
@@ -33,13 +34,17 @@ footer .wrap{display:flex;gap:14px;flex-wrap:wrap}footer .right{margin-left:auto
   <a href="/" class="logo" aria-label="AudioAZ 홈"><img src="/assets/logo-lockup-white.png" alt="AudioAZ" style="height:30px;width:auto;display:block"></a>
   <div class="menu"><a href="products.html">제품</a><a href="downloads.html">다운로드</a><a href="support.html">지원</a></div>
 </div></nav>
-<div class="wrap head"><div class="eyebrow">Legal</div><h1>개인정보처리방침</h1><p class="upd">최종 업데이트: 2026-09-11 · 시행일: 2026-09-11</p></div>
+<div class="wrap head"><div class="eyebrow">Legal</div><h1>개인정보처리방침</h1><p class="upd">최종 업데이트: 2026-10-21 · 시행일: 2026-10-21</p></div>
 <div class="wrap">
 <div class="doc"><h2>1. 수집하는 개인정보</h2><p>AudioAZ는 서비스 제공을 위해 아래 정보를 수집합니다. 필수 항목은 해당 서비스 이용에 반드시 필요한 정보이며, 정보주체와 체결한 계약의 이행에 불가피하게 필요한 경우 별도의 동의 없이 수집·이용할 수 있습니다(개인정보 보호법 제15조 제1항 제4호).</p>
 <ul><li><b>회원가입 (필수)</b> — 이메일 주소, 이름</li>
 <li><b>유료 결제 (필수)</b> — 구매자 이름, <b>휴대폰 번호</b>. 결제대행사(KG이니시스)의 카드 결제 요건상 필수 입력 항목이며, 카드사 본인확인과 결제 결과 안내에 사용됩니다. <b>카드번호·유효기간·비밀번호 등 결제수단 정보는 결제대행사가 직접 처리하며 AudioAZ는 저장하지 않습니다.</b></li>
 <li><b>라이선스 이용</b> — 라이선스 키, 기기 활성화 정보(기기 이름·익명 기기 식별자), 서비스 이용 기록</li>
-<li><b>문의</b> — 이메일 주소 및 문의 내용</li></ul>
+<li><b>해외(달러) 결제</b> — 이메일 주소와 주문번호를 해외 결제 판매대행사 Lemon Squeezy에 전달합니다. 이름·카드 정보·청구 국가 등은 Lemon Squeezy가 결제 화면에서 직접 수집하며 AudioAZ는 받지 않습니다.</li>
+<li><b>문의</b> — 이메일 주소, 문의 유형·제목·내용, 첨부파일(선택)</li>
+<li><b>베타 테스터 신청</b> — 이름, 이메일 주소, 사용 장비 등 메모(선택)</li>
+<li><b>동의 기록</b> — 회원가입·베타 신청 시 이용약관·개인정보 수집·이용에 동의한 시각</li>
+<li><b>자동 수집</b> — 접속 IP 주소, 브라우저·기기 정보, 접속 일시(서버 접속 기록). 로그인 상태 등은 브라우저 저장소에 보관됩니다(7항 참조).</li></ul>
 <p>구매자 이름·휴대폰 번호는 다음 결제 시 자동 입력되도록 회원 계정에 저장되며, <b>내 계정</b>에서 언제든 수정하거나 삭제를 요청할 수 있습니다.</p>
 <h2>2. 이용 목적</h2><ul><li>계정 인증 및 라이선스 발급·관리</li><li>결제 처리 및 환불</li><li>고객 지원 및 공지</li><li>서비스 개선 및 부정 이용 방지</li></ul>
 <h3>2-1. 구매자 휴대폰 번호를 수집하는 이유</h3><p>유료 결제 시 구매자 휴대폰 번호를 받는 것은 아래 목적 때문이며, 그 밖의 목적으로는 이용하지 않습니다.</p>
@@ -52,14 +57,34 @@ footer .wrap{display:flex;gap:14px;flex-wrap:wrap}footer .right{margin-left:auto
 <ul><li>계약 또는 청약철회 등에 관한 기록 — <b>5년</b> (전자상거래법)</li>
 <li>대금 결제 및 재화 등의 공급에 관한 기록 — <b>5년</b> (전자상거래법)</li>
 <li>소비자 불만 또는 분쟁 처리에 관한 기록 — <b>3년</b> (전자상거래법)</li>
-<li>회원 계정 정보 — 회원 탈퇴 시까지 (탈퇴 후 지체 없이 파기, 위 법정 보관 대상은 제외)</li></ul>
-<h2>4. 제3자 제공·처리위탁</h2><p>AudioAZ는 이용자의 개인정보를 제3자에게 판매하거나 제공하지 않습니다. 다만 서비스 운영에 필요한 범위에서 아래와 같이 업무를 위탁하고 있습니다.</p>
-<ul><li><b>KG이니시스 · 포트원(코리아포트원)</b> — 카드 결제 승인·취소 및 결제 결과 통지</li>
-<li><b>Supabase</b> — 계정·라이선스 데이터베이스 및 인증 (클라우드 인프라)</li>
-<li><b>Resend</b> — 라이선스 키·결제 및 공지 이메일 발송</li>
-<li><b>Render · GitHub</b> — 웹사이트 및 서비스 서버 운영, 설치 파일 배포</li></ul>
+<li>회원 계정 정보 — 회원 탈퇴 시까지 (탈퇴 후 지체 없이 파기, 위 법정 보관 대상은 제외)</li>
+<li>회원 탈퇴 기록(이메일·이름·탈퇴 사유·주문 및 라이선스 내역) — 환불·분쟁 대응을 위해 <b>5년</b></li>
+<li>문의 내용·첨부파일 — 처리 완료 후 <b>3년</b> (소비자 불만·분쟁 처리 기록)</li>
+<li>베타 테스터 신청 정보 — 해당 베타 프로그램 종료 시까지</li>
+<li>암호화된 데이터베이스 백업 — 매일 백업은 <b>30일</b>, 주 1회 백업은 <b>180일</b> 뒤 자동 삭제</li></ul>
+<p><b>파기 방법</b> — 전자 파일은 복구할 수 없는 방법으로 삭제하고, 출력물은 분쇄하거나 소각합니다.</p>
+<h2>4. 제3자 제공·처리위탁</h2><p>AudioAZ는 이용자의 개인정보를 제3자에게 판매하거나 제공하지 않습니다. 다만 서비스 운영에 필요한 범위에서 아래와 같이 업무를 위탁하고 있으며, 위탁 계약에서 개인정보가 안전하게 처리되도록 정하고 있습니다.</p>
+<ul><li><b>KG이니시스 · 포트원(코리아포트원)</b> — 국내 카드 결제 승인·취소 및 결제 결과 통지</li>
+<li><b>Lemon Squeezy</b> — 해외(달러) 결제 판매대행(Merchant of Record) 및 해외 세금 처리</li>
+<li><b>Supabase</b> — 계정·주문·라이선스 데이터베이스, 인증, 문의 첨부파일 저장</li>
+<li><b>Resend</b> — 회원 인증·라이선스 키·결제 및 공지 이메일 발송</li>
+<li><b>Google (Google Workspace)</b> — 고객 문의 메일 수신·회신, 주문 알림 메일 보관</li>
+<li><b>GitHub</b> — 웹사이트 호스팅, 설치 파일 배포, 암호화된 데이터베이스 백업 보관</li>
+<li><b>Render</b> — Flare Tally 탈리 중계 서버 운영</li>
+<li><b>Apple</b> — Flare Tally 앱 푸시 알림 전달</li></ul>
 <p>위탁 업체가 변경되는 경우 본 방침을 통해 고지합니다.</p>
-<h2>5. 이용자 권리</h2><p>이용자는 언제든 본인 정보의 열람·정정·삭제·처리정지를 요청할 수 있습니다. 요청은 support@audioazpro.com 으로 접수합니다.</p>
+<h3>4-1. 개인정보의 국외 이전</h3><p>위 위탁 업체 중 일부는 해외에 있어, 서비스 제공을 위해 아래와 같이 개인정보가 국외로 이전(전송·저장·접근)됩니다(개인정보 보호법 제28조의8). 전송은 모두 암호화된 통신(HTTPS)으로 이루어집니다.</p>
+<div class="tblw"><table class="tbl"><thead><tr><th>이전받는 자 (연락처)</th><th>국가</th><th>이전 항목</th><th>목적</th><th>시기·방법</th><th>보유 기간</th></tr></thead><tbody>
+<tr><td>Lemon Squeezy, LLC (lemonsqueezy.com)</td><td>미국</td><td>이메일 주소, 주문번호</td><td>해외 결제 판매대행·세금 처리</td><td>해외 결제 시 네트워크 전송</td><td>Lemon Squeezy의 방침 및 관련 법령에 따름</td></tr>
+<tr><td>Resend, Inc. (resend.com)</td><td>미국</td><td>이메일 주소, 이름, 메일 내용(라이선스 키·주문 정보 등)</td><td>이메일 발송</td><td>메일 발송 시 네트워크 전송</td><td>발송 기록 30일</td></tr>
+<tr><td>Supabase, Inc. (supabase.com)</td><td>대한민국(서울) 저장 · 운영사 미국</td><td>회원·주문·라이선스·문의 정보 등 서비스 데이터</td><td>데이터베이스·인증·파일 저장</td><td>서비스 이용 시 상시</td><td>3항의 보관 기간까지</td></tr>
+<tr><td>Google LLC (workspace.google.com)</td><td>미국</td><td>문의 메일 내용, 이메일 주소, 주문 알림</td><td>업무 메일 수신·회신</td><td>메일 수신 시 네트워크 전송</td><td>3항의 보관 기간까지</td></tr>
+<tr><td>GitHub, Inc. (github.com)</td><td>미국</td><td>웹사이트 접속 기록(IP·브라우저 정보), 암호화된 데이터베이스 백업</td><td>웹사이트 호스팅·백업 보관</td><td>접속 시 · 매일 1회 백업</td><td>백업 30일(주 1회분 180일)</td></tr>
+<tr><td>Render Services, Inc. (render.com)</td><td>미국 (서버: 싱가포르·독일·미국)</td><td>Flare Tally 중계 정보(5-1항), 접속 IP</td><td>탈리 실시간 중계</td><td>앱 접속 중 네트워크 전송</td><td>접속 종료 시 삭제</td></tr>
+<tr><td>Apple Inc. (apple.com)</td><td>미국</td><td>푸시 알림 토큰</td><td>앱 알림 전달</td><td>알림 발송 시</td><td>Apple의 방침에 따름</td></tr>
+</tbody></table></div>
+<p>국외 이전을 원하지 않으면 회원 탈퇴 또는 해당 기능(해외 결제·탈리 온라인 중계 등)을 이용하지 않음으로써 거부할 수 있습니다. 다만 거부하면 해당 서비스를 이용할 수 없습니다. 웹페이지의 글꼴·라이브러리는 공개 CDN(jsDelivr·Google Fonts)에서 불러오며, 이 과정에서 접속 IP가 해당 업체에 전달될 수 있습니다.</p>
+<h2>5. 이용자 권리</h2><p>이용자는 언제든 본인 정보의 <b>열람·정정·삭제·처리정지 및 동의 철회</b>를 요청할 수 있습니다. 이름·연락처 수정과 회원 탈퇴는 <b>내 계정</b>에서 직접 할 수 있고, 그 밖의 요청은 support@audioazpro.com 으로 접수합니다. 요청을 받으면 <b>10일 이내</b>에 처리 결과를 알려 드리며, 법정대리인이나 위임받은 사람을 통해서도 요청할 수 있습니다. 법령에 따라 보관해야 하는 정보는 삭제 요청에서 제외될 수 있습니다.</p>
 <h2>5-1. Flare Tally 앱(iOS·macOS)이 처리하는 정보</h2>
 <p>Flare Tally 카메라 탈리 앱은 계정 없이 동작하며 이름·이메일 등 개인정보를 요구하지 않습니다. 실시간 탈리 전달을 위해 다음 정보만 서버(camera-tally.onrender.com)로 전송·일시 보관합니다.</p>
 <ul>
@@ -74,7 +99,22 @@ footer .wrap{display:flex;gap:14px;flex-wrap:wrap}footer .right{margin-left:auto
 <p><b>macOS 호스트 앱</b>은 라이선스 확인을 위해 로그인한 AudioAZ 계정의 인증 토큰과 익명 기기 식별자(하드웨어 UUID의 해시)를 중계 서버로 보내며, 서버는 이를 라이선스 조회에만 사용하고 저장하지 않습니다. 데모 사용 시에는 기기 식별자와 데모 시작 시각만 전송됩니다. 계정 로그인 정보(갱신 토큰)는 사용자의 맥에만 저장되며 비밀번호는 저장하지 않습니다. 스위처 IP 등 설정은 맥에만 저장됩니다.</p>
 <p>위 정보는 접속(세션) 중 서버 메모리에만 있으며 접속 종료·앱 종료 시 삭제되고, 별도 저장·분석·광고·추적에 사용하지 않습니다. 카메라 권한은 방 QR 코드를 읽을 때만 사용하며 영상은 저장·전송하지 않습니다.</p>
 <p><b>Flare Tally (iOS/macOS) — English summary:</b> The app needs no account and collects no personal data. To deliver tally in real time it sends only the room code, camera number, an anonymous device identifier (identifierForVendor, used solely to de-duplicate push registrations), the Apple push token, round-trip latency and notification preferences to our relay server (camera-tally.onrender.com). These are kept in server memory only for the duration of the session, are never stored, analysed, sold, or used for tracking or advertising, and are not linked to any identity. The iOS app uses the Local Network permission (Bonjour) only to find a host on the same Wi-Fi; nothing is sent externally for this. Anonymous diagnostics (on by default, switchable off in the app's Help screen and in the host settings): device model, OS version, app version, connection mode, switcher type and error types only, with a partial hash of the device identifier; never linked to a name, account, email, room code, IP or location, deleted after 90 days, and used solely to improve the product. The macOS host app sends the signed-in AudioAZ account token and a hashed, anonymous device identifier to the relay server solely to verify the license (or the demo start time while in demo); the server does not store them. Camera access is used only to scan a room QR code; no video is stored or transmitted. Contact: support@audioazpro.com</p>
-<h2>6. 문의</h2><p>개인정보 관련 문의: support@audioazpro.com</p></div></div>
+<h2>6. 개인정보의 안전성 확보 조치</h2><ul>
+<li><b>관리적 조치</b> — 개인정보 처리 권한을 대표와 지정된 관리자로 최소화하고, 관리자 화면은 패스키(생체 인증) 로그인으로만 접근합니다.</li>
+<li><b>기술적 조치</b> — 모든 전송 구간 암호화(HTTPS), 비밀번호 일방향 암호화 저장, 데이터베이스 행 단위 접근 통제, 결제수단 정보 미보관, 백업 파일 암호화(AES-256) 보관.</li>
+<li><b>물리적 조치</b> — 데이터는 위탁 업체의 보안 인증을 받은 데이터센터에 보관됩니다.</li></ul>
+<h2>7. 쿠키 및 브라우저 저장소</h2><p>AudioAZ는 광고·추적용 쿠키나 외부 방문자 분석 도구를 사용하지 않습니다. 다만 서비스 동작을 위해 브라우저 저장소(localStorage)에 다음 정보를 보관합니다.</p>
+<ul><li>로그인 상태 유지를 위한 인증 정보</li><li>화면 언어·테마 등 설정값</li><li>결제 화면의 구매자 이름·휴대폰 번호(다음 결제 시 자동 입력)와 결제 통화 선택</li></ul>
+<p>브라우저 설정에서 사이트 데이터를 삭제하면 언제든 지울 수 있으며, 삭제하면 로그아웃됩니다.</p>
+<h2>8. 만 14세 미만 아동</h2><p>AudioAZ는 만 14세 미만 아동의 회원가입을 받지 않으며, 그 개인정보를 수집하지 않습니다. 만 14세 미만 아동의 정보가 수집된 사실을 알게 되면 지체 없이 삭제합니다.</p>
+<h2>9. 개인정보 유출 시 통지</h2><p>개인정보 유출을 알게 되면 지체 없이(72시간 이내) 해당 이용자에게 유출 항목·시점·경위, 피해를 줄이기 위한 방법, 대응 조치와 문의처를 알리고, 법령이 정한 경우 개인정보보호위원회 또는 한국인터넷진흥원에 신고합니다.</p>
+<h2>10. 개인정보 보호책임자</h2><p>개인정보 처리에 관한 업무를 총괄하고 이용자의 문의·불만·피해 구제를 처리하는 책임자는 다음과 같습니다.</p>
+<ul><li><b>개인정보 보호책임자</b> — 김형준 (대표)</li><li><b>연락처</b> — support@audioazpro.com · 070-4837-1073</li></ul>
+<p>오디오에이지 크루(audioaz.co.kr/crew) 서비스의 개인정보 처리는 별도의 <a href="https://audioaz.co.kr/crew/privacy.html" style="color:var(--blue-soft)">크루 개인정보처리방침</a>을 따릅니다.</p>
+<h2>11. 권익침해 구제 방법</h2><p>개인정보 침해에 대한 상담이나 분쟁 해결이 필요하면 아래 기관에 문의할 수 있습니다.</p>
+<ul><li>개인정보분쟁조정위원회 — 1833-6972 (www.kopico.go.kr)</li><li>개인정보침해신고센터 — 118 (privacy.kisa.or.kr)</li><li>대검찰청 — 1301 (www.spo.go.kr)</li><li>경찰청 — 182 (ecrm.police.go.kr)</li></ul>
+<h2>12. 방침의 변경</h2><p>이 방침을 바꾸는 경우 시행 7일 전(이용자 권리에 중대한 변경은 30일 전)부터 이 페이지에 알립니다.</p>
+<ul><li>2026-09-11 — 제정</li><li>2026-10-21 — 해외 결제(Lemon Squeezy)·국외 이전 표·보호책임자·안전성 확보 조치·브라우저 저장소·유출 통지·문의 첨부파일·베타 신청 항목 추가</li></ul></div></div>
 <footer><div class="wrap"><span>© AudioAZ (오디오에이지) · 대표 김형준 · 사업자 456-17-01966 · 통신판매업신고 제2026-다산-0859호</span>
 <span class="right"><a href="privacy.html">개인정보처리방침</a><a href="terms.html">이용약관</a><a href="refund.html">환불·라이선스</a><a href="/contact.html">문의</a></span></div><div class="wrap" style="display:block;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08);font-size:12px;line-height:1.8;color:#6F84A3">오디오에이지(AudioAZ) · 대표 김형준 · 사업자등록번호 456-17-01966 · 통신판매업신고번호 제2026-다산-0859호 · 경기도 남양주시 다산중앙로19번길 21, F동 419호 (다산동, 다산진건블루웨일지식산업센터1차) · 전화 070-4837-1073 · 이메일 <a href="mailto:support@audioazpro.com" style="color:#8FA5C2">support@audioazpro.com</a></div>
 </footer>
