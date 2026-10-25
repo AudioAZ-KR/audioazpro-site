@@ -408,12 +408,16 @@ td{color:var(--text)}
       <!-- 대시보드 -->
       <section id="p-dash" class="page on">
         <div class="kpis">
-          <div class="kpi go" role="link" tabindex="0" title="주문·결제로 이동" onclick="azGo('orders')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();azGo('orders')}"><div class="l">총 매출 (결제완료) <span class="gochev">›</span></div><div class="v" id="kpiRev" style="font-size:21px">—</div><div class="d flat">국내+해외 · 통화별 합산</div></div>
-          <div class="kpi go" role="link" tabindex="0" title="주문·결제로 이동" onclick="azGo('orders')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();azGo('orders')}"><div class="l">국내 매출 (포트원) <span class="gochev">›</span></div><div class="v" id="kpiRevDom" style="font-size:21px">—</div><div class="d flat">결제완료 기준</div></div>
-          <div class="kpi go" role="link" tabindex="0" title="주문·결제로 이동" onclick="azGo('orders')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();azGo('orders')}"><div class="l">해외 매출 (Paddle) <span class="gochev">›</span></div><div class="v" id="kpiRevAbroad" style="font-size:21px">—</div><div class="d flat">결제완료 기준</div></div>
+          <div class="kpi go" role="link" tabindex="0" title="주문·결제로 이동" onclick="azGo('orders')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();azGo('orders')}"><div class="l">총 매출 (누적) <span class="gochev">›</span></div><div class="v" id="kpiRev" style="font-size:21px">—</div><div class="d flat">국내+해외 · 결제완료·테스트 제외</div></div>
+          <div class="kpi go" role="link" tabindex="0" title="주문·결제로 이동" onclick="azGo('orders')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();azGo('orders')}"><div class="l">국내 매출 · 이번 달 <span class="gochev">›</span></div><div class="v" id="kpiRevDom" style="font-size:21px">—</div><div class="d flat" id="kpiRevDomSub">원화 · KG이니시스</div></div>
+          <div class="kpi go" role="link" tabindex="0" title="주문·결제로 이동" onclick="azGo('orders')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();azGo('orders')}"><div class="l">해외 매출 · 이번 달 <span class="gochev">›</span></div><div class="v" id="kpiRevAbroad" style="font-size:21px">—</div><div class="d flat" id="kpiRevAbroadSub">달러 · 레몬스퀴지</div></div>
           <div class="kpi go" role="link" tabindex="0" title="라이선스로 이동" onclick="azGo('lic')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();azGo('lic')}"><div class="l">활성 라이선스 <span class="gochev">›</span></div><div class="v" id="kpiLic">—</div><div class="d flat">실데이터</div></div>
           <div class="kpi go" role="link" tabindex="0" title="라이선스로 이동" onclick="azGo('lic')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();azGo('lic')}"><div class="l">이번 달 발급 <span class="gochev">›</span></div><div class="v" id="kpiMonth">—</div><div class="d flat">실데이터</div></div>
           <div class="kpi go" role="link" tabindex="0" title="고객으로 이동" onclick="azGo('customers')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();azGo('customers')}"><div class="l">회원 <span class="gochev">›</span></div><div class="v" id="kpiUsers">—</div><div class="d flat">실데이터</div></div>
+        </div>
+        <div class="card"><h2>매출 — 국내 / 해외</h2><div class="sub">결제완료 기준 · 테스트 결제 제외 · 국내=원화(KG이니시스·포트원) / 해외=달러(레몬스퀴지, 세금은 결제사 처리) · 금액 옆 괄호는 건수 · 환불은 해당 기간에 환불된 건</div>
+          <div style="overflow-x:auto"><table><thead><tr><th>구분</th><th>오늘</th><th>이번 주</th><th>이번 달</th><th>지난 달</th><th>누적</th><th>환불(누적)</th></tr></thead>
+          <tbody id="revRows"><tr><td colspan="7" class="n">불러오는 중…</td></tr></tbody></table></div>
         </div>
         <div class="card"><h2>최근 활동 <button class="tbtn" style="margin-left:10px" onclick="loadDash()">새로고침</button></h2><div class="sub">라이선스 발급·주문·문의·결재 최신 기록</div>
           <table><thead><tr><th>시각</th><th>유형</th><th>내용</th></tr></thead>
@@ -689,7 +693,7 @@ td{color:var(--text)}
             <button class="btn btn-pri" type="submit">코드 발행</button>
           </form>
           <div class="result" id="promoRes"><div style="font-size:11px;color:#8fa5c2;letter-spacing:.05em;text-transform:uppercase">발행된 코드</div><div class="k" id="promoCodes">—</div></div>
-          <p class="note">할인 코드는 <b>제품별로만</b> 발행됩니다(전 제품 불가). 목표 금액 방식 — 국내(원)와 해외(달러) 목표 금액을 각각 입력하면 국내는 포트원 결제에, 해외는 Paddle 결제에 적용됩니다(한쪽만 입력하면 그쪽만 할인). <b>할인 코드는 적용 기간(시작~종료) 내에서만 유효.</b> 서버가 발행 DB와 대조해 유효성·사용횟수·기간을 검증합니다.</p>
+          <p class="note">할인 코드는 <b>제품별로만</b> 발행됩니다(전 제품 불가). 목표 금액 방식 — 국내(원)와 해외(달러) 목표 금액을 각각 입력하면 국내는 포트원(이니시스) 결제에, 해외는 레몬스퀴지 결제에 적용됩니다(한쪽만 입력하면 그쪽만 할인). <b>할인 코드는 적용 기간(시작~종료) 내에서만 유효.</b> 서버가 발행 DB와 대조해 유효성·사용횟수·기간을 검증합니다.</p>
         </div>
 
         <div class="card"><h2>발행된 코드</h2>
@@ -771,7 +775,7 @@ td{color:var(--text)}
       </section>
 
       <section id="p-orders" class="page">
-        <div class="card"><h2>주문·결제 <button class="tbtn" style="margin-left:10px" onclick="loadOrders()">새로고침</button></h2><div class="sub">실제 주문 데이터(orders)입니다. 결제 연동(포트원·Paddle) 후 웹훅으로 자동 기록되며, 환불은 결재 기록을 남기고 연결 라이선스를 함께 회수합니다.</div>
+        <div class="card"><h2>주문·결제 <button class="tbtn" style="margin-left:10px" onclick="loadOrders()">새로고침</button></h2><div class="sub">실제 주문 데이터(orders)입니다. 국내(포트원·이니시스)·해외(레몬스퀴지) 결제가 웹훅으로 자동 기록되며, 환불은 결재 기록을 남기고 연결 라이선스를 함께 회수합니다.</div>
         <div class="toolbar" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <select id="ordRange" class="field" style="margin:0;width:auto;padding:8px 10px" onchange="ordRangeUI();if(this.value!=='custom')renderOrders()">
               <option value="all">전체 기간</option><option value="tm">이번 달</option><option value="lm">지난 달</option><option value="custom">직접 지정</option>
@@ -789,9 +793,9 @@ td{color:var(--text)}
           <tbody id="orderRows"><tr><td colspan="8" class="n">불러오는 중…</td></tr></tbody></table>
           <p class="note">24시간 지난 대기 주문은 <b>만료</b>로 표시합니다 (결제창만 열고 이탈한 주문). 표시용 구분이며 서버 자동 취소는 아직 없습니다 · 목록·CSV는 최근 1,000건.</p>
         </div>
-        <div class="card"><h2>월별 매출</h2><div class="sub">결제완료 주문 기준 · 국내(포트원)/해외(Paddle) 분리 · <b>최근 1,000건 기준</b> (기간 필터와 무관)</div>
-          <table><thead><tr><th>월</th><th>국내 (₩)</th><th>해외</th><th>건수</th></tr></thead>
-          <tbody id="ordMonthRows"><tr><td colspan="4" class="n">—</td></tr></tbody></table>
+        <div class="card"><h2>월별 매출</h2><div class="sub">결제완료 주문 기준 · 테스트 제외 · 국내(원화·이니시스)/해외(달러·레몬스퀴지) 분리 · 서버 집계 (기간 필터와 무관)</div>
+          <table><thead><tr><th>월</th><th>국내 (₩)</th><th>국내 건수</th><th>해외 ($)</th><th>해외 건수</th></tr></thead>
+          <tbody id="ordMonthRows"><tr><td colspan="5" class="n">—</td></tr></tbody></table>
         </div>
       </section>
 
@@ -877,7 +881,7 @@ td{color:var(--text)}
         <div class="card"><h2>설정</h2><div class="sub">결제·이메일 연동 상태(요약). 실시간 사용량·한도·장애는 <b>서비스·한도 탭</b>이 30분마다 자동 점검합니다.</div>
           <table><tbody>
             <tr><td style="width:180px;color:var(--dim);font-weight:700">결제 (국내)</td><td>포트원 <span class="pill p-active">연결됨</span> <span class="pill p-trial">이니시스 심사 중</span><div class="n" style="margin-top:4px">토스 테스트 채널 E2E 검증 완료 · KG이니시스 실연동은 카드사 심사 후 전환</div></td><td style="text-align:right"><button class="tbtn" onclick="setupInfo('portone')">상세</button></td></tr>
-            <tr><td style="color:var(--dim);font-weight:700">결제 (해외)</td><td>Paddle <span class="pill p-active">샌드박스 연결됨</span> <span class="pill p-trial">Live 심사 예정</span><div class="n" style="margin-top:4px">샌드박스 결제·웹훅·발급 E2E 검증 완료 · 실판매는 Paddle Live 계정 심사 후</div></td><td style="text-align:right"><button class="tbtn" onclick="setupInfo('paddle')">상세</button></td></tr>
+            <tr><td style="color:var(--dim);font-weight:700">결제 (해외)</td><td>레몬스퀴지 <span class="pill p-active">라이브</span><div class="n" style="margin-top:4px">2026-09-25 실결제 오픈 · 달러 · 판매대행(MoR)이 해외 세금 처리 · Paddle 은 심사 거절로 종료</div></td><td style="text-align:right"><a class="tbtn" href="https://app.lemonsqueezy.com/dashboard" target="_blank" rel="noopener">대시보드</a></td></tr>
             <tr><td style="color:var(--dim);font-weight:700">발송 이메일</td><td>noreply@audioazpro.com (Resend) <span class="pill p-active">연결됨</span></td><td style="text-align:right"><button class="tbtn" onclick="setupInfo('email')">상세</button></td></tr>
             <tr><td style="color:var(--dim);font-weight:700">라이선스 발급</td><td>서버 발급 <span class="pill p-active">운영 중</span><div class="n" style="margin-top:4px">키는 서버(Edge Function·DB 함수)가 생성·기록 — 브라우저에는 개인키 없음</div></td><td style="text-align:right"><button class="tbtn" onclick="setupInfo('key')">상세</button></td></tr>
           </tbody></table>
@@ -894,7 +898,7 @@ td{color:var(--text)}
 // ===== 관리자 로그인 게이트 =====
 // 지금은 데모: 클라이언트 SHA-256 검증(소프트 게이트). 백엔드 전환 시 Supabase auth.signInWithPassword + profiles.is_admin 로 교체.
 // 비밀번호는 평문이 아닌 SHA-256 해시로만 소스에 존재합니다.
-var AZ_CONSOLE_VERSION='1.32.0', AZ_CONSOLE_DATE='2026-10-20'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
+var AZ_CONSOLE_VERSION='1.33.0', AZ_CONSOLE_DATE='2026-10-25'; // 콘솔을 고칠 때마다 올린다 (사이드바·게이트에 표시)
 (function(){var t='v'+AZ_CONSOLE_VERSION+' · '+AZ_CONSOLE_DATE;['verTag','verGate','verFoot'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=(id==='verTag'?'v'+AZ_CONSOLE_VERSION:t)});})();
 var SKEY='az_admin_ok';
 function openConsole(){document.getElementById('gate').style.display='none';document.querySelector('.layout').style.display='flex'; resetIdle();}
@@ -1950,7 +1954,7 @@ async function loadEmails(ids){
 }
 function fmtDate(s){ if(!s) return '—'; var d=new Date(s); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function fmtDateTime(s){ if(!s) return ''; var d=new Date(s); return fmtDate(s)+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
-function chanLabel(pv){ return pv==='portone'?'국내 · 포트원':pv==='paddle'?'해외 · Paddle':(pv||'—'); }
+function chanLabel(pv){ return pv==='portone'?'국내 · 이니시스':pv==='lemon'?'해외 · 레몬스퀴지':pv==='paddle'?'해외 · Paddle(종료)':(pv||'—'); }
 function ordStatusLabel(o){ if(ordStale(o)) return '만료 (대기 24h+)'; return ({pending:'대기',paid:'결제완료',refunded:'환불'})[o.status]||o.status; }
 
 // ===== 라이선스 (실데이터 licenses) =====
@@ -2088,7 +2092,7 @@ function renderOrders(){
   if(sm){
     var sp=revSplit(L);
     var box=function(l,v,n){return '<div style="border:1px solid var(--line);background:#0E1A2E;border-radius:10px;padding:9px 14px;font-size:12.5px;color:var(--dim);font-weight:700">'+l+' <b style="color:#E9EEF7;font-family:ui-monospace,Menlo,monospace;font-size:13px;margin-left:6px">'+v+'</b><span style="margin-left:6px">'+n+'건</span></div>';};
-    sm.innerHTML=box('국내 매출 · 포트원',fmtMoney(sp.dom),sp.domN)+box('해외 매출 · Paddle',fmtMoney(sp.abroad),sp.abroadN);
+    sm.innerHTML=box('국내 매출 · 원화',fmtMoney(sp.dom),sp.domN)+box('해외 매출 · 달러',fmtMoney(sp.abroad),sp.abroadN);
     sm.style.display='flex';
   }
   if(!ORDERS.length){ tb.innerHTML='<tr><td colspan="8" style="color:var(--dim)">주문이 아직 없습니다. (결제 연동 후 자동 기록)</td></tr>'; return; }
@@ -2112,8 +2116,8 @@ async function renderOrdMonths(){
     ORDERS.forEach(function(o){ if(o.status!=='paid'||o.is_test) return; var d=new Date(o.paid_at||o.created_at); if(isNaN(d)) return; var k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); var m=M[k]=M[k]||{dom:{},abroad:{},domN:0,abroadN:0}; var b=revBucket(o); var cur=o.paid_currency||o.currency||'KRW'; m[b][cur]=(m[b][cur]||0)+Number((o.paid_currency?o.paid_amount:o.amount)||0); m[b+'N']++; });
   }
   var ks=Object.keys(M).sort().reverse();
-  if(!ks.length){ tb.innerHTML='<tr><td colspan="4" class="n">결제완료 주문이 아직 없습니다.</td></tr>'; return; }
-  tb.innerHTML=ks.map(function(k){ var sp=M[k]; return '<tr><td class="mono">'+k+'</td><td class="mono">'+(sp.domN?fmtMoney(sp.dom):'—')+'</td><td class="mono">'+(sp.abroadN?fmtMoney(sp.abroad):'—')+'</td><td>'+(sp.domN+sp.abroadN)+'</td></tr>'; }).join('');
+  if(!ks.length){ tb.innerHTML='<tr><td colspan="5" class="n">결제완료 주문이 아직 없습니다.</td></tr>'; return; }
+  tb.innerHTML=ks.map(function(k){ var sp=M[k]; return '<tr><td class="mono">'+k+'</td><td class="mono">'+(sp.domN?fmtMoney(sp.dom):'—')+'</td><td>'+(sp.domN||'—')+'</td><td class="mono">'+(sp.abroadN?fmtMoney(sp.abroad):'—')+'</td><td>'+(sp.abroadN||'—')+'</td></tr>'; }).join('');
 }
 function ordCsv(){
   var L=ordFiltered();
@@ -2136,7 +2140,7 @@ async function refundOrder(id){
   var o=ORDERS.find(function(x){return x.id===id;})||{};
   var p=EMAILS[o.user_id]||{};
   var isSuper=(window.__ADMIN_PROFILE||{}).role==='super';
-  var provLabel=o.provider==='paddle'?'Paddle':(o.provider==='portone'?'포트원':(o.provider||'—'));
+  var provLabel=o.provider==='lemon'?'레몬스퀴지':o.provider==='paddle'?'Paddle':(o.provider==='portone'?'포트원':(o.provider||'—'));
   var refInfo=o.provider_ref
     ? '<div class="mono" style="font-size:11px;margin-top:4px">결제사: '+esc(provLabel)+' · '+esc(o.provider_ref)+'</div>'
     : '<div class="n" style="margin-top:4px">결제사 참조 없음 — DB만 환불 처리됩니다(관리자 수동 환급 필요)</div>';
@@ -2178,8 +2182,30 @@ async function adminRefundMoney(orderId){
 }
 
 // ===== 매출 국내/해외 분리 집계 =====
-// 국내=포트원, 해외=Paddle. provider가 비어 있으면 통화(KRW 여부)로 추정.
-function revBucket(o){ if(o.provider==='paddle') return 'abroad'; if(o.provider==='portone') return 'dom'; return (o.currency&&o.currency!=='KRW')?'abroad':'dom'; }
+// 국내=포트원(KG이니시스·원화), 해외=레몬스퀴지(달러, 예전 Paddle 포함). provider가 비어 있으면 통화(KRW 여부)로 추정.
+function revBucket(o){ if(o.provider==='lemon'||o.provider==='paddle') return 'abroad'; if(o.provider==='portone') return 'dom'; return ((o.paid_currency||o.currency)&&(o.paid_currency||o.currency)!=='KRW')?'abroad':'dom'; }
+// 기간별(오늘·이번 주(월요일 시작)·이번 달·지난 달·누적) 국내/해외 매출 + 누적 환불 — 시각은 이 기기(한국) 기준
+function revPeriods(rows){
+  var now=new Date(), d0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  var w0=new Date(d0); w0.setDate(d0.getDate()-((d0.getDay()+6)%7));
+  var m0=new Date(now.getFullYear(),now.getMonth(),1), p0=new Date(now.getFullYear(),now.getMonth()-1,1);
+  var mk=function(){ return {today:{cur:{},n:0},week:{cur:{},n:0},month:{cur:{},n:0},prev:{cur:{},n:0},all:{cur:{},n:0},refund:{},refundN:0}; };
+  var R={dom:mk(),abroad:mk()};
+  var add=function(x,cur,amt){ x.cur[cur]=(x.cur[cur]||0)+amt; x.n++; };
+  (rows||[]).forEach(function(o){
+    if(o.is_test) return;
+    var b=revBucket(o), cur=o.paid_currency||o.currency||'KRW', amt=Number((o.paid_currency?o.paid_amount:o.amount)||0);
+    if(o.status==='refunded'){ R[b].refund[cur]=(R[b].refund[cur]||0)+amt; R[b].refundN++; return; }
+    if(o.status!=='paid') return;
+    var t=new Date(o.paid_at||o.created_at); if(isNaN(t)) return;
+    add(R[b].all,cur,amt);
+    if(t>=d0) add(R[b].today,cur,amt);
+    if(t>=w0) add(R[b].week,cur,amt);
+    if(t>=m0) add(R[b].month,cur,amt);
+    else if(t>=p0) add(R[b].prev,cur,amt);
+  });
+  return R;
+}
 function revSplit(rows){
   var r={dom:{},abroad:{},domN:0,abroadN:0};
   (rows||[]).forEach(function(o){
@@ -2208,7 +2234,7 @@ function fmtMoney(byCur){
 async function loadDash(){
   try{
     var q=await Promise.all([
-      sb.from('orders').select('product_id,created_at,amount,currency,status,provider,paid_amount,paid_currency,is_test').order('created_at',{ascending:false}),
+      sb.from('orders').select('product_id,created_at,amount,currency,status,provider,paid_amount,paid_currency,is_test,paid_at,refunded_at').order('created_at',{ascending:false}),
       sb.from('licenses').select('status,issued_at'),
       sb.from('profiles').select('id',{count:'exact',head:true}).eq('is_admin',false),
       sb.from('licenses').select('license_key,product_id,issued_at,status').order('issued_at',{ascending:false}).limit(4),
@@ -2223,8 +2249,16 @@ async function loadDash(){
     var month=Ls.filter(function(l){return l.issued_at>=m0;}).length;
     var set=function(id,v){var el=document.getElementById(id); if(el) el.textContent=v;};
     set('kpiRev', rev.error?'—':fmtMoney(mergeCur(split.dom,split.abroad)));
-    set('kpiRevDom', rev.error?'—':fmtMoney(split.dom));
-    set('kpiRevAbroad', rev.error?'—':fmtMoney(split.abroad)); set('kpiLic', lic.error?'—':active); set('kpiMonth', lic.error?'—':month); set('kpiUsers', cu.error?'—':(cu.count||0));
+    var per=revPeriods(rev.data||[]);
+    set('kpiRevDom', rev.error?'—':fmtMoney(per.dom.month.cur));
+    set('kpiRevAbroad', rev.error?'—':fmtMoney(per.abroad.month.cur));
+    set('kpiRevDomSub', rev.error?'원화 · KG이니시스':('원화 · KG이니시스 · '+per.dom.month.n+'건 · 누적 '+fmtMoney(split.dom)));
+    set('kpiRevAbroadSub', rev.error?'달러 · 레몬스퀴지':('달러 · 레몬스퀴지 · '+per.abroad.month.n+'건 · 누적 '+fmtMoney(split.abroad)));
+    var rr=document.getElementById('revRows');
+    if(rr) rr.innerHTML=rev.error?'<tr><td colspan="7" class="n">불러오지 못했습니다</td></tr>':['dom','abroad'].map(function(b){
+      var P=per[b], c=function(x){ return x.n?('<span class="mono">'+fmtMoney(x.cur)+'</span> <span class="n">('+x.n+')</span>'):'<span class="n">—</span>'; };
+      return '<tr><td><b>'+(b==='dom'?'국내 (₩)':'해외 ($)')+'</b></td><td>'+c(P.today)+'</td><td>'+c(P.week)+'</td><td>'+c(P.month)+'</td><td>'+c(P.prev)+'</td><td>'+c(P.all)+'</td><td>'+(P.refundN?('<span class="mono">'+fmtMoney(P.refund)+'</span> <span class="n">('+P.refundN+')</span>'):'<span class="n">—</span>')+'</td></tr>';
+    }).join(''); set('kpiLic', lic.error?'—':active); set('kpiMonth', lic.error?'—':month); set('kpiUsers', cu.error?'—':(cu.count||0));
     // 최근 활동: 라이선스·주문·문의·결재 최신 8건 (주문은 위 조회 재사용)
     var acts=[];
     (l2.data||[]).forEach(function(l){acts.push({t:l.issued_at,k:'발급',c:'p-active',d:(PRODNAME[l.product_id]||l.product_id)+' · '+l.license_key});});
