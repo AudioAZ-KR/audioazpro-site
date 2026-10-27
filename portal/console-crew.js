@@ -18,7 +18,7 @@ var ST_MEM  = { pending:'승인 대기', active:'활동', inactive:'비활성', 
 // 회원 등급 (2026-09-27 일반 배포): 누구나 가입 = 일반, 크루는 사장님이 올리거나 초대 코드, 코어는 사장님 지정
 var LV_NAME = { basic:'일반', crew:'크루', core:'코어' };
 var ST_BILL = { none:'—', quoted:'견적 발송', invoiced:'계산서 발행', paid:'입금 완료' };
-var TAX     = { withholding:'3.3% 원천징수', daily:'일용근로 원천징수', invoice:'세금계산서', none:'공제 없음' };
+var TAX     = { withholding:'3.3% 원천징수', daily:'일용근로 원천징수', invoice:'세금계산서 (부가세 별도)', none:'세금처리 안 함' };
 
 /* ── 스타일 ─────────────────────────────────────────────────────────────── */
 var css = ''
@@ -106,7 +106,7 @@ addSection('crew-dash',
  + '<div class="card"><h2>지난 일정 · 행사 완료 / 입금 / 페이 지급</h2><div class="sub">행사 완료·클라이언트 입금은 스위치로 켜고 끄고, 감독 페이는 사람마다 [지급 완료](확인 창 한 번 더)로 처리합니다. 모두 끝난 행사는 30일 뒤 이 목록에서 빠집니다</div><div class="cr-wrap" id="crDashPast"></div></div>'
  + '<div class="card"><h2>내 캘린더 연동</h2><div class="sub">모든 프로젝트(비공개·예정·작성 중 포함, 취소 제외)가 사장님 캘린더에 들어갑니다. 확정 감독 이름·신청 수도 메모에 표시 — 견적·페이 금액은 넣지 않습니다(주소만 알면 열리므로). 1시간마다 갱신.</div><div id="crFeed" class="rowflex"></div></div>'
  + '<div class="card"><h2>새 참여 신청</h2><div class="sub">감독이 audioaz.co.kr 에서 남긴 신청 — 바로 확정·거절</div><div class="cr-wrap" id="crDashApps"></div></div>'
- + '<div class="card"><h2>참여 요청 (승인 대기)</h2><div class="sub">초대 코드 없이 들어온 AudioAZ(Pro) 회원의 요청입니다. 승인해야 프로젝트를 볼 수 있고, 승인하면 본인에게 메일이 갑니다</div><div class="cr-wrap" id="crDashPend"></div></div>');
+ + '<div class="card"><h2>참여 요청 (승인 대기)</h2><div class="sub">초대 코드 없이 들어온 AudioAZ(Pro) 회원의 요청입니다. 승인해야 프로젝트를 볼 수 있고, 승인하면 본인에게 앱 푸시 알림이 갑니다</div><div class="cr-wrap" id="crDashPend"></div></div>');
 
 addSection('crew-proj',
    '<div class="toolbar"><button class="btn btn-pri" onclick="crewEditProject()">새 프로젝트</button>'
@@ -147,7 +147,7 @@ addSection('crew-settle',
  + '<button class="tbtn" onclick="crewSettleCsv()">CSV 내려받기</button><button class="tbtn" onclick="crewReload()">새로고침</button></div>'
  + '<div class="cr-sum" id="crSSum"></div>'
  + '<div class="card" style="margin-top:0"><h2>세금 신고 — 이 달 지급분</h2><div class="sub">지급일(지급 완료 표시한 날) 기준입니다. 원천세는 지급한 달 기준으로 신고하므로 행사 날짜가 아니라 지급일로 묶습니다. 위에서 고른 달 기준, 지급 완료 건만.</div><div id="crSTax"></div></div>'
- + '<div class="card" style="margin-top:0"><div class="sub">확정된 참여만 표시. 금액 단위 만원(CSV 는 이체용으로 원 단위). 원천징수 = 소득세 3% + 지방소득세 0.3%(10원 미만 절사). 세금계산서는 페이에 부가세 10%를 더해 지급.</div>'
+ + '<div class="card" style="margin-top:0"><div class="sub">확정된 참여만 표시. 금액 단위 만원(CSV 는 이체용으로 원 단위). 원천징수 = 소득세 3% + 지방소득세 0.3%(10원 미만 절사). 세금계산서는 페이에 부가세 10%를 더해 지급. 세금처리 안 함은 페이 그대로 지급.</div>'
  + '<div class="cr-wrap"><table class="cr-t wide"><thead><tr><th>날짜</th><th>프로젝트</th><th>감독</th><th>구분</th><th style="text-align:right">페이(세전)</th><th style="text-align:right">실비</th><th style="text-align:right">공제 / VAT</th><th style="text-align:right">지급액</th><th>계좌</th><th>지급</th></tr></thead><tbody id="crSRows"></tbody></table></div></div>');
 
 function kpi(go, l, id, d){
@@ -617,7 +617,7 @@ function renderDash(){
     + past.map(function(p){ var pa=C.padmin[p.id]||{}, cf=appsOf(p.id).filter(function(a){ return a.status==='confirmed' && !ghost(a.user_id); });
         return '<tr><td class="cr-date">'+e(dRange(p))+'</td><td><a style="cursor:pointer;text-decoration:underline" onclick="crewOpenProject(\''+p.id+'\')"><b>'+e(p.title)+'</b></a></td><td>'+e(pa.client_name||'—')+'</td>'
           +'<td>'+(cf.length?cf.map(function(a){ var x=mem(a.user_id); return e(x?x.name:'?'); }).join(', '):'<span class="cr-meta">없음</span>')+'</td>'
-          +'<td class="cr-num">'+(pa.quote_krw?won(billTotal(p)):'<span class="cr-meta">견적 없음</span>')+'</td>'
+          +'<td class="cr-num">'+(pa.quote_krw?won(billTotal(p))+'<div class="cr-meta">'+(pa.quote_vat===false?'세금처리 안 함':'VAT 포함')+'</div>':'<span class="cr-meta">견적 없음</span>')+'</td>'
           +'<td>'+swDone(p)+'</td><td>'+swPaid(p)+'</td><td>'+payList(p)+'</td></tr>'; }).join('')
     + '<tr><td colspan="4" class="cr-meta">완료 전 '+openN+'건'+(openN>1?' · <a style="cursor:pointer;text-decoration:underline" onclick="crewMarkDone(\'all\')">완료 전 행사 모두 완료</a>':'')+' · 입금 대기 '+waitN+'건</td><td class="cr-num"><b>'+won(waitSum)+'</b></td><td colspan="3" class="cr-meta">입금 대기 합계</td></tr></tbody></table>'
     : '<div class="cr-empty">정리할 지난 일정이 없습니다.</div>';
@@ -699,7 +699,7 @@ window.crewEditProject = function(id){
     + '<div class="field"><label>일정 상태</label><div class="cr-seg">'
     +   '<label><input type="radio" name="crE_tent" value="0"'+(p&&p.is_tentative?'':' checked')+'><span>확정</span></label>'
     +   '<label><input type="radio" name="crE_tent" value="1"'+(p&&p.is_tentative?' checked':'')+'><span>예정 (임시 픽스)</span></label></div>'
-    +   '<div class="cr-meta" style="margin-top:6px">예정이면 감독 화면에 "일정이 바뀌거나 취소될 수 있음"이 표시됩니다. 예정→확정·취소 시 참여 감독에게 메일</div></div></div>'
+    +   '<div class="cr-meta" style="margin-top:6px">예정이면 감독 화면에 "일정이 바뀌거나 취소될 수 있음"이 표시됩니다. 예정→확정·취소 시 참여 감독에게 앱 푸시 알림</div></div></div>'
     + '<div class="field"><label>공개 범위</label><div class="cr-seg">'
     +   '<label><input type="radio" name="crE_priv" value="0"'+(p&&p.is_private?'':' checked')+'><span>공개</span></label>'
     +   '<label><input type="radio" name="crE_priv" value="1"'+(p&&p.is_private?' checked':'')+'><span>비공개 (지정한 감독만)</span></label></div>'
@@ -724,7 +724,9 @@ window.crewEditProject = function(id){
     + '<div class="grid2">'+fld('client_name','클라이언트',pa.client_name)+fld('client_contact','클라이언트 연락처',pa.client_contact)+'</div>'
     + '<div class="cr-grid3">'+fld('quote_krw','견적 금액 (공급가, 만원)',toMan(pa.quote_krw),'number','예: 800')+fld('other_cost_krw','기타 비용 (장비·운송·숙박, 만원)',toMan(pa.other_cost_krw),'number','예: 250')
     + '<div class="field"><label>청구 상태</label><select id="crE_bill_status">'+Object.keys(ST_BILL).map(function(s){ return '<option value="'+s+'"'+((pa.bill_status||'none')===s?' selected':'')+'>'+(s==='none'?'미청구':ST_BILL[s])+'</option>'; }).join('')+'</select></div></div>'
-    + '<label class="cr-check" style="margin-bottom:12px"><input type="checkbox" id="crE_quote_vat"'+(pa.quote_vat===false?'':' checked')+'> 부가세 별도 청구 (견적 금액 + 10%)</label>'
+    + '<div class="field"><label>받는 금액 세금 처리</label><div class="cr-seg">'
+    +   '<label><input type="radio" name="crE_qvat" value="1"'+(pa.quote_vat===false?'':' checked')+'><span>부가세 별도 (견적 + 10%, 세금계산서 발행)</span></label>'
+    +   '<label><input type="radio" name="crE_qvat" value="0"'+(pa.quote_vat===false?' checked':'')+'><span>세금처리 안 함 (견적 금액 그대로)</span></label></div></div>'
     + '<div class="field"><label>관리 메모</label><textarea id="crE_memo" rows="2">'+e(pa.memo)+'</textarea></div>'
     + '<div class="rowflex"><button class="btn btn-pri" onclick="crewSaveProject()">'+(p?'저장':'등록')+'</button><button class="btn btn-out" onclick="crewCloseEdit()">닫기</button>'
     + (p?'<button class="tbtn danger" style="margin-left:auto" onclick="crewDeleteProject(\''+p.id+'\')">프로젝트 삭제</button>':'')+'</div>';
@@ -914,7 +916,7 @@ window.crewSaveProject = async function(){
   row.updated_at = new Date().toISOString();
   var adm = { client_name:v('client_name')||null, client_contact:v('client_contact')||null, quote_krw:manToWon(v('quote_krw')),
               other_cost_krw:manToWon(v('other_cost_krw')), bill_status:v('bill_status'),
-              bill_paid_at: v('bill_status')==='paid' ? ((C.padmin[C.editProject]||{}).bill_paid_at||today()) : null, quote_vat:document.getElementById('crE_quote_vat').checked,
+              bill_paid_at: v('bill_status')==='paid' ? ((C.padmin[C.editProject]||{}).bill_paid_at||today()) : null, quote_vat:(document.querySelector('input[name=crE_qvat]:checked')||{}).value!=='0',
               memo:v('memo')||null, updated_at:new Date().toISOString(),
               need_basic:numOrNull(v('need_basic')), need_crew:numOrNull(v('need_crew')), need_core:numOrNull(v('need_core')) };
   if (adm.need_basic!==null || adm.need_crew!==null || adm.need_core!==null) row.headcount = n(adm.need_basic)+n(adm.need_crew)+n(adm.need_core);
@@ -972,7 +974,7 @@ function renderProjectDetail(){
     + '<div class="sub">'+stP(p.status,p)+(p.roles?' &nbsp; 모집: '+e(p.roles):'')+(p.call_time?' &nbsp; 콜: '+e(p.call_time):'')+(pa.client_name?' &nbsp; 클라이언트: '+e(pa.client_name)+(pa.client_contact?' ('+e(pa.client_contact)+')':''):'')+mapBtn(p)+'</div>'
     + '<div class="cr-sum">'
     +   '<div><div class="l">견적 (공급가)</div><div class="v">'+won(q)+'</div></div>'
-    +   '<div><div class="l">청구 총액'+(pa.quote_vat===false?'':' (VAT 포함)')+'</div><div class="v">'+(q===null||q===undefined?'—':won(n(q)+vatQ))+'</div></div>'
+    +   '<div><div class="l">청구 총액'+(pa.quote_vat===false?' (세금처리 안 함)':' (VAT 포함)')+'</div><div class="v">'+(q===null||q===undefined?'—':won(n(q)+vatQ))+'</div></div>'
     +   '<div><div class="l">인건비 (페이+실비)</div><div class="v">'+won(cost)+'</div></div>'
     +   '<div><div class="l">기타 비용</div><div class="v">'+won(other)+'</div></div>'
     +   '<div><div class="l">남는 금액</div><div class="v '+(mg!==null&&mg<0?'cr-neg':'')+'">'+(mg===null?'—':won(mg))+(mg!==null&&n(q)>0?' <span class="cr-meta">'+Math.round(mg/n(q)*100)+'%</span>':'')+'</div></div>'
@@ -1041,7 +1043,7 @@ function inviteBox(p, addable){
   var list=addable.filter(function(m){ return !m.is_ghost; }).sort(function(a,b){ var r={core:0,crew:1,basic:2}; return (r[a.level||'basic']-r[b.level||'basic']) || (a.name<b.name?-1:1); });
   return '<div class="cr-sec" style="margin-top:18px">감독 지정 <span class="cr-meta">(전화로 섭외한 감독도 여기서 지정 — 알림이 가고 본인이 수락해야 확정)</span></div>'
     + (list.length ? '<div class="rowflex" style="flex-wrap:wrap;gap:6px 16px;margin-bottom:10px">'+list.map(function(m){ return '<label class="cr-check"><input type="checkbox" class="crInv" value="'+m.user_id+'"> '+e(m.name)+' <span class="cr-meta">'+(LV_NAME[m.level]||'일반')+(m.specialty?' · '+e(m.specialty):'')+'</span></label>'; }).join('')+'</div>'
-       + '<div class="rowflex"><button class="tbtn" onclick="crewInvite(\''+p.id+'\')">선택한 감독에게 지정 알림 보내기</button><span class="cr-meta">푸시·메일이 가고, 본인이 [수락]하면 참여 확정·[거절]하면 알려 드립니다(정원이 차면 수락이 막힘). 비공개 공고는 지정받은 감독에게만 보입니다.</span></div>'
+       + '<div class="rowflex"><button class="tbtn" onclick="crewInvite(\''+p.id+'\')">선택한 감독에게 지정 알림 보내기</button><span class="cr-meta">앱 푸시 알림이 가고, 본인이 [수락]하면 참여 확정·[거절]하면 알려 드립니다(정원이 차면 수락이 막힘). 비공개 공고는 지정받은 감독에게만 보입니다.</span></div>'
        : '<p class="cr-meta">지정할 수 있는 감독이 없습니다(이미 모두 신청·지정됨).</p>');
 }
 window.crewInvite = async function(pid){
@@ -1247,10 +1249,10 @@ function renderTaxReport(m){
         '지방소득세(특별징수) 신고·납부 (위택스) — '+due(10)+'까지',
         '근로내용확인신고 (고용·산재보험, 근로복지공단) — '+due(15)+'까지',
         '일용근로소득 지급명세서 제출 — '+due(nm?nm.last:'말')+'까지'] },
-    { k:'invoice', t:'세금계산서 (사업자)', todo:[
+    { k:'invoice', t:'세금계산서 (사업자 · 부가세 별도)', todo:[
         '원천징수 없음 — 감독(사업자)에게 매입 세금계산서를 받았는지 확인 (공급가 + 부가세)',
         '받은 세금계산서는 부가세 신고 때 매입세액공제 (분기 신고)'] },
-    { k:'none', t:'공제 없음', todo:['신고할 원천세 없음 — 필요하면 지급 근거만 보관'] }
+    { k:'none', t:'세금처리 안 함', todo:['원천징수·부가세 없음 — 페이 그대로 지급, 이체 내역 등 지급 근거만 보관'] }
   ];
   var h='', tot={pay:0,it:0,lt:0,vat:0};
   GROUPS.forEach(function(g){
