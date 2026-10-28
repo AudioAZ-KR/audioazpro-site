@@ -936,7 +936,7 @@ window.crewSaveProject = async function(){
       var had = C.priv.notes || (C.priv.contact && C.priv.contact.join(''));
       if (pn || cn || ct || cp || had){ r = await sb.from('crew_project_private').upsert({ project_id:id, notes:pn||null, contact_name:cn||null, contact_title:ct||null, contact_phone:cp||null, updated_at:new Date().toISOString() }); if (r.error) throw r.error; }
     }
-    flash(C.editProject ? '저장했습니다.' : '등록했습니다.'+(row.status==='open'?' 감독 페이지에 바로 보입니다.':''));
+    flash(C.editProject ? '저장했습니다.' : '등록했습니다.'+(row.status==='open'?(row.is_private?' 비공개라 지정한 감독에게만 보입니다.':' 감독 페이지에 바로 보이고, 볼 수 있는 감독에게 앱 푸시 알림이 갑니다.'):''));
     crewCloseEdit(); await load(); C.openProject = id; render('crew-proj');
   }catch(err){ dbErr(err); }
 };
@@ -1033,7 +1033,7 @@ window.crewSavePay = async function(appId){
 window.crewSetApp = async function(appId, status){
   var a=C.apps.filter(function(x){return x.id===appId;})[0]; if(!a) return;
   var x=mem(a.user_id)||{}, p=proj(a.project_id)||{};
-  if (status==='declined' && !confirm((a.status==='confirmed'?'확정을 취소하고 거절로 바꿉니다':'신청을 거절합니다')+'\n'+(x.name||'')+' · '+(p.title||''))) return;
+  if (status==='declined' && !confirm((a.status==='confirmed'?'확정을 취소합니다 (참여 취소 앱 푸시 알림이 갑니다)':'신청을 거절합니다')+'\n'+(x.name||'')+' · '+(p.title||''))) return;
   var r=await sb.from('crew_applications').update({status:status}).eq('id', appId); if (r.error) return dbErr(r.error);
   if (status==='confirmed' && !C.pay[appId]){
     var ma=C.madmin[a.user_id]||{};
@@ -1058,7 +1058,7 @@ window.crewInvite = async function(pid){
   flash(ids.length+'명에게 지정 알림을 보냈습니다. 수락하면 확정됩니다.'); await load(); render('crew-proj');
 };
 window.crewUninvite = async function(appId){
-  if (!confirm('이 지정을 취소합니다. 상대 화면에서도 사라집니다.')) return;
+  if (!confirm('이 지정을 취소합니다. 상대 화면에서도 사라지고, 지정 취소 앱 푸시 알림이 갑니다.')) return;
   var r=await sb.from('crew_applications').delete().eq('id', appId).eq('status','invited'); if (r.error) return dbErr(r.error);
   flash('지정을 취소했습니다.'); await load(); render('crew-proj');
 };
