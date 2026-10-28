@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-27T22:05+09:00",
+ "generated": "2026-10-28T12:05+09:00",
  "pages": [
   {
    "file": "beta.html",
@@ -106,21 +106,25 @@
   "tally": {
    "product": "flare-tally-host",
    "version": "1.0",
-   "build": 110,
-   "label": "v1.0 (110)",
-   "pkg": "Flare-Tally-1.0-b110.pkg",
+   "build": 111,
+   "label": "v1.0 (111)",
+   "pkg": "Flare-Tally-1.0-b111.pkg",
    "url": "https://audioazpro.com/downloads.html",
-   "date": "2026-10-20",
-   "note": "연결 상태의 긴 오류 문구와 카메라맨 접속 칸의 버튼이 잘리던 것을 고쳤습니다. 연결 상태 줄을 누르면 전체 문구를 팝업으로 볼 수 있습니다.",
-   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b110/Flare-Tally-1.0-b110.pkg",
-   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b110/Flare-Tally-win-1.0-b110.zip",
-   "win_label": "v1.0 (110) 베타"
+   "date": "2026-10-28",
+   "note": "앱 언어가 컴퓨터 표시 언어를 따라갑니다(직접 고른 언어는 그대로). ATEM 1 M/E 처럼 입력이 많은 스위처에서 카메라 수가 적게 잡히던 것을 고쳤습니다.",
+   "mac_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b111/Flare-Tally-1.0-b111.pkg",
+   "win_url": "https://github.com/AudioAZ-KR/audioazpro-site/releases/download/flare-tally-1.0-b111/Flare-Tally-win-1.0-b111.zip",
+   "win_label": "v1.0 (111) 베타"
   },
   "showfile": "v0.6.6",
   "lmaz": null
  },
  "console_version": "1.33.0",
  "commits_live": [
+  {
+   "date": "2026-10-27T22:05:25+09:00",
+   "msg": "크루 콘솔: 받는 금액 부가세 별도/세금처리 안 함 선택, 크루 지급 '세금처리 안 함' 명칭, 메일 문구 정리"
+  },
   {
    "date": "2026-10-25T23:45:20+09:00",
    "msg": "콘솔 v1.33.0: 대시보드 국내/해외 매출 분리(이번 달 KPI·오늘/이번 주/이번 달/지난 달/누적/환불 표), 월별 매출 국내·해외 건수 분리, Paddle→레몬스퀴지 표기"
@@ -148,10 +152,6 @@
   {
    "date": "2026-10-21T20:23:30+09:00",
    "msg": "콘솔 크루: 보는 동안 15초마다 자동 새로 고침(바뀐 것만, 편집·미저장 입력 중엔 건너뜀)"
-  },
-  {
-   "date": "2026-10-20T10:44:49+09:00",
-   "msg": "사이트다(siteda.kr) 소유권 인증 메타태그 추가"
   }
  ],
  "commits_staging": []
