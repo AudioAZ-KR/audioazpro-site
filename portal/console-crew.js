@@ -352,7 +352,10 @@ function projMargin(p){
 function travelTag(p){ return p ? (p.depart_day_before?' <span class="cr-meta" style="margin-left:6px">전날 출발</span>':'')+(p.return_day_after?' <span class="cr-meta" style="margin-left:6px">다음날 복귀</span>':'') : ''; }
 function lvTag(p){ return p && p.min_level==='basic' ? ' <span class="cr-st g" style="margin-left:6px;vertical-align:middle" title="가입한 누구나 볼 수 있음"><i></i>일반 공개</span>' : (p && p.min_level==='core' ? ' <span class="cr-st a" style="margin-left:6px;vertical-align:middle"><i></i>코어만</span>' : ''); }
 function tentTag(p){ return lvTag(p)+travelTag(p)+(p && p.requires_safety ? ' <span class="cr-st b" style="margin-left:6px;vertical-align:middle" title="공연자 안전교육 수료증 필요"><i></i>안전교육 필요</span>' : '')+(p && p.is_private ? ' <span class="cr-st r" style="margin-left:6px;vertical-align:middle" title="감독에게 보이지 않음"><i></i>비공개</span>' : '') + (p && p.is_tentative ? ' <span class="cr-st a" style="margin-left:6px;vertical-align:middle" title="임시 픽스 — 변동·취소 가능"><i></i>예정</span>' : ''); }
-function stP(s, p){ var c={open:'g',draft:'d',closed:'a',done:'b',cancelled:'d'}[s]||'d'; var t=(s==='closed'&&p&&p.auto_closed)?'정원 마감':(ST_PROJ[s]||s); return '<span class="cr-st '+c+'"><i></i>'+t+'</span>'; }
+/* 개인 일정 (2026-10-28 사장님): 비공개 + 모집 인원 0(빈칸) + 지정·신청·확정 아무도 없음 = 사장님 개인용 → '모집 중' 대신 '개인 일정', 모집 중 집계에서 뺌.
+   감독을 지정하거나 인원을 넣으면 다시 평소대로 */
+function isPersonal(p){ return !!(p && p.is_private && !(n(p.headcount)>0) && !appsOf(p.id).some(function(a){ return a.status==='invited'||a.status==='applied'||a.status==='confirmed'; })); }
+function stP(s, p){ if (s==='open' && isPersonal(p)) return '<span class="cr-st d"><i></i>개인 일정</span>'; var c={open:'g',draft:'d',closed:'a',done:'b',cancelled:'d'}[s]||'d'; var t=(s==='closed'&&p&&p.auto_closed)?'정원 마감':(ST_PROJ[s]||s); return '<span class="cr-st '+c+'"><i></i>'+t+'</span>'; }
 function stA(s){ var c={applied:'a',confirmed:'g',declined:'r',cancelled:'d',invited:'b'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_APP[s]||s)+'</span>'; }
 function stM(s){ var c={pending:'a',active:'g',inactive:'d',deleted:'r'}[s]||'d'; return '<span class="cr-st '+c+'"><i></i>'+(ST_MEM[s]||s)+'</span>'; }
 /* 전화번호 자동 하이픈 (01035470502 → 010-3547-0502, 02·지역번호·1588 대표번호 포함) */
@@ -599,7 +602,7 @@ function renderDash(){
   C.projects.forEach(function(p){ if (ym(p.date_start)===m && p.status!=='cancelled'){ mq+=n((C.padmin[p.id]||{}).quote_krw); mp+=projCost(p.id); } });
   C.apps.forEach(function(a){ if(a.status!=='confirmed' || ghost(a.user_id)) return; var p=proj(a.project_id); if(!p||p.status==='cancelled') return;
     var py=C.pay[a.id]; if(isPast(p) && (!py||!py.paid)){ unpaid+=calcPay(py).net; unpaidN++; } });   // 미지급 = 끝난 행사만 (10-13)
-  set('crKOpen', C.projects.filter(function(p){ return p.status==='open'; }).length);
+  set('crKOpen', C.projects.filter(function(p){ return p.status==='open' && !isPersonal(p); }).length);
   set('crKApplied', applied.length); set('crKPending', pend.length);
   set('crKQuote', won(mq)+'원'); set('crKPay', won(mp)+'원'); set('crKUnpaid', won(unpaid)+'원'); set('crKUnpaidD', unpaidN+'건 · 지급액 합계');
 
