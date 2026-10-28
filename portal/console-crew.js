@@ -103,7 +103,7 @@ addSection('crew-dash',
  + '</div>'
  + '<div class="card"><h2>다가오는 일정 <button class="tbtn" style="margin-left:10px" onclick="crewReload()">새로고침</button></h2><div class="sub">오늘 이후 공고 전부 (작성 중·취소 제외)</div><div class="cr-wrap" id="crDashUp"></div></div>'
  + '<div class="card" id="crCancelCard" style="display:none"><h2>확정 참여 취소 요청</h2><div class="sub">감독이 확정된 참여의 취소를 요청했습니다. 승인하면 취소되고 자리가 다시 열리며, 반려하면 참여가 유지됩니다. 어느 쪽이든 감독에게 알림이 갑니다</div><div class="cr-wrap" id="crDashCancel"></div></div>'
- + '<div class="card"><h2>지난 일정 · 행사 완료 / 입금 / 페이 지급</h2><div class="sub">행사 완료·클라이언트 입금은 스위치로 켜고 끄고, 감독 페이는 사람마다 [지급 완료](확인 창 한 번 더)로 처리합니다. 모두 끝난 행사는 30일 뒤 이 목록에서 빠집니다</div><div class="cr-wrap" id="crDashPast"></div></div>'
+ + '<div class="card"><h2>지난 일정 · 행사 완료 / 입금 / 페이 지급</h2><div class="sub">행사 완료·클라이언트 입금은 스위치로 켜고 끄고, 감독 페이는 사람마다 [지급 완료](확인 창 한 번 더)로 처리합니다. 행사 완료는 마지막 날부터 켤 수 있고, 세 가지가 모두 끝난 행사는 다음 날부터 이 목록에서 빠집니다(프로젝트 탭 [완료]에서 볼 수 있음)</div><div class="cr-wrap" id="crDashPast"></div></div>'
  + '<div class="card"><h2>내 캘린더 연동</h2><div class="sub">모든 프로젝트(비공개·예정·작성 중 포함, 취소 제외)가 사장님 캘린더에 들어갑니다. 확정 감독 이름·신청 수도 메모에 표시 — 견적·페이 금액은 넣지 않습니다(주소만 알면 열리므로). 1시간마다 갱신.</div><div id="crFeed" class="rowflex"></div></div>'
  + '<div class="card"><h2>새 참여 신청</h2><div class="sub">감독이 audioaz.co.kr 에서 남긴 신청 — 바로 확정·거절</div><div class="cr-wrap" id="crDashApps"></div></div>'
  + '<div class="card"><h2>참여 요청 (승인 대기)</h2><div class="sub">초대 코드 없이 들어온 AudioAZ(Pro) 회원의 요청입니다. 승인해야 프로젝트를 볼 수 있고, 승인하면 본인에게 앱 푸시 알림이 갑니다</div><div class="cr-wrap" id="crDashPend"></div></div>');
@@ -194,24 +194,28 @@ function safetyTag(x, p){
     +(x.safety_cert_doc?' <button class="tbtn" style="margin-left:4px" onclick="crewDownloadDoc(\''+x.safety_cert_doc+'\')">수료증 받기</button>':'');
 }
 function isPast(p){ return (p.date_end||p.date_start) < today(); }
-function pastOpen(p){ return isPast(p) && (p.status==='open' || p.status==='closed'); }
+/* 행사 완료는 마지막 날(하루짜리는 당일)부터 누를 수 있다 (2026-10-28) */
+function isEnded(p){ return (p.date_end||p.date_start) <= today(); }
+function pastOpen(p){ return isEnded(p) && (p.status==='open' || p.status==='closed'); }
 window.crewMarkDone = async function(id){
   var ids = id==='all' ? C.projects.filter(pastOpen).map(function(p){ return p.id; }) : [id];
   if (!ids.length) return;
   var p1 = proj(ids[0])||{};
-  if (!confirm(ids.length>1 ? '지난 행사 '+ids.length+'건을 완료로 바꿉니다.' : '"'+(p1.title||'')+'" 을(를) 완료로 바꿉니다.')) return;
+  if (!confirm(ids.length>1 ? '끝난 행사 '+ids.length+'건을 완료로 바꿉니다.' : '"'+(p1.title||'')+'" 을(를) 완료로 바꿉니다.')) return;
   var r=await sb.from('crew_projects').update({ status:'done' }).in('id', ids); if (r.error) return dbErr(r.error);
   flash(ids.length+'건 완료 처리했습니다.'); await load(); render(curPage());
 };
 /* 클라이언트 입금 (2026-10-13): 끝난 행사(취소·작성 중 제외) 중 bill_status 가 '입금 완료'가 아닌 것 */
-function billWaiting(p){ return isPast(p) && p.status!=='cancelled' && p.status!=='draft' && (C.padmin[p.id]||{}).bill_status!=='paid'; }
+function billWaiting(p){ return isEnded(p) && p.status!=='cancelled' && p.status!=='draft' && (C.padmin[p.id]||{}).bill_status!=='paid'; }
 function billTotal(p){ var pa=C.padmin[p.id]||{}, q=n(pa.quote_krw); return q + (pa.quote_vat===false ? 0 : Math.round(q*0.1)); }
-/* 지난 일정 목록: 완료 전이거나 입금 전이거나, 끝난 지 30일 안 된 행사 (켰다 끈 실수를 바로 되돌릴 수 있게) */
+/* 지난 일정 목록: 마지막 날이 된 행사부터. 행사 완료·입금 완료·지급 완료가 다 끝나면 마지막으로 끝낸 날의 다음 날부터 빠진다
+   (2026-10-28 사장님, 이전엔 30일 유지). 그날 안에는 남아 있어 잘못 켠 것을 되돌릴 수 있다. 빠진 행사는 프로젝트 탭 '완료'에서 */
 function pastRow(p){
-  if (!isPast(p) || p.status==='cancelled' || p.status==='draft') return false;
-  var d=new Date(); d.setDate(d.getDate()-30); var lim=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-  var unpaid = payApps(p.id).some(function(a){ return !(C.pay[a.id]||{}).paid; });
-  return p.status!=='done' || (C.padmin[p.id]||{}).bill_status!=='paid' || unpaid || (p.date_end||p.date_start) >= lim;
+  if (!isEnded(p) || p.status==='cancelled' || p.status==='draft') return false;
+  var pa=C.padmin[p.id]||{}, as=payApps(p.id);
+  if (p.status!=='done' || pa.bill_status!=='paid' || as.some(function(a){ return !(C.pay[a.id]||{}).paid; })) return true;
+  var last=[p.done_at, pa.bill_paid_at].concat(as.map(function(a){ return (C.pay[a.id]||{}).paid_at; })).filter(Boolean).sort().pop() || '';
+  return last >= today();
 }
 /* ON/OFF 스위치 — 누르면 바로 저장, 다시 누르면 되돌림 */
 function swDone(p){ return '<label class="cr-check"><input type="checkbox"'+(p.status==='done'?' checked':'')+' onchange="crewToggleDone(\''+p.id+'\',this.checked)"> <span class="cr-meta">'+(p.status==='done'?'ON':'OFF')+'</span></label>'; }
@@ -595,7 +599,7 @@ function renderDash(){
   set('crKQuote', won(mq)+'원'); set('crKPay', won(mp)+'원'); set('crKUnpaid', won(unpaid)+'원'); set('crKUnpaidD', unpaidN+'건 · 지급액 합계');
 
   // 다가오는 일정: 기간 제한 없이 앞으로의 공고 전부 (2026-10-13, 45일 제한 폐지 — 1월 공고가 안 보였음)
-  var up = C.projects.filter(function(p){ return (p.date_end||p.date_start)>=t && p.status!=='cancelled' && p.status!=='draft'; })
+  var up = C.projects.filter(function(p){ return (p.date_end||p.date_start)>=t && p.status!=='cancelled' && p.status!=='draft' && p.status!=='done'; })   // 완료 누른 당일 행사는 아래 지난 일정으로
                      .sort(function(a,b){ return a.date_start<b.date_start?-1:1; });
   document.getElementById('crDashUp').innerHTML = up.length ? '<table class="cr-t"><thead><tr><th>날짜</th><th>프로젝트</th><th>장소</th><th>상태</th><th>확정 감독</th><th>신청</th></tr></thead><tbody>'
     + up.map(function(p){ var as=appsOf(p.id), cf=as.filter(function(a){return a.status==='confirmed';}), ap=as.filter(function(a){return a.status==='applied';});
@@ -970,7 +974,7 @@ function renderProjectDetail(){
   var addable = C.members.filter(function(m){ return m.status==='active' && !assigned[m.user_id]; });
  box.innerHTML = '<h2>'+e(p.title)+tentTag(p)+' <span class="cr-meta" style="font-weight:400;margin-left:8px">'+e(dRange(p))+' · '+days(p)+'일'+(p.venue?' · '+e(p.venue):'')+'</span>'
     + '<button class="tbtn" style="float:right" onclick="crewEditProject(\''+p.id+'\')">프로젝트 수정</button>'
-    + '<span style="float:right;margin-right:14px;font-weight:400;font-size:13px">'+(isPast(p)&&p.status!=='draft'&&p.status!=='cancelled'?'행사 완료 '+swDone(p)+' &nbsp; ':'')+(p.status!=='cancelled'?'입금 완료 '+swPaid(p):'')+'</span></h2>'
+    + '<span style="float:right;margin-right:14px;font-weight:400;font-size:13px">'+(isEnded(p)&&p.status!=='draft'&&p.status!=='cancelled'?'행사 완료 '+swDone(p)+' &nbsp; ':'')+(p.status!=='cancelled'?'입금 완료 '+swPaid(p):'')+'</span></h2>'
     + '<div class="sub">'+stP(p.status,p)+(p.roles?' &nbsp; 모집: '+e(p.roles):'')+(p.call_time?' &nbsp; 콜: '+e(p.call_time):'')+(pa.client_name?' &nbsp; 클라이언트: '+e(pa.client_name)+(pa.client_contact?' ('+e(pa.client_contact)+')':''):'')+mapBtn(p)+'</div>'
     + '<div class="cr-sum">'
     +   '<div><div class="l">견적 (공급가)</div><div class="v">'+won(q)+'</div></div>'
@@ -1304,7 +1308,7 @@ window.crewRenderSettle = function(){
       +'<td style="font-size:12.5px">'+(r.m.bank_account?e(r.m.bank_name||'')+' <span class="mono">'+e(r.m.bank_account)+'</span>'+(r.m.bank_holder&&r.m.bank_holder!==r.m.name?' <span class="cr-meta">('+e(r.m.bank_holder)+')</span>':'')
         +'<div class="cr-actions" style="margin-top:4px"><button class="tbtn" onclick="crewCopy(\''+e(String(r.m.bank_account).replace(/[^0-9]/g,''))+'\',\'계좌번호\')">계좌 복사</button><button class="tbtn" onclick="crewCopy(\''+c.net+'\',\'금액 '+c.net.toLocaleString('ko-KR')+'원\')">금액 복사</button></div>'
         :'<span class="cr-meta">미등록</span><div class="cr-actions" style="margin-top:4px"><button class="tbtn" onclick="crewCopy(\''+c.net+'\',\'금액 '+c.net.toLocaleString('ko-KR')+'원\')">금액 복사</button></div>')+'</td>'
-      +'<td>'+(r.py.paid ? '<span class="cr-st g"><i></i>지급 '+e(r.py.paid_at||'')+'</span> <button class="tbtn" onclick="crewPayOne(\''+r.a.id+'\',false)">취소</button>' : (isPast(r.p) ? '<button class="tbtn" onclick="crewPayOne(\''+r.a.id+'\',true)">지급 완료</button>' : '<span class="cr-meta">행사 전</span>'))+'</td></tr>';
+      +'<td>'+(r.py.paid ? '<span class="cr-st g"><i></i>지급 '+e(r.py.paid_at||'')+'</span> <button class="tbtn" onclick="crewPayOne(\''+r.a.id+'\',false)">취소</button>' : (isEnded(r.p) ? '<button class="tbtn" onclick="crewPayOne(\''+r.a.id+'\',true)">지급 완료</button>' : '<span class="cr-meta">행사 전</span>'))+'</td></tr>';
   }).join('') : '<tr><td colspan="10" class="cr-empty">해당 기간에 확정된 참여가 없습니다.</td></tr>';
 };
 window.crewTogglePaid = async function(appId, on){
