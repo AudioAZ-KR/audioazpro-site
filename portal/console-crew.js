@@ -426,7 +426,8 @@ window.crewShowRrn = async function(uid){
 window.crewCopyRrn = async function(uid){
   var r=await sb.rpc('crew_admin_rrn', { p_uid:uid }); if (r.error) return dbErr(r.error);
   if (!r.data) return flash('등록된 주민등록번호가 없습니다.', true);
-  crewCopy(String(r.data).replace(/\D/g,''), '주민등록번호');
+  var d=String(r.data).replace(/\D/g,'');
+  crewCopy(d.length===13 ? d.slice(0,6)+'-'+d.slice(6) : String(r.data).trim(), '주민등록번호');
 };
 /* ── 일용근로 근로계약서·임금명세서 (근로기준법 제17조·제48조 제2항, 2026-10-19) — 새 창에서 인쇄/PDF 저장 ── */
 var BIZ={ name:'오디오에이지(AudioAZ)', ceo:'김형준', no:'456-17-01966', addr:'경기도 남양주시 다산중앙로19번길 21', tel:'070-4837-1073' };
