@@ -697,7 +697,7 @@ window.crewRenderProjects = function(){
 /* ── 프로젝트 등록·수정 ────────────────────────────────────────────────── */
 window.crewEditProject = function(id){
   var p = id ? proj(id) : null, pa = (p && C.padmin[p.id]) || {};
-  C.editProject = id || null;
+  C.editProject = id || null; C.editStatus = id ? (proj(id)||{}).status : null;   // 수정 화면을 연 동안 정원 마감 등으로 상태가 바뀔 수 있어, 안 건드렸으면 저장 때 빼고 보낸다
   if (curPage()!=='crew-proj') azShow('crew-proj', true);
   var box = document.getElementById('crPEdit');
   function fld(k,l,v,type,ph){ return '<div class="field"><label>'+l+'</label><input id="crE_'+k+'" type="'+(type||'text')+'"'+(type==='number'?' step="any"':'')+' value="'+e(v)+'" placeholder="'+e(ph||'')+'"></div>'; }
@@ -942,7 +942,7 @@ window.crewSaveProject = async function(){
   if (adm.need_basic!==null || adm.need_crew!==null || adm.need_core!==null) row.headcount = n(adm.need_basic)+n(adm.need_crew)+n(adm.need_core);
   try{
     var id = C.editProject, r;
-    if (id){ r = await sb.from('crew_projects').update(row).eq('id', id); if (r.error) throw r.error; }
+    if (id){ if (row.status===C.editStatus) delete row.status; r = await sb.from('crew_projects').update(row).eq('id', id); if (r.error) throw r.error; }
     else { r = await sb.from('crew_projects').insert(row).select('id').single(); if (r.error) throw r.error; id = r.data.id; }
     adm.project_id = id;
     r = await sb.from('crew_project_admin').upsert(adm); if (r.error) throw r.error;
