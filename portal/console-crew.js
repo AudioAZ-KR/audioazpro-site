@@ -613,7 +613,7 @@ function renderDash(){
   document.getElementById('crDashUp').innerHTML = up.length ? '<table class="cr-t"><thead><tr><th>날짜</th><th>프로젝트</th><th>장소</th><th>상태</th><th>확정 감독</th><th>신청</th></tr></thead><tbody>'
     + up.map(function(p){ var as=appsOf(p.id), cf=as.filter(function(a){return a.status==='confirmed';}), ap=as.filter(function(a){return a.status==='applied';});
         return '<tr style="cursor:pointer" onclick="crewOpenProject(\''+p.id+'\')"><td class="cr-date">'+e(dRange(p))+'</td><td><b>'+e(p.title)+'</b>'+tentTag(p)+(p.call_time?'<div class="cr-meta">콜 '+e(p.call_time)+'</div>':'')+'</td><td>'+e(p.venue||'—')+'</td><td>'+stP(p.status,p)+'</td>'
-          +'<td>'+(cf.length?cf.map(function(a){ var x=mem(a.user_id); return e(x?x.name:'?'); }).join(', '):'<span class="cr-meta">없음</span>')+(p.headcount?' <span class="cr-meta">/ '+p.headcount+'명</span>':'')+'</td>'
+          +'<td>'+(cf.length?cf.map(function(a){ var x=mem(a.user_id); return e(x?x.name:'?'); }).join(', '):'<span class="cr-meta">없음</span>')+(extN(p.id)?' <span class="cr-meta">+ 외부 '+extN(p.id)+'</span>':'')+(p.headcount?' <span class="cr-meta">/ '+p.headcount+'명</span>':'')+'</td>'
           +'<td class="cr-num">'+ap.length+'</td></tr>'; }).join('') + '</tbody></table>'
     : '<div class="cr-empty">예정된 일정이 없습니다.</div>';
 
@@ -687,7 +687,7 @@ window.crewRenderProjects = function(){
     var as=appsOf(p.id), ap=as.filter(function(a){return a.status==='applied'||a.status==='confirmed';}).length, cf=as.filter(function(a){return a.status==='confirmed';}).length;
     var pa=C.padmin[p.id]||{}, cost=projCost(p.id), mg=projMargin(p);
     return '<tr class="'+(C.openProject===p.id?'sel':'')+'"><td class="cr-date">'+e(dRange(p))+'</td><td><b>'+e(p.title)+'</b>'+tentTag(p)+(pa.client_name?'<div class="cr-meta">'+e(pa.client_name)+'</div>':'')+'</td><td>'+e(p.venue||'—')+'</td><td>'+stP(p.status,p)+'</td>'
-      +'<td class="cr-num">'+ap+' / '+cf+(p.headcount?' <span class="cr-meta">('+p.headcount+')</span>':'')+'</td>'
+      +'<td class="cr-num">'+ap+' / '+cf+(extN(p.id)?'+외부'+extN(p.id):'')+(p.headcount?' <span class="cr-meta">('+p.headcount+')</span>':'')+'</td>'
       +'<td class="cr-num">'+won(pa.quote_krw)+'</td><td class="cr-num">'+won(cost)+'</td>'
       +'<td class="cr-num '+(mg===null?'':(mg<0?'cr-neg':''))+'">'+(mg===null?'—':won(mg))+'</td><td style="font-size:12.5px">'+(ST_BILL[pa.bill_status||'none'])+(pa.bill_status==='paid'&&pa.bill_paid_at?'<div class="cr-meta">'+e(pa.bill_paid_at)+'</div>':'')+'</td>'
       +'<td><div class="cr-actions"><button class="tbtn" onclick="crewOpenProject(\''+p.id+'\')">관리</button><button class="tbtn" onclick="crewEditProject(\''+p.id+'\')">수정</button>'+'</div></td></tr>';
@@ -972,12 +972,37 @@ window.crewOpenProject = async function(id){
   if (curPage()!=='crew-proj') await azShow('crew-proj', true); else { crewRenderProjects(); renderProjectDetail(); }
   var d=document.getElementById('crPDetail'); if (d) d.scrollIntoView({behavior:'smooth',block:'start'});
 };
-/* 등급별 모집: 필요 인원 대비 확정 인원 (관리자 전용) */
+/* 외부 감독 섭외 (2026-11-03 사장님): 정원 미달을 외부 인원으로 채운다. external_count 는 서버 정원 계산에 더해져 자동 정원 마감·재개.
+   크루에게는 확정 인원수에 합쳐서만 보인다 */
+function extN(pid){ return n((C.padmin[pid]||{}).external_count); }
+function externalBox(p){
+  if (p.status==='cancelled'||p.status==='draft'||p.status==='done'||isPersonal(p)) return '';
+  var hc=n(p.headcount), cf=payApps(p.id).length, ext=extN(p.id), gap=Math.max(0, hc-cf-ext);
+  if (!hc) return '<div class="cr-meta" style="margin:-4px 0 12px">외부 섭외로 정원을 채우려면 모집 인원을 먼저 넣어 주세요</div>';
+  return '<div class="rowflex" style="gap:10px;align-items:center;margin:-4px 0 12px"><span><b>외부 섭외</b> <span class="mono">'+ext+'</span>명</span>'
+    +'<span class="cr-meta">확정 '+cf+' + 외부 '+ext+' / 정원 '+hc+(gap?' · '+gap+'명 부족':'')+'</span>'
+    +(gap?'<button class="tbtn" onclick="crewFillExternal(\''+p.id+'\')">부족 '+gap+'명 외부 섭외로 채우기</button><button class="tbtn" onclick="crewSetExternal(\''+p.id+'\','+(ext+1)+')">+1</button>':'')
+    +(ext?'<button class="tbtn" onclick="crewSetExternal(\''+p.id+'\','+(ext-1)+')">−1</button><button class="tbtn danger" onclick="crewSetExternal(\''+p.id+'\',0)">외부 섭외 취소</button>':'')+'</div>';
+}
+window.crewSetExternal = async function(id, v){
+  var ext=extN(id); if (v<ext && !confirm('외부 섭외를 '+ext+'명에서 '+v+'명으로 줄입니다. 정원이 비면 모집 중으로 다시 열립니다.')) return;
+  var r=await sb.from('crew_project_admin').upsert({ project_id:id, external_count:v, updated_at:new Date().toISOString() }); if (r.error) return dbErr(r.error);
+  flash('외부 섭외 '+v+'명'); await load(); render(curPage());
+};
+window.crewFillExternal = async function(id){
+  var p=proj(id)||{}, hc=n(p.headcount), cf=payApps(id).length, ext=extN(id), gap=hc-cf-ext; if (gap<=0) return;
+  var as=appsOf(id), inv=as.filter(function(a){ return a.status==='invited'; }).length, ap=as.filter(function(a){ return a.status==='applied'; }).length;
+  if (!confirm('부족한 '+gap+'명을 외부 섭외로 채우고 정원 마감합니다.\n'+(p.title||'')+'\n확정 '+cf+' + 외부 '+(ext+gap)+' / 정원 '+hc+(inv||ap?'\n\n응답 대기 중: 지정 '+inv+'명 · 신청 '+ap+'명. 지정된 감독은 정원이 차서 수락할 수 없게 됩니다.':'')+'\n\n감독에게 알림은 가지 않습니다.')) return;
+  var r=await sb.from('crew_project_admin').upsert({ project_id:id, external_count:ext+gap, updated_at:new Date().toISOString() }); if (r.error) return dbErr(r.error);
+  flash('외부 섭외 '+(ext+gap)+'명 · 정원 마감'); await load(); render(curPage());
+};
+/* 등급별 모집: 필요 인원 대비 확정 인원 (관리자 전용). 외부 섭외는 부족한 칸부터 채운다 */
 function levelNeedLine(p, pa, as){
   if (pa.need_basic==null && pa.need_crew==null && pa.need_core==null) return '';
   var cf={basic:0,crew:0,core:0}; as.forEach(function(a){ if(a.status!=='confirmed') return; var m=mem(a.user_id); if(m && !m.is_ghost) cf[a.apply_level||m.level||'basic']++; });   // 지원 등급 기준 (코어가 크루로 지원하면 크루 칸)
-  return '<div class="rowflex" style="gap:16px;margin:-4px 0 12px">'+['basic','crew','core'].map(function(k){ var need=pa['need_'+k]; if(need==null) return ''; var ok=cf[k]>=need;
-    return '<span><b>'+LV_NAME[k]+'</b> <span class="mono">'+cf[k]+' / '+need+'</span>명 '+(ok?'<span class="cr-st g"><i></i>충족</span>':'<span class="cr-st a"><i></i>'+(need-cf[k])+'명 부족</span>')+'</span>'; }).join('')+'</div>';
+  var left=n(pa.external_count);
+  return '<div class="rowflex" style="gap:16px;margin:-4px 0 12px">'+['basic','crew','core'].map(function(k){ var need=pa['need_'+k]; if(need==null) return ''; var fill=Math.min(left, Math.max(0,need-cf[k])); left-=fill; var got=cf[k]+fill, ok=got>=need;
+    return '<span><b>'+LV_NAME[k]+'</b> <span class="mono">'+got+' / '+need+'</span>명 '+(fill?'<span class="cr-meta">외부 '+fill+' 포함</span> ':'')+(ok?'<span class="cr-st g"><i></i>충족</span>':'<span class="cr-st a"><i></i>'+(need-got)+'명 부족</span>')+'</span>'; }).join('')+'</div>';
 }
 function renderProjectDetail(){
   var box=document.getElementById('crPDetail'), p=proj(C.openProject);
@@ -1001,6 +1026,7 @@ function renderProjectDetail(){
     +   '<div><div class="l">청구 상태</div><div class="v" style="font-family:inherit;font-size:14px">'+(pa.bill_status&&pa.bill_status!=='none'?ST_BILL[pa.bill_status]:'미청구')+(pa.bill_status==='paid'&&pa.bill_paid_at?'<div class="cr-meta">'+e(pa.bill_paid_at)+' 입금</div>':'')+'</div></div>'
     + '</div>'
     + levelNeedLine(p, pa, as)
+    + externalBox(p)
     + (p.requires_safety ? '<div class="rowflex" style="margin:-4px 0 12px"><button class="tbtn" onclick="crewCertZip(\''+p.id+'\')">확정자 안전교육 수료증 모두 받기 (zip)</button><span class="cr-meta">공연장 제출용 — 확정된 감독의 수료증을 한 파일로</span></div>' : '')
     + (pa.memo?'<div class="note" style="margin:-6px 0 12px">메모: '+e(pa.memo)+'</div>':'')
     + '<div class="cr-wrap"><table class="cr-t wide"><thead><tr><th>감독</th><th>희망 포지션 · 남긴 말</th><th>상태</th><th style="min-width:110px">페이 (세전, 만원)</th><th style="min-width:96px">실비 (만원)</th><th>구분</th><th style="text-align:right">지급액</th><th>지급</th><th></th></tr></thead><tbody>'
