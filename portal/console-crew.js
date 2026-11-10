@@ -381,7 +381,17 @@ document.addEventListener('input', function(ev){
 });
 window.fmtBizNo=fmtBizNo;
 /* ── 감독 제출 서류 (안전교육 이수증·신분증·통장 사본·기타) ── */
-var DOC_KIND={ safety:'안전교육', id:'신분증', bank:'통장', other:'기타' };
+var DOC_KIND={ safety:'안전교육', id:'신분증', bank:'통장', biz:'사업자등록증', other:'기타' };
+/* 세금계산서 정보 — 손택스에 하나씩 붙여 넣도록 항목마다 복사 (2026-11-10). 등록번호는 숫자 10자리만 복사 */
+window.crewCopyCell = function(btn){ crewCopy(btn.getAttribute('data-v'), btn.getAttribute('data-l')); };
+function bizCopyCard(m){
+  var rows=[['등록번호', fmtBizNo(m.biz_no)||m.biz_no, String(m.biz_no||'').replace(/[^0-9]/g,'')], ['상호', m.biz_name], ['대표자', m.biz_ceo], ['사업장 주소', m.biz_addr], ['업태', m.biz_type], ['종목', m.biz_item], ['이메일', m.tax_email]];
+  var doc=docsOf(m.user_id).filter(function(d){ return d.kind==='biz'; }).pop();
+  return '<div class="cr-sec">세금계산서 정보 (손택스 입력용 · 항목별 복사)</div><table class="cr-t"><tbody>'+rows.map(function(r){ var v=r[1]?String(r[1]):'', c=r.length>2?r[2]:v;
+      return '<tr><td style="width:96px" class="cr-meta">'+r[0]+'</td><td>'+(v?'<b>'+e(v)+'</b>':'<span class="cr-meta">미등록</span>')+'</td><td style="width:70px">'+(c?'<button class="tbtn" data-v="'+e(c)+'" data-l="'+r[0]+'" onclick="crewCopyCell(this)">복사</button>':'')+'</td></tr>'; }).join('')+'</tbody></table>'
+    +(doc?'<div class="rowflex" style="margin-top:6px"><button class="tbtn" onclick="crewOpenDoc(\''+doc.id+'\')">사업자등록증 보기</button><span class="cr-meta">'+e(fmtDateTime(doc.created_at))+' 제출</span></div>'
+         :'<div class="cr-meta" style="margin-top:6px">사업자등록증 미제출 — 감독이 앱·웹 [내 정보]에서 올리면 글자를 읽어 위 칸을 채웁니다.</div>');
+}
 function docsOf(uid){ return (C.docs||[]).filter(function(d){ return d.user_id===uid; }); }
 function docBadges(uid){
   var ds=docsOf(uid);
@@ -1230,8 +1240,12 @@ function renderMemberDetail(){
     + '<div class="grid2">'+f('name','이름',m.name)+f('phone','연락처',fmtPhone(m.phone)||m.phone,'tel')+'</div>'
     + '<div class="grid2">'+f('specialty','주 분야',m.specialty)+'<div class="field"><label>구분</label><select id="crM_is_business"><option value="0"'+(m.is_business?'':' selected')+'>개인 (3.3% 원천징수)</option><option value="1"'+(m.is_business?' selected':'')+'>사업자 (세금계산서)</option></select></div></div>'
     + '<div class="grid2">'+f('biz_name','상호',m.biz_name)+f('biz_no','사업자등록번호',fmtBizNo(m.biz_no)||m.biz_no)+'</div>'
+    + '<div class="grid2">'+f('biz_ceo','대표자',m.biz_ceo)+f('tax_email','세금계산서 이메일',m.tax_email,'email')+'</div>'
+    + f('biz_addr','사업장 주소',m.biz_addr)
+    + '<div class="grid2">'+f('biz_type','업태',m.biz_type)+f('biz_item','종목',m.biz_item)+'</div>'
     + '<div class="cr-grid3">'+f('bank_name','은행',m.bank_name)+f('bank_account','계좌번호',m.bank_account)+f('bank_holder','예금주',m.bank_holder)+'</div>'
     + '<div class="field"><label>경력 소개</label><textarea id="crM_career" rows="3">'+e(m.career)+'</textarea></div>'
+    + (m.is_business?bizCopyCard(m):'')
     + '<div class="cr-sec">관리자 전용 — 감독에게 보이지 않음</div>'
     + '<div class="field"><label>회원 등급 — 크루로 올리면 크루 전용 공고가 열리고 감독에게 알림이 갑니다</label><div class="cr-seg">'
     +   ['basic','crew','core'].map(function(k){ return '<label><input type="radio" name="crM_level" value="'+k+'"'+(((m.level||'basic')===k)?' checked':'')+'><span>'+LV_NAME[k]+'</span></label>'; }).join('')+'</div></div>'
@@ -1254,7 +1268,9 @@ window.crewSaveMember = async function(uid){
   var g=function(k){ var el=document.getElementById('crM_'+k); return el?el.value.trim():''; };
   var row={ name:g('name'), phone:g('phone')||null, specialty:g('specialty')||null, is_business:g('is_business')==='1',
             biz_name:g('biz_name')||null, biz_no:g('biz_no')||null, bank_name:g('bank_name')||null, bank_account:g('bank_account')||null,
-            bank_holder:g('bank_holder')||null, career:g('career')||null };
+            bank_holder:g('bank_holder')||null, career:g('career')||null,
+            biz_ceo:g('biz_ceo')||null, biz_addr:g('biz_addr')||null, biz_type:g('biz_type')||null, biz_item:g('biz_item')||null, tax_email:g('tax_email')||null };
+  if (row.tax_email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(row.tax_email)){ flash('세금계산서 이메일 형식을 확인해 주세요.', true); return; }
   var lv=document.querySelector('input[name=crM_level]:checked'); if (lv) row.level=lv.value;
   if (!row.name){ flash('이름은 비울 수 없습니다.', true); return; }
   var r=await sb.from('crew_members').update(row).eq('user_id', uid); if (r.error) return dbErr(r.error);
@@ -1307,7 +1323,7 @@ function renderTaxReport(m){
     h+='<div class="cr-sec">'+g.t+' · '+rs.length+'건</div><div class="cr-wrap"><table class="cr-t"><thead><tr><th>지급일</th><th>감독</th>'+(g.k==='invoice'?'<th>사업자등록번호</th>':'')+'<th>프로젝트</th>'+(g.k==='daily'?'<th style="text-align:right">근무일</th>':'')
       +'<th style="text-align:right">지급액(세전)</th>'+(g.k==='invoice'?'<th style="text-align:right">부가세</th>':'<th style="text-align:right">소득세</th><th style="text-align:right">지방소득세</th>')+'</tr></thead><tbody>'
       + rs.map(function(r){ var x=taxParts(r.py); s.pay+=x.pay; s.it+=x.it; s.lt+=x.lt; s.vat+=x.vat;
-          return '<tr><td class="cr-date">'+e(r.py.paid_at)+'</td><td><b>'+e(r.m.name||'?')+'</b>'+(g.k!=='invoice'&&g.k!=='none'?(C.rrn&&C.rrn[r.a.user_id]?' <button class="tbtn" onclick="crewCopyRrn(\''+r.a.user_id+'\')">주민번호 복사</button>':' <span class="cr-neg" style="font-size:11.5px">주민번호 미등록</span>'):'')+'</td>'+(g.k==='invoice'?'<td class="mono">'+e(fmtBizNo(r.m.biz_no)||r.m.biz_no||'미등록')+'</td>':'')+'<td>'+e(r.p.title||'')+'</td>'
+          return '<tr><td class="cr-date">'+e(r.py.paid_at)+'</td><td><b>'+e(r.m.name||'?')+'</b>'+(g.k!=='invoice'&&g.k!=='none'?(C.rrn&&C.rrn[r.a.user_id]?' <button class="tbtn" onclick="crewCopyRrn(\''+r.a.user_id+'\')">주민번호 복사</button>':' <span class="cr-neg" style="font-size:11.5px">주민번호 미등록</span>'):'')+'</td>'+(g.k==='invoice'?'<td class="mono">'+e(fmtBizNo(r.m.biz_no)||r.m.biz_no||'미등록')+' <button class="tbtn" onclick="crewOpenMember(\''+r.a.user_id+'\')">세금계산서 정보</button></td>':'')+'<td>'+e(r.p.title||'')+'</td>'
             +(g.k==='daily'?'<td class="cr-num">'+(r.py.work_days||1)+'일</td>':'')
             +'<td class="cr-num">'+x.pay.toLocaleString('ko-KR')+'</td>'+(g.k==='invoice'?'<td class="cr-num">'+x.vat.toLocaleString('ko-KR')+'</td>':'<td class="cr-num">'+x.it.toLocaleString('ko-KR')+'</td><td class="cr-num">'+x.lt.toLocaleString('ko-KR')+'</td>')+'</tr>'; }).join('')
       + '<tr><td colspan="'+(g.k==='invoice'?4:(g.k==='daily'?4:3))+'"><b>합계</b></td><td class="cr-num"><b>'+s.pay.toLocaleString('ko-KR')+'</b></td>'+(g.k==='invoice'?'<td class="cr-num"><b>'+s.vat.toLocaleString('ko-KR')+'</b></td>':'<td class="cr-num"><b>'+s.it.toLocaleString('ko-KR')+'</b></td><td class="cr-num"><b>'+s.lt.toLocaleString('ko-KR')+'</b></td>')+'</tr>'
