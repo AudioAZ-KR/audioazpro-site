@@ -439,6 +439,17 @@ window.crewCopyRrn = async function(uid){
   var d=String(r.data).replace(/\D/g,'');
   crewCopy(d.length===13 ? d.slice(0,6)+'-'+d.slice(6) : String(r.data).trim(), '주민등록번호');
 };
+/* 관리자가 대신 입력 (2026-11-11) — 감독 입력과 같은 검사·암호화, 기록 남음 */
+window.crewSetRrn = async function(uid){
+  var el=document.getElementById('crRrnIn-'+uid); if(!el) return;
+  var d=String(el.value||'').replace(/\D/g,'');
+  if (d.length!==13) return flash('주민등록번호 13자리를 입력하세요.', true);
+  var m=(C.members||[]).filter(function(x){ return x.user_id===uid; })[0]||{};
+  if (!confirm((m.name||'이 감독')+' 님의 주민등록번호를 '+(C.rrn&&C.rrn[uid]?'새 번호로 바꿀까요?':'저장할까요?')+'\n'+d.slice(0,6)+'-'+d.slice(6,7)+'****** (원천징수 신고용 · 암호화 보관 · 입력 기록 남음)')) return;
+  var r=await sb.rpc('crew_admin_set_rrn', { p_uid:uid, p_rrn:d }); el.value='';
+  if (r.error) return /bad_rrn/.test(r.error.message||'') ? flash('주민등록번호 형식이 맞지 않습니다 (생년월일·성별 자리 확인).', true) : dbErr(r.error);
+  C.rrn=C.rrn||{}; C.rrn[uid]=r.data; flash('저장했습니다: '+r.data); render(curPage()); if (window.crewOpenMember) crewOpenMember(uid);
+};
 /* ── 일용근로 근로계약서·임금명세서 (근로기준법 제17조·제48조 제2항, 2026-10-19) — 새 창에서 인쇄/PDF 저장 ── */
 var BIZ={ name:'오디오에이지(AudioAZ)', ceo:'김형준', no:'456-17-01966', addr:'경기도 남양주시 다산중앙로19번길 21', tel:'070-4837-1073' };
 function birthFromHint(h){ if(!h) return ''; var d=h.replace(/\D/g,''); if(d.length<7) return ''; var g=+d[6], c=(g===1||g===2||g===5||g===6)?'19':((g===3||g===4||g===7||g===8)?'20':'18'); return c+d.slice(0,2)+'-'+d.slice(2,4)+'-'+d.slice(4,6); }
@@ -1253,7 +1264,8 @@ function renderMemberDetail(){
     + '<div class="field"><label>관리 메모</label><textarea id="crM_memo" rows="2">'+e(ma.memo)+'</textarea></div>'
     + '<div class="rowflex"><button class="btn btn-pri" onclick="crewSaveMember(\''+m.user_id+'\')">저장</button><button class="btn btn-out" onclick="crewCloseMember()">닫기</button></div>'
     + '<div class="cr-sec">주민등록번호 (원천징수 신고용 · 암호화 보관)</div>'
-    + (C.rrn&&C.rrn[m.user_id] ? '<div class="rowflex"><span class="mono" id="crRrn-'+m.user_id+'">'+e(C.rrn[m.user_id])+'</span><button class="tbtn" onclick="crewShowRrn(\''+m.user_id+'\')">보기</button><button class="tbtn" onclick="crewCopyRrn(\''+m.user_id+'\')">복사</button></div>' : '<div class="cr-meta">아직 등록하지 않았습니다 (감독이 앱·웹 [내 정보]에서 입력).</div>')
+    + (C.rrn&&C.rrn[m.user_id] ? '<div class="rowflex"><span class="mono" id="crRrn-'+m.user_id+'">'+e(C.rrn[m.user_id])+'</span><button class="tbtn" onclick="crewShowRrn(\''+m.user_id+'\')">보기</button><button class="tbtn" onclick="crewCopyRrn(\''+m.user_id+'\')">복사</button></div>' : '<div class="cr-meta">아직 등록하지 않았습니다 (감독이 앱·웹 [내 정보]에서 입력하거나, 아래에서 관리자가 대신 입력).</div>')
+    + '<div class="rowflex" style="margin-top:6px"><input id="crRrnIn-'+m.user_id+'" class="mono" inputmode="numeric" autocomplete="off" maxlength="14" placeholder="000000-0000000" style="max-width:180px"><button class="tbtn" onclick="crewSetRrn(\''+m.user_id+'\')">'+(C.rrn&&C.rrn[m.user_id]?'고쳐 넣기':'대신 입력')+'</button></div>'
     + '<div class="cr-sec">제출 서류 (본인·관리자만 볼 수 있음)</div>'+docList(m.user_id)
     + '<div class="cr-sec">참여 기록 · 지급액 합계 '+won(sumNet)+'원 · 미지급 '+won(sumUnpaid)+'원</div>'
     + (hist.length ? '<div class="cr-wrap"><table class="cr-t"><thead><tr><th>날짜</th><th>프로젝트</th><th>상태</th><th style="text-align:right">페이</th><th style="text-align:right">지급액</th><th>지급</th></tr></thead><tbody>'
